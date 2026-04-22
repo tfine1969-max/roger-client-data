@@ -76,9 +76,11 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
     }
   };
 
-  const digitsOnly = (data.client_id_number || '').replace(/\D/g, '');
-  const isSAId = digitsOnly.length > 0 && data.client_id_number === digitsOnly;
-  const idError = isSAId && digitsOnly.length > 0 && digitsOnly.length !== 13
+  const val = data.client_id_number || '';
+  const digitsOnly = val.replace(/\D/g, '');
+  // Only show error if the field contains ONLY digits and isn't 13 of them
+  const isPureDigits = val.length > 0 && val === digitsOnly;
+  const idError = isPureDigits && digitsOnly.length !== 13
     ? `${digitsOnly.length}/13 digits`
     : null;
 

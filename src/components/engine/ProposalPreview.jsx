@@ -35,7 +35,7 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
   const total = t1 + t2 > 0 ? formatRand(t1 + t2) : '—';
 
   return (
-    <div className="border border-border bg-card sticky top-4">
+    <div className="border border-border bg-card">
       {/* Header */}
       <div className="bg-navy px-4 py-3.5 flex items-center justify-between">
         <div className="text-[13px] font-medium text-white">wealthworks</div>
@@ -83,16 +83,7 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
           </Section>
         )}
 
-        {(hasInvestment || hasRiskCover) && (
-          <Section title="Total monthly commitment">
-            {hasInvestment && <PRow label="Investment" value={formatNum(invPrem)} />}
-            {hasRiskCover && <PRow label="Risk cover" value={formatNum(rcPrem)} />}
-            <div className="flex justify-between text-[13px] pt-2 mt-1.5 border-t border-navy">
-              <span className="font-medium text-navy">Total</span>
-              <span className="font-medium text-navy">{total}</span>
-            </div>
-          </Section>
-        )}
+
       </div>
 
       {/* Signing link — shown after sent */}

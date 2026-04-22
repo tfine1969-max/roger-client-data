@@ -91,17 +91,48 @@ export default function ProposalEngine() {
 
     setIsSending(true);
 
-    // Generate PDF and upload
+    // Generate proposal PDF
     const doc = generateProposalPdf(localData);
-    const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
 
-    // Update proposal with PDF URL and status
-    const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
-    await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
+    // If there's a quote PDF attached, merge it: proposal first, then quote
+    if (localData.quote_file_url) {
+      try {
+        const { jsPDF } = await import('jspdf');
+        const { default: PDFMerger } = await import('pdf-merger-js/browser');
+        const merger = new PDFMerger();
 
-    setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
+        const proposalBlob = doc.output('blob');
+        await merger.add(proposalBlob);
+
+        const quoteResp = await fetch(localData.quote_file_url);
+        const quoteBlob = await quoteResp.blob();
+        await merger.add(quoteBlob);
+
+        const mergedBlob = await merger.saveAsBlob();
+        const mergedFile = new File([mergedBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: mergedFile });
+
+        const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
+        await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
+        setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
+      } catch (err) {
+        // Fallback: just upload the proposal PDF without merging
+        const pdfBlob = doc.output('blob');
+        const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+        const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
+        await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
+        setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
+      }
+    } else {
+      const pdfBlob = doc.output('blob');
+      const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+      const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
+      await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
+      setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
+    }
+
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     queryClient.invalidateQueries({ queryKey: ['proposals'] });
     setIsSending(false);
