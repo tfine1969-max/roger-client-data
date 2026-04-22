@@ -126,7 +126,10 @@ export default function generateProposalPdf(proposal) {
     // Per-type sum assureds for dread disease / disability
     riskCoverTypes.filter(t => NEEDS_OWN_AMOUNT.includes(t)).forEach(typeId => {
       if (coverAmounts[typeId]) {
-        y = row(doc, `${typeLabels[typeId]} — sum assured`, fmtNum(coverAmounts[typeId]), margin, contentW, y);
+        const label = typeId === 'income_disability'
+          ? `${typeLabels[typeId]} — sum assured (p.m)`
+          : `${typeLabels[typeId]} — sum assured`;
+        y = row(doc, label, fmtNum(coverAmounts[typeId]), margin, contentW, y);
       }
     });
     y = row(doc, 'Monthly premium', fmtNum(proposal.risk_cover_premium), margin, contentW, y);
@@ -161,8 +164,8 @@ export default function generateProposalPdf(proposal) {
   y = sectionTitle(doc, 'Total Monthly Commitment', margin, y);
   const invPrem = parseRandValue(proposal.investment_amount);
   const rcPrem = parseRandValue(proposal.risk_cover_premium);
-  if (hasInvestment) y = row(doc, 'Investment', proposal.investment_amount || '—', margin, contentW, y);
-  if (hasRiskCover) y = row(doc, 'Risk cover', proposal.risk_cover_premium || '—', margin, contentW, y);
+  if (hasInvestment) y = row(doc, 'Investment', fmtNum(proposal.investment_amount), margin, contentW, y);
+  if (hasRiskCover) y = row(doc, 'Risk cover', fmtNum(proposal.risk_cover_premium), margin, contentW, y);
   y += 2;
   doc.setDrawColor(...navy);
   doc.line(margin, y, W - margin, y);
@@ -283,13 +286,17 @@ function sectionTitle(doc, title, x, y) {
 }
 
 function row(doc, label, value, x, w, y) {
+  const rightX = x + w;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(138, 154, 170);
-  doc.text(label, x, y);
+  // Truncate label so it doesn't overlap the value
+  const maxLabelW = w - 55;
+  const labelLines = doc.splitTextToSize(label, maxLabelW);
+  doc.text(labelLines[0], x, y);
   doc.setTextColor(14, 65, 102);
   doc.setFont('helvetica', 'bold');
-  doc.text(value || '—', x + w, y, { align: 'right' });
+  doc.text(value || '—', rightX, y, { align: 'right' });
   return y + 5;
 }
 

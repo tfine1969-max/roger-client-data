@@ -75,8 +75,9 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
             {/* Dread Disease / Disability sum assureds */}
             {selectedSpecialTypes.map(typeId => {
               const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
+              const rowLabel = typeId === 'income_disability' ? `${typeLabel} (per month)` : typeLabel;
               return (
-                <PRow key={typeId} label={typeLabel} value={formatNum(coverAmounts[typeId])} />
+                <PRow key={typeId} label={rowLabel} value={formatNum(coverAmounts[typeId])} />
               );
             })}
             <PRow label="Monthly premium" value={formatNum(rcPrem)} />

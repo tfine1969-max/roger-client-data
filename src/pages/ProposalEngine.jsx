@@ -250,7 +250,7 @@ export default function ProposalEngine() {
                 />
               </div>
 
-              <div>
+              <div className="lg:sticky lg:top-4">
                 <ProposalPreview
                   proposal={localData}
                   onGeneratePdf={handleGeneratePdf}
