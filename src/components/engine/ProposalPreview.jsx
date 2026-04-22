@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { parseRandValue, formatRand } from '@/lib/constants';
 import { format } from 'date-fns';
+import { Copy, Check } from 'lucide-react';
 
 export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSend, isSending }) {
+  const [copied, setCopied] = useState(false);
+  const signingLink = `${window.location.origin}/sign?id=${proposal.id}`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(signingLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   const r1prem = proposal.rec1_premium || '—';
   const r2prem = proposal.rec2_premium || '—';
   const t1 = parseRandValue(r1prem);
@@ -63,29 +72,52 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
         </Section>
       </div>
 
-      {/* Footer */}
-      <div className="px-4 py-3 bg-muted border-t border-border flex items-center justify-between gap-2.5 flex-wrap">
-        <p className="text-[10px] text-muted-foreground max-w-[180px] leading-relaxed">
-          Does not constitute a binding offer. Subject to underwriting where applicable.
-        </p>
-        <div className="flex gap-2">
-          <button
-            onClick={onGeneratePdf}
-            className="border border-border text-muted-foreground px-3.5 py-2 text-[11px] font-medium tracking-[.08em] uppercase hover:text-foreground hover:border-foreground/30 transition-colors"
-          >
-            📄 PDF
-          </button>
-          <button
-            onClick={onSend}
-            disabled={!canSend || isSending}
-            className={`px-4 py-2 text-[11px] font-medium tracking-[.08em] uppercase transition-colors ${
-              canSend ? 'bg-gold text-white hover:bg-gold/90' : 'bg-muted-foreground/20 text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            {isSending ? 'Sending...' : 'Send to client →'}
-          </button>
+      {/* Signing link — shown after sent */}
+      {proposal.status === 'sent' || proposal.status === 'client_signed' ? (
+        <div className="px-4 py-3 bg-green-50 border-t border-green-200">
+          <div className="text-[9px] font-medium tracking-[.12em] uppercase text-forest mb-1.5">
+            ✓ Proposal ready — share signing link with client
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 text-[11px] text-ocean bg-white border border-border px-2.5 py-1.5 truncate font-mono">
+              {signingLink}
+            </div>
+            <button onClick={copyLink} className="flex-shrink-0 bg-navy text-white px-3 py-1.5 text-[11px] font-medium flex items-center gap-1.5 hover:bg-ocean transition-colors">
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          {proposal.proposal_pdf_url && (
+            <a href={proposal.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
+              className="block text-[11px] text-ocean underline mt-2">
+              📄 Download proposal PDF
+            </a>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="px-4 py-3 bg-muted border-t border-border flex items-center justify-between gap-2.5 flex-wrap">
+          <p className="text-[10px] text-muted-foreground max-w-[180px] leading-relaxed">
+            Does not constitute a binding offer. Subject to underwriting where applicable.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={onGeneratePdf}
+              className="border border-border text-muted-foreground px-3.5 py-2 text-[11px] font-medium tracking-[.08em] uppercase hover:text-foreground hover:border-foreground/30 transition-colors"
+            >
+              📄 PDF
+            </button>
+            <button
+              onClick={onSend}
+              disabled={!canSend || isSending}
+              className={`px-4 py-2 text-[11px] font-medium tracking-[.08em] uppercase transition-colors ${
+                canSend ? 'bg-gold text-white hover:bg-gold/90' : 'bg-muted-foreground/20 text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              {isSending ? 'Generating...' : 'Finalise & get signing link →'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

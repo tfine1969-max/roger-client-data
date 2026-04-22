@@ -85,14 +85,10 @@ export default function ProposalEngine() {
       toast.error('Please sign before sending');
       return;
     }
-    if (!localData?.client_email) {
-      toast.error('Client email is required to send');
-      return;
-    }
 
     setIsSending(true);
 
-    // Generate PDF
+    // Generate PDF and upload
     const doc = generateProposalPdf(localData);
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
@@ -102,46 +98,11 @@ export default function ProposalEngine() {
     const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
     await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
 
-    // Send email to client
-    const advisorKey = localData.advisor_key || 'trevor';
-    const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
-
-    await base44.integrations.Core.SendEmail({
-      to: localData.client_email,
-      from_name: `${advisor.name} — WealthWorks`,
-      subject: `WealthWorks Financial Proposal — ${localData.reference}`,
-      body: `
-        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #0E4166; padding: 20px 28px;">
-            <span style="color: #fff; font-size: 16px; font-weight: 500;">wealthworks</span>
-            <span style="color: rgba(255,255,255,0.4); font-size: 12px; float: right; margin-top: 4px;">Financial Proposal</span>
-          </div>
-          <div style="padding: 28px; border: 1px solid #D8E4EC; border-top: none;">
-            <p style="color: #2D3A45; font-size: 15px; line-height: 1.8;">
-              Dear ${localData.client_name},
-            </p>
-            ${localData.personal_message ? `<p style="color: #2D3A45; font-size: 14px; line-height: 1.8; margin: 16px 0;">${localData.personal_message}</p>` : ''}
-            <p style="color: #2D3A45; font-size: 14px; line-height: 1.8;">
-              Please find your financial proposal attached as a PDF document. Reference: <strong>${localData.reference}</strong>
-            </p>
-            <p style="color: #2D3A45; font-size: 14px; line-height: 1.8;">
-              <a href="${file_url}" style="color: #1A6494; text-decoration: underline;">Download your proposal PDF</a>
-            </p>
-            <p style="color: #8A9AAA; font-size: 12px; margin-top: 24px; line-height: 1.8;">
-              This proposal does not constitute a binding offer and is subject to underwriting where applicable.<br>
-              Wealth Works (Pty) Ltd — FSP 28337 (Category I)<br>
-              Wealthworks Investments (Pty) Ltd — FSP 45624 (Category II)
-            </p>
-          </div>
-        </div>
-      `
-    });
-
     setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     queryClient.invalidateQueries({ queryKey: ['proposals'] });
     setIsSending(false);
-    toast.success('Proposal sent to ' + localData.client_email);
+    toast.success('Proposal ready — share the signing link with your client');
   };
 
   if (isLoading || !localData) {
