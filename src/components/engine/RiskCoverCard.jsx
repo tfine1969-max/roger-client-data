@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RISK_COVER_PROVIDERS, RISK_COVER_TYPES } from '@/lib/constants';
 
@@ -13,12 +13,33 @@ function Row({ label, children }) {
   );
 }
 
-function InlineInput({ value, onChange, placeholder }) {
+function formatNumber(raw) {
+  const num = parseFloat(String(raw).replace(/[^0-9.]/g, ''));
+  if (isNaN(num)) return raw;
+  return num.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function InlineInput({ value, onChange, placeholder, isAmount, isPercent }) {
+  const [focused, setFocused] = useState(false);
+
+  const handleChange = (e) => {
+    let v = e.target.value;
+    if (isPercent) {
+      v = v.replace(/%/g, '').replace(/[^0-9.]/g, '');
+      if (v !== '') v = v + '%';
+    }
+    onChange(v);
+  };
+
+  const displayValue = isAmount && !focused && value ? formatNumber(value) : value;
+
   return (
     <input
       className="border-0 border-b border-border bg-transparent font-raleway text-sm text-foreground w-full outline-none py-1 focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic"
-      value={value}
-      onChange={e => onChange(e.target.value)}
+      value={displayValue}
+      onChange={handleChange}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       placeholder={placeholder}
     />
   );
@@ -36,7 +57,7 @@ function CheckTag({ label, checked, onChange }) {
   );
 }
 
-// Cover types that require their own sum assured field
+// Types that need their own sum assured field (shown AFTER the Life Cover sum assured row)
 const NEEDS_OWN_AMOUNT = ['dread_disease', 'lump_sum_disability', 'income_disability'];
 
 export default function RiskCoverCard({ data, onChange }) {
@@ -54,7 +75,6 @@ export default function RiskCoverCard({ data, onChange }) {
     onChange('risk_cover_amounts', { ...coverAmounts, [id]: val });
   };
 
-  // Types that need their own amount field (only if selected)
   const selectedSpecialTypes = riskCoverTypes.filter(t => NEEDS_OWN_AMOUNT.includes(t));
 
   return (
@@ -79,20 +99,6 @@ export default function RiskCoverCard({ data, onChange }) {
           </div>
         </div>
 
-        {/* Per-type sum assured for dread disease / disability types */}
-        {selectedSpecialTypes.length > 0 && selectedSpecialTypes.map(typeId => {
-          const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
-          return (
-            <Row key={typeId} label={`${typeLabel} — sum assured`}>
-              <InlineInput
-                value={coverAmounts[typeId] || ''}
-                onChange={v => handleCoverAmount(typeId, v)}
-                placeholder="e.g. R1,500,000"
-              />
-            </Row>
-          );
-        })}
-
         <Row label="Provider">
           <Select value={data.risk_cover_provider || ''} onValueChange={v => onChange('risk_cover_provider', v)}>
             <SelectTrigger className="border-0 border-b border-border rounded-none bg-transparent px-0 h-auto py-1 text-sm">
@@ -104,18 +110,37 @@ export default function RiskCoverCard({ data, onChange }) {
           </Select>
         </Row>
 
-        <Row label="Sum assured / cover">
+        {/* Life Cover sum assured — renamed per brief */}
+        <Row label="Life cover sum assured / cover">
           <InlineInput
             value={data.risk_cover_amount || ''}
             onChange={v => onChange('risk_cover_amount', v)}
-            placeholder="e.g. R3,500,000 sum assured"
+            placeholder="e.g. R3,500,000"
+            isAmount
           />
         </Row>
+
+        {/* Per-type sum assured for dread disease / disability — shown UNDER life cover row */}
+        {selectedSpecialTypes.map(typeId => {
+          const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
+          return (
+            <Row key={typeId} label={`${typeLabel} — sum assured`}>
+              <InlineInput
+                value={coverAmounts[typeId] || ''}
+                onChange={v => handleCoverAmount(typeId, v)}
+                placeholder="e.g. R1,500,000"
+                isAmount
+              />
+            </Row>
+          );
+        })}
+
         <Row label="Monthly premium">
           <InlineInput
             value={data.risk_cover_premium || ''}
             onChange={v => onChange('risk_cover_premium', v)}
-            placeholder="e.g. R2,800 pm"
+            placeholder="e.g. 5,000.00"
+            isAmount
           />
         </Row>
         <Row label="Annual premium increase %">
@@ -123,6 +148,7 @@ export default function RiskCoverCard({ data, onChange }) {
             value={data.risk_cover_premium_increase || ''}
             onChange={v => onChange('risk_cover_premium_increase', v)}
             placeholder="e.g. 5%"
+            isPercent
           />
         </Row>
         <Row label="Annual cover increase %">
@@ -130,6 +156,7 @@ export default function RiskCoverCard({ data, onChange }) {
             value={data.risk_cover_cover_increase || ''}
             onChange={v => onChange('risk_cover_cover_increase', v)}
             placeholder="e.g. 5%"
+            isPercent
           />
         </Row>
         <div className="pt-2">

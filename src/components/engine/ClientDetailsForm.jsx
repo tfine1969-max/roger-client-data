@@ -65,16 +65,21 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
     onChange('risk_cover_types', updated);
   };
 
-  // Auto-extract DOB from SA ID (only digits, max 13)
+  // Auto-extract DOB from SA ID (13 digits) or accept passport
   const handleIdChange = (val) => {
-    const digits = val.replace(/\D/g, '').slice(0, 13);
-    onChange('client_id_number', digits);
-    const dob = dobFromSAId(digits);
-    if (dob) onChange('client_dob', dob);
+    onChange('client_id_number', val);
+    // Only extract DOB if exactly 13 digits (SA ID)
+    const digitsOnly = val.replace(/\D/g, '');
+    if (digitsOnly.length === 13 && val === digitsOnly) {
+      const dob = dobFromSAId(digitsOnly);
+      if (dob) onChange('client_dob', dob);
+    }
   };
 
-  const idError = data.client_id_number && data.client_id_number.length > 0 && data.client_id_number.length !== 13
-    ? `${data.client_id_number.length}/13 digits`
+  const digitsOnly = (data.client_id_number || '').replace(/\D/g, '');
+  const isSAId = digitsOnly.length > 0 && data.client_id_number === digitsOnly;
+  const idError = isSAId && digitsOnly.length > 0 && digitsOnly.length !== 13
+    ? `${digitsOnly.length}/13 digits`
     : null;
 
   return (
@@ -92,8 +97,7 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
             <Input
               value={data.client_id_number || ''}
               onChange={e => handleIdChange(e.target.value)}
-              placeholder="13-digit SA ID number"
-              maxLength={13}
+              placeholder="SA ID (13 digits) or passport"
               className={`rounded-sm font-mono tracking-wider ${idError ? 'border-destructive' : ''}`}
             />
             {idError && <p className="text-[10px] text-destructive mt-0.5">{idError}</p>}
@@ -145,23 +149,7 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
             ))}
           </div>
 
-          {/* Risk cover sub-types */}
-          {hasRiskCover && (
-            <div className="pt-2 border-t border-border">
-              <div className="text-[10px] font-semibold tracking-[.08em] uppercase text-muted-foreground mb-2">Risk cover — select all applicable</div>
-              <div className="grid grid-cols-2 gap-2">
-                {RISK_COVER_TYPES.map(t => (
-                  <CheckboxItem
-                    key={t.id}
-                    id={t.id}
-                    label={t.label}
-                    checked={riskCoverTypes.includes(t.id)}
-                    onChange={() => toggleRiskCoverType(t.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
 

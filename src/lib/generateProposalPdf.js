@@ -81,7 +81,7 @@ export default function generateProposalPdf(proposal) {
       : 'Local (ZAR)';
     y = row(doc, 'Type', invType, margin, contentW, y);
     y = row(doc, 'Provider', proposal.investment_provider, margin, contentW, y);
-    y = row(doc, 'Amount / contribution', proposal.investment_amount, margin, contentW, y);
+    y = row(doc, 'Amount / contribution', fmtNum(proposal.investment_amount), margin, contentW, y);
     y = row(doc, 'Annual fee (TIC)', proposal.investment_fee, margin, contentW, y);
     y = row(doc, 'WW advisory fee', proposal.investment_wwfee, margin, contentW, y);
     if (proposal.investment_rationale) {
@@ -109,8 +109,9 @@ export default function generateProposalPdf(proposal) {
     y = checkPageBreak(doc, y, 60);
     y = sectionTitle(doc, 'Risk Cover', margin, y);
 
-    // Cover types
     const riskCoverTypes = Array.isArray(proposal.risk_cover_types) ? proposal.risk_cover_types : [];
+    const coverAmounts = proposal.risk_cover_amounts || {};
+    const NEEDS_OWN_AMOUNT = ['dread_disease', 'lump_sum_disability', 'income_disability'];
     const typeLabels = {
       life_cover: 'Life Cover',
       dread_disease: 'Dread Disease',
@@ -121,8 +122,14 @@ export default function generateProposalPdf(proposal) {
       y = row(doc, 'Cover types', riskCoverTypes.map(t => typeLabels[t] || t).join(', '), margin, contentW, y);
     }
     y = row(doc, 'Provider', proposal.risk_cover_provider, margin, contentW, y);
-    y = row(doc, 'Sum assured / cover', proposal.risk_cover_amount, margin, contentW, y);
-    y = row(doc, 'Monthly premium', proposal.risk_cover_premium, margin, contentW, y);
+    y = row(doc, 'Life cover sum assured / cover', fmtNum(proposal.risk_cover_amount), margin, contentW, y);
+    // Per-type sum assureds for dread disease / disability
+    riskCoverTypes.filter(t => NEEDS_OWN_AMOUNT.includes(t)).forEach(typeId => {
+      if (coverAmounts[typeId]) {
+        y = row(doc, `${typeLabels[typeId]} — sum assured`, fmtNum(coverAmounts[typeId]), margin, contentW, y);
+      }
+    });
+    y = row(doc, 'Monthly premium', fmtNum(proposal.risk_cover_premium), margin, contentW, y);
     if (proposal.risk_cover_premium_increase) {
       y = row(doc, 'Annual premium increase', proposal.risk_cover_premium_increase, margin, contentW, y);
     }
@@ -284,6 +291,13 @@ function row(doc, label, value, x, w, y) {
   doc.setFont('helvetica', 'bold');
   doc.text(value || '—', x + w, y, { align: 'right' });
   return y + 5;
+}
+
+function fmtNum(val) {
+  if (!val) return '—';
+  const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+  if (isNaN(n)) return String(val);
+  return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function checkPageBreak(doc, y, needed) {

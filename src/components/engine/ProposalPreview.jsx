@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { parseRandValue, formatRand } from '@/lib/constants';
+import { parseRandValue, formatRand, RISK_COVER_TYPES } from '@/lib/constants';
 import { format } from 'date-fns';
 import { Copy, Check } from 'lucide-react';
+
+function formatNum(val) {
+  if (!val) return '—';
+  const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+  if (isNaN(n)) return val;
+  return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSend, isSending }) {
   const [copied, setCopied] = useState(false);
@@ -12,9 +19,14 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
   const needs = Array.isArray(proposal.needs_array) ? proposal.needs_array : [];
   const hasInvestment = needs.includes('investment');
   const hasRiskCover = needs.includes('risk_cover');
+  const riskCoverTypes = Array.isArray(proposal.risk_cover_types) ? proposal.risk_cover_types : [];
+  const coverAmounts = proposal.risk_cover_amounts || {};
+  const NEEDS_OWN_AMOUNT = ['dread_disease', 'lump_sum_disability', 'income_disability'];
+  const selectedSpecialTypes = riskCoverTypes.filter(t => NEEDS_OWN_AMOUNT.includes(t));
 
   const invPrem = proposal.investment_amount || '—';
   const rcPrem = proposal.risk_cover_premium || '—';
@@ -23,11 +35,11 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
   const total = t1 + t2 > 0 ? formatRand(t1 + t2) : '—';
 
   return (
-    <div className="border border-border bg-card sticky top-[60px]">
+    <div className="border border-border bg-card sticky top-4">
       {/* Header */}
       <div className="bg-navy px-4 py-3.5 flex items-center justify-between">
         <div className="text-[13px] font-medium text-white">wealthworks</div>
-        <div className="text-right text-[9px] text-white/36 leading-relaxed">
+        <div className="text-right text-[9px] text-white/60 leading-relaxed">
           <div>Financial proposal</div>
           <div>{proposal.reference} · {format(new Date(), 'dd/MM/yyyy')}</div>
         </div>
@@ -51,7 +63,7 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
           <Section title="Investment">
             <PRow label="Type" value={proposal.investment_type === 'offshore' ? `Offshore (${proposal.investment_currency || '—'})` : 'Local (ZAR)'} />
             <PRow label="Provider" value={proposal.investment_provider} />
-            <PRow label="Amount" value={proposal.investment_amount} />
+            <PRow label="Amount" value={formatNum(proposal.investment_amount)} />
             <PRow label="Annual fee" value={proposal.investment_fee} />
           </Section>
         )}
@@ -59,15 +71,22 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
         {hasRiskCover && (
           <Section title="Risk cover">
             <PRow label="Provider" value={proposal.risk_cover_provider} />
-            <PRow label="Sum assured" value={proposal.risk_cover_amount} />
-            <PRow label="Monthly premium" value={rcPrem} />
+            <PRow label="Life cover sum assured" value={formatNum(proposal.risk_cover_amount)} />
+            {/* Dread Disease / Disability sum assureds */}
+            {selectedSpecialTypes.map(typeId => {
+              const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
+              return (
+                <PRow key={typeId} label={typeLabel} value={formatNum(coverAmounts[typeId])} />
+              );
+            })}
+            <PRow label="Monthly premium" value={formatNum(rcPrem)} />
           </Section>
         )}
 
         {(hasInvestment || hasRiskCover) && (
           <Section title="Total monthly commitment">
-            {hasInvestment && <PRow label="Investment" value={invPrem} />}
-            {hasRiskCover && <PRow label="Risk cover" value={rcPrem} />}
+            {hasInvestment && <PRow label="Investment" value={formatNum(invPrem)} />}
+            {hasRiskCover && <PRow label="Risk cover" value={formatNum(rcPrem)} />}
             <div className="flex justify-between text-[13px] pt-2 mt-1.5 border-t border-navy">
               <span className="font-medium text-navy">Total</span>
               <span className="font-medium text-navy">{total}</span>
