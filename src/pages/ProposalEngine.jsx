@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ADVISORS } from '@/lib/constants';
 import TopBar from '@/components/layout/TopBar';
 import ClientStrip from '@/components/engine/ClientStrip';
-import RecommendationCard from '@/components/engine/RecommendationCard';
 import ProposalPreview from '@/components/engine/ProposalPreview';
 import SignaturePad from '@/components/engine/SignaturePad';
 import QuoteUpload from '@/components/engine/QuoteUpload';
@@ -15,6 +14,8 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
 import ClientDetailsForm from '@/components/engine/ClientDetailsForm';
+import InvestmentCard from '@/components/engine/InvestmentCard';
+import RiskCoverCard from '@/components/engine/RiskCoverCard';
 
 export default function ProposalEngine() {
   const { id } = useParams();
@@ -120,7 +121,10 @@ export default function ProposalEngine() {
   const advisorKey = localData.advisor_key || 'trevor';
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
   const hasSig = !!localData.advisor_signature_data;
-  const showLifeWarning = localData.needs_identified?.toLowerCase().includes('life');
+  const needs = Array.isArray(localData.needs_array) ? localData.needs_array : [];
+  const hasInvestment = needs.includes('investment');
+  const hasRiskCover = needs.includes('risk_cover');
+  const showLifeWarning = hasRiskCover && Array.isArray(localData.risk_cover_types) && localData.risk_cover_types.includes('life_cover');
 
   // Determine current phase — stored on record, fallback to 'client_details' for new proposals
   const currentPhase = localData.phase || 'client_details';
@@ -202,9 +206,12 @@ export default function ProposalEngine() {
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
               <div>
-                <RecommendationCard num={1} variant="primary" data={localData} onChange={handleFieldChange} />
-                <RecommendationCard num={2} variant="secondary" data={localData} onChange={handleFieldChange} />
-                <RecommendationCard num={3} variant="tertiary" data={localData} onChange={handleFieldChange} optional />
+                {hasInvestment && (
+                  <InvestmentCard data={localData} onChange={handleFieldChange} />
+                )}
+                {hasRiskCover && (
+                  <RiskCoverCard data={localData} onChange={handleFieldChange} />
+                )}
 
                 <div className="border border-border bg-card p-4 mb-3">
                   <div className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy mb-2.5">

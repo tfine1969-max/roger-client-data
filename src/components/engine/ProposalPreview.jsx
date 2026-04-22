@@ -12,12 +12,15 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  const r1prem = proposal.rec1_premium || '—';
-  const r2prem = proposal.rec2_premium || '—';
-  const t1 = parseRandValue(r1prem);
-  const t2 = parseRandValue(r2prem);
+  const needs = Array.isArray(proposal.needs_array) ? proposal.needs_array : [];
+  const hasInvestment = needs.includes('investment');
+  const hasRiskCover = needs.includes('risk_cover');
+
+  const invPrem = proposal.investment_amount || '—';
+  const rcPrem = proposal.risk_cover_premium || '—';
+  const t1 = parseRandValue(invPrem);
+  const t2 = parseRandValue(rcPrem);
   const total = t1 + t2 > 0 ? formatRand(t1 + t2) : '—';
-  const hasRec3 = !!proposal.rec3_amount;
 
   return (
     <div className="border border-border bg-card sticky top-[60px]">
@@ -34,42 +37,43 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
       <div className="p-4">
         <div className="text-[9px] font-medium tracking-[.14em] uppercase text-ocean mb-1">Prepared for</div>
         <div className="text-[13px] font-medium text-navy mb-3 pb-2.5 border-b border-border">
-          {proposal.client_name} · {proposal.risk_profile || '—'} risk · {proposal.time_horizon || '—'}
+          {proposal.client_name}
         </div>
 
         <Section title="Client snapshot">
           <PRow label="Needs identified" value={proposal.needs_identified} highlight />
-          <PRow label="Risk profile" value={proposal.risk_profile} highlight />
-          <PRow label="Monthly budget" value={proposal.monthly_budget} highlight />
-          <PRow label="Time horizon" value={proposal.time_horizon} highlight />
+          {hasInvestment && <PRow label="Risk profile" value={proposal.risk_profile} highlight />}
+          {hasInvestment && <PRow label="Monthly budget" value={proposal.monthly_budget} highlight />}
+          {hasInvestment && <PRow label="Time horizon" value={proposal.time_horizon} highlight />}
         </Section>
 
-        <Section title={proposal.rec1_category || 'Recommendation 1'}>
-          <PRow label="Product / provider" value={proposal.rec1_provider} />
-          <PRow label="Cover / amount" value={proposal.rec1_amount} />
-          <PRow label="Monthly cost" value={r1prem} />
-        </Section>
-
-        <Section title={proposal.rec2_category || 'Recommendation 2'}>
-          <PRow label="Product / provider" value={proposal.rec2_provider} />
-          <PRow label="Cover / amount" value={proposal.rec2_amount} />
-          <PRow label="Monthly cost" value={r2prem} />
-        </Section>
-
-        {hasRec3 && (
-          <Section title={proposal.rec3_category || 'Recommendation 3'}>
-            <PRow label="Amount / contribution" value={proposal.rec3_amount} />
+        {hasInvestment && (
+          <Section title="Investment">
+            <PRow label="Type" value={proposal.investment_type === 'offshore' ? `Offshore (${proposal.investment_currency || '—'})` : 'Local (ZAR)'} />
+            <PRow label="Provider" value={proposal.investment_provider} />
+            <PRow label="Amount" value={proposal.investment_amount} />
+            <PRow label="Annual fee" value={proposal.investment_fee} />
           </Section>
         )}
 
-        <Section title="Total monthly commitment">
-          <PRow label="Rec 1" value={r1prem} />
-          <PRow label="Rec 2" value={r2prem} />
-          <div className="flex justify-between text-[13px] pt-2 mt-1.5 border-t border-navy">
-            <span className="font-medium text-navy">Total</span>
-            <span className="font-medium text-navy">{total}</span>
-          </div>
-        </Section>
+        {hasRiskCover && (
+          <Section title="Risk cover">
+            <PRow label="Provider" value={proposal.risk_cover_provider} />
+            <PRow label="Sum assured" value={proposal.risk_cover_amount} />
+            <PRow label="Monthly premium" value={rcPrem} />
+          </Section>
+        )}
+
+        {(hasInvestment || hasRiskCover) && (
+          <Section title="Total monthly commitment">
+            {hasInvestment && <PRow label="Investment" value={invPrem} />}
+            {hasRiskCover && <PRow label="Risk cover" value={rcPrem} />}
+            <div className="flex justify-between text-[13px] pt-2 mt-1.5 border-t border-navy">
+              <span className="font-medium text-navy">Total</span>
+              <span className="font-medium text-navy">{total}</span>
+            </div>
+          </Section>
+        )}
       </div>
 
       {/* Signing link — shown after sent */}

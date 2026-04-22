@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { RISK_PROFILES, BUDGETS, HORIZONS } from '@/lib/constants';
+import { NEEDS_OPTIONS, RISK_COVER_TYPES } from '@/lib/constants';
 import { ChevronRight } from 'lucide-react';
 
 const LIQUIDITY_OPTIONS = ['Immediate access required', 'Within 1 year', '1–3 years', '3+ years', 'No liquidity requirements'];
 const TAX_RESIDENCY_OPTIONS = ['South Africa', 'United Kingdom', 'United States', 'Australia', 'Other'];
+
+// Extract DOB from SA ID number (YYMMDD...)
+function dobFromSAId(idNumber) {
+  if (!idNumber || idNumber.length < 6) return '';
+  const yy = idNumber.substring(0, 2);
+  const mm = idNumber.substring(2, 4);
+  const dd = idNumber.substring(4, 6);
+  if (!/^\d{6}/.test(idNumber)) return '';
+  const year = parseInt(yy) <= 25 ? `20${yy}` : `19${yy}`;
+  return `${year}-${mm}-${dd}`;
+}
 
 function Field({ label, required, children }) {
   return (
@@ -20,8 +31,46 @@ function Field({ label, required, children }) {
   );
 }
 
+function CheckboxItem({ id, label, checked, onChange }) {
+  return (
+    <label key={id} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${checked ? 'border-navy bg-navy/5' : 'border-border bg-card hover:border-ocean/50'}`}>
+      <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-navy border-navy' : 'border-border'}`}>
+        {checked && <div className="w-2 h-2 bg-white" />}
+      </div>
+      <span className="text-[13px] font-medium text-navy">{label}</span>
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+    </label>
+  );
+}
+
 export default function ClientDetailsForm({ data, onChange, onProceed }) {
   const canProceed = data.client_name?.trim();
+
+  // Parse needs array
+  const needs = Array.isArray(data.needs_array) ? data.needs_array : [];
+  const riskCoverTypes = Array.isArray(data.risk_cover_types) ? data.risk_cover_types : [];
+  const hasInvestment = needs.includes('investment');
+  const hasRiskCover = needs.includes('risk_cover');
+
+  const toggleNeed = (id) => {
+    const updated = needs.includes(id) ? needs.filter(n => n !== id) : [...needs, id];
+    onChange('needs_array', updated);
+    // Sync text field for display
+    const labels = updated.map(n => NEEDS_OPTIONS.find(o => o.id === n)?.label).filter(Boolean);
+    onChange('needs_identified', labels.join(', '));
+  };
+
+  const toggleRiskCoverType = (id) => {
+    const updated = riskCoverTypes.includes(id) ? riskCoverTypes.filter(t => t !== id) : [...riskCoverTypes, id];
+    onChange('risk_cover_types', updated);
+  };
+
+  // Auto-extract DOB from SA ID
+  const handleIdChange = (val) => {
+    onChange('client_id_number', val);
+    const dob = dobFromSAId(val);
+    if (dob) onChange('client_dob', dob);
+  };
 
   return (
     <div className="max-w-2xl">
@@ -34,8 +83,8 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
           <Field label="Full name" required>
             <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Full name" className="rounded-sm" />
           </Field>
-          <Field label="ID / Passport number">
-            <Input value={data.client_id_number || ''} onChange={e => onChange('client_id_number', e.target.value)} placeholder="ID or passport" className="rounded-sm" />
+          <Field label="SA ID / Passport number">
+            <Input value={data.client_id_number || ''} onChange={e => handleIdChange(e.target.value)} placeholder="SA ID extracts DOB automatically" className="rounded-sm" />
           </Field>
           <Field label="Date of birth">
             <Input type="date" value={data.client_dob || ''} onChange={e => onChange('client_dob', e.target.value)} className="rounded-sm" />
@@ -66,64 +115,64 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
         </div>
       </div>
 
-      {/* Section: Financial profile */}
+      {/* Section: Needs identified (multi-select) */}
       <div className="border border-border bg-card mb-4">
         <div className="px-5 py-3 bg-muted border-b border-border">
-          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Financial profile</div>
+          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Needs identified</div>
         </div>
-        <div className="p-5 grid grid-cols-2 gap-4">
-          <Field label="Risk profile">
-            <Select value={data.risk_profile || ''} onValueChange={v => onChange('risk_profile', v)}>
-              <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                {RISK_PROFILES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Monthly budget">
-            <Select value={data.monthly_budget || ''} onValueChange={v => onChange('monthly_budget', v)}>
-              <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                {BUDGETS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Investment horizon">
-            <Select value={data.time_horizon || ''} onValueChange={v => onChange('time_horizon', v)}>
-              <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                {HORIZONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Liquidity needs">
-            <Select value={data.client_liquidity_needs || ''} onValueChange={v => onChange('client_liquidity_needs', v)}>
-              <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                {LIQUIDITY_OPTIONS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </Field>
-          <div className="col-span-2">
-            <Field label="Needs identified">
-              <Input value={data.needs_identified || ''} onChange={e => onChange('needs_identified', e.target.value)} placeholder="e.g. Life cover, Retirement planning, Offshore investment" className="rounded-sm" />
-            </Field>
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {NEEDS_OPTIONS.map(opt => (
+              <CheckboxItem
+                key={opt.id}
+                id={opt.id}
+                label={opt.label}
+                checked={needs.includes(opt.id)}
+                onChange={() => toggleNeed(opt.id)}
+              />
+            ))}
           </div>
-          <div className="col-span-2">
-            <Field label="Notes">
-              <Textarea value={data.notes || ''} onChange={e => onChange('notes', e.target.value)} placeholder="Any additional context..." className="rounded-sm min-h-[70px]" />
-            </Field>
-          </div>
+
+          {/* Risk cover sub-types */}
+          {hasRiskCover && (
+            <div className="pt-2 border-t border-border">
+              <div className="text-[10px] font-semibold tracking-[.08em] uppercase text-muted-foreground mb-2">Risk cover — select all applicable</div>
+              <div className="grid grid-cols-2 gap-2">
+                {RISK_COVER_TYPES.map(t => (
+                  <CheckboxItem
+                    key={t.id}
+                    id={t.id}
+                    label={t.label}
+                    checked={riskCoverTypes.includes(t.id)}
+                    onChange={() => toggleRiskCoverType(t.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Section: Additional notes */}
+      <div className="border border-border bg-card mb-4">
+        <div className="px-5 py-3 bg-muted border-b border-border">
+          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">04 — Additional notes</div>
+        </div>
+        <div className="p-5">
+          <Textarea value={data.notes || ''} onChange={e => onChange('notes', e.target.value)} placeholder="Any additional context..." className="rounded-sm min-h-[70px]" />
         </div>
       </div>
 
       <button
         onClick={onProceed}
-        disabled={!canProceed}
+        disabled={!canProceed || needs.length === 0}
         className="w-full bg-navy text-white py-4 text-[13px] font-medium tracking-[.1em] uppercase hover:bg-ocean transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
       >
         Proceed to recommendations <ChevronRight className="w-4 h-4" />
       </button>
+      {canProceed && needs.length === 0 && (
+        <p className="text-center text-[11px] text-muted-foreground mt-2">Please select at least one need to continue</p>
+      )}
     </div>
   );
 }

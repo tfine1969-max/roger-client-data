@@ -1,0 +1,121 @@
+import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RISK_COVER_PROVIDERS, RISK_COVER_TYPES } from '@/lib/constants';
+
+function Row({ label, children }) {
+  return (
+    <div className="flex gap-2.5 py-2 border-b border-border items-center last:border-b-0">
+      <div className="text-[10px] font-medium tracking-[.08em] uppercase text-muted-foreground min-w-[160px] flex-shrink-0">
+        {label}
+      </div>
+      <div className="flex-1">{children}</div>
+    </div>
+  );
+}
+
+function InlineInput({ value, onChange, placeholder }) {
+  return (
+    <input
+      className="border-0 border-b border-border bg-transparent font-raleway text-sm text-foreground w-full outline-none py-1 focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  );
+}
+
+function CheckTag({ label, checked, onChange }) {
+  return (
+    <label className={`flex items-center gap-2 px-3 py-1.5 border cursor-pointer text-[11px] font-medium transition-colors ${checked ? 'border-teal bg-teal/10 text-teal' : 'border-border text-muted-foreground hover:border-teal/40'}`}>
+      <div className={`w-3 h-3 border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-teal border-teal' : 'border-muted-foreground'}`}>
+        {checked && <div className="w-1.5 h-1.5 bg-white" />}
+      </div>
+      {label}
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+    </label>
+  );
+}
+
+export default function RiskCoverCard({ data, onChange, selectedTypes = [] }) {
+  const riskCoverTypes = Array.isArray(data.risk_cover_types) ? data.risk_cover_types : [];
+
+  const toggleType = (id) => {
+    const updated = riskCoverTypes.includes(id)
+      ? riskCoverTypes.filter(t => t !== id)
+      : [...riskCoverTypes, id];
+    onChange('risk_cover_types', updated);
+  };
+
+  return (
+    <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-teal">
+      <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
+        <span className="text-[11px] font-medium tracking-[.06em] uppercase text-navy">Risk cover recommendation</span>
+        <span className="text-[9px] font-medium text-white px-2.5 py-1 tracking-[.06em] uppercase bg-teal">Risk cover</span>
+      </div>
+      <div className="p-4 space-y-0">
+        {/* Cover types */}
+        <div className="mb-3 pb-3 border-b border-border">
+          <div className="text-[9px] font-medium tracking-[.12em] uppercase text-muted-foreground mb-2">Cover types included</div>
+          <div className="flex flex-wrap gap-2">
+            {RISK_COVER_TYPES.map(t => (
+              <CheckTag
+                key={t.id}
+                label={t.label}
+                checked={riskCoverTypes.includes(t.id)}
+                onChange={() => toggleType(t.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <Row label="Provider">
+          <Select value={data.risk_cover_provider || ''} onValueChange={v => onChange('risk_cover_provider', v)}>
+            <SelectTrigger className="border-0 border-b border-border rounded-none bg-transparent px-0 h-auto py-1 text-sm">
+              <SelectValue placeholder="Select provider" />
+            </SelectTrigger>
+            <SelectContent>
+              {RISK_COVER_PROVIDERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Row>
+
+        <Row label="Sum assured / cover">
+          <InlineInput
+            value={data.risk_cover_amount || ''}
+            onChange={v => onChange('risk_cover_amount', v)}
+            placeholder="e.g. R3,500,000 sum assured"
+          />
+        </Row>
+        <Row label="Monthly premium">
+          <InlineInput
+            value={data.risk_cover_premium || ''}
+            onChange={v => onChange('risk_cover_premium', v)}
+            placeholder="e.g. R2,800 pm"
+          />
+        </Row>
+        <Row label="Annual fee (TIC)">
+          <InlineInput
+            value={data.risk_cover_fee || ''}
+            onChange={v => onChange('risk_cover_fee', v)}
+            placeholder="e.g. 0.50% p.a."
+          />
+        </Row>
+        <Row label="WW advisory fee">
+          <InlineInput
+            value={data.risk_cover_wwfee || ''}
+            onChange={v => onChange('risk_cover_wwfee', v)}
+            placeholder="e.g. 0.25% p.a."
+          />
+        </Row>
+        <div className="pt-2">
+          <textarea
+            className="border border-border bg-muted font-raleway text-[13px] text-foreground w-full outline-none p-3 resize-y min-h-[70px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
+            value={data.risk_cover_rationale || ''}
+            onChange={e => onChange('risk_cover_rationale', e.target.value)}
+            placeholder="Suitability rationale — why this risk cover recommendation is appropriate..."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -29,7 +29,7 @@
     },
     "client_liquidity_needs": {
       "type": "string",
-      "description": "Client liquidity needs / notes"
+      "description": "Client liquidity needs"
     },
     "reference": {
       "type": "string",
@@ -37,40 +37,21 @@
     },
     "needs_identified": {
       "type": "string",
-      "description": "e.g. Life, Disability, RA"
+      "description": "Text summary of needs e.g. Investment, Risk Cover"
     },
-    "risk_profile": {
-      "type": "string",
-      "enum": [
-        "Conservative",
-        "Cautious",
-        "Moderate",
-        "Growth",
-        "Aggressive"
-      ],
-      "description": "Client risk profile"
+    "needs_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of need IDs: investment, risk_cover"
     },
-    "monthly_budget": {
-      "type": "string",
-      "enum": [
-        "Below R2,000",
-        "R2,001\u2013R5,000",
-        "R5,001\u2013R10,000",
-        "R10,001\u2013R20,000",
-        "Above R20,000"
-      ],
-      "description": "Client monthly budget"
-    },
-    "time_horizon": {
-      "type": "string",
-      "enum": [
-        "Under 3 years",
-        "3\u20135 years",
-        "5\u201310 years",
-        "10\u201320 years",
-        "20+ years"
-      ],
-      "description": "Investment time horizon"
+    "risk_cover_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Selected risk cover types: life_cover, dread_disease, lump_sum_disability, income_disability"
     },
     "notes": {
       "type": "string",
@@ -105,62 +86,94 @@
       "type": "string",
       "description": "Full advisor name"
     },
-    "rec1_category": {
-      "type": "string"
+    "investment_type": {
+      "type": "string",
+      "enum": [
+        "local",
+        "offshore"
+      ],
+      "description": "Local or offshore investment"
     },
-    "rec1_provider": {
-      "type": "string"
+    "investment_currency": {
+      "type": "string",
+      "description": "Currency for offshore investment"
     },
-    "rec1_amount": {
-      "type": "string"
+    "investment_provider": {
+      "type": "string",
+      "description": "Investment provider"
     },
-    "rec1_premium": {
-      "type": "string"
+    "investment_amount": {
+      "type": "string",
+      "description": "Investment amount / contribution"
     },
-    "rec1_fee": {
-      "type": "string"
+    "investment_fee": {
+      "type": "string",
+      "description": "Annual fee TIC"
     },
-    "rec1_wwfee": {
-      "type": "string"
+    "investment_wwfee": {
+      "type": "string",
+      "description": "WW advisory fee"
     },
-    "rec1_rationale": {
-      "type": "string"
+    "investment_rationale": {
+      "type": "string",
+      "description": "Investment suitability rationale"
     },
-    "rec2_category": {
-      "type": "string"
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Cautious",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Client risk profile (investment)"
     },
-    "rec2_provider": {
-      "type": "string"
+    "monthly_budget": {
+      "type": "string",
+      "enum": [
+        "Below R2,000",
+        "R2,001\u2013R5,000",
+        "R5,001\u2013R10,000",
+        "R10,001\u2013R20,000",
+        "Above R20,000"
+      ],
+      "description": "Monthly investment budget"
     },
-    "rec2_amount": {
-      "type": "string"
+    "time_horizon": {
+      "type": "string",
+      "enum": [
+        "Under 3 years",
+        "3\u20135 years",
+        "5\u201310 years",
+        "10\u201320 years",
+        "20+ years"
+      ],
+      "description": "Investment time horizon"
     },
-    "rec2_premium": {
-      "type": "string"
+    "risk_cover_provider": {
+      "type": "string",
+      "description": "Risk cover provider"
     },
-    "rec2_fee": {
-      "type": "string"
+    "risk_cover_amount": {
+      "type": "string",
+      "description": "Sum assured / cover amount"
     },
-    "rec2_wwfee": {
-      "type": "string"
+    "risk_cover_premium": {
+      "type": "string",
+      "description": "Monthly risk cover premium"
     },
-    "rec2_rationale": {
-      "type": "string"
+    "risk_cover_fee": {
+      "type": "string",
+      "description": "Risk cover annual fee"
     },
-    "rec3_category": {
-      "type": "string"
+    "risk_cover_wwfee": {
+      "type": "string",
+      "description": "WW advisory fee for risk cover"
     },
-    "rec3_provider": {
-      "type": "string"
-    },
-    "rec3_amount": {
-      "type": "string"
-    },
-    "rec3_fee": {
-      "type": "string"
-    },
-    "rec3_rationale": {
-      "type": "string"
+    "risk_cover_rationale": {
+      "type": "string",
+      "description": "Risk cover suitability rationale"
     },
     "personal_message": {
       "type": "string",
