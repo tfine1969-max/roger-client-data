@@ -1,0 +1,180 @@
+{
+  "name": "Proposal",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Client full name"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Client email address"
+    },
+    "client_mobile": {
+      "type": "string",
+      "description": "Client mobile number"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Unique proposal reference e.g. WW-P-2026-3821"
+    },
+    "needs_identified": {
+      "type": "string",
+      "description": "e.g. Life, Disability, RA"
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Cautious",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Client risk profile"
+    },
+    "monthly_budget": {
+      "type": "string",
+      "enum": [
+        "Below R2,000",
+        "R2,001\u2013R5,000",
+        "R5,001\u2013R10,000",
+        "R10,001\u2013R20,000",
+        "Above R20,000"
+      ],
+      "description": "Client monthly budget"
+    },
+    "time_horizon": {
+      "type": "string",
+      "enum": [
+        "Under 3 years",
+        "3\u20135 years",
+        "5\u201310 years",
+        "10\u201320 years",
+        "20+ years"
+      ],
+      "description": "Investment time horizon"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional context"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "in_progress",
+        "signed",
+        "sent",
+        "client_signed"
+      ],
+      "default": "new",
+      "description": "Proposal status"
+    },
+    "advisor_key": {
+      "type": "string",
+      "description": "Advisor identifier"
+    },
+    "advisor_name": {
+      "type": "string",
+      "description": "Full advisor name"
+    },
+    "rec1_category": {
+      "type": "string"
+    },
+    "rec1_provider": {
+      "type": "string"
+    },
+    "rec1_amount": {
+      "type": "string"
+    },
+    "rec1_premium": {
+      "type": "string"
+    },
+    "rec1_fee": {
+      "type": "string"
+    },
+    "rec1_wwfee": {
+      "type": "string"
+    },
+    "rec1_rationale": {
+      "type": "string"
+    },
+    "rec2_category": {
+      "type": "string"
+    },
+    "rec2_provider": {
+      "type": "string"
+    },
+    "rec2_amount": {
+      "type": "string"
+    },
+    "rec2_premium": {
+      "type": "string"
+    },
+    "rec2_fee": {
+      "type": "string"
+    },
+    "rec2_wwfee": {
+      "type": "string"
+    },
+    "rec2_rationale": {
+      "type": "string"
+    },
+    "rec3_category": {
+      "type": "string"
+    },
+    "rec3_provider": {
+      "type": "string"
+    },
+    "rec3_amount": {
+      "type": "string"
+    },
+    "rec3_fee": {
+      "type": "string"
+    },
+    "rec3_rationale": {
+      "type": "string"
+    },
+    "personal_message": {
+      "type": "string",
+      "description": "Personalised message to client"
+    },
+    "advisor_signature_data": {
+      "type": "string",
+      "description": "Base64 signature image or typed name"
+    },
+    "advisor_signature_type": {
+      "type": "string",
+      "enum": [
+        "draw",
+        "type"
+      ],
+      "description": "How the advisor signed"
+    },
+    "sign_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "quote_file_url": {
+      "type": "string",
+      "description": "Uploaded quote PDF URL"
+    },
+    "proposal_pdf_url": {
+      "type": "string",
+      "description": "Generated proposal PDF URL"
+    },
+    "client_signature_data": {
+      "type": "string",
+      "description": "Client signature data"
+    },
+    "client_signed_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "client_name",
+    "reference"
+  ]
+}

@@ -4,6 +4,10 @@ module.exports = {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+  		fontFamily: {
+  			raleway: ['var(--font-raleway)'],
+  			lora: ['var(--font-lora)']
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -59,24 +63,24 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+  			navy: '#0E4166',
+  			ocean: '#1A6494',
+  			sky: '#3A8EC0',
+  			teal: '#4A9BAF',
+  			gold: '#C4973A',
+  			forest: '#1A7A4A',
+  			warn: '#E67E22',
+  			danger: '#C0392B'
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' }
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' }
   			}
   		},
   		animation: {
@@ -85,5 +89,10 @@ module.exports = {
   		}
   	}
   },
+  safelist: [
+    'bg-navy', 'bg-ocean', 'bg-sky', 'bg-teal', 'bg-gold', 'bg-forest', 'bg-warn', 'bg-danger',
+    'text-navy', 'text-ocean', 'text-sky', 'text-teal', 'text-gold', 'text-forest', 'text-warn', 'text-danger',
+    'border-navy', 'border-ocean', 'border-sky', 'border-teal', 'border-gold', 'border-forest'
+  ],
   plugins: [require("tailwindcss-animate")],
 }
