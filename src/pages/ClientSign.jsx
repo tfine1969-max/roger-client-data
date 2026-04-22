@@ -209,12 +209,20 @@ export default function ClientSign() {
           </div>
         </div>
 
-        {proposal.proposal_pdf_url && (
-          <a href={proposal.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
-            className="block w-full bg-muted text-center py-3 text-sm text-ocean font-medium border border-border mb-6 hover:bg-blue-50 transition-colors">
-            📄 Download full proposal PDF
-          </a>
-        )}
+        <div className="flex flex-col gap-2 mb-6">
+          {proposal.proposal_pdf_url && (
+            <a href={proposal.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
+              className="block w-full bg-muted text-center py-3 text-sm text-ocean font-medium border border-border hover:bg-blue-50 transition-colors">
+              📄 Download proposal PDF
+            </a>
+          )}
+          {proposal.quote_file_url && (
+            <a href={proposal.quote_file_url} target="_blank" rel="noopener noreferrer"
+              className="block w-full bg-muted text-center py-3 text-sm text-ocean font-medium border border-border hover:bg-blue-50 transition-colors">
+              📄 Download product quote PDF
+            </a>
+          )}
+        </div>
 
         {/* Signature */}
         <div className="border border-border bg-card border-t-2 border-t-gold">
