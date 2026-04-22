@@ -18,6 +18,10 @@ export default function generateProposalPdf(proposal) {
   const bg = [247, 249, 251];
   const border = [216, 228, 236];
 
+  const needs = Array.isArray(proposal.needs_array) ? proposal.needs_array : [];
+  const hasInvestment = needs.includes('investment');
+  const hasRiskCover = needs.includes('risk_cover');
+
   // ═══ HEADER BAR ═══
   doc.setFillColor(...navy);
   doc.rect(0, 0, W, 32, 'F');
@@ -45,10 +49,12 @@ export default function generateProposalPdf(proposal) {
   doc.setTextColor(...navy);
   doc.text(proposal.client_name || '—', margin, y);
   y += 5;
-  doc.setFontSize(9);
-  doc.setTextColor(...muted);
-  doc.text(`${proposal.risk_profile || '—'} risk  ·  ${proposal.time_horizon || '—'} horizon  ·  ${proposal.monthly_budget || '—'} budget`, margin, y);
-  y += 4;
+  if (hasInvestment) {
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.text(`${proposal.risk_profile || '—'} risk  ·  ${proposal.time_horizon || '—'} horizon  ·  ${proposal.monthly_budget || '—'} budget`, margin, y);
+    y += 4;
+  }
   doc.setDrawColor(...border);
   doc.line(margin, y, W - margin, y);
   y += 8;
@@ -56,58 +62,39 @@ export default function generateProposalPdf(proposal) {
   // ═══ CLIENT SNAPSHOT ═══
   y = sectionTitle(doc, 'Client Snapshot', margin, y);
   y = row(doc, 'Needs identified', proposal.needs_identified, margin, contentW, y);
-  y = row(doc, 'Risk profile', proposal.risk_profile, margin, contentW, y);
-  y = row(doc, 'Monthly budget', proposal.monthly_budget, margin, contentW, y);
-  y = row(doc, 'Time horizon', proposal.time_horizon, margin, contentW, y);
+  if (hasInvestment) {
+    y = row(doc, 'Risk profile', proposal.risk_profile, margin, contentW, y);
+    y = row(doc, 'Monthly budget', proposal.monthly_budget, margin, contentW, y);
+    y = row(doc, 'Time horizon', proposal.time_horizon, margin, contentW, y);
+  }
   y += 4;
   doc.setDrawColor(...border);
   doc.line(margin, y, W - margin, y);
   y += 8;
 
-  // ═══ RECOMMENDATION 1 ═══
-  if (proposal.rec1_category || proposal.rec1_provider) {
-    y = sectionTitle(doc, proposal.rec1_category || 'Recommendation 1', margin, y);
-    y = row(doc, 'Provider', proposal.rec1_provider, margin, contentW, y);
-    y = row(doc, 'Cover / amount', proposal.rec1_amount, margin, contentW, y);
-    y = row(doc, 'Monthly premium', proposal.rec1_premium, margin, contentW, y);
-    y = row(doc, 'Annual fee (TIC)', proposal.rec1_fee, margin, contentW, y);
-    y = row(doc, 'WW advisory fee', proposal.rec1_wwfee, margin, contentW, y);
-    if (proposal.rec1_rationale) {
-      y += 2;
-      doc.setFontSize(7);
-      doc.setTextColor(...muted);
-      doc.text('SUITABILITY RATIONALE', margin, y);
-      y += 4;
-      doc.setFontSize(8);
-      doc.setTextColor(...navy);
-      const lines = doc.splitTextToSize(proposal.rec1_rationale, contentW);
-      doc.text(lines, margin, y);
-      y += lines.length * 4;
-    }
-    y += 4;
-    doc.setDrawColor(...border);
-    doc.line(margin, y, W - margin, y);
-    y += 8;
-  }
-
-  // ═══ RECOMMENDATION 2 ═══
-  if (proposal.rec2_category || proposal.rec2_provider) {
+  // ═══ INVESTMENT ═══
+  if (hasInvestment) {
     y = checkPageBreak(doc, y, 60);
-    y = sectionTitle(doc, proposal.rec2_category || 'Recommendation 2', margin, y);
-    y = row(doc, 'Provider', proposal.rec2_provider, margin, contentW, y);
-    y = row(doc, 'Cover / amount', proposal.rec2_amount, margin, contentW, y);
-    y = row(doc, 'Monthly premium', proposal.rec2_premium, margin, contentW, y);
-    y = row(doc, 'Annual fee (TIC)', proposal.rec2_fee, margin, contentW, y);
-    y = row(doc, 'WW advisory fee', proposal.rec2_wwfee, margin, contentW, y);
-    if (proposal.rec2_rationale) {
+    y = sectionTitle(doc, 'Investment', margin, y);
+    const invType = proposal.investment_type === 'offshore'
+      ? `Offshore (${proposal.investment_currency || '—'})`
+      : 'Local (ZAR)';
+    y = row(doc, 'Type', invType, margin, contentW, y);
+    y = row(doc, 'Provider', proposal.investment_provider, margin, contentW, y);
+    y = row(doc, 'Amount / contribution', proposal.investment_amount, margin, contentW, y);
+    y = row(doc, 'Annual fee (TIC)', proposal.investment_fee, margin, contentW, y);
+    y = row(doc, 'WW advisory fee', proposal.investment_wwfee, margin, contentW, y);
+    if (proposal.investment_rationale) {
       y += 2;
       doc.setFontSize(7);
       doc.setTextColor(...muted);
+      doc.setFont('helvetica', 'bold');
       doc.text('SUITABILITY RATIONALE', margin, y);
       y += 4;
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(...navy);
-      const lines = doc.splitTextToSize(proposal.rec2_rationale, contentW);
+      const lines = doc.splitTextToSize(proposal.investment_rationale, contentW);
       doc.text(lines, margin, y);
       y += lines.length * 4;
     }
@@ -117,22 +104,42 @@ export default function generateProposalPdf(proposal) {
     y += 8;
   }
 
-  // ═══ RECOMMENDATION 3 ═══
-  if (proposal.rec3_category || proposal.rec3_amount) {
-    y = checkPageBreak(doc, y, 40);
-    y = sectionTitle(doc, proposal.rec3_category || 'Recommendation 3', margin, y);
-    y = row(doc, 'Provider', proposal.rec3_provider, margin, contentW, y);
-    y = row(doc, 'Amount / contribution', proposal.rec3_amount, margin, contentW, y);
-    y = row(doc, 'Fee', proposal.rec3_fee, margin, contentW, y);
-    if (proposal.rec3_rationale) {
+  // ═══ RISK COVER ═══
+  if (hasRiskCover) {
+    y = checkPageBreak(doc, y, 60);
+    y = sectionTitle(doc, 'Risk Cover', margin, y);
+
+    // Cover types
+    const riskCoverTypes = Array.isArray(proposal.risk_cover_types) ? proposal.risk_cover_types : [];
+    const typeLabels = {
+      life_cover: 'Life Cover',
+      dread_disease: 'Dread Disease',
+      lump_sum_disability: 'Lump Sum Disability',
+      income_disability: 'Income Disability'
+    };
+    if (riskCoverTypes.length > 0) {
+      y = row(doc, 'Cover types', riskCoverTypes.map(t => typeLabels[t] || t).join(', '), margin, contentW, y);
+    }
+    y = row(doc, 'Provider', proposal.risk_cover_provider, margin, contentW, y);
+    y = row(doc, 'Sum assured / cover', proposal.risk_cover_amount, margin, contentW, y);
+    y = row(doc, 'Monthly premium', proposal.risk_cover_premium, margin, contentW, y);
+    if (proposal.risk_cover_premium_increase) {
+      y = row(doc, 'Annual premium increase', proposal.risk_cover_premium_increase, margin, contentW, y);
+    }
+    if (proposal.risk_cover_cover_increase) {
+      y = row(doc, 'Annual cover increase', proposal.risk_cover_cover_increase, margin, contentW, y);
+    }
+    if (proposal.risk_cover_rationale) {
       y += 2;
       doc.setFontSize(7);
       doc.setTextColor(...muted);
+      doc.setFont('helvetica', 'bold');
       doc.text('SUITABILITY RATIONALE', margin, y);
       y += 4;
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(...navy);
-      const lines = doc.splitTextToSize(proposal.rec3_rationale, contentW);
+      const lines = doc.splitTextToSize(proposal.risk_cover_rationale, contentW);
       doc.text(lines, margin, y);
       y += lines.length * 4;
     }
@@ -142,13 +149,13 @@ export default function generateProposalPdf(proposal) {
     y += 8;
   }
 
-  // ═══ TOTAL ═══
+  // ═══ TOTAL MONTHLY COMMITMENT ═══
   y = checkPageBreak(doc, y, 30);
   y = sectionTitle(doc, 'Total Monthly Commitment', margin, y);
-  const t1 = parseRandValue(proposal.rec1_premium);
-  const t2 = parseRandValue(proposal.rec2_premium);
-  y = row(doc, 'Rec 1', proposal.rec1_premium || '—', margin, contentW, y);
-  y = row(doc, 'Rec 2', proposal.rec2_premium || '—', margin, contentW, y);
+  const invPrem = parseRandValue(proposal.investment_amount);
+  const rcPrem = parseRandValue(proposal.risk_cover_premium);
+  if (hasInvestment) y = row(doc, 'Investment', proposal.investment_amount || '—', margin, contentW, y);
+  if (hasRiskCover) y = row(doc, 'Risk cover', proposal.risk_cover_premium || '—', margin, contentW, y);
   y += 2;
   doc.setDrawColor(...navy);
   doc.line(margin, y, W - margin, y);
@@ -157,7 +164,8 @@ export default function generateProposalPdf(proposal) {
   doc.setTextColor(...navy);
   doc.setFont('helvetica', 'bold');
   doc.text('Total', margin, y);
-  doc.text(t1 + t2 > 0 ? formatRand(t1 + t2) : '—', W - margin, y, { align: 'right' });
+  const total = invPrem + rcPrem;
+  doc.text(total > 0 ? formatRand(total) : '—', W - margin, y, { align: 'right' });
   y += 10;
 
   // ═══ PERSONAL MESSAGE ═══

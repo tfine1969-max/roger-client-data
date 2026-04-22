@@ -9,7 +9,7 @@ import ProposalPreview from '@/components/engine/ProposalPreview';
 import SignaturePad from '@/components/engine/SignaturePad';
 import QuoteUpload from '@/components/engine/QuoteUpload';
 import generateProposalPdf from '@/lib/generateProposalPdf';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
@@ -124,8 +124,6 @@ export default function ProposalEngine() {
   const needs = Array.isArray(localData.needs_array) ? localData.needs_array : [];
   const hasInvestment = needs.includes('investment');
   const hasRiskCover = needs.includes('risk_cover');
-  const showLifeWarning = hasRiskCover && Array.isArray(localData.risk_cover_types) && localData.risk_cover_types.includes('life_cover');
-
   // Determine current phase — stored on record, fallback to 'client_details' for new proposals
   const currentPhase = localData.phase || 'client_details';
 
@@ -197,12 +195,7 @@ export default function ProposalEngine() {
               <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
             </div>
 
-            {showLifeWarning && (
-              <div className="bg-amber-50 border border-amber-200 border-l-[3px] border-l-warn p-3 text-[13px] text-amber-900 leading-relaxed mb-4 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                Client has selected <strong>Life cover</strong>. Confirm whether existing cover is in place before recommending new policy — gap analysis required.
-              </div>
-            )}
+
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
               <div>

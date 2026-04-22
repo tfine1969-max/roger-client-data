@@ -13,12 +13,24 @@ function Row({ label, children }) {
   );
 }
 
-function InlineInput({ value, onChange, placeholder }) {
+function InlineInput({ value, onChange, placeholder, isPercent }) {
+  const handleChange = (e) => {
+    let v = e.target.value;
+    if (isPercent) {
+      // Strip any existing % and non-numeric chars except dot
+      v = v.replace(/%/g, '').replace(/[^0-9.]/g, '');
+      if (v !== '') v = v + '%';
+    }
+    onChange(v);
+  };
+
+  const displayValue = isPercent && value ? value : value;
+
   return (
     <input
       className="border-0 border-b border-border bg-transparent font-raleway text-sm text-foreground w-full outline-none py-1 focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic"
-      value={value}
-      onChange={e => onChange(e.target.value)}
+      value={displayValue}
+      onChange={handleChange}
       placeholder={placeholder}
     />
   );
@@ -119,14 +131,16 @@ export default function InvestmentCard({ data, onChange }) {
           <InlineInput
             value={data.investment_fee || ''}
             onChange={v => onChange('investment_fee', v)}
-            placeholder="e.g. 0.95% p.a."
+            placeholder="e.g. 0.95"
+            isPercent
           />
         </Row>
         <Row label="WW advisory fee">
           <InlineInput
             value={data.investment_wwfee || ''}
             onChange={v => onChange('investment_wwfee', v)}
-            placeholder="e.g. 0.50% p.a."
+            placeholder="e.g. 0.50"
+            isPercent
           />
         </Row>
         <div className="pt-2">

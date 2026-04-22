@@ -163,13 +163,13 @@
       "type": "string",
       "description": "Monthly risk cover premium"
     },
-    "risk_cover_fee": {
+    "risk_cover_premium_increase": {
       "type": "string",
-      "description": "Risk cover annual fee"
+      "description": "Annual premium increase %"
     },
-    "risk_cover_wwfee": {
+    "risk_cover_cover_increase": {
       "type": "string",
-      "description": "WW advisory fee for risk cover"
+      "description": "Annual cover increase %"
     },
     "risk_cover_rationale": {
       "type": "string",

@@ -93,18 +93,18 @@ export default function RiskCoverCard({ data, onChange, selectedTypes = [] }) {
             placeholder="e.g. R2,800 pm"
           />
         </Row>
-        <Row label="Annual fee (TIC)">
+        <Row label="Annual premium increase %">
           <InlineInput
-            value={data.risk_cover_fee || ''}
-            onChange={v => onChange('risk_cover_fee', v)}
-            placeholder="e.g. 0.50% p.a."
+            value={data.risk_cover_premium_increase || ''}
+            onChange={v => onChange('risk_cover_premium_increase', v)}
+            placeholder="e.g. 5%"
           />
         </Row>
-        <Row label="WW advisory fee">
+        <Row label="Annual cover increase %">
           <InlineInput
-            value={data.risk_cover_wwfee || ''}
-            onChange={v => onChange('risk_cover_wwfee', v)}
-            placeholder="e.g. 0.25% p.a."
+            value={data.risk_cover_cover_increase || ''}
+            onChange={v => onChange('risk_cover_cover_increase', v)}
+            placeholder="e.g. 5%"
           />
         </Row>
         <div className="pt-2">
