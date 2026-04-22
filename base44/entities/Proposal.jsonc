@@ -2,9 +2,36 @@
   "name": "Proposal",
   "type": "object",
   "properties": {
+    "client_type": {
+      "type": "string",
+      "enum": [
+        "natural_person",
+        "company",
+        "trust"
+      ],
+      "description": "Type of client: natural person, company, or trust"
+    },
     "client_name": {
       "type": "string",
-      "description": "Client full name"
+      "description": "Client full name (for natural persons) or entity name (for company/trust)"
+    },
+    "identification_type": {
+      "type": "string",
+      "enum": [
+        "sa_id",
+        "passport",
+        "registration"
+      ],
+      "description": "ID type for natural person (SA ID or Passport) or registration for entity"
+    },
+    "client_id_number": {
+      "type": "string",
+      "description": "SA ID, Passport, Company Reg, or Trust Reg number"
+    },
+    "client_dob": {
+      "type": "string",
+      "format": "date",
+      "description": "Client date of birth (for natural persons)"
     },
     "client_email": {
       "type": "string",
@@ -14,15 +41,6 @@
       "type": "string",
       "description": "Client mobile number"
     },
-    "client_id_number": {
-      "type": "string",
-      "description": "Client 13-digit SA ID or passport number"
-    },
-    "client_dob": {
-      "type": "string",
-      "format": "date",
-      "description": "Client date of birth"
-    },
     "client_tax_residency": {
       "type": "string",
       "description": "Client tax residency country"
@@ -30,6 +48,52 @@
     "client_liquidity_needs": {
       "type": "string",
       "description": "Client liquidity needs"
+    },
+    "company_registration_number": {
+      "type": "string",
+      "description": "Company CIPC registration number"
+    },
+    "company_trading_name": {
+      "type": "string",
+      "description": "Company trading name if different from registered name"
+    },
+    "company_incorporation_country": {
+      "type": "string",
+      "description": "Country where company is incorporated"
+    },
+    "company_incorporation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of company incorporation"
+    },
+    "company_vat_number": {
+      "type": "string",
+      "description": "Company VAT number"
+    },
+    "company_industry": {
+      "type": "string",
+      "description": "Company industry/nature of business"
+    },
+    "trust_name": {
+      "type": "string",
+      "description": "Trust name"
+    },
+    "trust_registration_number": {
+      "type": "string",
+      "description": "Trust master's reference or registration number"
+    },
+    "trust_formation_country": {
+      "type": "string",
+      "description": "Country where trust was formed"
+    },
+    "trust_creation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date trust was created"
+    },
+    "trust_purpose": {
+      "type": "string",
+      "description": "Nature/purpose of the trust"
     },
     "reference": {
       "type": "string",
@@ -217,6 +281,10 @@
     "client_signed_date": {
       "type": "string",
       "format": "date"
+    },
+    "onboarding_import_data": {
+      "type": "object",
+      "description": "Full onboarding data imported from external portal"
     }
   },
   "required": [

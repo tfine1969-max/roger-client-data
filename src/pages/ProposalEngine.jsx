@@ -13,7 +13,7 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
-import ClientDetailsForm from '@/components/engine/ClientDetailsForm';
+import ClientDetailsFormDynamic from '@/components/engine/ClientDetailsFormDynamic';
 import InvestmentCard from '@/components/engine/InvestmentCard';
 import InvestmentCard2 from '@/components/engine/InvestmentCard2';
 import RiskCoverCard from '@/components/engine/RiskCoverCard';
@@ -186,7 +186,7 @@ export default function ProposalEngine() {
         {currentPhase === 'client_details' && (
           <div className="flex justify-center">
           <div className="w-full max-w-2xl">
-          <ClientDetailsForm
+          <ClientDetailsFormDynamic
             data={localData}
             onChange={handleFieldChange}
             onProceed={handleProceedToRecommendations}
