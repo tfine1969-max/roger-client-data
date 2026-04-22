@@ -85,7 +85,7 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
     : null;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full">
       {/* Section: Identity */}
       <div className="border border-border bg-card mb-4">
         <div className="px-5 py-3 bg-muted border-b border-border">
@@ -100,6 +100,7 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
               value={data.client_id_number || ''}
               onChange={e => handleIdChange(e.target.value)}
               placeholder="SA ID (13 digits) or passport"
+              maxLength={20}
               className={`rounded-sm font-mono tracking-wider ${idError ? 'border-destructive' : ''}`}
             />
             {idError && <p className="text-[10px] text-destructive mt-0.5">{idError}</p>}

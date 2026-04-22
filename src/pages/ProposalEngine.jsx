@@ -184,11 +184,15 @@ export default function ProposalEngine() {
 
         {/* Phase 1: Client Details */}
         {currentPhase === 'client_details' && (
+          <div className="flex justify-center">
+          <div className="w-full max-w-2xl">
           <ClientDetailsForm
             data={localData}
             onChange={handleFieldChange}
             onProceed={handleProceedToRecommendations}
           />
+          </div>
+          </div>
         )}
 
         {/* Phase 2: Recommendations */}

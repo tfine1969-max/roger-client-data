@@ -102,6 +102,38 @@ export default function generateProposalPdf(proposal) {
     doc.setDrawColor(...border);
     doc.line(margin, y, W - margin, y);
     y += 8;
+
+    // Investment 2
+    if (proposal.show_investment2) {
+      y = checkPageBreak(doc, y, 60);
+      y = sectionTitle(doc, 'Investment 2', margin, y);
+      const inv2Type = proposal.investment2_type === 'offshore'
+        ? `Offshore (${proposal.investment2_currency || '—'})`
+        : 'Local (ZAR)';
+      y = row(doc, 'Type', inv2Type, margin, contentW, y);
+      y = row(doc, 'Provider', proposal.investment2_provider, margin, contentW, y);
+      y = row(doc, 'Amount / contribution', fmtNum(proposal.investment2_amount), margin, contentW, y);
+      y = row(doc, 'Annual fee (TIC)', proposal.investment2_fee, margin, contentW, y);
+      y = row(doc, 'WW advisory fee', proposal.investment2_wwfee, margin, contentW, y);
+      if (proposal.investment2_rationale) {
+        y += 2;
+        doc.setFontSize(7);
+        doc.setTextColor(...muted);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SUITABILITY RATIONALE', margin, y);
+        y += 4;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...navy);
+        const lines2 = doc.splitTextToSize(proposal.investment2_rationale, contentW);
+        doc.text(lines2, margin, y);
+        y += lines2.length * 4;
+      }
+      y += 4;
+      doc.setDrawColor(...border);
+      doc.line(margin, y, W - margin, y);
+      y += 8;
+    }
   }
 
   // ═══ RISK COVER ═══
