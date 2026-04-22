@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { RISK_PROFILES, BUDGETS, HORIZONS, generateRef } from '@/lib/constants';
+import { generateRef } from '@/lib/constants';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 export default function NewProposalModal({ open, onClose, advisorKey, advisorName }) {
   const [form, setForm] = useState({
     client_name: '', client_email: '', client_mobile: '',
-    risk_profile: '', monthly_budget: '', time_horizon: '',
     needs_identified: '', notes: ''
   });
   const queryClient = useQueryClient();
@@ -23,7 +21,7 @@ export default function NewProposalModal({ open, onClose, advisorKey, advisorNam
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
       onClose();
-      setForm({ client_name: '', client_email: '', client_mobile: '', risk_profile: '', monthly_budget: '', time_horizon: '', needs_identified: '', notes: '' });
+      setForm({ client_name: '', client_email: '', client_mobile: '', needs_identified: '', notes: '' });
       navigate(`/proposal/${created.id}`);
     }
   });
@@ -34,6 +32,7 @@ export default function NewProposalModal({ open, onClose, advisorKey, advisorNam
       ...form,
       reference: generateRef(),
       status: 'new',
+      phase: 'client_details',
       advisor_key: advisorKey,
       advisor_name: advisorName
     });
@@ -65,33 +64,7 @@ export default function NewProposalModal({ open, onClose, advisorKey, advisorNam
               <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Mobile number</Label>
               <Input type="tel" value={form.client_mobile} onChange={e => update('client_mobile', e.target.value)} placeholder="+27" className="rounded-sm" />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Risk profile</Label>
-              <Select value={form.risk_profile} onValueChange={v => update('risk_profile', v)}>
-                <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {RISK_PROFILES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Monthly budget</Label>
-              <Select value={form.monthly_budget} onValueChange={v => update('monthly_budget', v)}>
-                <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {BUDGETS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Time horizon</Label>
-              <Select value={form.time_horizon} onValueChange={v => update('time_horizon', v)}>
-                <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {HORIZONS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+
           </div>
           <div className="space-y-1.5">
             <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Needs identified</Label>
