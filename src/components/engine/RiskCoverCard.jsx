@@ -124,7 +124,7 @@ export default function RiskCoverCard({ data, onChange }) {
         {selectedSpecialTypes.map(typeId => {
           const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
           const rowLabel = typeId === 'income_disability'
-            ? `${typeLabel} — SUM ASSURED (p.m)`
+            ? `${typeLabel} (per month) — sum assured`
             : `${typeLabel} — sum assured`;
           return (
             <Row key={typeId} label={rowLabel}>

@@ -85,7 +85,7 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
     : null;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       {/* Section: Identity */}
       <div className="border border-border bg-card mb-4">
         <div className="px-5 py-3 bg-muted border-b border-border">

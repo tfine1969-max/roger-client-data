@@ -7,7 +7,7 @@ function formatNum(val) {
   if (!val) return '—';
   const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
   if (isNaN(n)) return val;
-  return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return 'R' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSend, isSending }) {
@@ -65,6 +65,15 @@ export default function ProposalPreview({ proposal, onGeneratePdf, onSend, canSe
             <PRow label="Provider" value={proposal.investment_provider} />
             <PRow label="Amount" value={formatNum(proposal.investment_amount)} />
             <PRow label="Annual fee" value={proposal.investment_fee} />
+          </Section>
+        )}
+
+        {hasInvestment && proposal.show_investment2 && (
+          <Section title="Investment 2">
+            <PRow label="Type" value={proposal.investment2_type === 'offshore' ? `Offshore (${proposal.investment2_currency || '—'})` : 'Local (ZAR)'} />
+            <PRow label="Provider" value={proposal.investment2_provider} />
+            <PRow label="Amount" value={formatNum(proposal.investment2_amount)} />
+            <PRow label="Annual fee" value={proposal.investment2_fee} />
           </Section>
         )}
 

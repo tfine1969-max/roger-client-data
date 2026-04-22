@@ -159,24 +159,7 @@ export default function generateProposalPdf(proposal) {
     y += 8;
   }
 
-  // ═══ TOTAL MONTHLY COMMITMENT ═══
-  y = checkPageBreak(doc, y, 30);
-  y = sectionTitle(doc, 'Total Monthly Commitment', margin, y);
-  const invPrem = parseRandValue(proposal.investment_amount);
-  const rcPrem = parseRandValue(proposal.risk_cover_premium);
-  if (hasInvestment) y = row(doc, 'Investment', fmtNum(proposal.investment_amount), margin, contentW, y);
-  if (hasRiskCover) y = row(doc, 'Risk cover', fmtNum(proposal.risk_cover_premium), margin, contentW, y);
-  y += 2;
-  doc.setDrawColor(...navy);
-  doc.line(margin, y, W - margin, y);
-  y += 5;
-  doc.setFontSize(11);
-  doc.setTextColor(...navy);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Total', margin, y);
-  const total = invPrem + rcPrem;
-  doc.text(total > 0 ? formatRand(total) : '—', W - margin, y, { align: 'right' });
-  y += 10;
+  y += 4;
 
   // ═══ PERSONAL MESSAGE ═══
   if (proposal.personal_message) {
@@ -304,7 +287,8 @@ function fmtNum(val) {
   if (!val) return '—';
   const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
   if (isNaN(n)) return String(val);
-  return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Use en-US locale to get comma separators (e.g. R5,000,000.00)
+  return 'R' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function checkPageBreak(doc, y, needed) {
