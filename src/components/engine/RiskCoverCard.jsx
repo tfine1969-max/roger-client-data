@@ -28,7 +28,7 @@ function CheckTag({ label, checked, onChange }) {
   return (
     <label className={`flex items-center gap-2 px-3 py-1.5 border cursor-pointer text-[11px] font-medium transition-colors ${checked ? 'border-teal bg-teal/10 text-teal' : 'border-border text-muted-foreground hover:border-teal/40'}`}>
       <div className={`w-3 h-3 border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-teal border-teal' : 'border-muted-foreground'}`}>
-        {checked && <div className="w-1.5 h-1.5 bg-white" />}
+        {checked && <span className="text-white text-[8px] font-bold leading-none">✓</span>}
       </div>
       {label}
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
@@ -36,8 +36,12 @@ function CheckTag({ label, checked, onChange }) {
   );
 }
 
-export default function RiskCoverCard({ data, onChange, selectedTypes = [] }) {
+// Cover types that require their own sum assured field
+const NEEDS_OWN_AMOUNT = ['dread_disease', 'lump_sum_disability', 'income_disability'];
+
+export default function RiskCoverCard({ data, onChange }) {
   const riskCoverTypes = Array.isArray(data.risk_cover_types) ? data.risk_cover_types : [];
+  const coverAmounts = data.risk_cover_amounts || {};
 
   const toggleType = (id) => {
     const updated = riskCoverTypes.includes(id)
@@ -45,6 +49,13 @@ export default function RiskCoverCard({ data, onChange, selectedTypes = [] }) {
       : [...riskCoverTypes, id];
     onChange('risk_cover_types', updated);
   };
+
+  const handleCoverAmount = (id, val) => {
+    onChange('risk_cover_amounts', { ...coverAmounts, [id]: val });
+  };
+
+  // Types that need their own amount field (only if selected)
+  const selectedSpecialTypes = riskCoverTypes.filter(t => NEEDS_OWN_AMOUNT.includes(t));
 
   return (
     <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-teal">
@@ -67,6 +78,20 @@ export default function RiskCoverCard({ data, onChange, selectedTypes = [] }) {
             ))}
           </div>
         </div>
+
+        {/* Per-type sum assured for dread disease / disability types */}
+        {selectedSpecialTypes.length > 0 && selectedSpecialTypes.map(typeId => {
+          const typeLabel = RISK_COVER_TYPES.find(t => t.id === typeId)?.label || typeId;
+          return (
+            <Row key={typeId} label={`${typeLabel} — sum assured`}>
+              <InlineInput
+                value={coverAmounts[typeId] || ''}
+                onChange={v => handleCoverAmount(typeId, v)}
+                placeholder="e.g. R1,500,000"
+              />
+            </Row>
+          );
+        })}
 
         <Row label="Provider">
           <Select value={data.risk_cover_provider || ''} onValueChange={v => onChange('risk_cover_provider', v)}>

@@ -35,7 +35,7 @@ function CheckboxItem({ id, label, checked, onChange }) {
   return (
     <label key={id} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${checked ? 'border-navy bg-navy/5' : 'border-border bg-card hover:border-ocean/50'}`}>
       <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-navy border-navy' : 'border-border'}`}>
-        {checked && <div className="w-2 h-2 bg-white" />}
+        {checked && <span className="text-white text-[10px] font-bold leading-none">✓</span>}
       </div>
       <span className="text-[13px] font-medium text-navy">{label}</span>
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
@@ -65,12 +65,17 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
     onChange('risk_cover_types', updated);
   };
 
-  // Auto-extract DOB from SA ID
+  // Auto-extract DOB from SA ID (only digits, max 13)
   const handleIdChange = (val) => {
-    onChange('client_id_number', val);
-    const dob = dobFromSAId(val);
+    const digits = val.replace(/\D/g, '').slice(0, 13);
+    onChange('client_id_number', digits);
+    const dob = dobFromSAId(digits);
     if (dob) onChange('client_dob', dob);
   };
+
+  const idError = data.client_id_number && data.client_id_number.length > 0 && data.client_id_number.length !== 13
+    ? `${data.client_id_number.length}/13 digits`
+    : null;
 
   return (
     <div className="max-w-2xl">
@@ -84,7 +89,14 @@ export default function ClientDetailsForm({ data, onChange, onProceed }) {
             <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Full name" className="rounded-sm" />
           </Field>
           <Field label="SA ID / Passport number">
-            <Input value={data.client_id_number || ''} onChange={e => handleIdChange(e.target.value)} placeholder="SA ID extracts DOB automatically" className="rounded-sm" />
+            <Input
+              value={data.client_id_number || ''}
+              onChange={e => handleIdChange(e.target.value)}
+              placeholder="13-digit SA ID number"
+              maxLength={13}
+              className={`rounded-sm font-mono tracking-wider ${idError ? 'border-destructive' : ''}`}
+            />
+            {idError && <p className="text-[10px] text-destructive mt-0.5">{idError}</p>}
           </Field>
           <Field label="Date of birth">
             <Input type="date" value={data.client_dob || ''} onChange={e => onChange('client_dob', e.target.value)} className="rounded-sm" />

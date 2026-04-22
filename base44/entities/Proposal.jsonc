@@ -16,7 +16,7 @@
     },
     "client_id_number": {
       "type": "string",
-      "description": "Client ID or passport number"
+      "description": "Client 13-digit SA ID or passport number"
     },
     "client_dob": {
       "type": "string",
@@ -51,7 +51,11 @@
       "items": {
         "type": "string"
       },
-      "description": "Selected risk cover types: life_cover, dread_disease, lump_sum_disability, income_disability"
+      "description": "Selected risk cover types"
+    },
+    "risk_cover_amounts": {
+      "type": "object",
+      "description": "Per-type sum assured amounts for special cover types"
     },
     "notes": {
       "type": "string",
@@ -66,8 +70,7 @@
         "sent",
         "client_signed"
       ],
-      "default": "new",
-      "description": "Proposal status"
+      "default": "new"
     },
     "phase": {
       "type": "string",
@@ -75,48 +78,67 @@
         "client_details",
         "recommendations"
       ],
-      "default": "client_details",
-      "description": "Current workflow phase"
+      "default": "client_details"
     },
     "advisor_key": {
-      "type": "string",
-      "description": "Advisor identifier"
+      "type": "string"
     },
     "advisor_name": {
-      "type": "string",
-      "description": "Full advisor name"
+      "type": "string"
     },
     "investment_type": {
       "type": "string",
       "enum": [
         "local",
         "offshore"
-      ],
-      "description": "Local or offshore investment"
+      ]
     },
     "investment_currency": {
-      "type": "string",
-      "description": "Currency for offshore investment"
+      "type": "string"
     },
     "investment_provider": {
-      "type": "string",
-      "description": "Investment provider"
+      "type": "string"
     },
     "investment_amount": {
-      "type": "string",
-      "description": "Investment amount / contribution"
+      "type": "string"
     },
     "investment_fee": {
-      "type": "string",
-      "description": "Annual fee TIC"
+      "type": "string"
     },
     "investment_wwfee": {
-      "type": "string",
-      "description": "WW advisory fee"
+      "type": "string"
     },
     "investment_rationale": {
+      "type": "string"
+    },
+    "show_investment2": {
+      "type": "boolean",
+      "description": "Whether second investment card is shown"
+    },
+    "investment2_type": {
       "type": "string",
-      "description": "Investment suitability rationale"
+      "enum": [
+        "local",
+        "offshore"
+      ]
+    },
+    "investment2_currency": {
+      "type": "string"
+    },
+    "investment2_provider": {
+      "type": "string"
+    },
+    "investment2_amount": {
+      "type": "string"
+    },
+    "investment2_fee": {
+      "type": "string"
+    },
+    "investment2_wwfee": {
+      "type": "string"
+    },
+    "investment2_rationale": {
+      "type": "string"
     },
     "risk_profile": {
       "type": "string",
@@ -126,8 +148,7 @@
         "Moderate",
         "Growth",
         "Aggressive"
-      ],
-      "description": "Client risk profile (investment)"
+      ]
     },
     "monthly_budget": {
       "type": "string",
@@ -137,8 +158,7 @@
         "R5,001\u2013R10,000",
         "R10,001\u2013R20,000",
         "Above R20,000"
-      ],
-      "description": "Monthly investment budget"
+      ]
     },
     "time_horizon": {
       "type": "string",
@@ -148,64 +168,51 @@
         "5\u201310 years",
         "10\u201320 years",
         "20+ years"
-      ],
-      "description": "Investment time horizon"
+      ]
     },
     "risk_cover_provider": {
-      "type": "string",
-      "description": "Risk cover provider"
+      "type": "string"
     },
     "risk_cover_amount": {
-      "type": "string",
-      "description": "Sum assured / cover amount"
+      "type": "string"
     },
     "risk_cover_premium": {
-      "type": "string",
-      "description": "Monthly risk cover premium"
+      "type": "string"
     },
     "risk_cover_premium_increase": {
-      "type": "string",
-      "description": "Annual premium increase %"
+      "type": "string"
     },
     "risk_cover_cover_increase": {
-      "type": "string",
-      "description": "Annual cover increase %"
+      "type": "string"
     },
     "risk_cover_rationale": {
-      "type": "string",
-      "description": "Risk cover suitability rationale"
+      "type": "string"
     },
     "personal_message": {
-      "type": "string",
-      "description": "Personalised message to client"
+      "type": "string"
     },
     "advisor_signature_data": {
-      "type": "string",
-      "description": "Base64 signature image or typed name"
+      "type": "string"
     },
     "advisor_signature_type": {
       "type": "string",
       "enum": [
         "draw",
         "type"
-      ],
-      "description": "How the advisor signed"
+      ]
     },
     "sign_date": {
       "type": "string",
       "format": "date"
     },
     "quote_file_url": {
-      "type": "string",
-      "description": "Uploaded quote PDF URL"
+      "type": "string"
     },
     "proposal_pdf_url": {
-      "type": "string",
-      "description": "Generated proposal PDF URL"
+      "type": "string"
     },
     "client_signature_data": {
-      "type": "string",
-      "description": "Client signature data"
+      "type": "string"
     },
     "client_signed_date": {
       "type": "string",

@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
 import ClientDetailsForm from '@/components/engine/ClientDetailsForm';
 import InvestmentCard from '@/components/engine/InvestmentCard';
+import InvestmentCard2 from '@/components/engine/InvestmentCard2';
 import RiskCoverCard from '@/components/engine/RiskCoverCard';
 
 export default function ProposalEngine() {
@@ -202,6 +203,20 @@ export default function ProposalEngine() {
                 {hasInvestment && (
                   <InvestmentCard data={localData} onChange={handleFieldChange} />
                 )}
+
+                {/* Add second investment option between products */}
+                {hasInvestment && !localData.show_investment2 && (
+                  <button
+                    onClick={() => handleFieldChange('show_investment2', true)}
+                    className="w-full border border-dashed border-ocean/40 text-ocean text-[11px] font-medium tracking-[.08em] uppercase py-2.5 mb-3 hover:bg-ocean/5 transition-colors"
+                  >
+                    + Add another investment product
+                  </button>
+                )}
+                {hasInvestment && localData.show_investment2 && (
+                  <InvestmentCard2 data={localData} onChange={handleFieldChange} onRemove={() => handleFieldChange('show_investment2', false)} />
+                )}
+
                 {hasRiskCover && (
                   <RiskCoverCard data={localData} onChange={handleFieldChange} />
                 )}
