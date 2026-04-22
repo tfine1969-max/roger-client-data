@@ -14,6 +14,23 @@
       "type": "string",
       "description": "Client mobile number"
     },
+    "client_id_number": {
+      "type": "string",
+      "description": "Client ID or passport number"
+    },
+    "client_dob": {
+      "type": "string",
+      "format": "date",
+      "description": "Client date of birth"
+    },
+    "client_tax_residency": {
+      "type": "string",
+      "description": "Client tax residency country"
+    },
+    "client_liquidity_needs": {
+      "type": "string",
+      "description": "Client liquidity needs / notes"
+    },
     "reference": {
       "type": "string",
       "description": "Unique proposal reference e.g. WW-P-2026-3821"
@@ -70,6 +87,15 @@
       ],
       "default": "new",
       "description": "Proposal status"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "client_details",
+        "recommendations"
+      ],
+      "default": "client_details",
+      "description": "Current workflow phase"
     },
     "advisor_key": {
       "type": "string",

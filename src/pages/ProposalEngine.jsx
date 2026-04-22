@@ -14,6 +14,7 @@ import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
+import ClientDetailsForm from '@/components/engine/ClientDetailsForm';
 
 export default function ProposalEngine() {
   const { id } = useParams();
@@ -121,10 +122,47 @@ export default function ProposalEngine() {
   const hasSig = !!localData.advisor_signature_data;
   const showLifeWarning = localData.needs_identified?.toLowerCase().includes('life');
 
+  // Determine current phase — stored on record, fallback to 'client_details' for new proposals
+  const currentPhase = localData.phase || 'client_details';
+
+  const handleProceedToRecommendations = () => {
+    handleFieldChange('phase', 'recommendations');
+  };
+
+  const handleBackToClientDetails = () => {
+    handleFieldChange('phase', 'client_details');
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar advisorName={advisor.name} statusText={localData.reference} />
       <ClientStrip proposal={localData} />
+
+      {/* Phase tabs */}
+      <div className="bg-card border-b border-border px-4 md:px-6">
+        <div className="flex">
+          <button
+            onClick={() => handleFieldChange('phase', 'client_details')}
+            className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
+              currentPhase === 'client_details'
+                ? 'border-navy text-navy'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            01 · Client details
+          </button>
+          <button
+            onClick={() => handleFieldChange('phase', 'recommendations')}
+            className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
+              currentPhase === 'recommendations'
+                ? 'border-navy text-navy'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            02 · Recommendations
+          </button>
+        </div>
+      </div>
 
       <div className="flex-1 p-4 md:p-6">
         <div className="flex items-center justify-between mb-4">
@@ -139,65 +177,74 @@ export default function ProposalEngine() {
           </button>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 border-l-[3px] border-l-ocean p-3 text-[13px] text-ocean leading-relaxed mb-4">
-          <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
-        </div>
-
-        {showLifeWarning && (
-          <div className="bg-amber-50 border border-amber-200 border-l-[3px] border-l-warn p-3 text-[13px] text-amber-900 leading-relaxed mb-4 flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            Client has selected <strong>Life cover</strong>. Confirm whether existing cover is in place before recommending new policy — gap analysis required.
-          </div>
+        {/* Phase 1: Client Details */}
+        {currentPhase === 'client_details' && (
+          <ClientDetailsForm
+            data={localData}
+            onChange={handleFieldChange}
+            onProceed={handleProceedToRecommendations}
+          />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
-          {/* Left — Rec cards + signature + quote */}
-          <div>
-            <RecommendationCard num={1} variant="primary" data={localData} onChange={handleFieldChange} />
-            <RecommendationCard num={2} variant="secondary" data={localData} onChange={handleFieldChange} />
-            <RecommendationCard num={3} variant="tertiary" data={localData} onChange={handleFieldChange} optional />
-
-            {/* Personal message */}
-            <div className="border border-border bg-card p-4 mb-3">
-              <div className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy mb-2.5">
-                Personalised message to client
-              </div>
-              <Textarea
-                value={localData.personal_message || ''}
-                onChange={e => handleFieldChange('personal_message', e.target.value)}
-                placeholder="e.g. Dear A.B., Based on your answers I have prepared the following recommendation..."
-                className="rounded-sm min-h-[90px] text-[13px] leading-relaxed"
-              />
+        {/* Phase 2: Recommendations */}
+        {currentPhase === 'recommendations' && (
+          <>
+            <div className="bg-blue-50 border border-blue-200 border-l-[3px] border-l-ocean p-3 text-[13px] text-ocean leading-relaxed mb-4">
+              <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
             </div>
 
-            {/* Signature */}
-            <SignaturePad
-              advisorKey={advisorKey}
-              signDate={localData.sign_date}
-              onSignDateChange={v => handleFieldChange('sign_date', v)}
-              onSignatureChange={handleSignatureChange}
-              initialData={localData.advisor_signature_data}
-              initialType={localData.advisor_signature_type}
-            />
+            {showLifeWarning && (
+              <div className="bg-amber-50 border border-amber-200 border-l-[3px] border-l-warn p-3 text-[13px] text-amber-900 leading-relaxed mb-4 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                Client has selected <strong>Life cover</strong>. Confirm whether existing cover is in place before recommending new policy — gap analysis required.
+              </div>
+            )}
 
-            {/* Quote upload */}
-            <QuoteUpload
-              existingUrl={localData.quote_file_url}
-              onFileUploaded={url => handleFieldChange('quote_file_url', url)}
-            />
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
+              <div>
+                <RecommendationCard num={1} variant="primary" data={localData} onChange={handleFieldChange} />
+                <RecommendationCard num={2} variant="secondary" data={localData} onChange={handleFieldChange} />
+                <RecommendationCard num={3} variant="tertiary" data={localData} onChange={handleFieldChange} optional />
 
-          {/* Right — Preview */}
-          <div>
-            <ProposalPreview
-              proposal={localData}
-              onGeneratePdf={handleGeneratePdf}
-              onSend={handleSend}
-              canSend={hasSig}
-              isSending={isSending}
-            />
-          </div>
-        </div>
+                <div className="border border-border bg-card p-4 mb-3">
+                  <div className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy mb-2.5">
+                    Personalised message to client
+                  </div>
+                  <Textarea
+                    value={localData.personal_message || ''}
+                    onChange={e => handleFieldChange('personal_message', e.target.value)}
+                    placeholder="e.g. Dear A.B., Based on your answers I have prepared the following recommendation..."
+                    className="rounded-sm min-h-[90px] text-[13px] leading-relaxed"
+                  />
+                </div>
+
+                <SignaturePad
+                  advisorKey={advisorKey}
+                  signDate={localData.sign_date}
+                  onSignDateChange={v => handleFieldChange('sign_date', v)}
+                  onSignatureChange={handleSignatureChange}
+                  initialData={localData.advisor_signature_data}
+                  initialType={localData.advisor_signature_type}
+                />
+
+                <QuoteUpload
+                  existingUrl={localData.quote_file_url}
+                  onFileUploaded={url => handleFieldChange('quote_file_url', url)}
+                />
+              </div>
+
+              <div>
+                <ProposalPreview
+                  proposal={localData}
+                  onGeneratePdf={handleGeneratePdf}
+                  onSend={handleSend}
+                  canSend={hasSig}
+                  isSending={isSending}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
