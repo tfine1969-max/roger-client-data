@@ -18,21 +18,12 @@ export default function ClientOnboardingConfirmation() {
           Your account has been successfully set up. You're all ready to get started.
         </p>
 
-        <div className="space-y-3">
-          <Button
-            onClick={() => navigate('/client-dashboard')}
-            className="w-full bg-white text-navy hover:bg-white/90 py-3 rounded-sm font-medium"
-          >
-            View My Details
-          </Button>
-          <Button
-            onClick={() => navigate('/')}
-            variant="outline"
-            className="w-full border-white text-white hover:bg-white/10 py-3 rounded-sm font-medium"
-          >
-            Back to Home
-          </Button>
-        </div>
+        <Button
+          onClick={() => navigate('/client-dashboard')}
+          className="w-full bg-white text-navy hover:bg-white/90 py-3 rounded-sm font-medium"
+        >
+          Go to My Profile
+        </Button>
       </div>
     </div>
   );
