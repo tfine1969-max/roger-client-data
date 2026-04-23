@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export default function ClientRegistration() {
+export default function ClientLogin() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    mobile: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
 
   const handleChange = (e) => {
@@ -26,40 +23,33 @@ export default function ClientRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.mobile || !formData.password || !formData.confirmPassword) {
+    if (!formData.email || !formData.password) {
       toast.error('Please fill in all fields');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Create Client record with registration data
-      const clientRecord = await base44.entities.Clients.create({
-        email: formData.email,
-        mobile_number: formData.mobile,
-        client_status: 'Draft',
-        otp_verified: false
-      });
+      // Authenticate client
+      const clients = await base44.entities.Clients.filter({ email: formData.email });
+      
+      if (clients.length === 0) {
+        toast.error('Client not found');
+        setIsLoading(false);
+        return;
+      }
 
-      // Store pending client context (no auth required)
-      sessionStorage.setItem('pending_client_id', clientRecord.id);
-      sessionStorage.setItem('pending_client_email', formData.email);
+      const client = clients[0];
 
-      toast.success('Account created. Verify your OTP to continue.');
-      navigate('/client-otp', { replace: true });
+      // Store client context in session
+      sessionStorage.setItem('pending_client_id', client.id);
+      sessionStorage.setItem('pending_client_email', client.email);
+
+      toast.success('Login successful');
+      navigate('/client-onboarding', { replace: true });
     } catch (error) {
-      toast.error(error.message || 'Registration failed');
+      toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -81,8 +71,8 @@ export default function ClientRegistration() {
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-6">
         <div className="w-full max-w-md">
           <div className="bg-card border border-border rounded-lg p-8">
-            <h1 className="text-3xl font-bold text-navy mb-2">Create Account</h1>
-            <p className="text-muted-foreground mb-8">Register to begin your onboarding</p>
+            <h1 className="text-3xl font-bold text-navy mb-2">Client Login</h1>
+            <p className="text-muted-foreground mb-8">Log in to access your onboarding</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -93,19 +83,6 @@ export default function ClientRegistration() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  required
-                  className="mt-1.5 rounded-sm"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm font-semibold text-navy">Mobile Number</Label>
-                <Input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  placeholder="+27 ..."
                   required
                   className="mt-1.5 rounded-sm"
                 />
@@ -124,32 +101,19 @@ export default function ClientRegistration() {
                 />
               </div>
 
-              <div>
-                <Label className="text-sm font-semibold text-navy">Confirm Password</Label>
-                <Input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  className="mt-1.5 rounded-sm"
-                />
-              </div>
-
               <Button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
               >
-                {isLoading ? 'Creating Account...' : 'Register'}
+                {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Already have an account?{' '}
-              <button onClick={() => navigate('/client-login')} className="text-navy hover:underline font-medium">
-                Log in
+              Don't have an account?{' '}
+              <button onClick={() => navigate('/client-registration')} className="text-navy hover:underline font-medium">
+                Register
               </button>
             </p>
           </div>

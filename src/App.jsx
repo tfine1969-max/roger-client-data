@@ -11,6 +11,7 @@ import Landing from '@/pages/Landing';
 import AdvisorLogin from '@/pages/AdvisorLogin';
 import ClientRegistration from '@/pages/ClientRegistration';
 import ClientOTP from '@/pages/ClientOTP';
+import ClientLogin from '@/pages/ClientLogin';
 import ClientOnboarding from '@/pages/ClientOnboarding';
 import ClientOnboardingConfirmation from '@/pages/ClientOnboardingConfirmation';
 import Inbox from '@/pages/Inbox';
@@ -98,6 +99,7 @@ const AuthenticatedApp = () => {
       <Route path="/sign" element={<ClientSign />} />
 
       <Route path="/client-registration" element={<ClientRegistration />} />
+      <Route path="/client-login" element={<ClientLogin />} />
       <Route path="/client-otp" element={<ProtectedClientInitRoute element={<ClientOTP />} />} />
       <Route path="/client-onboarding" element={<ProtectedClientInitRoute element={<ClientOnboarding />} />} />
       <Route path="/client-confirmation" element={<ProtectedClientInitRoute element={<ClientOnboardingConfirmation />} />} />
