@@ -20,10 +20,10 @@ export default function ClientOnboardingConfirmation() {
 
         <div className="space-y-3">
           <Button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/client-confirmation')}
             className="w-full bg-white text-navy hover:bg-white/90 py-3 rounded-sm font-medium"
           >
-            Go to Dashboard
+            Stay Here
           </Button>
           <Button
             onClick={() => navigate('/')}

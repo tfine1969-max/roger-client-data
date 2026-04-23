@@ -5,7 +5,7 @@ import TopBar from '@/components/layout/TopBar';
 import InboxMetrics from '@/components/inbox/InboxMetrics';
 import InboxTable from '@/components/inbox/InboxTable';
 import NewProposalModal from '@/components/inbox/NewProposalModal';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import { ADVISORS } from '@/lib/constants';
 
 export default function Inbox() {
@@ -27,7 +27,19 @@ export default function Inbox() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <TopBar advisorName={advisor.name} statusText="Inbox" />
+      <div className="bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white">WealthWorks</h1>
+          <p className="text-white/60 text-sm">Advisor Portal</p>
+        </div>
+        <button
+          onClick={() => base44.auth.logout('/', true)}
+          className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </button>
+      </div>
 
       <div className="flex-1 p-4 md:p-7 max-w-7xl mx-auto w-full">
         <div className="flex items-center justify-between mb-5">

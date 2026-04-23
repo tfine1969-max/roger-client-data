@@ -1,29 +1,66 @@
-import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import Inbox from '@/pages/Inbox';
-import ProposalEngine from '@/pages/ProposalEngine';
-import ClientSign from '@/pages/ClientSign';
+
+// Pages
 import Landing from '@/pages/Landing';
+import AdvisorLogin from '@/pages/AdvisorLogin';
 import ClientRegistration from '@/pages/ClientRegistration';
 import ClientOTP from '@/pages/ClientOTP';
 import ClientOnboarding from '@/pages/ClientOnboarding';
 import ClientOnboardingConfirmation from '@/pages/ClientOnboardingConfirmation';
-import AdvisorLogin from '@/pages/AdvisorLogin';
-import AdvisorDashboard from '@/pages/AdvisorDashboard';
+import Inbox from '@/pages/Inbox';
 import CreateProposal from '@/pages/CreateProposal';
 import ProposalDetail from '@/pages/ProposalDetail';
 import AddEditInvestment from '@/pages/AddEditInvestment';
 import AddEditRiskProduct from '@/pages/AddEditRiskProduct';
+import ProposalEngine from '@/pages/ProposalEngine';
+import ClientSign from '@/pages/ClientSign';
+
+// Protected route wrapper for advisor-only pages
+const ProtectedAdvisorRoute = ({ element }) => {
+  const { isAuthenticated, userType, isLoadingAuth } = useAuth();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || userType !== 'advisor') {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
+
+// Protected route wrapper for client-only pages
+const ProtectedClientRoute = ({ element }) => {
+  const { isAuthenticated, userType, isLoadingAuth } = useAuth();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || userType !== 'client') {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -32,53 +69,52 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/advisor-login" element={<AdvisorLogin />} />
+      <Route path="/sign" element={<ClientSign />} />
+
       <Route path="/client-registration" element={<ClientRegistration />} />
       <Route path="/client-otp" element={<ClientOTP />} />
-      <Route path="/client-onboarding" element={<ClientOnboarding />} />
-      <Route path="/client-onboarding-confirmation" element={<ClientOnboardingConfirmation />} />
-      <Route path="/advisor-login" element={<AdvisorLogin />} />
-      <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
-      <Route path="/create-proposal" element={<CreateProposal />} />
-      <Route path="/proposal/:id" element={<ProposalDetail />} />
-      <Route path="/proposal/:id/add-investment" element={<AddEditInvestment />} />
-      <Route path="/proposal/:id/investment/:investmentId" element={<AddEditInvestment />} />
-      <Route path="/proposal/:id/add-risk-product" element={<AddEditRiskProduct />} />
-      <Route path="/proposal/:id/risk-product/:riskProductId" element={<AddEditRiskProduct />} />
-      <Route path="/proposal/:id/engine" element={<ProposalEngine />} />
-      <Route path="/sign" element={<ClientSign />} />
+      <Route path="/client-onboarding" element={<ProtectedClientRoute element={<ClientOnboarding />} />} />
+      <Route path="/client-confirmation" element={<ProtectedClientRoute element={<ClientOnboardingConfirmation />} />} />
+
+      <Route path="/proposals" element={<ProtectedAdvisorRoute element={<Inbox />} />} />
+      <Route path="/create-proposal" element={<ProtectedAdvisorRoute element={<CreateProposal />} />} />
+      <Route path="/proposal/:id" element={<ProtectedAdvisorRoute element={<ProposalDetail />} />} />
+      <Route path="/proposal/:id/add-investment" element={<ProtectedAdvisorRoute element={<AddEditInvestment />} />} />
+      <Route path="/proposal/:id/investment/:investmentId" element={<ProtectedAdvisorRoute element={<AddEditInvestment />} />} />
+      <Route path="/proposal/:id/add-risk-product" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
+      <Route path="/proposal/:id/risk-product/:riskProductId" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
+      <Route path="/proposal/:id/engine" element={<ProtectedAdvisorRoute element={<ProposalEngine />} />} />
+
+      <Route path="/advisor-dashboard" element={<Navigate to="/proposals" replace />} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <AuthenticatedApp />
         </Router>
-        <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

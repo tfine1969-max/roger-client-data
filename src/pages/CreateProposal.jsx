@@ -107,11 +107,11 @@ export default function CreateProposal() {
       {/* Header */}
       <div className="bg-card border-b border-border px-6 py-4">
         <button
-          onClick={() => navigate('/advisor-dashboard')}
+          onClick={() => navigate('/proposals')}
           className="flex items-center gap-2 text-navy hover:text-ocean transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to dashboard
+          Back to proposals
         </button>
       </div>
 
@@ -281,7 +281,7 @@ export default function CreateProposal() {
           {/* Action Buttons */}
           <div className="flex gap-4 pt-4 border-t border-border">
             <Button
-              onClick={() => navigate('/advisor-dashboard')}
+              onClick={() => navigate('/proposals')}
               variant="outline"
               className="flex-1 py-3 rounded-sm border-border hover:bg-muted"
             >

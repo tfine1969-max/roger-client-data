@@ -152,7 +152,7 @@ export default function ClientOnboarding() {
 
       await base44.entities.Clients.update(clientId, updateData);
       toast.success('Onboarding completed successfully');
-      navigate('/client-onboarding-confirmation');
+      navigate('/client-confirmation', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Failed to complete onboarding');
     } finally {
