@@ -34,12 +34,16 @@ export default function ClientOnboarding() {
   // Verify pending client context on mount
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
+    const email = sessionStorage.getItem('pending_client_email');
     if (!id) {
       toast.error('Invalid session. Please register first.');
       navigate('/client-registration', { replace: true });
       return;
     }
     setClientId(id);
+    if (email) {
+      setFormData(prev => ({ ...prev, email }));
+    }
     setIsInitializing(false);
   }, [navigate]);
 
@@ -336,7 +340,6 @@ export default function ClientOnboarding() {
                       onChange={(e) => handleChange('email', e.target.value)}
                       placeholder="your@email.com"
                       className="rounded-sm"
-                      disabled
                     />
                   </div>
 
