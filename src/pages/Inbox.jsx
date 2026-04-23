@@ -21,6 +21,17 @@ export default function Inbox() {
     queryFn: () => base44.entities.Proposal.list('-created_date', 50),
   });
 
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => base44.entities.Clients.list(),
+  });
+
+  // Build clientMap for quick lookup
+  const clientMap = clients.reduce((acc, client) => {
+    acc[client.id] = client;
+    return acc;
+  }, {});
+
   // Default to trevor if no advisor_key on user
   const advisorKey = user?.advisor_key || 'trevor';
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
@@ -59,7 +70,7 @@ export default function Inbox() {
             <div className="w-6 h-6 border-2 border-border border-t-navy rounded-full animate-spin" />
           </div>
         ) : (
-          <InboxTable proposals={proposals} />
+          <InboxTable proposals={proposals} clientMap={clientMap} />
         )}
       </div>
 
