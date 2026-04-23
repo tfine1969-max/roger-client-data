@@ -15,6 +15,7 @@ import AdvisorDashboard from '@/pages/AdvisorDashboard';
 import CreateProposal from '@/pages/CreateProposal';
 import ProposalDetail from '@/pages/ProposalDetail';
 import AddEditInvestment from '@/pages/AddEditInvestment';
+import AddEditRiskProduct from '@/pages/AddEditRiskProduct';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +51,8 @@ const AuthenticatedApp = () => {
       <Route path="/proposal/:id" element={<ProposalDetail />} />
       <Route path="/proposal/:id/add-investment" element={<AddEditInvestment />} />
       <Route path="/proposal/:id/investment/:investmentId" element={<AddEditInvestment />} />
+      <Route path="/proposal/:id/add-risk-product" element={<AddEditRiskProduct />} />
+      <Route path="/proposal/:id/risk-product/:riskProductId" element={<AddEditRiskProduct />} />
       <Route path="/proposal/:id/engine" element={<ProposalEngine />} />
       <Route path="/sign" element={<ClientSign />} />
       <Route path="*" element={<PageNotFound />} />
