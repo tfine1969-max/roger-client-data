@@ -171,7 +171,8 @@ export default function ClientOnboarding() {
         updateData.trust_number = formData.trust_number;
       }
 
-      await base44.entities.Clients.update(clientId, updateData);
+      await base44.entities.Clients.update(clientId, { ...updateData, onboarding_complete: true });
+      sessionStorage.removeItem('pending_client_id');
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (error) {
