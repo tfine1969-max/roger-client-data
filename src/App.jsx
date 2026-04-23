@@ -12,6 +12,7 @@ import Landing from '@/pages/Landing';
 import ClientRegistration from '@/pages/ClientRegistration';
 import AdvisorLogin from '@/pages/AdvisorLogin';
 import AdvisorDashboard from '@/pages/AdvisorDashboard';
+import CreateProposal from '@/pages/CreateProposal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
       <Route path="/client-registration" element={<ClientRegistration />} />
       <Route path="/advisor-login" element={<AdvisorLogin />} />
       <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
+      <Route path="/create-proposal" element={<CreateProposal />} />
       <Route path="/proposal/:id" element={<ProposalEngine />} />
       <Route path="/sign" element={<ClientSign />} />
       <Route path="*" element={<PageNotFound />} />
