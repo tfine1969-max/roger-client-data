@@ -1,0 +1,40 @@
+{
+  "name": "RiskCovers",
+  "type": "object",
+  "properties": {
+    "risk_product_id": {
+      "type": "string",
+      "description": "Link to RiskProduct"
+    },
+    "cover_type": {
+      "type": "string",
+      "enum": [
+        "Life",
+        "Dread",
+        "Disability",
+        "Income"
+      ],
+      "description": "Cover type"
+    },
+    "amount_required": {
+      "type": "number",
+      "description": "Sum assured amount"
+    },
+    "premium": {
+      "type": "number",
+      "description": "Monthly premium"
+    },
+    "annual_premium_increase_percent": {
+      "type": "number",
+      "description": "Annual premium increase %"
+    },
+    "annual_cover_increase_percent": {
+      "type": "number",
+      "description": "Annual cover increase %"
+    }
+  },
+  "required": [
+    "risk_product_id",
+    "cover_type"
+  ]
+}

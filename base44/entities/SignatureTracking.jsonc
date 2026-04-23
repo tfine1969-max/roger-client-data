@@ -1,0 +1,28 @@
+{
+  "name": "SignatureTracking",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "advisor_signature_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Advisor signature completed"
+    },
+    "client_signature_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Client signature completed"
+    },
+    "client_initials_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Client initials completed"
+    }
+  },
+  "required": [
+    "proposal_id"
+  ]
+}

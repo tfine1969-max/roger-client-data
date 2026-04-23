@@ -1,0 +1,87 @@
+{
+  "name": "Investments",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "jurisdiction": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Offshore"
+      ],
+      "description": "Investment jurisdiction"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "ZAR",
+        "USD",
+        "GBP",
+        "EUR"
+      ],
+      "description": "Currency"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Investment provider"
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Product type"
+    },
+    "underlying_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multi-select underlying funds"
+    },
+    "custom_fund": {
+      "type": "string",
+      "description": "Custom fund description"
+    },
+    "contribution_type": {
+      "type": "string",
+      "enum": [
+        "Lump Sum",
+        "Recurring"
+      ],
+      "description": "Contribution type"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Contribution amount"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "Monthly",
+        "Quarterly",
+        "Annually"
+      ],
+      "description": "Frequency if recurring"
+    },
+    "initial_fee_percent": {
+      "type": "number",
+      "description": "Initial fee percentage"
+    },
+    "annual_advice_fee_percent": {
+      "type": "number",
+      "description": "Annual advice fee percentage"
+    },
+    "platform_fee_percent": {
+      "type": "number",
+      "description": "Platform fee percentage"
+    },
+    "fund_ter_percent": {
+      "type": "number",
+      "description": "Fund TER percentage"
+    }
+  },
+  "required": [
+    "proposal_id"
+  ]
+}

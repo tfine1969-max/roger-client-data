@@ -1,0 +1,116 @@
+{
+  "name": "Clients",
+  "type": "object",
+  "properties": {
+    "client_source": {
+      "type": "string",
+      "enum": [
+        "Onboarding",
+        "Advisor Manual"
+      ],
+      "description": "How client was added"
+    },
+    "client_type": {
+      "type": "string",
+      "enum": [
+        "Natural Person",
+        "Company",
+        "Trust"
+      ],
+      "description": "Type of client entity"
+    },
+    "identity_type": {
+      "type": "string",
+      "enum": [
+        "SA ID",
+        "Passport",
+        "Registration",
+        "Trust"
+      ],
+      "description": "Type of identification"
+    },
+    "first_name": {
+      "type": "string",
+      "description": "First name (natural person)"
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Last name (natural person)"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Full name (natural person)"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Entity name (company/trust)"
+    },
+    "sa_id_number": {
+      "type": "string",
+      "description": "SA ID number (13 digits)"
+    },
+    "passport_number": {
+      "type": "string",
+      "description": "Passport number"
+    },
+    "registration_number": {
+      "type": "string",
+      "description": "Company/registration number"
+    },
+    "trust_number": {
+      "type": "string",
+      "description": "Trust registration/master reference"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of birth"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email address"
+    },
+    "mobile_number": {
+      "type": "string",
+      "description": "Mobile phone number"
+    },
+    "residential_address": {
+      "type": "string",
+      "description": "Residential address"
+    },
+    "identity_verified": {
+      "type": "boolean",
+      "description": "FICA: identity verified"
+    },
+    "proof_of_address_verified": {
+      "type": "boolean",
+      "description": "FICA: proof of address verified"
+    },
+    "source_of_funds_confirmed": {
+      "type": "boolean",
+      "description": "FICA: source of funds confirmed"
+    },
+    "beneficial_ownership_verified": {
+      "type": "boolean",
+      "description": "FICA: beneficial ownership verified"
+    },
+    "otp_verified": {
+      "type": "boolean",
+      "description": "OTP verification status"
+    },
+    "client_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Onboarded",
+        "Active"
+      ],
+      "default": "Draft",
+      "description": "Client status"
+    }
+  },
+  "required": [
+    "client_name"
+  ]
+}

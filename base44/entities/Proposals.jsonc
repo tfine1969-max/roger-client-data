@@ -1,0 +1,112 @@
+{
+  "name": "Proposals",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Link to Clients"
+    },
+    "advisor_name": {
+      "type": "string",
+      "enum": [
+        "Trevor Fine",
+        "Roger Eskinazi",
+        "Malcolm Munsamy"
+      ],
+      "description": "Advisor name"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Unique proposal reference e.g. WW-P-2026-3821"
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Cautious",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Client risk profile"
+    },
+    "time_horizon": {
+      "type": "string",
+      "enum": [
+        "Under 3 years",
+        "3\u20135 years",
+        "5\u201310 years",
+        "10\u201320 years",
+        "20+ years"
+      ],
+      "description": "Investment time horizon"
+    },
+    "mandate_included": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "description": "Whether mandate is included"
+    },
+    "output_document_type": {
+      "type": "string",
+      "enum": [
+        "Document A",
+        "Document B"
+      ],
+      "description": "Output document template"
+    },
+    "pdf_status": {
+      "type": "string",
+      "enum": [
+        "No PDF",
+        "Current",
+        "Outdated"
+      ],
+      "default": "No PDF",
+      "description": "PDF generation status"
+    },
+    "proposal_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Modified",
+        "PDF Generated",
+        "Sent",
+        "Completed"
+      ],
+      "default": "Draft",
+      "description": "Proposal status"
+    },
+    "advisor_signature_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Advisor signature completed"
+    },
+    "client_signature_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Client signature completed"
+    },
+    "client_initials_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Client initials completed"
+    },
+    "document_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Document version number"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "client_id",
+    "reference",
+    "advisor_name"
+  ]
+}

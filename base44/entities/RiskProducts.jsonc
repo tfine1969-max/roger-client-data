@@ -1,0 +1,25 @@
+{
+  "name": "RiskProducts",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "PPS",
+        "Momentum",
+        "Discovery",
+        "Hollard",
+        "Brightrock"
+      ],
+      "description": "Risk provider"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "provider"
+  ]
+}
