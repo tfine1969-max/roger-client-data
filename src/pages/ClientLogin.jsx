@@ -47,7 +47,7 @@ export default function ClientLogin() {
       sessionStorage.setItem('pending_client_email', client.email);
 
       toast.success('Login successful');
-      navigate('/client-onboarding', { replace: true });
+      navigate('/client-dashboard', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Login failed');
     } finally {
