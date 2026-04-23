@@ -8,6 +8,9 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Inbox from '@/pages/Inbox';
 import ProposalEngine from '@/pages/ProposalEngine';
 import ClientSign from '@/pages/ClientSign';
+import Landing from '@/pages/Landing';
+import ClientRegistration from '@/pages/ClientRegistration';
+import AdvisorLogin from '@/pages/AdvisorLogin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -35,7 +38,10 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      <Route path="/" element={<Inbox />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/client-registration" element={<ClientRegistration />} />
+      <Route path="/advisor-login" element={<AdvisorLogin />} />
+      <Route path="/advisor-dashboard" element={<Inbox />} />
       <Route path="/proposal/:id" element={<ProposalEngine />} />
       <Route path="/sign" element={<ClientSign />} />
       <Route path="*" element={<PageNotFound />} />
