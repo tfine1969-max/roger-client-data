@@ -31,7 +31,7 @@ export default function ClientLogin() {
     setIsLoading(true);
 
     try {
-      // Authenticate client
+      // Query Clients entity for matching email
       const clients = await base44.entities.Clients.filter({ email: formData.email });
       
       if (clients.length === 0) {
@@ -42,17 +42,16 @@ export default function ClientLogin() {
 
       const client = clients[0];
 
-      // Check onboarding status
-      if (client.onboarding_complete === true) {
-        // Already onboarded, go to proposals
-        sessionStorage.setItem('pending_client_id', client.id);
-        sessionStorage.setItem('pending_client_email', client.email);
+      // Store client id in sessionStorage
+      sessionStorage.setItem('pending_client_id', client.id);
+
+      // Check onboarding status and navigate accordingly
+      if (client.client_status === 'Onboarded' || client.onboarding_complete === true) {
+        // Already onboarded, go to dashboard
         toast.success('Login successful');
-        navigate('/client-proposals', { replace: true });
+        navigate('/client-dashboard', { replace: true });
       } else {
         // Not onboarded yet, go to onboarding
-        sessionStorage.setItem('pending_client_id', client.id);
-        sessionStorage.setItem('pending_client_email', client.email);
         toast.success('Please complete your profile');
         navigate('/client-onboarding', { replace: true });
       }

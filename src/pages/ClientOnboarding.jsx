@@ -39,7 +39,7 @@ export default function ClientOnboarding() {
     residential_address: ''
   });
 
-  // Verify pending client context on mount
+  // Verify pending client context on mount and pre-populate form
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
     if (!id) {
@@ -48,18 +48,25 @@ export default function ClientOnboarding() {
       return;
     }
     
-    // Fetch client record to load pre-filled data
+    // Fetch client record to load all data
     base44.entities.Clients.list()
       .then(clients => {
         const client = clients.find(c => c.id === id);
         if (client) {
           setFormData(prev => ({
             ...prev,
-            email: client.email || '',
-            mobile_number: client.mobile_number || '',
+            client_type: client.client_type || '',
+            identity_type: client.identity_type || '',
             first_name: client.first_name || '',
             last_name: client.last_name || '',
+            sa_id_number: client.sa_id_number || '',
+            passport_number: client.passport_number || '',
+            date_of_birth: client.date_of_birth || '',
             entity_name: client.entity_name || '',
+            registration_number: client.registration_number || '',
+            trust_number: client.trust_number || '',
+            email: client.email || '',
+            mobile_number: client.mobile_number || '',
             residential_address: client.residential_address || ''
           }));
         }
