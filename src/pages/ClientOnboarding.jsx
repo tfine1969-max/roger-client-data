@@ -34,17 +34,34 @@ export default function ClientOnboarding() {
   // Verify pending client context on mount
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
-    const email = sessionStorage.getItem('pending_client_email');
     if (!id) {
       toast.error('Invalid session. Please register first.');
       navigate('/client-registration', { replace: true });
       return;
     }
-    setClientId(id);
-    if (email) {
-      setFormData(prev => ({ ...prev, email }));
-    }
-    setIsInitializing(false);
+    
+    // Fetch client record to load pre-filled data
+    base44.entities.Clients.list()
+      .then(clients => {
+        const client = clients.find(c => c.id === id);
+        if (client) {
+          setFormData(prev => ({
+            ...prev,
+            email: client.email || '',
+            mobile_number: client.mobile_number || '',
+            first_name: client.first_name || '',
+            last_name: client.last_name || '',
+            full_name: client.full_name || '',
+            entity_name: client.entity_name || '',
+            residential_address: client.residential_address || ''
+          }));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setClientId(id);
+        setIsInitializing(false);
+      });
   }, [navigate]);
 
   const handleChange = (field, value) => {
