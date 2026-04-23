@@ -12,29 +12,41 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     const clientId = sessionStorage.getItem('pending_client_id');
-    if (!clientId) {
-      toast.error('Session expired. Please log in again.');
-      navigate('/client-login', { replace: true });
-      return;
-    }
+    
+    const loadClient = async () => {
+      try {
+        const clients = await base44.entities.Clients.list();
+        let found = null;
+        
+        if (clientId) {
+          found = clients.find(c => c.id === clientId);
+        }
+        
+        // Fallback — try to match by logged in user email
+        if (!found) {
+          const user = await base44.auth.me().catch(() => null);
+          if (user?.email) {
+            found = clients.find(c => c.email === user.email);
+            if (found) {
+              sessionStorage.setItem('pending_client_id', found.id);
+            }
+          }
+        }
 
-    // Fetch client record
-    base44.entities.Clients.list()
-      .then(clients => {
-        const found = clients.find(c => c.id === clientId);
         if (found) {
           setClient(found);
         } else {
           toast.error('Client record not found');
           navigate('/client-login', { replace: true });
         }
-      })
-      .catch(() => {
+      } catch {
         toast.error('Failed to load profile');
-      })
-      .finally(() => {
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+
+    loadClient();
   }, [navigate]);
 
   if (isLoading) {
