@@ -14,7 +14,7 @@ const statusBadge = {
   'Pending Review': { bg: 'bg-amber-50', text: 'text-amber-900', label: 'Pending Review' }
 };
 
-export default function InboxTable({ proposals }) {
+export default function InboxTable({ proposals, clientMap = {} }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState(null);
@@ -54,7 +54,11 @@ export default function InboxTable({ proposals }) {
             className="grid grid-cols-[2fr_1.2fr_1fr_1fr_1fr_32px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[600px]"
           >
             <div>
-              <div className="text-[13px] font-medium text-navy">{p.client_name}</div>
+              <div className="text-[13px] font-medium text-navy">
+                {clientMap[p.client]?.full_name || clientMap[p.client]?.first_name 
+                  ? `${clientMap[p.client]?.first_name || ''} ${clientMap[p.client]?.last_name || ''}`.trim()
+                  : p.client_name || '—'}
+              </div>
               <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.reference}</div>
             </div>
             <div className="text-xs text-foreground">{p.needs_identified || '—'}</div>
