@@ -22,6 +22,8 @@ export default function ClientOnboarding() {
   const [clientId, setClientId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSavingStep, setIsSavingStep] = useState(false);
 
   const [formData, setFormData] = useState({
     client_type: '',
@@ -87,6 +89,97 @@ export default function ClientOnboarding() {
       if (dob) {
         setFormData(prev => ({ ...prev, date_of_birth: dob }));
       }
+    }
+  };
+
+  const saveStep = async (stepData) => {
+    if (!clientId) {
+      toast.error('Client record not found');
+      return false;
+    }
+
+    setIsSavingStep(true);
+    try {
+      await base44.entities.Clients.update(clientId, stepData);
+      return true;
+    } catch (error) {
+      toast.error(error.message || 'Failed to save step');
+      return false;
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  const handleContinue = async () => {
+    // Validate and save current step before advancing
+    let stepData = {};
+    let isValid = true;
+
+    if (currentStep === 1) {
+      if (!formData.client_type) {
+        toast.error('Please select client type');
+        return;
+      }
+      stepData = { client_type: formData.client_type };
+    } else if (currentStep === 2 && formData.client_type === 'Natural Person') {
+      if (!formData.identity_type || !formData.first_name || !formData.last_name || !formData.date_of_birth) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      if (formData.identity_type === 'SA ID' && !formData.sa_id_number) {
+        toast.error('Please enter SA ID number');
+        return;
+      }
+      if (formData.identity_type === 'Passport' && !formData.passport_number) {
+        toast.error('Please enter passport number');
+        return;
+      }
+      stepData = {
+        identity_type: formData.identity_type,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        date_of_birth: formData.date_of_birth
+      };
+      if (formData.identity_type === 'SA ID') {
+        stepData.sa_id_number = formData.sa_id_number;
+      } else {
+        stepData.passport_number = formData.passport_number;
+      }
+    } else if (currentStep === 2 && formData.client_type === 'Company') {
+      if (!formData.entity_name || !formData.registration_number) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      stepData = { entity_name: formData.entity_name, registration_number: formData.registration_number };
+    } else if (currentStep === 2 && formData.client_type === 'Trust') {
+      if (!formData.entity_name || !formData.trust_number) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      stepData = { entity_name: formData.entity_name, trust_number: formData.trust_number };
+    } else if (currentStep === 3) {
+      if (!formData.email || !formData.mobile_number || !formData.residential_address) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      stepData = {
+        email: formData.email,
+        mobile_number: formData.mobile_number,
+        residential_address: formData.residential_address
+      };
+    }
+
+    const saved = await saveStep(stepData);
+    if (saved && currentStep < 10) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep === 1) {
+      navigate('/client-otp', { replace: true });
+    } else {
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -210,7 +303,8 @@ export default function ClientOnboarding() {
             <p className="text-muted-foreground mb-8">Provide your details to finalize your account</p>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Client Type Selection */}
+              {/* Step 1: Client Type Selection */}
+              {currentStep === 1 && (
               <div>
                 <Label className="text-sm font-semibold text-navy mb-2 block">Client Type *</Label>
                 <Select value={formData.client_type} onValueChange={(value) => handleChange('client_type', value)}>
@@ -224,7 +318,11 @@ export default function ClientOnboarding() {
                   </SelectContent>
                 </Select>
               </div>
+              )}
 
+              {/* Step 2: Type-Specific Details */}
+              {currentStep === 2 && (
+              <>
               {/* Natural Person Fields */}
               {formData.client_type === 'Natural Person' && (
                 <div className="space-y-6 p-6 bg-secondary/30 rounded border border-border">
@@ -304,7 +402,7 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
               )}
-
+              
               {/* Company Fields */}
               {formData.client_type === 'Company' && (
                 <div className="space-y-6 p-6 bg-secondary/30 rounded border border-border">
@@ -331,7 +429,7 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
               )}
-
+              
               {/* Trust Fields */}
               {formData.client_type === 'Trust' && (
                 <div className="space-y-6 p-6 bg-secondary/30 rounded border border-border">
@@ -358,9 +456,11 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
               )}
+              </>
+              )}
 
-              {/* Common Fields (shown for all types) */}
-              {formData.client_type && (
+              {/* Step 3: Contact Information */}
+              {currentStep === 3 && (
                 <div className="space-y-6 p-6 bg-secondary/30 rounded border border-border">
                   <h3 className="font-semibold text-navy">Contact Information</h3>
 
@@ -398,17 +498,18 @@ export default function ClientOnboarding() {
                 </div>
               )}
 
-              {/* Submit Button */}
-              {formData.client_type && (
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/client-otp')}
-                    className="flex-1 rounded-sm"
-                  >
-                    Back
-                  </Button>
+              {/* Step Navigation */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={isSavingStep}
+                  className="flex-1 rounded-sm"
+                >
+                  Back
+                </Button>
+                {currentStep === 3 ? (
                   <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -416,8 +517,17 @@ export default function ClientOnboarding() {
                   >
                     {isSubmitting ? 'Submitting...' : 'Complete Onboarding'}
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleContinue}
+                    disabled={isSavingStep}
+                    className="flex-1 bg-navy text-white hover:bg-ocean py-3 rounded-sm font-medium disabled:opacity-50"
+                  >
+                    {isSavingStep ? 'Saving...' : 'Continue'}
+                  </Button>
+                )}
+              </div>
             </form>
           </div>
         </div>
