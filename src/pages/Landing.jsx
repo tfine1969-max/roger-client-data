@@ -1,8 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [isCreatingTestData, setIsCreatingTestData] = useState(false);
+  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+  const createTestData = async () => {
+    setIsCreatingTestData(true);
+    try {
+      // Create test client
+      const client = await base44.entities.Clients.create({
+        client_source: 'Onboarding',
+        client_type: 'Natural Person',
+        identity_type: 'SA ID',
+        first_name: 'Test',
+        last_name: 'Client',
+        full_name: 'Test Client',
+        sa_id_number: '9012015800086',
+        date_of_birth: '1990-12-01',
+        email: 'testclient@wealthworks.local',
+        mobile_number: '+27821234567',
+        residential_address: '123 Test Street, Johannesburg, 2000',
+        identity_verified: true,
+        proof_of_address_verified: true,
+        source_of_funds_confirmed: true,
+        beneficial_ownership_verified: true,
+        otp_verified: true,
+        client_status: 'Onboarded',
+        onboarding_complete: true,
+      });
+
+      // Create linked proposal
+      await base44.entities.Proposals.create({
+        client_id: client.id,
+        advisor_name: 'Trevor Fine',
+        reference: `WW-P-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        proposal_status: 'Pending Review',
+        pdf_status: 'No PDF',
+        advisor_signature_completed: false,
+        client_signature_completed: false,
+        client_initials_completed: false,
+        document_version: 1,
+      });
+
+      toast.success('Test client and proposal created');
+    } catch (error) {
+      toast.error(error.message || 'Failed to create test data');
+    } finally {
+      setIsCreatingTestData(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-navy via-blue-50 to-background flex flex-col">
@@ -66,8 +116,17 @@ export default function Landing() {
 
       {/* Footer */}
       <div className="bg-card border-t border-border px-6 py-4">
-        <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
+        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-muted-foreground">
           <p>WealthWorks Advisor Portal — FSP 28337</p>
+          {isDev && (
+            <button
+              onClick={createTestData}
+              disabled={isCreatingTestData}
+              className="px-3 py-1 text-xs bg-warn/20 text-warn border border-warn/30 rounded hover:bg-warn/30 disabled:opacity-50"
+            >
+              {isCreatingTestData ? 'Creating...' : 'Dev: Seed Test Data'}
+            </button>
+          )}
         </div>
       </div>
     </div>
