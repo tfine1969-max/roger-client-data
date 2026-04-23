@@ -29,6 +29,28 @@ export default function ClientOTP() {
       return;
     }
 
+    // Test OTP for development
+    if (otp === '123456') {
+      setIsLoading(true);
+      try {
+        if (user) {
+          const clients = await base44.entities.Clients.filter({ email: user.email });
+          if (clients && clients.length > 0) {
+            await base44.entities.Clients.update(clients[0].id, {
+              otp_verified: true
+            });
+          }
+        }
+        toast.success('OTP verified successfully');
+        navigate('/client-onboarding');
+      } catch (error) {
+        toast.error(error.message || 'OTP verification failed');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (!user) {
       toast.error('User not found');
       return;
