@@ -38,22 +38,48 @@ export default function ClientOnboarding() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currentUser = await base44.auth.me();
-        if (!currentUser) {
-          navigate('/client-registration', { replace: true });
-          return;
+        let currentUser;
+        let userEmail;
+        let storedClientId;
+
+        try {
+          currentUser = await base44.auth.me();
+          userEmail = currentUser.email;
+        } catch (authError) {
+          // Check if we have a pending client from OTP
+          userEmail = sessionStorage.getItem('pending_client_email');
+          storedClientId = sessionStorage.getItem('pending_client_id');
+          if (!userEmail) {
+            navigate('/client-registration', { replace: true });
+            return;
+          }
+          currentUser = { email: userEmail };
         }
+
         setUser(currentUser);
         setClientUserType();
 
-        const clients = await base44.entities.Clients.filter({ email: currentUser.email });
-        if (clients && clients.length > 0) {
-          setClientId(clients[0].id);
-          setFormData(prev => ({
-            ...prev,
-            email: clients[0].email || '',
-            mobile_number: clients[0].mobile_number || ''
-          }));
+        // Use stored client ID if available, otherwise look up by email
+        if (storedClientId) {
+          setClientId(storedClientId);
+          const clientData = await base44.entities.Clients.filter({ id: storedClientId });
+          if (clientData && clientData.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              email: clientData[0].email || '',
+              mobile_number: clientData[0].mobile_number || ''
+            }));
+          }
+        } else {
+          const clients = await base44.entities.Clients.filter({ email: userEmail });
+          if (clients && clients.length > 0) {
+            setClientId(clients[0].id);
+            setFormData(prev => ({
+              ...prev,
+              email: clients[0].email || '',
+              mobile_number: clients[0].mobile_number || ''
+            }));
+          }
         }
       } catch (error) {
         toast.error('Failed to load client data');
@@ -152,6 +178,9 @@ export default function ClientOnboarding() {
 
       await base44.entities.Clients.update(clientId, updateData);
       toast.success('Onboarding completed successfully');
+      // Clear session storage
+      sessionStorage.removeItem('pending_client_email');
+      sessionStorage.removeItem('pending_client_id');
       navigate('/client-confirmation', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Failed to complete onboarding');

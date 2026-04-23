@@ -15,7 +15,7 @@ export default function ClientOTP() {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Get current user on mount
+  // Get current user or pending client on mount
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -23,8 +23,16 @@ export default function ClientOTP() {
         setUser(currentUser);
         setClientUserType();
       } catch (error) {
-        toast.error('Please log in first');
-        navigate('/client-registration', { replace: true });
+        // Check if we have a pending client from registration
+        const pendingEmail = sessionStorage.getItem('pending_client_email');
+        if (!pendingEmail) {
+          toast.error('Please register first');
+          navigate('/client-registration', { replace: true });
+          return;
+        }
+        // User is pending registration - set a minimal user object
+        setUser({ email: pendingEmail });
+        setClientUserType();
       }
     };
     checkUser();
@@ -42,12 +50,21 @@ export default function ClientOTP() {
     if (otp === '123456') {
       setIsLoading(true);
       try {
-        if (user) {
-          const clients = await base44.entities.Clients.filter({ email: user.email });
-          if (clients && clients.length > 0) {
-            await base44.entities.Clients.update(clients[0].id, {
+        if (user?.email) {
+          const clientId = sessionStorage.getItem('pending_client_id');
+          if (clientId) {
+            // Update using stored client ID
+            await base44.entities.Clients.update(clientId, {
               otp_verified: true
             });
+          } else {
+            // Fallback: find by email
+            const clients = await base44.entities.Clients.filter({ email: user.email });
+            if (clients && clients.length > 0) {
+              await base44.entities.Clients.update(clients[0].id, {
+                otp_verified: true
+              });
+            }
           }
         }
         toast.success('OTP verified successfully');
@@ -60,8 +77,8 @@ export default function ClientOTP() {
       return;
     }
 
-    if (!user) {
-      toast.error('User not found');
+    if (!user?.email) {
+      toast.error('User email not found');
       return;
     }
 
@@ -85,6 +102,9 @@ export default function ClientOTP() {
       });
 
       toast.success('OTP verified successfully');
+      // Clear session storage
+      sessionStorage.removeItem('pending_client_email');
+      sessionStorage.removeItem('pending_client_id');
       // Redirect to onboarding form
       navigate('/client-onboarding', { replace: true });
     } catch (error) {

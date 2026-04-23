@@ -49,12 +49,16 @@ export default function ClientRegistration() {
       setClientUserType();
 
       // Create Client record with registration data
-      await base44.entities.Clients.create({
+      const clientRecord = await base44.entities.Clients.create({
         email: formData.email,
         mobile_number: formData.mobile,
         client_status: 'Draft',
         otp_verified: false
       });
+
+      // Store the client email temporarily for OTP verification
+      sessionStorage.setItem('pending_client_email', formData.email);
+      sessionStorage.setItem('pending_client_id', clientRecord.id);
 
       toast.success('Account created. Verify your OTP to continue.');
       navigate('/client-otp', { replace: true });

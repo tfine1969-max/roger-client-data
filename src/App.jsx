@@ -40,7 +40,28 @@ const ProtectedAdvisorRoute = ({ element }) => {
   return element;
 };
 
-// Protected route wrapper for client-only pages
+// Protected route wrapper for client-only pages (during initialization)
+const ProtectedClientInitRoute = ({ element }) => {
+  const { isLoadingAuth, isAuthenticated, userType } = useAuth();
+  const hasPendingFlow = !!sessionStorage.getItem('pending_client_email');
+  const isAuthenticatedClient = isAuthenticated && userType === 'client';
+
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!hasPendingFlow && !isAuthenticatedClient) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element;
+};
+
+// Protected route wrapper for fully authenticated client pages
 const ProtectedClientRoute = ({ element }) => {
   const { isAuthenticated, userType, isLoadingAuth } = useAuth();
 
@@ -86,9 +107,9 @@ const AuthenticatedApp = () => {
       <Route path="/sign" element={<ClientSign />} />
 
       <Route path="/client-registration" element={<ClientRegistration />} />
-      <Route path="/client-otp" element={<ClientOTP />} />
-      <Route path="/client-onboarding" element={<ProtectedClientRoute element={<ClientOnboarding />} />} />
-      <Route path="/client-confirmation" element={<ProtectedClientRoute element={<ClientOnboardingConfirmation />} />} />
+      <Route path="/client-otp" element={<ProtectedClientInitRoute element={<ClientOTP />} />} />
+      <Route path="/client-onboarding" element={<ProtectedClientInitRoute element={<ClientOnboarding />} />} />
+      <Route path="/client-confirmation" element={<ProtectedClientInitRoute element={<ClientOnboardingConfirmation />} />} />
 
       <Route path="/proposals" element={<ProtectedAdvisorRoute element={<Inbox />} />} />
       <Route path="/create-proposal" element={<ProtectedAdvisorRoute element={<CreateProposal />} />} />
