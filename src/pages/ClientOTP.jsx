@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,17 +10,25 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function ClientOTP() {
   const navigate = useNavigate();
+  const { setClientUserType } = useAuth();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
 
   // Get current user on mount
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {
-      toast.error('Please log in first');
-      navigate('/client-registration');
-    });
-  }, [navigate]);
+    const checkUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        setClientUserType();
+      } catch (error) {
+        toast.error('Please log in first');
+        navigate('/client-registration', { replace: true });
+      }
+    };
+    checkUser();
+  }, [navigate, setClientUserType]);
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();

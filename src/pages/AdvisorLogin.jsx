@@ -1,26 +1,55 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function AdvisorLogin() {
   const navigate = useNavigate();
+  const { setAdvisorUserType } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Authenticate advisor and navigate to dashboard
-    navigate('/advisor-dashboard');
+
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Verify user exists and has admin role (advisor)
+      const currentUser = await base44.auth.me();
+      
+      if (!currentUser || currentUser.role !== 'admin') {
+        toast.error('Only advisors can access this portal');
+        setIsLoading(false);
+        return;
+      }
+
+      // Set advisor type
+      setAdvisorUserType();
+      toast.success('Welcome back!');
+      navigate('/advisor-dashboard', { replace: true });
+    } catch (error) {
+      toast.error('Login failed');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -71,9 +100,10 @@ export default function AdvisorLogin() {
 
               <Button
                 type="submit"
-                className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors"
+                disabled={isLoading}
+                className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
               >
-                Sign In
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 

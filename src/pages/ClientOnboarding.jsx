@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function ClientOnboarding() {
   const navigate = useNavigate();
+  const { setClientUserType } = useAuth();
   const [user, setUser] = useState(null);
   const [clientId, setClientId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,10 +40,11 @@ export default function ClientOnboarding() {
       try {
         const currentUser = await base44.auth.me();
         if (!currentUser) {
-          navigate('/client-registration');
+          navigate('/client-registration', { replace: true });
           return;
         }
         setUser(currentUser);
+        setClientUserType();
 
         const clients = await base44.entities.Clients.filter({ email: currentUser.email });
         if (clients && clients.length > 0) {

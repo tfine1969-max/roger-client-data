@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 
 export default function ClientRegistration() {
   const navigate = useNavigate();
+  const { setClientUserType } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -43,6 +45,9 @@ export default function ClientRegistration() {
     setIsLoading(true);
 
     try {
+      // Set user type to client before navigating
+      setClientUserType();
+
       // Create Client record with registration data
       await base44.entities.Clients.create({
         email: formData.email,

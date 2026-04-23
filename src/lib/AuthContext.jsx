@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [userType, setUserType] = useState(null); // 'client' or 'advisor'
 
   useEffect(() => {
     checkAppState();
@@ -96,6 +97,12 @@ export const AuthProvider = ({ children }) => {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
+      
+      // Determine user type based on role or stored flag
+      // Advisors have role='admin', clients don't have that role
+      const type = currentUser.role === 'admin' ? 'advisor' : 'client';
+      setUserType(type);
+      
       setIsLoadingAuth(false);
       setAuthChecked(true);
     } catch (error) {
@@ -112,6 +119,14 @@ export const AuthProvider = ({ children }) => {
         });
       }
     }
+  };
+
+  const setClientUserType = () => {
+    setUserType('client');
+  };
+
+  const setAdvisorUserType = () => {
+    setUserType('advisor');
   };
 
   const logout = (shouldRedirect = true) => {
@@ -141,10 +156,13 @@ export const AuthProvider = ({ children }) => {
       authError,
       appPublicSettings,
       authChecked,
+      userType,
       logout,
       navigateToLogin,
       checkUserAuth,
-      checkAppState
+      checkAppState,
+      setClientUserType,
+      setAdvisorUserType
     }}>
       {children}
     </AuthContext.Provider>

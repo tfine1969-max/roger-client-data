@@ -1,17 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function AdvisorDashboard() {
   const navigate = useNavigate();
+  const { userType } = useAuth();
   const [user, setUser] = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
+    const checkAccess = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        
+        // Verify user is an advisor (admin role)
+        if (!currentUser || currentUser.role !== 'admin') {
+          toast.error('You do not have access to the advisor portal');
+          navigate('/', { replace: true });
+          return;
+        }
+
+        setUser(currentUser);
+      } catch (error) {
+        navigate('/', { replace: true });
+      } finally {
+        setIsLoadingAuth(false);
+      }
+    };
+
+    checkAccess();
+  }, [navigate]);
 
   const { data: proposals = [] } = useQuery({
     queryKey: ['proposals'],
@@ -19,8 +42,16 @@ export default function AdvisorDashboard() {
   });
 
   const handleLogout = () => {
-    base44.auth.logout('/');
+    base44.auth.logout('/', true);
   };
+
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status) => {
     const colors = {
