@@ -19,7 +19,6 @@ export default function ClientOnboarding() {
     identity_type: '',
     first_name: '',
     last_name: '',
-    full_name: '',
     sa_id_number: '',
     passport_number: '',
     date_of_birth: '',
@@ -51,7 +50,6 @@ export default function ClientOnboarding() {
             mobile_number: client.mobile_number || '',
             first_name: client.first_name || '',
             last_name: client.last_name || '',
-            full_name: client.full_name || '',
             entity_name: client.entity_name || '',
             residential_address: client.residential_address || ''
           }));
@@ -134,7 +132,7 @@ export default function ClientOnboarding() {
         updateData.identity_type = formData.identity_type;
         updateData.first_name = formData.first_name;
         updateData.last_name = formData.last_name;
-        updateData.full_name = formData.full_name;
+        updateData.full_name = `${formData.first_name} ${formData.last_name}`;
         updateData.date_of_birth = formData.date_of_birth;
         if (formData.identity_type === 'SA ID') {
           updateData.sa_id_number = formData.sa_id_number;
@@ -268,15 +266,7 @@ export default function ClientOnboarding() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-sm font-semibold text-navy mb-2 block">Full Name *</Label>
-                    <Input
-                      value={formData.full_name}
-                      onChange={(e) => handleChange('full_name', e.target.value)}
-                      placeholder="Full name"
-                      className="rounded-sm"
-                    />
-                  </div>
+
 
                   <div>
                     <Label className="text-sm font-semibold text-navy mb-2 block">Date of Birth *</Label>
