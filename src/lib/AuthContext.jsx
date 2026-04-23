@@ -98,9 +98,9 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       
-      // Determine user type based on role or stored flag
-      // Advisors have role='admin', clients don't have that role
-      const type = currentUser.role === 'admin' ? 'advisor' : 'client';
+      // Check for pending client flow in sessionStorage
+      const pendingClientId = sessionStorage.getItem('pending_client_id');
+      const type = pendingClientId ? 'client' : (currentUser.role === 'admin' ? 'advisor' : 'client');
       setUserType(type);
       
       setIsLoadingAuth(false);
