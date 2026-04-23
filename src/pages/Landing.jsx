@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export default function Landing() {
   const navigate = useNavigate();
   const [isCreatingTestData, setIsCreatingTestData] = useState(false);
-  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === 'app.base44.com');
 
   const createTestData = async () => {
     setIsCreatingTestData(true);
