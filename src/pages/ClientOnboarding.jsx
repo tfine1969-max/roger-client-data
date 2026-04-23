@@ -313,12 +313,26 @@ export default function ClientOnboarding() {
 
     setIsSubmitting(true);
     try {
+      // 1 — Mark client as onboarded
       await base44.entities.Clients.update(clientId, {
         client_status: 'Onboarded',
         onboarding_complete: true,
         client_signature_name: formData.client_signature_name,
         client_signature_date: formData.client_signature_date,
       });
+
+      // 2 — Create a draft proposal in the advisor inbox
+      await base44.entities.Proposals.create({
+        client: clientId,
+        advisor_name: 'Trevor Fine',
+        proposal_status: 'Pending Review',
+        pdf_status: 'No PDF',
+        advisor_signature_completed: false,
+        client_signature_completed: false,
+        client_initials_completed: false,
+        document_version: 1,
+      });
+
       sessionStorage.removeItem('pending_client_id');
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
