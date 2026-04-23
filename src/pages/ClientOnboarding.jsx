@@ -8,6 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
+const extractDOBFromID = (idNumber) => {
+  if (!idNumber || idNumber.length < 6) return '';
+  const yy = idNumber.substring(0, 2);
+  const mm = idNumber.substring(2, 4);
+  const dd = idNumber.substring(4, 6);
+  const fullYear = parseInt(yy) > 25 ? `19${yy}` : `20${yy}`;
+  return `${fullYear}-${mm}-${dd}`;
+};
+
 export default function ClientOnboarding() {
   const navigate = useNavigate();
   const [clientId, setClientId] = useState(null);
@@ -64,6 +73,14 @@ export default function ClientOnboarding() {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-extract DOB from SA ID
+    if (field === 'sa_id_number' && value.length >= 6) {
+      const dob = extractDOBFromID(value);
+      if (dob) {
+        setFormData(prev => ({ ...prev, date_of_birth: dob }));
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
