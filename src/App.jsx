@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { Toaster } from 'sonner';
 
 // Pages
 import Landing from '@/pages/Landing';
@@ -112,6 +113,7 @@ function App() {
         <Router>
           <AuthenticatedApp />
         </Router>
+        <Toaster />
       </QueryClientProvider>
     </AuthProvider>
   );
