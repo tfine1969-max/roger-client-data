@@ -10,7 +10,8 @@ const statusBadge = {
   in_progress: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'In progress' },
   signed: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'Signed' },
   sent: { bg: 'bg-green-50', text: 'text-green-900', label: 'Sent' },
-  client_signed: { bg: 'bg-green-100', text: 'text-green-900', label: 'Client signed' }
+  client_signed: { bg: 'bg-green-100', text: 'text-green-900', label: 'Client signed' },
+  'Pending Review': { bg: 'bg-amber-50', text: 'text-amber-900', label: 'Pending Review' }
 };
 
 export default function InboxTable({ proposals }) {
