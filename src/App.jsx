@@ -10,6 +10,7 @@ import ProposalEngine from '@/pages/ProposalEngine';
 import ClientSign from '@/pages/ClientSign';
 import Landing from '@/pages/Landing';
 import ClientRegistration from '@/pages/ClientRegistration';
+import ClientOTP from '@/pages/ClientOTP';
 import AdvisorLogin from '@/pages/AdvisorLogin';
 import AdvisorDashboard from '@/pages/AdvisorDashboard';
 import CreateProposal from '@/pages/CreateProposal';
@@ -45,6 +46,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/client-registration" element={<ClientRegistration />} />
+      <Route path="/client-otp" element={<ClientOTP />} />
       <Route path="/advisor-login" element={<AdvisorLogin />} />
       <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
       <Route path="/create-proposal" element={<CreateProposal />} />
