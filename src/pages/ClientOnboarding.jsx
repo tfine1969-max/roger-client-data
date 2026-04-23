@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -11,10 +10,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function ClientOnboarding() {
   const navigate = useNavigate();
-  const { setClientUserType } = useAuth();
-  const [user, setUser] = useState(null);
   const [clientId, setClientId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -34,61 +31,16 @@ export default function ClientOnboarding() {
     residential_address: ''
   });
 
-  // Fetch current user and client record
+  // Verify pending client context on mount
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let currentUser;
-        let userEmail;
-        let storedClientId;
-
-        try {
-          currentUser = await base44.auth.me();
-          userEmail = currentUser.email;
-        } catch (authError) {
-          // Check if we have a pending client from OTP
-          userEmail = sessionStorage.getItem('pending_client_email');
-          storedClientId = sessionStorage.getItem('pending_client_id');
-          if (!userEmail) {
-            navigate('/client-registration', { replace: true });
-            return;
-          }
-          currentUser = { email: userEmail };
-        }
-
-        setUser(currentUser);
-        setClientUserType();
-
-        // Use stored client ID if available, otherwise look up by email
-        if (storedClientId) {
-          setClientId(storedClientId);
-          const clientData = await base44.entities.Clients.filter({ id: storedClientId });
-          if (clientData && clientData.length > 0) {
-            setFormData(prev => ({
-              ...prev,
-              email: clientData[0].email || '',
-              mobile_number: clientData[0].mobile_number || ''
-            }));
-          }
-        } else {
-          const clients = await base44.entities.Clients.filter({ email: userEmail });
-          if (clients && clients.length > 0) {
-            setClientId(clients[0].id);
-            setFormData(prev => ({
-              ...prev,
-              email: clients[0].email || '',
-              mobile_number: clients[0].mobile_number || ''
-            }));
-          }
-        }
-      } catch (error) {
-        toast.error('Failed to load client data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+    const id = sessionStorage.getItem('pending_client_id');
+    if (!id) {
+      toast.error('Invalid session. Please register first.');
+      navigate('/client-registration', { replace: true });
+      return;
+    }
+    setClientId(id);
+    setIsInitializing(false);
   }, [navigate]);
 
   const handleChange = (field, value) => {
@@ -178,9 +130,6 @@ export default function ClientOnboarding() {
 
       await base44.entities.Clients.update(clientId, updateData);
       toast.success('Onboarding completed successfully');
-      // Clear session storage
-      sessionStorage.removeItem('pending_client_email');
-      sessionStorage.removeItem('pending_client_id');
       navigate('/client-confirmation', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Failed to complete onboarding');
@@ -189,7 +138,7 @@ export default function ClientOnboarding() {
     }
   };
 
-  if (isLoading) {
+  if (isInitializing) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-navy" />

@@ -40,22 +40,13 @@ const ProtectedAdvisorRoute = ({ element }) => {
   return element;
 };
 
-// Protected route wrapper for client-only pages (during initialization)
+// Protected route wrapper for pre-auth client onboarding flow
+// No authentication required—checks only for pending client context
 const ProtectedClientInitRoute = ({ element }) => {
-  const { isLoadingAuth, isAuthenticated, userType } = useAuth();
-  const hasPendingFlow = !!sessionStorage.getItem('pending_client_email');
-  const isAuthenticatedClient = isAuthenticated && userType === 'client';
+  const hasPendingFlow = !!sessionStorage.getItem('pending_client_id');
 
-  if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!hasPendingFlow && !isAuthenticatedClient) {
-    return <Navigate to="/" replace />;
+  if (!hasPendingFlow) {
+    return <Navigate to="/client-registration" replace />;
   }
 
   return element;

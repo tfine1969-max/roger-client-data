@@ -1,42 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function ClientOTP() {
   const navigate = useNavigate();
-  const { setClientUserType } = useAuth();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [pendingClientId, setPendingClientId] = useState(null);
 
-  // Get current user or pending client on mount
+  // Verify pending client context on mount
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setClientUserType();
-      } catch (error) {
-        // Check if we have a pending client from registration
-        const pendingEmail = sessionStorage.getItem('pending_client_email');
-        if (!pendingEmail) {
-          toast.error('Please register first');
-          navigate('/client-registration', { replace: true });
-          return;
-        }
-        // User is pending registration - set a minimal user object
-        setUser({ email: pendingEmail });
-        setClientUserType();
-      }
-    };
-    checkUser();
-  }, [navigate, setClientUserType]);
+    const clientId = sessionStorage.getItem('pending_client_id');
+    if (!clientId) {
+      toast.error('Invalid session. Please register first.');
+      navigate('/client-registration', { replace: true });
+      return;
+    }
+    setPendingClientId(clientId);
+    setIsInitializing(false);
+  }, [navigate]);
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
@@ -46,66 +34,27 @@ export default function ClientOTP() {
       return;
     }
 
-    // Test OTP for development
-    if (otp === '123456') {
-      setIsLoading(true);
-      try {
-        if (user?.email) {
-          const clientId = sessionStorage.getItem('pending_client_id');
-          if (clientId) {
-            // Update using stored client ID
-            await base44.entities.Clients.update(clientId, {
-              otp_verified: true
-            });
-          } else {
-            // Fallback: find by email
-            const clients = await base44.entities.Clients.filter({ email: user.email });
-            if (clients && clients.length > 0) {
-              await base44.entities.Clients.update(clients[0].id, {
-                otp_verified: true
-              });
-            }
-          }
-        }
-        toast.success('OTP verified successfully');
-        navigate('/client-onboarding');
-      } catch (error) {
-        toast.error(error.message || 'OTP verification failed');
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    if (!user?.email) {
-      toast.error('User email not found');
+    if (!pendingClientId) {
+      toast.error('Client session not found');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Find the client record by email
-      const clients = await base44.entities.Clients.filter({ email: user.email });
-
-      if (!clients || clients.length === 0) {
-        toast.error('Client record not found');
+      // Test OTP code for development: 123456
+      if (otp !== '123456') {
+        toast.error('Invalid OTP code');
         setIsLoading(false);
         return;
       }
 
-      const clientId = clients[0].id;
-
-      // Update otp_verified to true
-      await base44.entities.Clients.update(clientId, {
+      // Update client record to mark OTP verified
+      await base44.entities.Clients.update(pendingClientId, {
         otp_verified: true
       });
 
       toast.success('OTP verified successfully');
-      // Clear session storage
-      sessionStorage.removeItem('pending_client_email');
-      sessionStorage.removeItem('pending_client_id');
-      // Redirect to onboarding form
       navigate('/client-onboarding', { replace: true });
     } catch (error) {
       toast.error(error.message || 'OTP verification failed');
@@ -113,6 +62,14 @@ export default function ClientOTP() {
       setIsLoading(false);
     }
   };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-navy to-ocean flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy to-ocean flex items-center justify-center p-4">
@@ -147,7 +104,7 @@ export default function ClientOTP() {
                 className="rounded-sm text-center text-2xl letter-spacing-2 font-mono"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Check your email for the verification code
+                (Test code: 123456)
               </p>
             </div>
 
@@ -165,10 +122,7 @@ export default function ClientOTP() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-white/70 text-sm">
-            Didn't receive the code?{' '}
-            <button className="text-white font-semibold hover:underline">
-              Resend OTP
-            </button>
+            Use test code <span className="font-mono font-bold">123456</span> for development
           </p>
         </div>
       </div>

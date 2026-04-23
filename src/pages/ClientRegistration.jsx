@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 
 export default function ClientRegistration() {
   const navigate = useNavigate();
-  const { setClientUserType } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -45,9 +44,6 @@ export default function ClientRegistration() {
     setIsLoading(true);
 
     try {
-      // Set user type to client before navigating
-      setClientUserType();
-
       // Create Client record with registration data
       const clientRecord = await base44.entities.Clients.create({
         email: formData.email,
@@ -56,9 +52,9 @@ export default function ClientRegistration() {
         otp_verified: false
       });
 
-      // Store the client email temporarily for OTP verification
-      sessionStorage.setItem('pending_client_email', formData.email);
+      // Store pending client context (no auth required)
       sessionStorage.setItem('pending_client_id', clientRecord.id);
+      sessionStorage.setItem('pending_client_email', formData.email);
 
       toast.success('Account created. Verify your OTP to continue.');
       navigate('/client-otp', { replace: true });
