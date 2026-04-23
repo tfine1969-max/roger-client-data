@@ -42,12 +42,20 @@ export default function ClientLogin() {
 
       const client = clients[0];
 
-      // Store client context in session
-      sessionStorage.setItem('pending_client_id', client.id);
-      sessionStorage.setItem('pending_client_email', client.email);
-
-      toast.success('Login successful');
-      navigate('/client-dashboard', { replace: true });
+      // Check onboarding status
+      if (client.onboarding_complete === true) {
+        // Already onboarded, go to proposals
+        sessionStorage.setItem('pending_client_id', client.id);
+        sessionStorage.setItem('pending_client_email', client.email);
+        toast.success('Login successful');
+        navigate('/client-proposals', { replace: true });
+      } else {
+        // Not onboarded yet, go to onboarding
+        sessionStorage.setItem('pending_client_id', client.id);
+        sessionStorage.setItem('pending_client_email', client.email);
+        toast.success('Please complete your profile');
+        navigate('/client-onboarding', { replace: true });
+      }
     } catch (error) {
       toast.error(error.message || 'Login failed');
     } finally {
