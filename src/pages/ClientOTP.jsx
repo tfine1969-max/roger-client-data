@@ -77,7 +77,7 @@ export default function ClientOTP() {
 
       toast.success('OTP verified successfully');
       // Redirect to onboarding form
-      navigate('/client-onboarding');
+      navigate('/client-onboarding', { replace: true });
     } catch (error) {
       toast.error(error.message || 'OTP verification failed');
     } finally {

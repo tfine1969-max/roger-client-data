@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function ClientRegistration() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     mobile: '',
@@ -19,10 +22,42 @@ export default function ClientRegistration() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Create Client record and send OTP
-    navigate('/client-otp');
+
+    if (!formData.email || !formData.mobile || !formData.password || !formData.confirmPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create Client record with registration data
+      await base44.entities.Clients.create({
+        email: formData.email,
+        mobile_number: formData.mobile,
+        client_status: 'Draft',
+        otp_verified: false
+      });
+
+      toast.success('Account created. Verify your OTP to continue.');
+      navigate('/client-otp', { replace: true });
+    } catch (error) {
+      toast.error(error.message || 'Registration failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -99,9 +134,10 @@ export default function ClientRegistration() {
 
               <Button
                 type="submit"
-                className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors"
+                disabled={isLoading}
+                className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
               >
-                Register
+                {isLoading ? 'Creating Account...' : 'Register'}
               </Button>
             </form>
 
