@@ -252,6 +252,7 @@ export default function ClientOnboarding() {
   const saveStep = async (stepData) => {
     if (!clientId) { toast.error('Client record not found'); return false; }
     setIsSavingStep(true);
+    console.log('Saving step', currentStep, stepData, clientId);
     try {
       await base44.entities.Clients.update(clientId, stepData);
       return true;
@@ -320,6 +321,7 @@ export default function ClientOnboarding() {
         monthly_investable_surplus: formData.monthly_investable_surplus,
         net_worth_band: formData.net_worth_band,
         total_liabilities: formData.total_liabilities,
+        existing_financial_products: productsList,
         products_list: productsList,
         loa_uploaded: formData.loa_uploaded,
         loa_authorised: formData.loa_authorised,
