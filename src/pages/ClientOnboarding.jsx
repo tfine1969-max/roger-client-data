@@ -423,8 +423,12 @@ export default function ClientOnboarding() {
         onboarding_complete: true,
       });
 
-      const existingProposals = await base44.entities.Proposal.filter({ client_id: clientId });
-      const existing = existingProposals[0] || null;
+      const allProposals = await base44.entities.Proposal.list();
+      const existing = allProposals.find(p =>
+        p.client_id === clientId ||
+        p.client_id === String(clientId) ||
+        String(p.client_id) === String(clientId)
+      ) || null;
 
       if (existing) {
         await base44.entities.Proposal.update(existing.id, {
@@ -478,12 +482,17 @@ export default function ClientOnboarding() {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
           return (
-            <div key={step.number} className={`flex items-center gap-2 py-1 px-2 rounded text-sm mb-0.5 ${isCurrent ? 'text-ocean font-medium' : isComplete ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+            <button
+              key={step.number}
+              type="button"
+              onClick={() => setCurrentStep(step.number)}
+              className={`flex items-center gap-2 py-1 px-2 rounded text-sm mb-0.5 w-full text-left ${isCurrent ? 'text-ocean font-medium' : isComplete ? 'text-muted-foreground hover:text-ocean' : 'text-muted-foreground/50'}`}
+            >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 border ${isCurrent ? 'border-ocean bg-ocean text-white' : isComplete ? 'border-teal bg-teal text-white' : 'border-border'}`}>
                 {isComplete ? <Check className="w-3 h-3" /> : step.number}
               </div>
               {step.label}
-            </div>
+            </button>
           );
         })}
         <div className="mt-auto">
