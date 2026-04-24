@@ -512,6 +512,35 @@ export default function ClientOnboarding() {
           <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 6</span>
         </div>
 
+        {/* Step navigation banner */}
+        <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
+          {STEPS.map(step => {
+            const isComplete = currentStep > step.number;
+            const isCurrent = currentStep === step.number;
+            return (
+              <button
+                key={step.number}
+                type="button"
+                onClick={() => setCurrentStep(step.number)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
+                  isCurrent
+                    ? 'border-ocean text-ocean'
+                    : isComplete
+                    ? 'border-teal text-teal hover:border-ocean hover:text-ocean'
+                    : 'border-transparent text-muted-foreground hover:text-navy'
+                }`}
+              >
+                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
+                  isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'
+                }`}>
+                  {isComplete ? '✓' : step.number}
+                </span>
+                {step.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
           {/* Step Header */}
           <div className="mb-4">
