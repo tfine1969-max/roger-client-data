@@ -34,6 +34,7 @@ export default function ClientLogin() {
         toast.error('No account found with this email address');
         return;
       }
+      console.log('Found client:', client.id, client.first_name, client.email);
       sessionStorage.setItem('pending_client_id', client.id);
       sessionStorage.setItem('pending_client_email', client.email);
       toast.success('Welcome back');
