@@ -449,7 +449,7 @@ export default function ClientOnboarding() {
           <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 6</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 max-w-3xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
           {/* Step Header */}
           <div className="mb-4">
             <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">
@@ -475,8 +475,8 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 1: Personal Information ── */}
           {currentStep === 1 && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TITLE</Label>
                   <Select value={formData.title} onValueChange={v => handleChange('title', v)}>
@@ -494,18 +494,49 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA ID NUMBER *</Label>
-                  <Input className="mt-1 h-8 text-sm" placeholder="13-digit ID" maxLength="13" value={formData.sa_id_number} onChange={e => handleChange('sa_id_number', e.target.value)} />
-                </div>
-                <div>
-                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH</Label>
-                  <Input type="date" className="mt-1 h-8 text-sm" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} />
+              {/* Identity type toggle */}
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">IDENTITY TYPE</Label>
+                <div className="flex gap-2">
+                  {['SA ID', 'Passport'].map(opt => (
+                    <button key={opt} type="button"
+                      onClick={() => handleChange('identity_type', opt)}
+                      className={`px-4 py-1.5 text-xs font-medium border rounded transition-all ${formData.identity_type === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'}`}>
+                      {opt === 'SA ID' ? 'SA ID Number' : 'Passport Number'}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {formData.identity_type === 'SA ID' ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA ID NUMBER *</Label>
+                    <Input className="mt-1 h-8 text-sm" placeholder="13-digit ID number" maxLength="13" value={formData.sa_id_number} onChange={e => handleChange('sa_id_number', e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH (auto-extracted)</Label>
+                    <Input type="date" className="mt-1 h-8 text-sm" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PASSPORT NUMBER *</Label>
+                    <Input className="mt-1 h-8 text-sm" placeholder="Passport number" value={formData.passport_number} onChange={e => handleChange('passport_number', e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">COUNTRY OF ISSUE</Label>
+                    <Input className="mt-1 h-8 text-sm" placeholder="e.g. United Kingdom" value={formData.passport_country || ''} onChange={e => handleChange('passport_country', e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH *</Label>
+                    <Input type="date" className="mt-1 h-8 text-sm" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MARITAL STATUS</Label>
                   <Select value={formData.marital_status} onValueChange={v => handleChange('marital_status', v)}>
@@ -520,9 +551,16 @@ export default function ClientOnboarding() {
                     <SelectContent>{['0', '1', '2', '3', '4', '5+'].map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
+                  <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMAIL ADDRESS *</Label>
                   <Input type="email" className="mt-1 h-8 text-sm" value={formData.email} onChange={e => handleChange('email', e.target.value)} />
@@ -533,22 +571,14 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div>
-                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
-                <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
-                  <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select industry" /></SelectTrigger>
-                  <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-
-              <div className="border-t border-border pt-3">
+              <div className="border-t border-border pt-2">
                 <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">RESIDENTIAL ADDRESS — FICA REQUIRES A PHYSICAL ADDRESS</p>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">STREET ADDRESS *</Label>
                     <Input className="mt-1 h-8 text-sm" placeholder="Unit / street number and name" value={formData.street_address} onChange={e => handleChange('street_address', e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-4 gap-2">
                     <div>
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SUBURB</Label>
                       <Input className="mt-1 h-8 text-sm" value={formData.suburb} onChange={e => handleChange('suburb', e.target.value)} />
@@ -557,8 +587,6 @@ export default function ClientOnboarding() {
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CITY</Label>
                       <Input className="mt-1 h-8 text-sm" value={formData.city} onChange={e => handleChange('city', e.target.value)} />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                       <Select value={formData.province} onValueChange={v => handleChange('province', v)}>

@@ -22,34 +22,24 @@ export default function ClientLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.email || !formData.password) {
       toast.error('Please fill in all fields');
       return;
     }
-
     setIsLoading(true);
-
     try {
-      // Query Clients entity for matching email
-      const clients = await base44.entities.Clients.filter({ email: formData.email });
-      
-      if (clients.length === 0) {
-        toast.error('Client not found');
-        setIsLoading(false);
+      const clients = await base44.entities.Clients.list();
+      const client = clients.find(c => c.email === formData.email);
+      if (!client) {
+        toast.error('No account found with this email address');
         return;
       }
-
-      const client = clients[0];
-
       sessionStorage.setItem('pending_client_id', client.id);
       sessionStorage.setItem('pending_client_email', client.email);
-
+      toast.success('Welcome back');
       if (client.onboarding_complete === true) {
-        toast.success('Login successful');
         navigate('/client-dashboard', { replace: true });
       } else {
-        toast.success('Please complete your profile');
         navigate('/client-onboarding', { replace: true });
       }
     } catch (error) {
