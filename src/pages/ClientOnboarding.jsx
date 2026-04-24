@@ -363,7 +363,58 @@ export default function ClientOnboarding() {
     }
   };
 
-  const handleSubmit = async () => {
+  // Builds the step data for the current step without validation, then saves and submits
+  const saveAndSubmitCurrent = async () => {
+    let stepData = {};
+    if (currentStep === 1) {
+      stepData = {
+        client_type: formData.client_type, identity_type: formData.identity_type,
+        title: formData.title, first_name: formData.first_name, last_name: formData.last_name,
+        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        sa_id_number: formData.sa_id_number, passport_number: formData.passport_number,
+        date_of_birth: formData.date_of_birth, marital_status: formData.marital_status,
+        dependants: formData.dependants, email: formData.email, mobile_number: formData.mobile_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code, industry: formData.industry,
+        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
+      };
+    } else if (currentStep === 2) {
+      stepData = {
+        employment_status: formData.employment_status, occupation: formData.occupation,
+        employer: formData.employer, industry: formData.industry,
+        source_of_funds: formData.source_of_funds, sa_tax_number: formData.sa_tax_number,
+        tax_residency: formData.tax_residency, us_person_fatca: formData.us_person_fatca,
+        pep_status: formData.pep_status, pep_explanation: formData.pep_explanation,
+      };
+    } else if (currentStep === 3) {
+      stepData = {
+        gross_annual_income_band: formData.gross_annual_income_band,
+        monthly_investable_surplus: formData.monthly_investable_surplus,
+        net_worth_band: formData.net_worth_band, total_liabilities: formData.total_liabilities,
+        existing_financial_products: productsList, products_list: productsList,
+        loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
+        will_in_place: formData.will_in_place, dependants: formData.dependants,
+      };
+    } else if (currentStep === 4) {
+      stepData = {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
+        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+      };
+    } else if (currentStep === 5) {
+      stepData = {
+        identity_document_uploaded: formData.identity_document_uploaded,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded,
+        income_proof_uploaded: formData.income_proof_uploaded,
+        existing_policies_uploaded: formData.existing_policies_uploaded,
+      };
+    }
+    return await saveStep(stepData);
+  };
+
+  const handleSubmit = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
     if (!clientId) { toast.error('Client record not found'); return; }
     setIsSubmitting(true);
     try {
@@ -979,29 +1030,48 @@ export default function ClientOnboarding() {
           )}
 
           {/* ── Navigation ── */}
-          <div className="flex gap-3 pt-5 border-t border-border mt-5">
-            {currentStep > 1 && currentStep < 6 && (
-              <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep} className="px-6 h-9 text-sm">
-                ← Back
-              </Button>
-            )}
-            <div className="flex-1" />
-            <span className="flex items-center text-xs text-muted-foreground">Step {currentStep} of 6</span>
-            <div className="flex-1" />
-            {currentStep < 5 && (
-              <Button type="button" onClick={handleContinue} disabled={isSavingStep} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
-              </Button>
-            )}
-            {currentStep === 5 && (
-              <Button type="button" onClick={handleContinue} disabled={isSavingStep} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
-              </Button>
-            )}
-            {currentStep === 6 && (
-              <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
-                {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
-              </Button>
+          <div className="pt-5 border-t border-border mt-5">
+            <div className="flex gap-3">
+              {currentStep > 1 && currentStep < 6 && (
+                <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">
+                  ← Back
+                </Button>
+              )}
+              <div className="flex-1" />
+              {currentStep < 6 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSavingStep || isSubmitting}
+                  onClick={async () => {
+                    const saved = await saveAndSubmitCurrent();
+                    if (saved) handleSubmit();
+                  }}
+                  className="px-5 h-9 text-sm border-navy text-navy hover:bg-navy hover:text-white"
+                >
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & Submit'}
+                </Button>
+              )}
+              {currentStep < 5 && (
+                <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
+                </Button>
+              )}
+              {currentStep === 5 && (
+                <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
+                </Button>
+              )}
+              {currentStep === 6 && (
+                <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
+                </Button>
+              )}
+            </div>
+            {currentStep < 6 && (
+              <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                You can save and submit at any point. You can return to complete remaining sections later.
+              </p>
             )}
           </div>
         </div>
