@@ -337,6 +337,7 @@ export default function ClientOnboarding() {
       // 2 — Create a draft proposal in the advisor inbox
       await base44.entities.Proposal.create({
         client_id: clientId,
+        client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
         reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
         advisor_name: 'Trevor Fine',
         proposal_status: 'Pending Review',
