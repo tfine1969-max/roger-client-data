@@ -39,7 +39,54 @@ export default function ProposalEngine() {
 
   // Sync fetched proposal to local state
   useEffect(() => {
-    if (proposal && !localData) {
+    if (!proposal || localData) return;
+
+    // If proposal already has client data, use as-is
+    if (proposal.client_email || proposal.client_id_number) {
+      setLocalData({ ...proposal });
+      return;
+    }
+
+    // Otherwise fetch linked client and merge data into proposal
+    if (proposal.client_id) {
+      base44.entities.Clients.list().then(clients => {
+        const client = clients.find(c => c.id === proposal.client_id);
+        if (!client) { setLocalData({ ...proposal }); return; }
+
+        const merged = {
+          ...proposal,
+          // Client identity
+          client_type: client.client_type || proposal.client_type || 'Natural Person',
+          client_name: client.full_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || proposal.client_name,
+          client_id_number: client.sa_id_number || client.passport_number || '',
+          identification_type: client.identity_type || '',
+          client_dob: client.date_of_birth || '',
+          client_email: client.email || '',
+          client_mobile: client.mobile_number || '',
+          client_tax_residency: client.tax_residency || '',
+          // Needs
+          needs_array: Array.isArray(client.advisory_needs)
+            ? client.advisory_needs.map(n => {
+                if (n.toLowerCase().includes('invest') || n.toLowerCase().includes('offshore')) return 'investment';
+                if (n.toLowerCase().includes('risk') || n.toLowerCase().includes('cover')) return 'risk_cover';
+                return null;
+              }).filter(Boolean)
+            : [],
+          // Risk
+          risk_profile: proposal.risk_profile || client.risk_profile || '',
+          time_horizon: client.time_horizon || '',
+          client_liquidity_needs: client.liquidity_requirement || '',
+          // Advisory needs display
+          advisory_needs: client.advisory_needs || [],
+        };
+
+        setLocalData(merged);
+
+        // Persist merged data back to proposal so it's there next time
+        const { id: _id, created_date, updated_date, created_by, ...cleanMerged } = merged;
+        base44.entities.Proposal.update(proposal.id, cleanMerged).catch(() => {});
+      });
+    } else {
       setLocalData({ ...proposal });
     }
   }, [proposal]);
