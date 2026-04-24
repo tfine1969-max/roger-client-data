@@ -32,24 +32,61 @@ export default function ProposalEngine() {
 
   const { data: proposal, isLoading } = useQuery({
     queryKey: ['proposal', id],
-    queryFn: () => base44.entities.Proposal.filter({ id }),
-    select: (data) => data[0],
+    queryFn: async () => {
+      const list = await base44.entities.Proposal.list();
+      return list.find(p => p.id === id) || null;
+    },
     enabled: !!id,
+  });
+
+  const { data: allClients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => base44.entities.Clients.list(),
   });
 
   // Sync fetched proposal to local state
   useEffect(() => {
-    if (!proposal || localData) return;
+    if (!proposal || localData || allClients.length === 0) return;
 
-    // If proposal already has client data, use as-is
-    if (proposal.client_email || proposal.client_id_number) {
+    // Find linked client by client_id, or fall back to matching by client_name
+    const client = allClients.find(c => c.id === proposal.client_id)
+      || allClients.find(c => {
+          const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim().toLowerCase();
+          return fullName === (proposal.client_name || '').toLowerCase();
+        });
+
+    if (!client) {
       setLocalData({ ...proposal });
       return;
     }
 
-    // Otherwise fetch linked client and merge data into proposal
-    if (proposal.client_id) {
-      base44.entities.Clients.list().then(clients => {
+    const advisoryNeeds = Array.isArray(client.advisory_needs) ? client.advisory_needs : [];
+    const needsArray = [];
+    if (advisoryNeeds.some(n => n.toLowerCase().includes('invest') || n.toLowerCase().includes('offshore'))) {
+      needsArray.push('investment');
+    }
+    if (advisoryNeeds.some(n => n.toLowerCase().includes('risk') || n.toLowerCase().includes('cover'))) {
+      needsArray.push('risk_cover');
+    }
+
+    const merged = {
+      ...proposal,
+      client_type: client.client_type || 'Natural Person',
+      client_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || proposal.client_name,
+      client_id_number: client.sa_id_number || client.passport_number || '',
+      identification_type: client.identity_type || '',
+      client_dob: client.date_of_birth || '',
+      client_email: client.email || '',
+      client_mobile: client.mobile_number || '',
+      client_tax_residency: client.tax_residency || '',
+      risk_profile: proposal.risk_profile || client.risk_profile || '',
+      time_horizon: client.time_horizon || '',
+      needs_array: proposal.needs_array?.length > 0 ? proposal.needs_array : needsArray,
+      advisory_needs: advisoryNeeds,
+    };
+
+    setLocalData(merged);
+  }, [proposal, allClients]);
         const client = clients.find(c => c.id === proposal.client_id);
         if (!client) { setLocalData({ ...proposal }); return; }
 
@@ -85,11 +122,13 @@ export default function ProposalEngine() {
         // Persist merged data back to proposal so it's there next time
         const { id: _id, created_date, updated_date, created_by, ...cleanMerged } = merged;
         base44.entities.Proposal.update(proposal.id, cleanMerged).catch(() => {});
-      });
+      } else {
+        setLocalData({ ...proposal });
+      }
     } else {
       setLocalData({ ...proposal });
     }
-  }, [proposal]);
+  }, [proposal, allClients]);
 
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.Proposal.update(id, data),
