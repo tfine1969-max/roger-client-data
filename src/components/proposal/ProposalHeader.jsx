@@ -2,6 +2,23 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
+const STATUS_OPTIONS = [
+  'Pending Review',
+  'In Progress',
+  'Awaiting Client Signature',
+  'Signed',
+  'Sent',
+];
+
+// Map proposal_status → status field used by inbox filter
+const STATUS_MAP = {
+  'Pending Review': 'new',
+  'In Progress': 'in_progress',
+  'Awaiting Client Signature': 'in_progress',
+  'Signed': 'signed',
+  'Sent': 'sent',
+};
+
 export default function ProposalHeader({ proposal, client, onUpdate, isSaving }) {
   const handleUpdate = async (field, value) => {
     await onUpdate(field, value);
@@ -15,10 +32,24 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
     toast.success('Saved');
   };
 
+  const handleStatusChange = async (value) => {
+    // Update both proposal_status (display) and status (inbox filter)
+    await onUpdate('proposal_status', value);
+    await onUpdate('status', STATUS_MAP[value] || 'new');
+    toast.success('Saved');
+  };
+
   const clientName = client
     ? (client.full_name || `${client.first_name || ''} ${client.last_name || ''}`.trim())
     : (proposal.client_name || 'Client');
   const idNumber = client?.sa_id_number || client?.passport_number || '';
+
+  // Resolve displayed status — normalise 'new' and 'Pending Review' to same value
+  const displayStatus = proposal.proposal_status ||
+    (proposal.status === 'new' ? 'Pending Review' : proposal.status) || '';
+
+  // Mandate defaults to 'No' if not yet set
+  const mandateValue = proposal.mandate_included || 'No';
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -60,7 +91,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
           </Select>
         </div>
 
-        {/* Mandate toggle — drives document type automatically */}
+        {/* Mandate toggle */}
         <div>
           <label className="text-[10px] font-semibold text-navy uppercase tracking-wide block mb-1">Mandate Included</label>
           <div className="flex gap-2 h-8 items-center">
@@ -70,7 +101,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
                 type="button"
                 onClick={() => handleMandateToggle(opt)}
                 className={`px-3 h-8 text-xs font-medium border rounded-sm transition-all ${
-                  proposal.mandate_included === opt
+                  mandateValue === opt
                     ? 'bg-navy text-white border-navy'
                     : 'bg-card text-navy border-border hover:border-navy'
                 }`}
@@ -80,7 +111,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
             ))}
           </div>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {proposal.mandate_included === 'Yes' ? 'Doc B — CDM' : 'Doc A — Disclosure & ROA'}
+            {mandateValue === 'Yes' ? 'Doc B — CDM' : 'Doc A — Disclosure & ROA'}
           </p>
         </div>
 
@@ -101,16 +132,14 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
         {/* Proposal Status */}
         <div>
           <label className="text-[10px] font-semibold text-navy uppercase tracking-wide block mb-1">Status</label>
-          <Select value={proposal.proposal_status || proposal.status || ''} onValueChange={(v) => handleUpdate('proposal_status', v)}>
+          <Select value={displayStatus} onValueChange={handleStatusChange}>
             <SelectTrigger className="h-8 text-xs rounded-sm">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="New">New</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Awaiting Client Signature">Awaiting Client Signature</SelectItem>
-              <SelectItem value="Signed">Signed</SelectItem>
-              <SelectItem value="Sent">Sent</SelectItem>
+              {STATUS_OPTIONS.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
