@@ -203,6 +203,40 @@ export default function AddEditRiskProduct() {
     if (riskProduct) setProvider(riskProduct.provider || '');
   }, [riskProduct]);
 
+  useEffect(() => {
+    if (!existingCovers || existingCovers.length === 0) return;
+
+    const coverTypeToKey = {
+      'Life Cover': 'life_cover',
+      'Disability Lump Sum': 'disability_lump',
+      'Income Protection': 'income_protection',
+      'Dread Disease / Critical Illness': 'dread_disease',
+      'Accidental Death': 'accidental_death',
+      'Funeral Cover': 'funeral_cover',
+      'Business Assurance': 'business_assurance',
+    };
+
+    const keys = [];
+    const data = { ...defaultBenefitData };
+
+    existingCovers.forEach(cover => {
+      const key = coverTypeToKey[cover.cover_type];
+      if (!key) return;
+      keys.push(key);
+      data[key] = {
+        ...defaultBenefitData[key],
+        sum_assured: cover.amount_required || '',
+        monthly_benefit: cover.amount_required || '',
+        monthly_premium: cover.premium || '',
+        annual_premium_increase: cover.annual_premium_increase_percent || '',
+        annual_cover_increase: cover.annual_cover_increase_percent || '',
+      };
+    });
+
+    setSelectedBenefits(keys);
+    setBenefitData(data);
+  }, [existingCovers]);
+
   const toggleBenefit = (key) => {
     setSelectedBenefits(prev =>
       prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
@@ -230,6 +264,13 @@ export default function AddEditRiskProduct() {
         productId = created.id;
       } else {
         await base44.entities.RiskProducts.update(riskProductId, { provider });
+      }
+
+      // Delete existing covers before re-saving to avoid duplicates
+      if (riskProductId) {
+        for (const old of existingCovers) {
+          await base44.entities.RiskCovers.delete(old.id);
+        }
       }
 
       // Save each selected benefit as a RiskCover record
