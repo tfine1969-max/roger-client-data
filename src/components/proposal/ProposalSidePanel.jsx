@@ -162,8 +162,6 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
                   {inv.product_type && <p className="text-[9px] text-slate-500">{inv.product_type}</p>}
                   <div className="flex justify-between text-[9px] text-slate-500">
                     <span>{inv.currency} {fmt(inv.amount)}</span>
-                    {inv.initial_fee_percent > 0 && <span>Init {inv.initial_fee_percent}%</span>}
-                    {inv.annual_advice_fee_percent > 0 && <span>Ann {inv.annual_advice_fee_percent}%</span>}
                   </div>
                 </div>
               ))}

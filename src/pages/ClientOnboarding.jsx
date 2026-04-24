@@ -110,7 +110,7 @@ export default function ClientOnboarding() {
     sa_tax_number: '',
     tax_residency: '',
     us_person_fatca: '',
-    pep_status: '',
+    pep_status: 'No',
     pep_explanation: '',
     // Step 3 - Financial Profile
     gross_annual_income_band: '',
