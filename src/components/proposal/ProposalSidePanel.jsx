@@ -20,7 +20,9 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
   const navigate = useNavigate();
 
   const totalRiskPremium = riskProducts.reduce((sum, rp) => sum + (parseFloat(rp.total_premium) || 0), 0);
-  const totalInvestment = investments.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+  const totalInvestment = investments.reduce((sum, inv) => {
+  return sum + (parseFloat(inv.amount) || 0) + (parseFloat(inv.recurring_amount) || 0);
+}, 0);
   const ficaOk = client?.identity_document_uploaded && client?.proof_of_address_uploaded;
 
   return (
