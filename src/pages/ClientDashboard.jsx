@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Edit } from 'lucide-react';
+import { ArrowLeft, Loader2, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Field = ({ label, value }) => (
@@ -58,6 +58,12 @@ export default function ClientDashboard() {
     loadClient();
   }, [navigate]);
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('pending_client_id');
+    sessionStorage.removeItem('pending_client_email');
+    navigate('/', { replace: true });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -73,10 +79,17 @@ export default function ClientDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border px-6 py-3">
+      <div className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
           Back to Home
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-muted-foreground hover:text-danger transition-colors text-sm"
+        >
+          <LogOut className="w-4 h-4" />
+          Log out
         </button>
       </div>
 
@@ -132,14 +145,13 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Action */}
-          <div className="border-t border-border pt-3">
+          {/* Actions */}
+          <div className="border-t border-border pt-3 flex items-center justify-between">
             <Button
               onClick={() => navigate('/client-onboarding')}
-              className="bg-navy hover:bg-ocean text-white px-6 h-9 text-sm rounded-sm font-medium flex items-center gap-2"
+              className="bg-navy hover:bg-ocean text-white px-6 h-9 text-sm rounded-sm"
             >
-              <Edit className="w-4 h-4" />
-              Edit Profile
+              Update my information
             </Button>
           </div>
         </div>
