@@ -625,6 +625,13 @@ export default function ClientOnboarding() {
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMPLOYER / BUSINESS</Label>
                     <Input className="mt-1 h-8 text-sm" value={formData.employer} onChange={e => handleChange('employer', e.target.value)} />
                   </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
+                    <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
+                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 

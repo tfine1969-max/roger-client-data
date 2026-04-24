@@ -5,6 +5,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 
+const Field = ({ label, value }) => (
+  <div>
+    <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
+    <p className="text-sm font-medium text-navy mt-0.5">{value || '—'}</p>
+  </div>
+);
+
+const StatusBadge = ({ status }) => {
+  const isOnboarded = status === 'Onboarded' || status === 'Active';
+  return (
+    <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded ${isOnboarded ? 'bg-teal/15 text-teal' : 'bg-amber-100 text-amber-700'}`}>
+      {status || 'Draft'}
+    </span>
+  );
+};
+
 export default function ClientDashboard() {
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
@@ -12,24 +28,17 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     const clientId = sessionStorage.getItem('pending_client_id');
-    
+
     const loadClient = async () => {
       try {
         const clients = await base44.entities.Clients.list();
-        let found = null;
-        
-        if (clientId) {
-          found = clients.find(c => c.id === clientId);
-        }
-        
-        // Fallback — try to match by logged in user email
+        let found = clientId ? clients.find(c => c.id === clientId) : null;
+
         if (!found) {
           const user = await base44.auth.me().catch(() => null);
           if (user?.email) {
             found = clients.find(c => c.email === user.email);
-            if (found) {
-              sessionStorage.setItem('pending_client_id', found.id);
-            }
+            if (found) sessionStorage.setItem('pending_client_id', found.id);
           }
         }
 
@@ -57,123 +66,77 @@ export default function ClientDashboard() {
     );
   }
 
-  if (!client) {
-    return null;
-  }
+  if (!client) return null;
+
+  const idNumber = client.sa_id_number || client.passport_number;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border px-6 py-4">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors"
-        >
+      <div className="bg-card border-b border-border px-6 py-3">
+        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </button>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-navy mb-8">My Profile</h1>
+      <div className="max-w-5xl mx-auto p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-navy">My Profile</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Account status:</span>
+            <StatusBadge status={client.client_status} />
+          </div>
+        </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 space-y-6">
-          {/* Basic Info */}
+        <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+
+          {/* Client Profile */}
           <div>
-            <h2 className="text-xl font-semibold text-navy mb-4">Personal Details</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {client.client_type === 'Natural Person' && (
-                <>
-                  <div>
-                    <p className="text-sm text-muted-foreground">First Name</p>
-                    <p className="text-lg font-medium text-navy">{client.first_name || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Last Name</p>
-                    <p className="text-lg font-medium text-navy">{client.last_name || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Date of Birth</p>
-                    <p className="text-lg font-medium text-navy">{client.date_of_birth || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">ID Type</p>
-                    <p className="text-lg font-medium text-navy">{client.identity_type || '—'}</p>
-                  </div>
-                  {client.sa_id_number && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">SA ID Number</p>
-                      <p className="text-lg font-medium text-navy">{client.sa_id_number}</p>
-                    </div>
-                  )}
-                  {client.passport_number && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Passport Number</p>
-                      <p className="text-lg font-medium text-navy">{client.passport_number}</p>
-                    </div>
-                  )}
-                </>
-              )}
-              {client.client_type === 'Company' && (
-                <>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Company Name</p>
-                    <p className="text-lg font-medium text-navy">{client.entity_name || '—'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Registration Number</p>
-                    <p className="text-lg font-medium text-navy">{client.registration_number || '—'}</p>
-                  </div>
-                </>
-              )}
-              {client.client_type === 'Trust' && (
-                <>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Trust Name</p>
-                    <p className="text-lg font-medium text-navy">{client.entity_name || '—'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Trust Number</p>
-                    <p className="text-lg font-medium text-navy">{client.trust_number || '—'}</p>
-                  </div>
-                </>
-              )}
+            <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">CLIENT PROFILE</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="First Name" value={client.first_name} />
+              <Field label="Last Name" value={client.last_name} />
+              <Field label="Date of Birth" value={client.date_of_birth} />
+              <Field label="ID / Passport Number" value={idNumber} />
+              <Field label="ID Type" value={client.identity_type} />
+              <Field label="Marital Status" value={client.marital_status} />
+              <Field label="Email Address" value={client.email} />
+              <Field label="Mobile Number" value={client.mobile_number} />
+              <Field label="Industry" value={client.industry} />
             </div>
           </div>
 
-          {/* Contact Info */}
-          <div className="border-t border-border pt-6">
-            <h2 className="text-xl font-semibold text-navy mb-4">Contact Information</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Email Address</p>
-                <p className="text-lg font-medium text-navy">{client.email || '—'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Mobile Number</p>
-                <p className="text-lg font-medium text-navy">{client.mobile_number || '—'}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-muted-foreground">Residential Address</p>
-                <p className="text-lg font-medium text-navy">{client.residential_address || '—'}</p>
-              </div>
+          {/* Address */}
+          <div className="border-t border-border pt-3">
+            <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">RESIDENTIAL ADDRESS</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Street Address" value={client.street_address} />
+              <Field label="Suburb" value={client.suburb} />
+              <Field label="City" value={client.city} />
+              <Field label="Province" value={client.province} />
+              <Field label="Postal Code" value={client.postal_code} />
             </div>
           </div>
 
-          {/* Status */}
-          <div className="border-t border-border pt-6">
-            <h2 className="text-xl font-semibold text-navy mb-4">Account Status</h2>
-            <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <p className="text-lg font-medium text-navy">{client.client_status || 'Draft'}</p>
+          {/* Financial Profile */}
+          <div className="border-t border-border pt-3">
+            <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">FINANCIAL PROFILE</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Employment Status" value={client.employment_status} />
+              <Field label="Occupation" value={client.occupation} />
+              <Field label="Employer / Business" value={client.employer} />
+              <Field label="Risk Profile" value={client.risk_profile} />
+              <Field label="Time Horizon" value={client.time_horizon} />
+              <Field label="Annual Income Band" value={client.gross_annual_income_band} />
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="border-t border-border pt-6">
+          {/* Action */}
+          <div className="border-t border-border pt-3">
             <Button
               onClick={() => navigate('/client-onboarding')}
-              className="w-full bg-navy hover:bg-ocean text-white py-3 rounded-sm font-medium flex items-center justify-center gap-2"
+              className="bg-navy hover:bg-ocean text-white px-6 h-9 text-sm rounded-sm font-medium flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
               Edit Profile
