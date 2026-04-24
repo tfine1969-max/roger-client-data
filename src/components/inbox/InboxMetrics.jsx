@@ -3,14 +3,14 @@ import React from 'react';
 export default function InboxMetrics({ proposals, activeFilter, onFilter }) {
   const metrics = [
     {
-      value: proposals.filter(p => p.status === 'new' || p.status === 'Pending Review').length,
-      label: 'Awaiting review',
+      value: proposals.filter(p => p.status === 'new' || p.status === 'Pending Review' || p.proposal_status === 'Pending Review').length,
+      label: 'Awaiting Review',
       color: 'text-navy',
       filter: 'new',
     },
     {
       value: proposals.filter(p => p.status === 'in_progress' || p.status === 'signed').length,
-      label: 'In progress',
+      label: 'In Progress',
       color: 'text-gold',
       filter: 'in_progress',
     },
@@ -30,12 +30,12 @@ export default function InboxMetrics({ proposals, activeFilter, onFilter }) {
           <button
             key={m.filter}
             onClick={() => onFilter(isActive ? null : m.filter)}
-            className={`bg-card border p-4 px-5 text-center transition-colors w-full ${
+            className={`bg-card border rounded-sm transition-colors w-full py-5 flex flex-col items-center justify-center gap-1 ${
               isActive ? 'border-navy ring-1 ring-navy' : 'border-border hover:border-navy/40'
             }`}
           >
-            <div className={`text-2xl font-medium font-lora ${m.color}`}>{m.value}</div>
-            <div className="text-[9px] font-medium tracking-[.12em] uppercase text-muted-foreground mt-1">
+            <div className={`text-3xl font-medium ${m.color}`}>{m.value}</div>
+            <div className="text-[9px] font-semibold tracking-[.14em] uppercase text-muted-foreground">
               {m.label}
             </div>
           </button>
