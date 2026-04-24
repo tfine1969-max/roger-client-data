@@ -197,12 +197,12 @@ export default function ProposalEngine() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar advisorName={advisor.name} statusText={localData.reference} />
-      <div className="bg-navy text-white px-6 py-2.5 flex items-center gap-6 text-xs sticky top-0 z-20 border-b border-navy/20">
+      <div className="bg-navy text-white px-6 py-2 flex items-center gap-6 text-xs sticky top-0 z-20">
         <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Client</span><span className="font-semibold">{localData.client_name}</span></div>
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs Identified</span><span className="font-medium">{localData.needs_identified || '—'}</span></div>
         <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Risk Profile</span><span className="font-medium">{localData.risk_profile || '—'}</span></div>
         <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Time Horizon</span><span className="font-medium">{localData.time_horizon || '—'}</span></div>
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Reference</span><span className="font-mono text-[10px]">{localData.reference}</span></div>
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs</span><span className="font-medium">{localData.needs_identified || '—'}</span></div>
+        <div className="ml-auto"><span className="font-mono text-[10px] text-white/60">{localData.reference}</span></div>
       </div>
 
       <div className="bg-card border-b border-border px-4 md:px-6">
@@ -257,7 +257,7 @@ export default function ProposalEngine() {
               <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 items-start">
               <div>
                 {investments.length > 0 && (
                   <div className="border border-border bg-card mb-2 overflow-hidden border-t-2 border-t-ocean">
