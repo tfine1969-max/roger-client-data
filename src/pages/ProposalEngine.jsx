@@ -44,20 +44,27 @@ export default function ProposalEngine() {
 
   const { data: investments = [] } = useQuery({
     queryKey: ['investments', id],
-    queryFn: () => base44.entities.Investments.filter({ proposal_id: id }),
+    queryFn: async () => {
+      const all = await base44.entities.Investments.list();
+      return all.filter(inv => inv.proposal_id === id);
+    },
     enabled: !!id,
   });
 
   const { data: riskProductsRaw = [] } = useQuery({
     queryKey: ['riskProducts', id],
-    queryFn: () => base44.entities.RiskProducts.filter({ proposal_id: id }),
+    queryFn: async () => {
+      const all = await base44.entities.RiskProducts.list();
+      return all.filter(rp => rp.proposal_id === id);
+    },
     enabled: !!id,
   });
 
   const { data: allRiskCovers = [] } = useQuery({
     queryKey: ['allRiskCovers', id],
     queryFn: async () => {
-      const products = await base44.entities.RiskProducts.filter({ proposal_id: id });
+      const allRp = await base44.entities.RiskProducts.list();
+      const products = allRp.filter(rp => rp.proposal_id === id);
       if (!products.length) return [];
       const coversArrays = await Promise.all(
         products.map(p => base44.entities.RiskCovers.filter({ risk_product_id: p.id }))
