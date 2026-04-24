@@ -1,17 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
 const RISK_PROFILES = ['Conservative', 'Cautious', 'Moderate', 'Growth', 'Aggressive'];
 
 export default function FinancialProfile({ proposal, client, onUpdate }) {
+  const hasSynced = useRef(false);
 
   useEffect(() => {
-    if (!client) return;
-    if (client.risk_profile && !proposal?.risk_profile) {
-      onUpdate('risk_profile', client.risk_profile);
-    }
-  }, [client?.risk_profile]);
+    if (hasSynced.current) return;
+    if (!client?.risk_profile) return;
+    if (proposal?.risk_profile) return;
+    hasSynced.current = true;
+    onUpdate('risk_profile', client.risk_profile);
+  });
 
   const handleUpdate = async (field, value) => {
     await onUpdate(field, value);
