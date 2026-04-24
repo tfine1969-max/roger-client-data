@@ -2,6 +2,10 @@
   "name": "Proposal",
   "type": "object",
   "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID of the linked Clients record"
+    },
     "client_type": {
       "type": "string",
       "enum": [
@@ -109,6 +113,13 @@
         "type": "string"
       },
       "description": "Array of need IDs: investment, risk_cover"
+    },
+    "advisory_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Advisory needs selected during onboarding"
     },
     "risk_cover_types": {
       "type": "array",
@@ -290,5 +301,50 @@
   "required": [
     "client_name",
     "reference"
-  ]
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }

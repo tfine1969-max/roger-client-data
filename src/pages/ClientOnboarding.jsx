@@ -446,16 +446,21 @@ export default function ClientOnboarding() {
         String(p.client_id) === String(clientId)
       ) || null;
 
+      const clientName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
+
       if (existing) {
         await base44.entities.Proposal.update(existing.id, {
-          client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
+          client_id: clientId,
+          client_name: clientName,
+          advisory_needs: formData.advisory_needs,
           proposal_status: 'Pending Review',
           status: 'new',
         });
       } else {
         await base44.entities.Proposal.create({
           client_id: clientId,
-          client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
+          client_name: clientName,
+          advisory_needs: formData.advisory_needs,
           reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
           advisor_name: 'Trevor Fine',
           proposal_status: 'Pending Review',
