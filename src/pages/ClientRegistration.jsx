@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,19 +43,33 @@ export default function ClientRegistration() {
     setIsLoading(true);
 
     try {
-      // Create Client record with registration data
-      const clientRecord = await base44.entities.Clients.create({
-        email: formData.email,
-        mobile_number: formData.mobile,
-        client_status: 'Draft',
-        otp_verified: false
-      });
+      // Check if a client record already exists for this email
+      const allClients = await base44.entities.Clients.list();
+      const existing = allClients.find(
+        c => c.email?.toLowerCase().trim() === formData.email.toLowerCase().trim()
+      );
 
-      // Store pending client context (no auth required)
-      sessionStorage.setItem('pending_client_id', clientRecord.id);
+      let clientId;
+
+      if (existing) {
+        // Reuse the existing client record — do not create a duplicate
+        clientId = existing.id;
+        toast.success('Welcome back. Continue your onboarding.');
+      } else {
+        // Create a new client record
+        const clientRecord = await base44.entities.Clients.create({
+          email: formData.email,
+          mobile_number: formData.mobile,
+          client_status: 'Draft',
+          otp_verified: false,
+        });
+        clientId = clientRecord.id;
+        toast.success('Account created. Verify your OTP to continue.');
+      }
+
+      sessionStorage.setItem('pending_client_id', clientId);
       sessionStorage.setItem('pending_client_email', formData.email);
 
-      toast.success('Account created. Verify your OTP to continue.');
       navigate('/client-otp', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Registration failed');
@@ -67,7 +80,6 @@ export default function ClientRegistration() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-card border-b border-border px-6 py-4">
         <button
           onClick={() => navigate('/')}
@@ -142,7 +154,7 @@ export default function ClientRegistration() {
                 disabled={isLoading}
                 className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
               >
-                {isLoading ? 'Creating Account...' : 'Register'}
+                {isLoading ? 'Checking account...' : 'Register'}
               </Button>
             </form>
 
