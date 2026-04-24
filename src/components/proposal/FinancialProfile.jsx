@@ -3,33 +3,43 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 
 const RISK_PROFILES = ['Conservative', 'Cautious', 'Moderate', 'Growth', 'Aggressive'];
-const TIME_HORIZONS = ['Under 3 years', '3–5 years', '5–10 years', '10–20 years', '20+ years'];
+
+const TIME_HORIZONS = [
+  'Less than 1 year',
+  '1–3 years',
+  '3–5 years',
+  '5–10 years',
+  '10+ years',
+];
 
 export default function FinancialProfile({ proposal, client, onUpdate }) {
-  // Auto-populate from client onboarding data when client is loaded
+
   useEffect(() => {
     if (!client) return;
-    if (client.risk_profile && !proposal.risk_profile) {
+    if (client.risk_profile && !proposal?.risk_profile) {
       onUpdate('risk_profile', client.risk_profile);
     }
-    if (client.time_horizon && !proposal.time_horizon) {
+    if (client.time_horizon && !proposal?.time_horizon) {
       onUpdate('time_horizon', client.time_horizon);
     }
-  }, [client]);
+  }, [client?.risk_profile, client?.time_horizon]);
 
   const handleUpdate = async (field, value) => {
     await onUpdate(field, value);
     toast.success('Saved');
   };
 
+  const riskValue = proposal?.risk_profile || client?.risk_profile || '';
+  const horizonValue = proposal?.time_horizon || client?.time_horizon || '';
+
   return (
     <div className="bg-card border border-border rounded-lg px-5 py-3">
       <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">Financial Profile</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Risk Profile */}
+
         <div>
           <label className="text-[10px] font-semibold text-navy uppercase tracking-wide block mb-1">Risk Profile</label>
-          <Select value={proposal.risk_profile || ''} onValueChange={(v) => handleUpdate('risk_profile', v)}>
+          <Select value={riskValue} onValueChange={(v) => handleUpdate('risk_profile', v)}>
             <SelectTrigger className="h-8 text-xs rounded-sm">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
@@ -44,10 +54,9 @@ export default function FinancialProfile({ proposal, client, onUpdate }) {
           )}
         </div>
 
-        {/* Time Horizon */}
         <div>
           <label className="text-[10px] font-semibold text-navy uppercase tracking-wide block mb-1">Time Horizon</label>
-          <Select value={proposal.time_horizon || ''} onValueChange={(v) => handleUpdate('time_horizon', v)}>
+          <Select value={horizonValue} onValueChange={(v) => handleUpdate('time_horizon', v)}>
             <SelectTrigger className="h-8 text-xs rounded-sm">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
@@ -61,6 +70,7 @@ export default function FinancialProfile({ proposal, client, onUpdate }) {
             <p className="text-[10px] text-muted-foreground mt-0.5">From onboarding: {client.time_horizon}</p>
           )}
         </div>
+
       </div>
     </div>
   );
