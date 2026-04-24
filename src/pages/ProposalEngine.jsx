@@ -15,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
 import ClientDetailsFormDynamic from '@/components/engine/ClientDetailsFormDynamic';
 
-
 export default function ProposalEngine() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -80,11 +79,9 @@ export default function ProposalEngine() {
     return { ...rp, _covers: covers, total_premium };
   });
 
-  // Sync fetched proposal to local state
   useEffect(() => {
     if (!proposal || localData || allClients.length === 0) return;
 
-    // Find linked client by client_id, or fall back to matching by client_name
     const client = allClients.find(c => c.id === proposal.client_id)
       || allClients.find(c => {
           const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim().toLowerCase();
@@ -132,7 +129,6 @@ export default function ProposalEngine() {
     }
   });
 
-  // Debounced save
   const debouncedSave = useCallback(
     debounce((data) => {
       const { id: _id, created_date, updated_date, created_by, ...cleanData } = data;
@@ -168,22 +164,14 @@ export default function ProposalEngine() {
       toast.error('Please sign before sending');
       return;
     }
-
     setIsSending(true);
-
-    // Generate proposal PDF
     const doc = generateProposalPdf(localData);
-
-    // If there's a quote PDF attached, send both URLs to the client signing page
-    // The proposal PDF is always generated; the quote is linked separately
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-
     const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
     await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
     setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
-
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     queryClient.invalidateQueries({ queryKey: ['proposals'] });
     setIsSending(false);
@@ -204,34 +192,19 @@ export default function ProposalEngine() {
   const advisorKey = localData.advisor_key || 'trevor';
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
   const hasSig = !!localData.advisor_signature_data;
-  const needs = Array.isArray(localData.needs_array) ? localData.needs_array : [];
-  const hasInvestment = needs.includes('investment');
-  const hasRiskCover = needs.includes('risk_cover');
-  // Determine current phase — stored on record, fallback to 'client_details' for new proposals
   const currentPhase = localData.phase || 'client_details';
-
-  const handleProceedToRecommendations = () => {
-    handleFieldChange('phase', 'recommendations');
-  };
-
-  const handleBackToClientDetails = () => {
-    handleFieldChange('phase', 'client_details');
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar advisorName={advisor.name} statusText={localData.reference} />
       <ClientStrip proposal={localData} />
 
-      {/* Phase tabs */}
       <div className="bg-card border-b border-border px-4 md:px-6">
         <div className="flex">
           <button
             onClick={() => handleFieldChange('phase', 'client_details')}
             className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
-              currentPhase === 'client_details'
-                ? 'border-navy text-navy'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              currentPhase === 'client_details' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             01 · Client details
@@ -239,9 +212,7 @@ export default function ProposalEngine() {
           <button
             onClick={() => handleFieldChange('phase', 'recommendations')}
             className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
-              currentPhase === 'recommendations'
-                ? 'border-navy text-navy'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              currentPhase === 'recommendations' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             02 · Recommendations
@@ -250,7 +221,7 @@ export default function ProposalEngine() {
       </div>
 
       <div className="flex-1 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4 sticky top-0 z-10 bg-background">
+        <div className="sticky top-0 z-10 bg-background py-2 flex items-center justify-between mb-4 border-b border-border">
           <div className="text-[13px] font-medium text-navy">
             {localData.reference} &nbsp;·&nbsp; {localData.client_name}
           </div>
@@ -262,31 +233,26 @@ export default function ProposalEngine() {
           </button>
         </div>
 
-        {/* Phase 1: Client Details */}
         {currentPhase === 'client_details' && (
           <div className="flex justify-center">
-          <div className="w-full max-w-2xl">
-          <ClientDetailsFormDynamic
-            data={localData}
-            onChange={handleFieldChange}
-            onProceed={handleProceedToRecommendations}
-          />
-          </div>
+            <div className="w-full max-w-3xl">
+              <ClientDetailsFormDynamic
+                data={localData}
+                onChange={handleFieldChange}
+                onProceed={() => handleFieldChange('phase', 'recommendations')}
+              />
+            </div>
           </div>
         )}
 
-        {/* Phase 2: Recommendations */}
         {currentPhase === 'recommendations' && (
           <>
             <div className="bg-blue-50 border border-blue-200 border-l-[3px] border-l-ocean p-3 text-[13px] text-ocean leading-relaxed mb-4">
               <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
             </div>
 
-
-
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
               <div>
-                {/* Investments from proposal */}
                 {investments.length > 0 && (
                   <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-ocean">
                     <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
@@ -307,7 +273,7 @@ export default function ProposalEngine() {
                             {inv.initial_fee_percent > 0 && <div><span className="text-muted-foreground">Initial fee: </span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
                             {inv.annual_advice_fee_percent > 0 && <div><span className="text-muted-foreground">Annual advice fee: </span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
                           </div>
-                          {inv.underlying_funds?.length > 0 && (
+                          {Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0 && (
                             <div className="mt-1 text-[10px] text-muted-foreground">Funds: {inv.underlying_funds.join(', ')}</div>
                           )}
                         </div>
@@ -324,7 +290,6 @@ export default function ProposalEngine() {
                   </div>
                 )}
 
-                {/* Risk Products from proposal */}
                 {riskProducts.length > 0 && (
                   <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-teal">
                     <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
@@ -361,6 +326,12 @@ export default function ProposalEngine() {
                         />
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {investments.length === 0 && riskProducts.length === 0 && (
+                  <div className="border border-dashed border-border rounded-lg p-8 text-center text-muted-foreground text-sm mb-3">
+                    No investments or risk products added yet. Go back to the proposal and add them first.
                   </div>
                 )}
 
