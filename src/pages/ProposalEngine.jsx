@@ -14,9 +14,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { debounce } from 'lodash';
 import ClientDetailsFormDynamic from '@/components/engine/ClientDetailsFormDynamic';
-import InvestmentCard from '@/components/engine/InvestmentCard';
-import InvestmentCard2 from '@/components/engine/InvestmentCard2';
-import RiskCoverCard from '@/components/engine/RiskCoverCard';
+
 
 export default function ProposalEngine() {
   const { id } = useParams();
@@ -102,10 +100,10 @@ export default function ProposalEngine() {
 
     const merged = {
       ...proposal,
-      client_type: client.client_type || 'Natural Person',
+      client_type: 'natural_person',
       client_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || proposal.client_name,
       client_id_number: client.sa_id_number || client.passport_number || '',
-      identification_type: client.identity_type || '',
+      identification_type: client.identity_type === 'SA ID' ? 'sa_id' : client.identity_type === 'Passport' ? 'passport' : '',
       client_dob: client.date_of_birth || '',
       client_email: client.email || '',
       client_mobile: client.mobile_number || '',
