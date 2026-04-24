@@ -423,8 +423,8 @@ export default function ClientOnboarding() {
         onboarding_complete: true,
       });
 
-      const existingProposals = await base44.entities.Proposal.list();
-      const existing = existingProposals.find(p => p.client_id === clientId);
+      const existingProposals = await base44.entities.Proposal.filter({ client_id: clientId });
+      const existing = existingProposals[0] || null;
 
       if (existing) {
         await base44.entities.Proposal.update(existing.id, {
