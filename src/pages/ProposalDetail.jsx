@@ -18,17 +18,28 @@ export default function ProposalDetail() {
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch proposal
+  // Fetch proposal — try Proposal (onboarding) entity first, fall back to Proposals (advisor) entity
   const { data: proposal, isLoading } = useQuery({
     queryKey: ['proposal', id],
-    queryFn: () => base44.entities.Proposals.filter({ id }).then(data => data[0]),
+    queryFn: async () => {
+      const list = await base44.entities.Proposal.list();
+      const found = list.find(p => p.id === id);
+      if (found) return { ...found, _entity: 'Proposal' };
+      const list2 = await base44.entities.Proposals.list();
+      const found2 = list2.find(p => p.id === id);
+      return found2 ? { ...found2, _entity: 'Proposals' } : null;
+    },
     enabled: !!id,
   });
 
   // Fetch client details
   const { data: client } = useQuery({
     queryKey: ['client', proposal?.client_id],
-    queryFn: () => proposal?.client_id ? base44.entities.Clients.filter({ id: proposal.client_id }).then(data => data[0]) : null,
+    queryFn: async () => {
+      if (!proposal?.client_id) return null;
+      const list = await base44.entities.Clients.list();
+      return list.find(c => c.id === proposal.client_id) || null;
+    },
     enabled: !!proposal?.client_id,
   });
 
@@ -54,7 +65,9 @@ export default function ProposalDetail() {
   });
 
   const updateProposalMutation = useMutation({
-    mutationFn: (data) => base44.entities.Proposals.update(id, data),
+    mutationFn: (data) => proposal?._entity === 'Proposal'
+      ? base44.entities.Proposal.update(id, data)
+      : base44.entities.Proposals.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     }

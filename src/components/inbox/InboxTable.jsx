@@ -64,7 +64,7 @@ export default function InboxTable({ proposals, clientMap = {} }) {
             <div className="text-xs text-foreground">{p.needs_identified || '—'}</div>
             <div className="text-xs text-foreground">{p.risk_profile || '—'}</div>
             <div className="text-xs text-muted-foreground">
-              {p.created_date ? format(new Date(p.created_date), 'dd MMM HH:mm') : '—'}
+              {p.created_date ? (() => { const d = new Date(p.created_date); const sast = new Date(d.getTime() + (2 * 60 * 60 * 1000)); return format(sast, 'dd MMM yyyy HH:mm'); })() : '—'}
             </div>
             <div>
               <span className={`text-[9px] font-medium tracking-[.07em] uppercase px-2 py-1 ${badge.bg} ${badge.text}`}>
