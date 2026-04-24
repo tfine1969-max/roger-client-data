@@ -53,6 +53,10 @@
       "type": "string",
       "description": "Passport number"
     },
+    "passport_country": {
+      "type": "string",
+      "description": "Country of issue for passport"
+    },
     "registration_number": {
       "type": "string",
       "description": "Company/registration number"
@@ -75,9 +79,177 @@
       "type": "string",
       "description": "Mobile phone number"
     },
+    "title": {
+      "type": "string",
+      "description": "Title (Mr, Mrs, etc.)"
+    },
+    "marital_status": {
+      "type": "string",
+      "description": "Marital status"
+    },
+    "dependants": {
+      "type": "string",
+      "description": "Number of dependants"
+    },
+    "street_address": {
+      "type": "string",
+      "description": "Street address"
+    },
+    "suburb": {
+      "type": "string",
+      "description": "Suburb"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "province": {
+      "type": "string",
+      "description": "Province"
+    },
+    "postal_code": {
+      "type": "string",
+      "description": "Postal code"
+    },
     "residential_address": {
       "type": "string",
-      "description": "Residential address"
+      "description": "Full residential address"
+    },
+    "employment_status": {
+      "type": "string",
+      "description": "Employment status"
+    },
+    "occupation": {
+      "type": "string",
+      "description": "Occupation"
+    },
+    "employer": {
+      "type": "string",
+      "description": "Employer or business name"
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry"
+    },
+    "source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sources of funds"
+    },
+    "sa_tax_number": {
+      "type": "string",
+      "description": "SA tax number"
+    },
+    "tax_residency": {
+      "type": "string",
+      "description": "Tax residency"
+    },
+    "us_person_fatca": {
+      "type": "string",
+      "description": "US person FATCA status"
+    },
+    "pep_status": {
+      "type": "string",
+      "description": "PEP status"
+    },
+    "pep_explanation": {
+      "type": "string",
+      "description": "PEP explanation"
+    },
+    "gross_annual_income_band": {
+      "type": "string",
+      "description": "Gross annual income band"
+    },
+    "monthly_investable_surplus": {
+      "type": "string",
+      "description": "Monthly investable surplus"
+    },
+    "net_worth_band": {
+      "type": "string",
+      "description": "Net worth band"
+    },
+    "total_liabilities": {
+      "type": "string",
+      "description": "Total liabilities band"
+    },
+    "existing_financial_products": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Existing financial products"
+    },
+    "products_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Structured existing products list"
+    },
+    "loa_uploaded": {
+      "type": "boolean",
+      "description": "Letter of authority uploaded"
+    },
+    "loa_authorised": {
+      "type": "boolean",
+      "description": "Letter of authority authorised"
+    },
+    "will_in_place": {
+      "type": "string",
+      "description": "Will in place status"
+    },
+    "portfolio_drop_response": {
+      "type": "string",
+      "description": "Portfolio drop response"
+    },
+    "primary_investment_objective": {
+      "type": "string",
+      "description": "Primary investment objective"
+    },
+    "time_horizon": {
+      "type": "string",
+      "description": "Investment time horizon"
+    },
+    "liquidity_requirement": {
+      "type": "string",
+      "description": "Liquidity requirement"
+    },
+    "risk_profile": {
+      "type": "string",
+      "description": "Risk profile"
+    },
+    "advisory_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Advisory needs"
+    },
+    "identity_document_uploaded": {
+      "type": "boolean",
+      "description": "Identity document uploaded"
+    },
+    "proof_of_address_uploaded": {
+      "type": "boolean",
+      "description": "Proof of address uploaded"
+    },
+    "income_proof_uploaded": {
+      "type": "boolean",
+      "description": "Income proof uploaded"
+    },
+    "existing_policies_uploaded": {
+      "type": "boolean",
+      "description": "Existing policies uploaded"
+    },
+    "client_signature_name": {
+      "type": "string",
+      "description": "Client signature name"
+    },
+    "client_signature_date": {
+      "type": "string",
+      "description": "Client signature date"
     },
     "identity_verified": {
       "type": "boolean",
@@ -99,6 +271,10 @@
       "type": "boolean",
       "description": "OTP verification status"
     },
+    "onboarding_complete": {
+      "type": "boolean",
+      "description": "Onboarding completed flag"
+    },
     "client_status": {
       "type": "string",
       "enum": [
@@ -112,5 +288,15 @@
   },
   "required": [
     "client_name"
-  ]
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

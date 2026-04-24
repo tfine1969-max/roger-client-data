@@ -255,9 +255,10 @@ export default function ClientOnboarding() {
     console.log('Saving step', currentStep, stepData, clientId);
     try {
       await base44.entities.Clients.update(clientId, stepData);
+      toast.success(`Step ${currentStep} saved successfully`);
       return true;
     } catch (error) {
-      toast.error(error.message || 'Failed to save step');
+      toast.error('Save failed: ' + (error.message || 'Unknown error'));
       return false;
     } finally {
       setIsSavingStep(false);
