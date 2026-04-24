@@ -14,7 +14,13 @@ const statusBadge = {
   'Pending Review': { bg: 'bg-amber-50', text: 'text-amber-900', label: 'Pending Review' }
 };
 
-export default function InboxTable({ proposals, clientMap = {} }) {
+const STATUS_GROUPS = {
+  new: ['new', 'Pending Review'],
+  in_progress: ['in_progress', 'signed'],
+  sent: ['sent', 'client_signed'],
+};
+
+export default function InboxTable({ proposals, clientMap = {}, statusFilter = null }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState(null);
@@ -28,6 +34,10 @@ export default function InboxTable({ proposals, clientMap = {} }) {
     setDeletingId(null);
   };
 
+  const filtered = statusFilter
+    ? proposals.filter(p => (STATUS_GROUPS[statusFilter] || []).includes(p.status))
+    : proposals;
+
   return (
     <div className="border border-border bg-card overflow-x-auto">
       {/* Header */}
@@ -40,12 +50,12 @@ export default function InboxTable({ proposals, clientMap = {} }) {
       </div>
 
       {/* Rows */}
-      {proposals.length === 0 && (
+      {filtered.length === 0 && (
         <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-          No proposals yet. Create your first one above.
+          {statusFilter ? 'No proposals match this filter.' : 'No proposals yet. Create your first one above.'}
         </div>
       )}
-      {proposals.map(p => {
+      {filtered.map(p => {
         const badge = statusBadge[p.status] || statusBadge.new;
         return (
           <div

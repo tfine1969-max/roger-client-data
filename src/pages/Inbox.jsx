@@ -11,6 +11,7 @@ import { ADVISORS } from '@/lib/constants';
 export default function Inbox() {
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -63,14 +64,14 @@ export default function Inbox() {
           </button>
         </div>
 
-        <InboxMetrics proposals={proposals} />
+        <InboxMetrics proposals={proposals} activeFilter={statusFilter} onFilter={setStatusFilter} />
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-6 h-6 border-2 border-border border-t-navy rounded-full animate-spin" />
           </div>
         ) : (
-          <InboxTable proposals={proposals} clientMap={clientMap} />
+          <InboxTable proposals={proposals} clientMap={clientMap} statusFilter={statusFilter} />
         )}
       </div>
 
