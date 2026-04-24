@@ -197,7 +197,13 @@ export default function ProposalEngine() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <TopBar advisorName={advisor.name} statusText={localData.reference} />
-      <ClientStrip proposal={localData} />
+      <div className="bg-navy text-white px-6 py-2.5 flex items-center gap-6 text-xs sticky top-0 z-20 border-b border-navy/20">
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Client</span><span className="font-semibold">{localData.client_name}</span></div>
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs Identified</span><span className="font-medium">{localData.needs_identified || '—'}</span></div>
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Risk Profile</span><span className="font-medium">{localData.risk_profile || '—'}</span></div>
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Time Horizon</span><span className="font-medium">{localData.time_horizon || '—'}</span></div>
+        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Reference</span><span className="font-mono text-[10px]">{localData.reference}</span></div>
+      </div>
 
       <div className="bg-card border-b border-border px-4 md:px-6">
         <div className="flex">
@@ -251,7 +257,7 @@ export default function ProposalEngine() {
               <strong>Complete all recommendation fields below.</strong> The proposal preview updates as you type. Sign before sending to client.
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 items-start">
               <div>
                 {investments.length > 0 && (
                   <div className="border border-border bg-card mb-2 overflow-hidden border-t-2 border-t-ocean">
@@ -267,7 +273,7 @@ export default function ProposalEngine() {
                             <span className="text-[9px] text-muted-foreground">{inv.jurisdiction} · {inv.currency}</span>
                           </div>
                           <div className="text-[10px] text-muted-foreground mb-1">{inv.product_type}</div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[10px]">
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px]">
                             {inv.amount > 0 && <span><span className="text-muted-foreground">Lump sum: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></span>}
                             {inv.recurring_amount > 0 && <span><span className="text-muted-foreground">Recurring: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></span>}
                             {inv.initial_fee_percent > 0 && <span><span className="text-muted-foreground">Initial: </span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></span>}

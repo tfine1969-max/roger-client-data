@@ -1,54 +1,18 @@
-import React, { useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import React from 'react';
 import { NEEDS_OPTIONS } from '@/lib/constants';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Edit2 } from 'lucide-react';
 
-const TAX_RESIDENCY_OPTIONS = ['South Africa', 'United Kingdom', 'United States', 'Australia', 'Other'];
-
-// Extract DOB from SA ID (YYMMDD...)
-function dobFromSAId(idNumber) {
-  if (!idNumber || idNumber.length < 6) return '';
-  const yy = idNumber.substring(0, 2);
-  const mm = idNumber.substring(2, 4);
-  const dd = idNumber.substring(4, 6);
-  if (!/^\d{6}/.test(idNumber)) return '';
-  const year = parseInt(yy) <= 25 ? `20${yy}` : `19${yy}`;
-  return `${year}-${mm}-${dd}`;
-}
-
-function Field({ label, required, children }) {
+function Field({ label, value }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">
-        {label} {required && <span className="text-ocean">*</span>}
-      </Label>
-      {children}
+    <div>
+      <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
+      <p className="text-xs font-medium text-navy mt-0.5">{value || '—'}</p>
     </div>
   );
 }
 
-function CheckboxItem({ id, label, checked, onChange }) {
-  return (
-    <label key={id} className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${checked ? 'border-navy bg-navy/5' : 'border-border bg-card hover:border-ocean/50'}`}>
-      <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-navy border-navy' : 'border-border'}`}>
-        {checked && <span className="text-white text-[10px] font-bold leading-none">✓</span>}
-      </div>
-      <span className="text-[13px] font-medium text-navy">{label}</span>
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
-    </label>
-  );
-}
-
 export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) {
-  const canProceed = data.client_name?.trim();
-  
-  // Parse needs array
   const needs = Array.isArray(data.needs_array) ? data.needs_array : [];
-  const clientType = data.client_type || 'natural_person';
-  const idType = data.identification_type || '';
 
   const toggleNeed = (id) => {
     const updated = needs.includes(id) ? needs.filter(n => n !== id) : [...needs, id];
@@ -57,254 +21,67 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
     onChange('needs_identified', labels.join(', '));
   };
 
-  // Handle SA ID change with auto-extraction
-  const handleSaIdChange = (val) => {
-    onChange('client_id_number', val);
-    const digitsOnly = val.replace(/\D/g, '');
-    if (digitsOnly.length === 13 && val === digitsOnly) {
-      const dob = dobFromSAId(digitsOnly);
-      if (dob) onChange('client_dob', dob);
-    }
-  };
-
-  const val = data.client_id_number || '';
-  const digitsOnly = val.replace(/\D/g, '');
-  const isPureDigits = val.length > 0 && val === digitsOnly;
-  const idError = clientType === 'natural_person' && idType === 'sa_id' && isPureDigits && digitsOnly.length > 0 && digitsOnly.length < 13
-    ? `${digitsOnly.length}/13 digits`
-    : null;
-
   return (
-    <div className="w-full">
-      {/* Client Type Selection */}
-      <div className="border border-border bg-card mb-2">
-         <div className="px-5 py-3 bg-muted border-b border-border">
-           <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">01 — Client type</div>
-         </div>
-         <div className="p-3">
-          <Field label="Client type" required>
-            <Select value={clientType} onValueChange={v => onChange('client_type', v)}>
-              <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select client type" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="natural_person">Natural Person</SelectItem>
-                <SelectItem value="company">Company</SelectItem>
-                <SelectItem value="trust">Trust</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
+    <div className="w-full max-w-4xl mx-auto">
+
+      {/* Client Summary Card */}
+      <div className="border border-border bg-card mb-3 overflow-hidden">
+        <div className="px-4 py-2.5 bg-muted border-b border-border flex items-center justify-between">
+          <span className="text-[10px] font-semibold tracking-wider uppercase text-navy">Client Summary</span>
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="flex items-center gap-1.5 text-[10px] text-ocean hover:text-navy transition-colors font-medium"
+          >
+            <Edit2 className="w-3 h-3" /> Edit in onboarding
+          </button>
+        </div>
+        <div className="p-4 grid grid-cols-4 gap-3">
+          <Field label="Full Name" value={data.client_name} />
+          <Field label="ID Number" value={data.client_id_number} />
+          <Field label="Date of Birth" value={data.client_dob} />
+          <Field label="ID Type" value={data.identification_type === 'sa_id' ? 'SA ID' : data.identification_type === 'passport' ? 'Passport' : '—'} />
+          <Field label="Email" value={data.client_email} />
+          <Field label="Mobile" value={data.client_mobile} />
+          <Field label="Tax Residency" value={data.client_tax_residency} />
+          <Field label="Risk Profile" value={data.risk_profile} />
+          <Field label="Time Horizon" value={data.time_horizon} />
+          {Array.isArray(data.advisory_needs) && data.advisory_needs.length > 0 && (
+            <div className="col-span-2">
+              <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">Advisory Needs</p>
+              <p className="text-xs font-medium text-navy mt-0.5">{data.advisory_needs.join(', ')}</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* NATURAL PERSON */}
-      {clientType === 'natural_person' && (
-        <>
-            <div className="border border-border bg-card mb-2">
-              <div className="px-5 py-3 bg-muted border-b border-border">
-                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Client identity</div>
-              </div>
-              <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Full name" required>
-                <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Full name" className="rounded-sm" />
-              </Field>
-              <Field label="Identification type" required>
-                <Select value={idType} onValueChange={v => onChange('identification_type', v)}>
-                  <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select ID type" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sa_id">South African ID</SelectItem>
-                    <SelectItem value="passport">Passport</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              {idType === 'sa_id' && (
-                <>
-                  <Field label="SA ID Number" required>
-                    <Input
-                      value={data.client_id_number || ''}
-                      onChange={e => handleSaIdChange(e.target.value)}
-                      placeholder="13-digit SA ID"
-                      maxLength={20}
-                      className={`rounded-sm font-mono tracking-wider ${idError ? 'border-destructive' : ''}`}
-                    />
-                    {idError && <p className="text-[10px] text-destructive mt-0.5">{idError}</p>}
-                  </Field>
-                </>
-              )}
-
-              {idType === 'passport' && (
-                <>
-                  <Field label="Passport Number" required>
-                    <Input
-                      value={data.client_id_number || ''}
-                      onChange={e => onChange('client_id_number', e.target.value)}
-                      placeholder="Passport number"
-                      className="rounded-sm font-mono tracking-wider"
-                    />
-                  </Field>
-                </>
-              )}
-
-              {idType && (
-                <Field label="Date of birth" required>
-                  <Input type="date" value={data.client_dob || ''} onChange={e => onChange('client_dob', e.target.value)} className="rounded-sm" />
-                </Field>
-              )}
-
-              <Field label="Tax residency">
-                <Select value={data.client_tax_residency || ''} onValueChange={v => onChange('client_tax_residency', v)}>
-                  <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select country" /></SelectTrigger>
-                  <SelectContent>
-                    {TAX_RESIDENCY_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-          </div>
-
-          <div className="border border-border bg-card mb-2">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
-            </div>
-            <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Email address">
-                <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="client@email.com" className="rounded-sm" />
-              </Field>
-              <Field label="Mobile number">
-                <Input type="tel" value={data.client_mobile || ''} onChange={e => onChange('client_mobile', e.target.value)} placeholder="+27" className="rounded-sm" />
-              </Field>
-            </div>
-          </div>
-          </>
-          )}
-
-      {/* COMPANY */}
-      {clientType === 'company' && (
-        <>
-            <div className="border border-border bg-card mb-2">
-              <div className="px-5 py-3 bg-muted border-b border-border">
-                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Company details</div>
-              </div>
-              <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Registered company name" required>
-                <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Legal company name" className="rounded-sm" />
-              </Field>
-              <Field label="CIPC registration number" required>
-                <Input value={data.company_registration_number || ''} onChange={e => onChange('company_registration_number', e.target.value)} placeholder="e.g. 2021/123456" className="rounded-sm" />
-              </Field>
-              <Field label="Trading name (if applicable)">
-                <Input value={data.company_trading_name || ''} onChange={e => onChange('company_trading_name', e.target.value)} placeholder="Trading name" className="rounded-sm" />
-              </Field>
-              <Field label="Country of incorporation">
-                <Input value={data.company_incorporation_country || ''} onChange={e => onChange('company_incorporation_country', e.target.value)} placeholder="South Africa" className="rounded-sm" />
-              </Field>
-              <Field label="Date of incorporation">
-                <Input type="date" value={data.company_incorporation_date || ''} onChange={e => onChange('company_incorporation_date', e.target.value)} className="rounded-sm" />
-              </Field>
-              <Field label="VAT number (if applicable)">
-                <Input value={data.company_vat_number || ''} onChange={e => onChange('company_vat_number', e.target.value)} placeholder="VAT number" className="rounded-sm" />
-              </Field>
-              <Field label="Industry / nature of business">
-                <Input value={data.company_industry || ''} onChange={e => onChange('company_industry', e.target.value)} placeholder="e.g. Retail, Financial Services" className="rounded-sm col-span-2" />
-              </Field>
-            </div>
-          </div>
-
-          <div className="border border-border bg-card mb-2">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
-            </div>
-            <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Email address">
-                <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="company@email.com" className="rounded-sm" />
-              </Field>
-              <Field label="Contact number">
-                <Input type="tel" value={data.client_mobile || ''} onChange={e => onChange('client_mobile', e.target.value)} placeholder="+27" className="rounded-sm" />
-              </Field>
-            </div>
-          </div>
-          </>
-          )}
-
-      {/* TRUST */}
-      {clientType === 'trust' && (
-        <>
-            <div className="border border-border bg-card mb-2">
-              <div className="px-5 py-3 bg-muted border-b border-border">
-                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Trust details</div>
-              </div>
-              <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Trust name" required>
-                <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Legal trust name" className="rounded-sm" />
-              </Field>
-              <Field label="Trust registration / master's reference" required>
-                <Input value={data.trust_registration_number || ''} onChange={e => onChange('trust_registration_number', e.target.value)} placeholder="Reference number" className="rounded-sm" />
-              </Field>
-              <Field label="Country of formation">
-                <Input value={data.trust_formation_country || ''} onChange={e => onChange('trust_formation_country', e.target.value)} placeholder="South Africa" className="rounded-sm" />
-              </Field>
-              <Field label="Date of creation">
-                <Input type="date" value={data.trust_creation_date || ''} onChange={e => onChange('trust_creation_date', e.target.value)} className="rounded-sm" />
-              </Field>
-              <Field label="Nature / purpose of trust">
-                <Input value={data.trust_purpose || ''} onChange={e => onChange('trust_purpose', e.target.value)} placeholder="e.g. Family trust, Charitable trust" className="rounded-sm col-span-2" />
-              </Field>
-            </div>
-          </div>
-
-          <div className="border border-border bg-card mb-2">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
-            </div>
-            <div className="p-3 grid grid-cols-2 gap-3">
-              <Field label="Email address">
-                <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="trust@email.com" className="rounded-sm" />
-              </Field>
-              <Field label="Contact number">
-                <Input type="tel" value={data.client_mobile || ''} onChange={e => onChange('client_mobile', e.target.value)} placeholder="+27" className="rounded-sm" />
-              </Field>
-            </div>
-          </div>
-          </>
-          )}
-
-      {/* Needs Identified (common to all client types) */}
-      <div className="border border-border bg-card mb-2">
-        <div className="px-5 py-3 bg-muted border-b border-border">
-          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">04 — Needs identified</div>
+      {/* Needs Identified */}
+      <div className="border border-border bg-card mb-3 overflow-hidden">
+        <div className="px-4 py-2.5 bg-muted border-b border-border flex items-center justify-between">
+          <span className="text-[10px] font-semibold tracking-wider uppercase text-navy">Needs Identified</span>
+          <span className="text-[9px] text-muted-foreground">Select all that apply</span>
         </div>
-        <div className="p-3 space-y-2">
-          <div className="grid grid-cols-2 gap-3">
-            {NEEDS_OPTIONS.map(opt => (
-              <CheckboxItem
-                key={opt.id}
-                id={opt.id}
-                label={opt.label}
-                checked={needs.includes(opt.id)}
-                onChange={() => toggleNeed(opt.id)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Additional Notes */}
-      <div className="border border-border bg-card mb-2">
-        <div className="px-5 py-3 bg-muted border-b border-border">
-          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">05 — Additional notes</div>
-        </div>
-        <div className="p-3">
-          <Textarea value={data.notes || ''} onChange={e => onChange('notes', e.target.value)} placeholder="Any additional context..." className="rounded-sm min-h-[70px]" />
+        <div className="p-4 grid grid-cols-2 gap-2">
+          {NEEDS_OPTIONS.map(opt => (
+            <label key={opt.id} className={`flex items-center gap-2 p-2.5 border cursor-pointer transition-colors text-xs font-medium ${needs.includes(opt.id) ? 'border-navy bg-navy/5 text-navy' : 'border-border text-muted-foreground hover:border-navy/40'}`}>
+              <div className={`w-3.5 h-3.5 border flex-shrink-0 flex items-center justify-center ${needs.includes(opt.id) ? 'bg-navy border-navy' : 'border-muted-foreground'}`}>
+                {needs.includes(opt.id) && <span className="text-white text-[8px] font-bold leading-none">✓</span>}
+              </div>
+              {opt.label}
+              <input type="checkbox" checked={needs.includes(opt.id)} onChange={() => toggleNeed(opt.id)} className="sr-only" />
+            </label>
+          ))}
         </div>
       </div>
 
       <button
         onClick={onProceed}
-        disabled={!canProceed || needs.length === 0}
-        className="w-full bg-navy text-white py-4 text-[13px] font-medium tracking-[.1em] uppercase hover:bg-ocean transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+        disabled={needs.length === 0}
+        className="w-full bg-navy text-white py-3 text-[12px] font-medium tracking-[.1em] uppercase hover:bg-ocean transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
       >
         Proceed to recommendations <ChevronRight className="w-4 h-4" />
       </button>
-      {canProceed && needs.length === 0 && (
+      {needs.length === 0 && (
         <p className="text-center text-[11px] text-muted-foreground mt-2">Please select at least one need to continue</p>
       )}
     </div>
