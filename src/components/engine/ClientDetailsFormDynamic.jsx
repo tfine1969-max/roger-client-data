@@ -77,11 +77,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
   return (
     <div className="w-full">
       {/* Client Type Selection */}
-      <div className="border border-border bg-card mb-4">
-        <div className="px-5 py-3 bg-muted border-b border-border">
-          <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">01 — Client type</div>
-        </div>
-        <div className="p-5">
+      <div className="border border-border bg-card mb-2">
+         <div className="px-5 py-3 bg-muted border-b border-border">
+           <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">01 — Client type</div>
+         </div>
+         <div className="p-3">
           <Field label="Client type" required>
             <Select value={clientType} onValueChange={v => onChange('client_type', v)}>
               <SelectTrigger className="rounded-sm"><SelectValue placeholder="Select client type" /></SelectTrigger>
@@ -98,11 +98,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
       {/* NATURAL PERSON */}
       {clientType === 'natural_person' && (
         <>
-          <div className="border border-border bg-card mb-4">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Client identity</div>
-            </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="border border-border bg-card mb-2">
+              <div className="px-5 py-3 bg-muted border-b border-border">
+                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Client identity</div>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Full name" required>
                 <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Full name" className="rounded-sm" />
               </Field>
@@ -161,11 +161,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
             </div>
           </div>
 
-          <div className="border border-border bg-card mb-4">
+          <div className="border border-border bg-card mb-2">
             <div className="px-5 py-3 bg-muted border-b border-border">
               <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
             </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Email address">
                 <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="client@email.com" className="rounded-sm" />
               </Field>
@@ -174,17 +174,17 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
               </Field>
             </div>
           </div>
-        </>
-      )}
+          </>
+          )}
 
       {/* COMPANY */}
       {clientType === 'company' && (
         <>
-          <div className="border border-border bg-card mb-4">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Company details</div>
-            </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="border border-border bg-card mb-2">
+              <div className="px-5 py-3 bg-muted border-b border-border">
+                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Company details</div>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Registered company name" required>
                 <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Legal company name" className="rounded-sm" />
               </Field>
@@ -209,11 +209,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
             </div>
           </div>
 
-          <div className="border border-border bg-card mb-4">
+          <div className="border border-border bg-card mb-2">
             <div className="px-5 py-3 bg-muted border-b border-border">
               <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
             </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Email address">
                 <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="company@email.com" className="rounded-sm" />
               </Field>
@@ -222,17 +222,17 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
               </Field>
             </div>
           </div>
-        </>
-      )}
+          </>
+          )}
 
       {/* TRUST */}
       {clientType === 'trust' && (
         <>
-          <div className="border border-border bg-card mb-4">
-            <div className="px-5 py-3 bg-muted border-b border-border">
-              <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Trust details</div>
-            </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="border border-border bg-card mb-2">
+              <div className="px-5 py-3 bg-muted border-b border-border">
+                <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">02 — Trust details</div>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Trust name" required>
                 <Input value={data.client_name || ''} onChange={e => onChange('client_name', e.target.value)} placeholder="Legal trust name" className="rounded-sm" />
               </Field>
@@ -251,11 +251,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
             </div>
           </div>
 
-          <div className="border border-border bg-card mb-4">
+          <div className="border border-border bg-card mb-2">
             <div className="px-5 py-3 bg-muted border-b border-border">
               <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">03 — Contact details</div>
             </div>
-            <div className="p-5 grid grid-cols-2 gap-4">
+            <div className="p-3 grid grid-cols-2 gap-3">
               <Field label="Email address">
                 <Input type="email" value={data.client_email || ''} onChange={e => onChange('client_email', e.target.value)} placeholder="trust@email.com" className="rounded-sm" />
               </Field>
@@ -264,15 +264,15 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
               </Field>
             </div>
           </div>
-        </>
-      )}
+          </>
+          )}
 
       {/* Needs Identified (common to all client types) */}
-      <div className="border border-border bg-card mb-4">
+      <div className="border border-border bg-card mb-2">
         <div className="px-5 py-3 bg-muted border-b border-border">
           <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">04 — Needs identified</div>
         </div>
-        <div className="p-5 space-y-4">
+        <div className="p-3 space-y-2">
           <div className="grid grid-cols-2 gap-3">
             {NEEDS_OPTIONS.map(opt => (
               <CheckboxItem
@@ -288,11 +288,11 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
       </div>
 
       {/* Additional Notes */}
-      <div className="border border-border bg-card mb-4">
+      <div className="border border-border bg-card mb-2">
         <div className="px-5 py-3 bg-muted border-b border-border">
           <div className="text-[9px] font-medium tracking-[.14em] uppercase text-navy">05 — Additional notes</div>
         </div>
-        <div className="p-5">
+        <div className="p-3">
           <Textarea value={data.notes || ''} onChange={e => onChange('notes', e.target.value)} placeholder="Any additional context..." className="rounded-sm min-h-[70px]" />
         </div>
       </div>

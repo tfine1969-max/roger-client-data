@@ -250,7 +250,7 @@ export default function ProposalEngine() {
       </div>
 
       <div className="flex-1 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 sticky top-0 z-10 bg-background">
           <div className="text-[13px] font-medium text-navy">
             {localData.reference} &nbsp;·&nbsp; {localData.client_name}
           </div>
