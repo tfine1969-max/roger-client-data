@@ -1,66 +1,55 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, ExternalLink } from 'lucide-react';
 
 export default function PdfSection({ proposal, proposalId }) {
-  const [generating, setGenerating] = useState(false);
-
-  const handleGeneratePdf = async () => {
-    setGenerating(true);
-    // TODO: Implement PDF generation logic
-    setTimeout(() => setGenerating(false), 2000);
-  };
+  const navigate = useNavigate();
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <h2 className="text-lg font-bold text-navy mb-6">PDF Document</h2>
-
-      <div className="space-y-4">
+    <div className="bg-card border border-border rounded-lg p-4">
+      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">PDF Document</h2>
+      <div className="space-y-3">
         {proposal.proposal_pdf_url ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="w-6 h-6 text-green-700" />
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-700" />
                 <div>
-                  <p className="font-medium text-green-900">PDF Generated</p>
-                  <p className="text-sm text-green-700">Current version available</p>
+                  <p className="text-xs font-semibold text-green-900">PDF Generated</p>
+                  <p className="text-[10px] text-green-700">Current version available</p>
                 </div>
               </div>
               <a
                 href={proposal.proposal_pdf_url}
-                download
-                className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-sm hover:bg-green-800 transition-colors text-sm font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1.5 bg-green-700 text-white rounded-sm hover:bg-green-800 transition-colors text-xs font-medium"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3 h-3" />
                 Download
               </a>
             </div>
           </div>
         ) : (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-900">No PDF generated yet. Create one to send to client.</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-900">No PDF generated yet. Click below to create and sign the proposal.</p>
           </div>
         )}
 
-        <div className="flex gap-3">
-          <Button
-            onClick={handleGeneratePdf}
-            disabled={generating}
-            className="flex-1 bg-navy hover:bg-ocean text-white py-2 rounded-sm font-medium"
-          >
-            {generating ? 'Generating...' : 'Generate PDF'}
-          </Button>
-          {proposal.proposal_pdf_url && (
-            <Button
-              onClick={handleGeneratePdf}
-              disabled={generating}
-              variant="outline"
-              className="flex-1 border-border hover:bg-muted py-2 rounded-sm font-medium"
-            >
-              Regenerate PDF
-            </Button>
-          )}
-        </div>
+        <Button
+          onClick={() => navigate(`/proposal/${proposalId}/engine`)}
+          className="w-full bg-navy hover:bg-ocean text-white py-2 rounded-sm font-medium text-xs flex items-center justify-center gap-2"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          {proposal.proposal_pdf_url ? 'Open Proposal Engine' : 'Generate PDF & Sign'}
+        </Button>
+
+        {proposal.proposal_pdf_url && (
+          <p className="text-[10px] text-muted-foreground text-center">
+            Regenerate by opening the proposal engine and signing again
+          </p>
+        )}
       </div>
     </div>
   );
