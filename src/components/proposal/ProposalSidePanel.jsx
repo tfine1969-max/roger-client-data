@@ -19,29 +19,22 @@ const RISK_BADGE = {
 export default function ProposalSidePanel({ client, investments, riskProducts, proposal, proposalId }) {
   const navigate = useNavigate();
 
-  const totalRiskPremium = riskProducts.reduce((sum, rp) => {
-    return sum + (parseFloat(rp.total_premium) || 0);
-  }, 0);
-
-  const totalInvestment = investments.reduce((sum, inv) => {
-    return sum + (parseFloat(inv.amount) || 0);
-  }, 0);
-
+  const totalRiskPremium = riskProducts.reduce((sum, rp) => sum + (parseFloat(rp.total_premium) || 0), 0);
+  const totalInvestment = investments.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
   const ficaOk = client?.identity_document_uploaded && client?.proof_of_address_uploaded;
 
   return (
-    <div className="w-80 shrink-0">
-      <div className="sticky top-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]">
+    <div className="w-96 shrink-0">
+      <div className="sticky top-4 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
 
-        {/* Section 1 — Client Summary */}
-        <div className="p-3 border-b border-slate-200 overflow-y-auto flex-1">
+        {/* Client Summary */}
+        <div className="p-4 border-b border-slate-200 overflow-y-auto">
           <p className="text-[9px] font-bold tracking-[.12em] uppercase text-slate-400 mb-2">Client Summary</p>
 
           {!client ? (
             <p className="text-xs text-muted-foreground italic">No client linked</p>
           ) : (
             <>
-              {/* Name & FICA */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="text-sm font-bold text-navy leading-tight">
@@ -69,7 +62,6 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
                 </div>
               </div>
 
-              {/* Risk Profile Badge */}
               {client.risk_profile && (
                 <div className="mb-2">
                   <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${RISK_BADGE[client.risk_profile] || 'bg-slate-100 text-slate-600'}`}>
@@ -78,35 +70,33 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
                 </div>
               )}
 
-              {/* Key fields */}
               <div className="space-y-1 text-[10px]">
                 {client.time_horizon && (
                   <div className="flex justify-between">
                     <span className="text-slate-500 uppercase tracking-wide">Time Horizon</span>
-                    <span className="font-medium text-navy text-right max-w-[60%]">{client.time_horizon}</span>
+                    <span className="font-medium text-navy text-right">{client.time_horizon}</span>
                   </div>
                 )}
                 {client.primary_investment_objective && (
                   <div className="flex justify-between">
                     <span className="text-slate-500 uppercase tracking-wide">Objective</span>
-                    <span className="font-medium text-navy text-right max-w-[60%]">{client.primary_investment_objective}</span>
+                    <span className="font-medium text-navy text-right">{client.primary_investment_objective}</span>
                   </div>
                 )}
                 {client.gross_annual_income_band && (
                   <div className="flex justify-between">
                     <span className="text-slate-500 uppercase tracking-wide">Annual Income</span>
-                    <span className="font-medium text-navy text-right max-w-[60%]">{client.gross_annual_income_band}</span>
+                    <span className="font-medium text-navy text-right">{client.gross_annual_income_band}</span>
                   </div>
                 )}
                 {client.monthly_investable_surplus && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500 uppercase tracking-wide">Investable Surplus</span>
-                    <span className="font-medium text-navy text-right max-w-[60%]">{client.monthly_investable_surplus}</span>
+                    <span className="text-slate-500 uppercase tracking-wide">Surplus</span>
+                    <span className="font-medium text-navy text-right">{client.monthly_investable_surplus}</span>
                   </div>
                 )}
               </div>
 
-              {/* Advisory Needs */}
               {Array.isArray(client.advisory_needs) && client.advisory_needs.length > 0 && (
                 <div className="mt-2">
                   <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Advisory Needs</p>
@@ -121,21 +111,20 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
           )}
         </div>
 
-        {/* Section 2 — Proposal Summary */}
-        <div className="p-3 border-b border-slate-200 overflow-y-auto max-h-48">
+        {/* Proposal Summary */}
+        <div className="p-4 border-b border-slate-200 overflow-y-auto flex-1">
           <p className="text-[9px] font-bold tracking-[.12em] uppercase text-slate-400 mb-2">Proposal Summary</p>
 
-          {/* Risk Products */}
           {riskProducts.length > 0 && (
-            <div className="mb-2">
+            <div className="mb-3">
               <p className="text-[9px] font-bold text-teal uppercase tracking-wide mb-1">Risk Products</p>
               {riskProducts.map((rp, i) => (
-                <div key={rp.id || i} className="mb-1.5">
-                  <p className="text-[10px] font-semibold text-navy">{rp.provider}</p>
+                <div key={rp.id || i} className="mb-2">
+                  <p className="text-[10px] font-semibold text-navy mb-1">{rp.provider}</p>
                   {Array.isArray(rp._covers) && rp._covers.map((cover, ci) => (
                     <div key={ci} className="flex justify-between text-[9px] text-slate-500 pl-2">
                       <span>{cover.cover_type}</span>
-                      <span>R {fmt(cover.premium)}</span>
+                      <span className="font-medium text-navy">R {fmt(cover.premium)}</span>
                     </div>
                   ))}
                   {parseFloat(rp.total_premium) > 0 && (
@@ -149,20 +138,28 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
             </div>
           )}
 
-          {/* Investments */}
           {investments.length > 0 && (
             <div>
               <p className="text-[9px] font-bold text-ocean uppercase tracking-wide mb-1">Investments</p>
               {investments.map((inv, i) => (
-                <div key={inv.id || i} className="mb-1.5">
-                  <div className="flex justify-between text-[10px]">
+                <div key={inv.id || i} className="mb-2">
+                  <div className="flex justify-between text-[10px] mb-0.5">
                     <span className="font-semibold text-navy">{inv.provider || '—'}</span>
-                    <span className="text-slate-500">{inv.jurisdiction}</span>
+                    <span className="text-slate-500 text-[9px]">{inv.jurisdiction}</span>
                   </div>
-                  {inv.product_type && <p className="text-[9px] text-slate-500">{inv.product_type}</p>}
-                  <div className="flex justify-between text-[9px] text-slate-500">
-                    <span>{inv.currency} {fmt(inv.amount)}</span>
+                  {inv.product_type && (
+                    <p className="text-[9px] text-slate-500 pl-2">{inv.product_type}</p>
+                  )}
+                  <div className="flex justify-between text-[9px] pl-2">
+                    <span className="text-slate-500">{inv.currency}</span>
+                    <span className="font-medium text-navy">{fmt(inv.amount)}</span>
                   </div>
+                  {inv.recurring_amount > 0 && (
+                    <div className="flex justify-between text-[9px] pl-2">
+                      <span className="text-slate-500">Recurring ({inv.frequency})</span>
+                      <span className="font-medium text-navy">{fmt(inv.recurring_amount)}</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -173,9 +170,9 @@ export default function ProposalSidePanel({ client, investments, riskProducts, p
           )}
         </div>
 
-        {/* Section 3 — Totals + Actions */}
-        <div className="p-3 bg-slate-100 border-t border-slate-200 space-y-2">
-          <div className="space-y-1">
+        {/* Totals + Actions */}
+        <div className="p-4 bg-slate-100 border-t border-slate-200 space-y-3 shrink-0">
+          <div className="space-y-1.5">
             <div className="flex justify-between text-[10px]">
               <span className="text-slate-500 uppercase tracking-wider font-semibold">Total Monthly Risk Premium</span>
               <span className="font-bold text-teal">R {fmt(totalRiskPremium)}</span>

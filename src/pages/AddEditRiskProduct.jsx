@@ -42,9 +42,30 @@ const Field = ({ label, children }) => (
   </div>
 );
 
-const NumInput = ({ value, onChange, placeholder = '0' }) => (
-  <Input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="h-8 text-xs rounded-sm" />
-);
+const NumInput = ({ value, onChange, placeholder = '0' }) => {
+  const [display, setDisplay] = React.useState(value ? Number(value).toLocaleString('en-ZA') : '');
+  React.useEffect(() => {
+    setDisplay(value ? Number(value).toLocaleString('en-ZA') : '');
+  }, []);
+  return (
+    <Input
+      type="text"
+      value={display}
+      onChange={e => {
+        const raw = e.target.value.replace(/,/g, '');
+        setDisplay(e.target.value);
+        onChange(raw);
+      }}
+      onBlur={() => {
+        const num = parseFloat(display.replace(/,/g, ''));
+        if (!isNaN(num)) setDisplay(num.toLocaleString('en-ZA'));
+      }}
+      onFocus={() => setDisplay(value || '')}
+      placeholder={placeholder}
+      className="h-8 text-xs rounded-sm"
+    />
+  );
+};
 
 function BenefitFields({ benefitKey, data, onChange }) {
   const set = (field, val) => onChange({ ...data, [field]: val });
