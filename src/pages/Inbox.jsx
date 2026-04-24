@@ -29,7 +29,8 @@ export default function Inbox() {
 
   // Build clientMap for quick lookup
   const clientMap = clients.reduce((acc, client) => {
-    acc[client.id] = client;
+    if (client.id) acc[client.id] = client;
+    if (client.client_id) acc[client.client_id] = client;
     return acc;
   }, {});
 
