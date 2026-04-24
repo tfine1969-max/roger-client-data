@@ -44,6 +44,37 @@ export default function ProposalEngine() {
     queryFn: () => base44.entities.Clients.list(),
   });
 
+  const { data: investments = [] } = useQuery({
+    queryKey: ['investments', id],
+    queryFn: () => base44.entities.Investments.filter({ proposal_id: id }),
+    enabled: !!id,
+  });
+
+  const { data: riskProductsRaw = [] } = useQuery({
+    queryKey: ['riskProducts', id],
+    queryFn: () => base44.entities.RiskProducts.filter({ proposal_id: id }),
+    enabled: !!id,
+  });
+
+  const { data: allRiskCovers = [] } = useQuery({
+    queryKey: ['allRiskCovers', id],
+    queryFn: async () => {
+      const products = await base44.entities.RiskProducts.filter({ proposal_id: id });
+      if (!products.length) return [];
+      const coversArrays = await Promise.all(
+        products.map(p => base44.entities.RiskCovers.filter({ risk_product_id: p.id }))
+      );
+      return coversArrays.flat();
+    },
+    enabled: !!id,
+  });
+
+  const riskProducts = riskProductsRaw.map(rp => {
+    const covers = allRiskCovers.filter(c => c.risk_product_id === rp.id);
+    const total_premium = covers.reduce((s, c) => s + (parseFloat(c.premium) || 0), 0);
+    return { ...rp, _covers: covers, total_premium };
+  });
+
   // Sync fetched proposal to local state
   useEffect(() => {
     if (!proposal || localData || allClients.length === 0) return;
@@ -250,25 +281,82 @@ export default function ProposalEngine() {
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
               <div>
-                {hasInvestment && (
-                  <InvestmentCard data={localData} onChange={handleFieldChange} />
+                {/* Investments from proposal */}
+                {investments.length > 0 && (
+                  <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-ocean">
+                    <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
+                      <span className="text-[11px] font-medium tracking-[.06em] uppercase text-navy">Investment recommendations</span>
+                      <span className="text-[9px] font-medium text-white px-2.5 py-1 tracking-[.06em] uppercase bg-ocean">Investment</span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {investments.map((inv, i) => (
+                        <div key={inv.id || i} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-sm font-semibold text-navy">{inv.provider}</span>
+                            <span className="text-[10px] text-muted-foreground">{inv.jurisdiction} · {inv.currency}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-2">{inv.product_type}</div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            {inv.amount > 0 && <div><span className="text-muted-foreground">Lump sum: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></div>}
+                            {inv.recurring_amount > 0 && <div><span className="text-muted-foreground">Recurring: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></div>}
+                            {inv.initial_fee_percent > 0 && <div><span className="text-muted-foreground">Initial fee: </span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
+                            {inv.annual_advice_fee_percent > 0 && <div><span className="text-muted-foreground">Annual advice fee: </span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
+                          </div>
+                          {inv.underlying_funds?.length > 0 && (
+                            <div className="mt-1 text-[10px] text-muted-foreground">Funds: {inv.underlying_funds.join(', ')}</div>
+                          )}
+                        </div>
+                      ))}
+                      <div className="pt-2">
+                        <textarea
+                          className="border border-border bg-muted text-[13px] text-foreground w-full outline-none p-3 resize-y min-h-[70px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
+                          value={localData.investment_rationale || ''}
+                          onChange={e => handleFieldChange('investment_rationale', e.target.value)}
+                          placeholder="Suitability rationale — why this investment recommendation is appropriate..."
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
 
-                {/* Add second investment option between products */}
-                {hasInvestment && !localData.show_investment2 && (
-                  <button
-                    onClick={() => handleFieldChange('show_investment2', true)}
-                    className="w-full border border-dashed border-ocean/40 text-ocean text-[11px] font-medium tracking-[.08em] uppercase py-2.5 mb-3 hover:bg-ocean/5 transition-colors"
-                  >
-                    + Add another investment product
-                  </button>
-                )}
-                {hasInvestment && localData.show_investment2 && (
-                  <InvestmentCard2 data={localData} onChange={handleFieldChange} onRemove={() => handleFieldChange('show_investment2', false)} />
-                )}
-
-                {hasRiskCover && (
-                  <RiskCoverCard data={localData} onChange={handleFieldChange} />
+                {/* Risk Products from proposal */}
+                {riskProducts.length > 0 && (
+                  <div className="border border-border bg-card mb-3 overflow-hidden border-t-2 border-t-teal">
+                    <div className="px-4 py-3 border-b border-border bg-muted flex items-center justify-between">
+                      <span className="text-[11px] font-medium tracking-[.06em] uppercase text-navy">Risk cover recommendations</span>
+                      <span className="text-[9px] font-medium text-white px-2.5 py-1 tracking-[.06em] uppercase bg-teal">Risk cover</span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {riskProducts.map((rp, i) => (
+                        <div key={rp.id || i} className="border-b border-border pb-3 last:border-0 last:pb-0">
+                          <div className="text-sm font-semibold text-navy mb-2">{rp.provider}</div>
+                          {rp._covers.map((cover, ci) => (
+                            <div key={ci} className="flex justify-between text-[11px] mb-1">
+                              <span className="text-muted-foreground">{cover.cover_type}</span>
+                              <div className="text-right">
+                                {cover.amount_required > 0 && <div className="font-medium text-navy">Cover: R {Number(cover.amount_required).toLocaleString('en-ZA')}</div>}
+                                {cover.premium > 0 && <div className="text-muted-foreground">Premium: R {Number(cover.premium).toLocaleString('en-ZA')} pm</div>}
+                              </div>
+                            </div>
+                          ))}
+                          {rp.total_premium > 0 && (
+                            <div className="flex justify-between text-[11px] font-semibold text-teal pt-1 border-t border-border mt-1">
+                              <span>Total monthly premium</span>
+                              <span>R {Number(rp.total_premium).toLocaleString('en-ZA')}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <div className="pt-2">
+                        <textarea
+                          className="border border-border bg-muted text-[13px] text-foreground w-full outline-none p-3 resize-y min-h-[70px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
+                          value={localData.risk_cover_rationale || ''}
+                          onChange={e => handleFieldChange('risk_cover_rationale', e.target.value)}
+                          placeholder="Suitability rationale — why this risk cover recommendation is appropriate..."
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 <div className="border border-border bg-card p-4 mb-3">
