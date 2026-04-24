@@ -45,9 +45,10 @@ export default function ClientRegistration() {
     try {
       // Check if a client record already exists for this email
       const allClients = await base44.entities.Clients.list();
-      const existing = allClients.find(
-        c => c.email?.toLowerCase().trim() === formData.email.toLowerCase().trim()
-      );
+      const existing = allClients.find(c => {
+        const clientEmail = (c.email || c.client_email || '').toLowerCase().trim();
+        return clientEmail === formData.email.toLowerCase().trim();
+      });
 
       let clientId;
 
