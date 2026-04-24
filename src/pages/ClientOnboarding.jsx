@@ -161,6 +161,7 @@ export default function ClientOnboarding() {
             last_name: client.last_name || '',
             sa_id_number: client.sa_id_number || '',
             passport_number: client.passport_number || '',
+            passport_country: client.passport_country || '',
             date_of_birth: client.date_of_birth || '',
             marital_status: client.marital_status || '',
             dependants: client.dependants || '',
@@ -178,7 +179,7 @@ export default function ClientOnboarding() {
             employment_status: client.employment_status || '',
             occupation: client.occupation || '',
             employer: client.employer || '',
-            source_of_funds: client.source_of_funds || [],
+            source_of_funds: Array.isArray(client.source_of_funds) ? client.source_of_funds : [],
             sa_tax_number: client.sa_tax_number || '',
             tax_residency: client.tax_residency || '',
             us_person_fatca: client.us_person_fatca || '',
@@ -188,7 +189,7 @@ export default function ClientOnboarding() {
             monthly_investable_surplus: client.monthly_investable_surplus || '',
             net_worth_band: client.net_worth_band || '',
             total_liabilities: client.total_liabilities || '',
-            existing_financial_products: client.existing_financial_products || [],
+            existing_financial_products: Array.isArray(client.existing_financial_products) ? client.existing_financial_products : [],
             loa_uploaded: client.loa_uploaded || false,
             loa_authorised: client.loa_authorised || false,
             will_in_place: client.will_in_place || '',
@@ -197,7 +198,7 @@ export default function ClientOnboarding() {
             time_horizon: client.time_horizon || '',
             liquidity_requirement: client.liquidity_requirement || '',
             risk_profile: client.risk_profile || '',
-            advisory_needs: client.advisory_needs || [],
+            advisory_needs: Array.isArray(client.advisory_needs) ? client.advisory_needs : [],
             identity_document_uploaded: client.identity_document_uploaded || false,
             proof_of_address_uploaded: client.proof_of_address_uploaded || false,
             income_proof_uploaded: client.income_proof_uploaded || false,
@@ -532,7 +533,7 @@ export default function ClientOnboarding() {
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MARITAL STATUS</Label>
                   <Select value={formData.marital_status} onValueChange={v => handleChange('marital_status', v)}>
@@ -545,13 +546,6 @@ export default function ClientOnboarding() {
                   <Select value={formData.dependants} onValueChange={v => handleChange('dependants', v)}>
                     <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['0', '1', '2', '3', '4', '5+'].map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
-                  <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
-                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
