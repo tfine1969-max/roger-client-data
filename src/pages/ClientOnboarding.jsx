@@ -155,6 +155,19 @@ export default function ClientOnboarding() {
             liquidity_requirement: client.liquidity_requirement || '',
             risk_profile: client.risk_profile || '',
             advisory_needs: client.advisory_needs || [],
+            // Step 5 - Documents
+            identity_document_uploaded: client.identity_document_uploaded || false,
+            proof_of_address_uploaded: client.proof_of_address_uploaded || false,
+            income_proof_uploaded: client.income_proof_uploaded || false,
+            existing_policies_uploaded: client.existing_policies_uploaded || false,
+            // Step 9 - Signatures
+            client_declaration_1: client.client_declaration_1 || false,
+            client_declaration_2: client.client_declaration_2 || false,
+            client_declaration_3: client.client_declaration_3 || false,
+            client_declaration_4: client.client_declaration_4 || false,
+            client_declaration_5: client.client_declaration_5 || false,
+            client_signature_name: client.client_signature_name || '',
+            client_signature_date: client.client_signature_date || new Date().toISOString().split('T')[0],
           }));
         }
       })
