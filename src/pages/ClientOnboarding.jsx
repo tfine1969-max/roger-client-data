@@ -229,14 +229,21 @@ export default function ClientOnboarding() {
 
   // Auto-calculate risk profile when relevant fields change
   useEffect(() => {
+    // Don't auto-calculate until fully initialised and not manually overridden
     if (!profileInitialised) return;
     if (profileOverridden) return;
+    // Only auto-calculate if the user has actually changed one of these fields
+    // (not just on load)
     const score = calcRiskScore(formData);
     if (formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) {
       const suggested = scoreToProfile(score);
-      setFormData(prev => ({ ...prev, risk_profile: suggested }));
+      setFormData(prev => {
+        // Only update if the suggested profile differs — avoids infinite loop
+        if (prev.risk_profile === suggested) return prev;
+        return { ...prev, risk_profile: suggested };
+      });
     }
-  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective, profileOverridden, profileInitialised]);
+  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
