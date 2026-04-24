@@ -78,6 +78,7 @@ export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSavingStep, setIsSavingStep] = useState(false);
   const [profileOverridden, setProfileOverridden] = useState(false);
+  const [profileInitialised, setProfileInitialised] = useState(false);
 
   const [formData, setFormData] = useState({
     // Step 1 - Personal
@@ -206,6 +207,12 @@ export default function ClientOnboarding() {
             client_signature_name: client.client_signature_name || '',
             client_signature_date: client.client_signature_date || new Date().toISOString().split('T')[0],
           }));
+          // If client already has a saved risk profile, treat it as manually set
+          // so the auto-calculator doesn't overwrite it on load
+          if (client.risk_profile) {
+            setProfileOverridden(true);
+          }
+
           // Restore structured products list if saved
           if (Array.isArray(client.products_list) && client.products_list.length > 0) {
             setProductsList(client.products_list);
@@ -214,20 +221,22 @@ export default function ClientOnboarding() {
       })
       .catch(() => {})
       .finally(() => {
-        setClientId(id);
-        setIsInitializing(false);
+      setClientId(id);
+      setIsInitializing(false);
+      setProfileInitialised(true);
       });
   }, [navigate]);
 
   // Auto-calculate risk profile when relevant fields change
   useEffect(() => {
+    if (!profileInitialised) return;
     if (profileOverridden) return;
     const score = calcRiskScore(formData);
     if (formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) {
       const suggested = scoreToProfile(score);
       setFormData(prev => ({ ...prev, risk_profile: suggested }));
     }
-  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective, profileOverridden]);
+  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective, profileOverridden, profileInitialised]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
