@@ -90,17 +90,17 @@ export default function ProposalDetail() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border px-6 py-4">
+      <div className="bg-card border-b border-border px-4 py-3">
         <button
-          onClick={() => navigate('/advisor-dashboard')}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors mb-4"
+          onClick={() => navigate('/proposals')}
+          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to dashboard
+          Back to inbox
         </button>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="max-w-7xl mx-auto p-4 space-y-4">
         {/* Header Section */}
         <ProposalHeader
           proposal={proposal}
@@ -112,47 +112,49 @@ export default function ProposalDetail() {
         {/* Financial Profile */}
         <FinancialProfile
           proposal={proposal}
+          client={client}
           onUpdate={handleFieldChange}
         />
 
-        {/* Investments Section */}
-        <div className="bg-card border border-border rounded-lg">
-          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-xl font-bold text-navy">Investments</h2>
-            <Button
-              onClick={() => navigate(`/proposal/${id}/add-investment`)}
-              className="flex items-center gap-2 bg-ocean hover:bg-sky text-white px-4 py-2 rounded-sm text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              Add Investment
-            </Button>
+        {/* Investments + Risk Products side by side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Investments Section */}
+          <div className="bg-card border border-border rounded-lg">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Investments</h2>
+              <Button
+                onClick={() => navigate(`/proposal/${id}/add-investment`)}
+                className="flex items-center gap-1 bg-ocean hover:bg-sky text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
+              >
+                <Plus className="w-3 h-3" />
+                Add
+              </Button>
+            </div>
+            <InvestmentsList investments={investments} proposalId={id} />
           </div>
-          <InvestmentsList investments={investments} proposalId={id} />
+
+          {/* Risk Products Section */}
+          <div className="bg-card border border-border rounded-lg">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Risk Products</h2>
+              <Button
+                onClick={() => navigate(`/proposal/${id}/add-risk-product`)}
+                className="flex items-center gap-1 bg-teal hover:bg-teal/90 text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
+              >
+                <Plus className="w-3 h-3" />
+                Add
+              </Button>
+            </div>
+            <RiskProductsList riskProducts={riskProducts} proposalId={id} />
+          </div>
         </div>
 
-        {/* Risk Products Section */}
-        <div className="bg-card border border-border rounded-lg">
-          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-xl font-bold text-navy">Risk Products</h2>
-            <Button
-              onClick={() => navigate(`/proposal/${id}/add-risk-product`)}
-              className="flex items-center gap-2 bg-teal hover:bg-teal/90 text-white px-4 py-2 rounded-sm text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              Add Risk Product
-            </Button>
-          </div>
-          <RiskProductsList riskProducts={riskProducts} proposalId={id} />
+        {/* Bottom sections */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <AttachmentsSection attachments={attachments} proposalId={id} />
+          <PdfSection proposal={proposal} proposalId={id} />
+          <SignatureSection proposal={proposal} proposalId={id} />
         </div>
-
-        {/* Attachments Section */}
-        <AttachmentsSection attachments={attachments} proposalId={id} />
-
-        {/* PDF Section */}
-        <PdfSection proposal={proposal} proposalId={id} />
-
-        {/* Signature Section */}
-        <SignatureSection proposal={proposal} proposalId={id} />
       </div>
     </div>
   );

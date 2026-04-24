@@ -15,6 +15,11 @@ const CURRENCIES_OFFSHORE = ['USD', 'GBP', 'EUR'];
 const CONTRIBUTION_TYPES = ['Lump Sum', 'Recurring'];
 const FREQUENCIES = ['Monthly', 'Quarterly', 'Annually'];
 const UNDERLYING_FUNDS_OPTIONS = ['Index Fund', 'Balanced Fund', 'Equity Fund', 'Bond Fund', 'Multi-Asset Fund'];
+const PRODUCT_TYPES = [
+  'Retirement Annuity', 'Living Annuity', 'Endowment', 'Tax-Free Savings Account',
+  'Unit Trust / CIS', 'Preservation Fund', 'Pension Fund', 'Provident Fund',
+  'Offshore Investment Bond', 'Discretionary Portfolio'
+];
 
 export default function AddEditInvestment() {
   const { id: proposalId, investmentId } = useParams();
@@ -126,15 +131,15 @@ export default function AddEditInvestment() {
         </button>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-navy mb-2">
+      <div className="max-w-5xl mx-auto p-4">
+        <h1 className="text-lg font-bold text-navy mb-1">
           {investmentId ? 'Edit Investment' : 'Add Investment'}
         </h1>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-xs text-muted-foreground mb-3">
           {investmentId ? 'Update investment details' : 'Create a new investment recommendation'}
         </p>
 
-        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-4 space-y-4">
           {/* Jurisdiction */}
           <div>
             <Label className="text-sm font-semibold text-navy mb-2 block">Jurisdiction</Label>
@@ -207,12 +212,16 @@ export default function AddEditInvestment() {
           {/* Product Type */}
           <div>
             <Label className="text-sm font-semibold text-navy mb-2 block">Product Type</Label>
-            <Input
-              value={formData.product_type}
-              onChange={(e) => setFormData({ ...formData, product_type: e.target.value })}
-              placeholder="e.g. Retirement Annuity, Endowment"
-              className="rounded-sm"
-            />
+            <Select value={formData.product_type} onValueChange={(v) => setFormData({ ...formData, product_type: v })}>
+              <SelectTrigger className="rounded-sm">
+                <SelectValue placeholder="Select product type" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRODUCT_TYPES.map(pt => (
+                  <SelectItem key={pt} value={pt}>{pt}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Underlying Funds */}
@@ -319,9 +328,9 @@ export default function AddEditInvestment() {
           )}
 
           {/* Fee Fields */}
-          <div className="border-t border-border pt-6">
-            <h3 className="text-sm font-bold text-navy mb-4">Fee Structure</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="border-t border-border pt-3">
+            <h3 className="text-xs font-bold text-navy uppercase tracking-wide mb-3">Fee Structure</h3>
+            <div className="grid grid-cols-4 gap-3">
               <div>
                 <Label className="text-xs font-semibold text-navy mb-1.5 block">Initial Fee %</Label>
                 <Input
@@ -370,7 +379,7 @@ export default function AddEditInvestment() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-4 border-t border-border">
+          <div className="flex gap-3 pt-3 border-t border-border">
             <Button
               type="button"
               onClick={() => navigate(`/proposal/${proposalId}`)}
