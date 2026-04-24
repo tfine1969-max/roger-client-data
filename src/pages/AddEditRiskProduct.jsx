@@ -2,319 +2,325 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const RISK_PROVIDERS = ['PPS', 'Momentum', 'Discovery', 'Hollard', 'Brightrock'];
-const COVER_TYPES = ['Life', 'Dread', 'Disability', 'Income'];
+
+const formatCurrency = (value) => {
+  if (!value) return '';
+  return Number(value).toLocaleString('en-ZA');
+};
+
+const BENEFITS = [
+  { key: 'life_cover', label: 'Life Cover' },
+  { key: 'disability_lump', label: 'Disability Lump Sum' },
+  { key: 'income_protection', label: 'Income Protection' },
+  { key: 'dread_disease', label: 'Dread Disease / Critical Illness' },
+  { key: 'accidental_death', label: 'Accidental Death' },
+  { key: 'funeral_cover', label: 'Funeral Cover' },
+  { key: 'business_assurance', label: 'Business Assurance' },
+];
+
+const defaultBenefitData = {
+  life_cover: { sum_assured: '', monthly_premium: '', annual_premium_increase: '', annual_cover_increase: '' },
+  disability_lump: { sum_assured: '', definition: '', monthly_premium: '', annual_premium_increase: '' },
+  income_protection: { monthly_benefit: '', waiting_period: '', benefit_period: '', definition: '', monthly_premium: '', annual_premium_increase: '' },
+  dread_disease: { sum_assured: '', type: '', monthly_premium: '', annual_premium_increase: '' },
+  accidental_death: { sum_assured: '', monthly_premium: '' },
+  funeral_cover: { main_member: '', spouse: '', children: '', monthly_premium: '' },
+  business_assurance: { sum_assured: '', type: '', monthly_premium: '' },
+};
+
+const Field = ({ label, children }) => (
+  <div>
+    <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
+    {children}
+  </div>
+);
+
+const NumInput = ({ value, onChange, placeholder = '0' }) => (
+  <Input type="number" step="0.01" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="h-8 text-xs rounded-sm" />
+);
+
+function BenefitFields({ benefitKey, data, onChange }) {
+  const set = (field, val) => onChange({ ...data, [field]: val });
+
+  const selectCls = "h-8 text-xs rounded-sm";
+
+  if (benefitKey === 'life_cover') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+      <Field label="Annual Premium Increase %"><NumInput value={data.annual_premium_increase} onChange={v => set('annual_premium_increase', v)} /></Field>
+      <Field label="Annual Cover Increase %"><NumInput value={data.annual_cover_increase} onChange={v => set('annual_cover_increase', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'disability_lump') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
+      <Field label="Definition">
+        <Select value={data.definition} onValueChange={v => set('definition', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['Own Occupation', 'Suited Occupation', 'Any Occupation'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+      <Field label="Annual Premium Increase %"><NumInput value={data.annual_premium_increase} onChange={v => set('annual_premium_increase', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'income_protection') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Monthly Benefit Amount (R)"><NumInput value={data.monthly_benefit} onChange={v => set('monthly_benefit', v)} /></Field>
+      <Field label="Waiting Period">
+        <Select value={data.waiting_period} onValueChange={v => set('waiting_period', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['1 month', '3 months', '6 months', '12 months'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Benefit Payment Period">
+        <Select value={data.benefit_period} onValueChange={v => set('benefit_period', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['2 years', '5 years', 'To age 60', 'To age 65'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Definition">
+        <Select value={data.definition} onValueChange={v => set('definition', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['Own Occupation', 'Suited Occupation'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+      <Field label="Annual Premium Increase %"><NumInput value={data.annual_premium_increase} onChange={v => set('annual_premium_increase', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'dread_disease') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
+      <Field label="Type">
+        <Select value={data.type} onValueChange={v => set('type', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['Accelerator', 'Standalone'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+      <Field label="Annual Premium Increase %"><NumInput value={data.annual_premium_increase} onChange={v => set('annual_premium_increase', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'accidental_death') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'funeral_cover') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Main Member Cover (R)"><NumInput value={data.main_member} onChange={v => set('main_member', v)} /></Field>
+      <Field label="Spouse Cover (R)"><NumInput value={data.spouse} onChange={v => set('spouse', v)} /></Field>
+      <Field label="Children Cover (R)"><NumInput value={data.children} onChange={v => set('children', v)} /></Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+    </div>
+  );
+
+  if (benefitKey === 'business_assurance') return (
+    <div className="grid grid-cols-2 gap-2 mt-2">
+      <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
+      <Field label="Type">
+        <Select value={data.type} onValueChange={v => set('type', v)}>
+          <SelectTrigger className={selectCls}><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent>
+            {['Key Man', 'Buy and Sell', 'Contingent Liability'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
+    </div>
+  );
+
+  return null;
+}
 
 export default function AddEditRiskProduct() {
   const { id: proposalId, riskProductId } = useParams();
   const navigate = useNavigate();
   const [provider, setProvider] = useState('');
-  const [riskCovers, setRiskCovers] = useState([]);
-  const [editingCoverId, setEditingCoverId] = useState(null);
-  const [newCover, setNewCover] = useState({
-    cover_type: '',
-    amount_required: '',
-    premium: '',
-    annual_premium_increase_percent: '',
-    annual_cover_increase_percent: ''
-  });
+  const [selectedBenefits, setSelectedBenefits] = useState([]);
+  const [benefitData, setBenefitData] = useState({ ...defaultBenefitData });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch existing risk product if editing
   const { data: riskProduct } = useQuery({
     queryKey: ['riskProduct', riskProductId],
-    queryFn: () => riskProductId ? base44.entities.RiskProducts.filter({ id: riskProductId }).then(data => data[0]) : null,
+    queryFn: () => riskProductId ? base44.entities.RiskProducts.filter({ id: riskProductId }).then(d => d[0]) : null,
     enabled: !!riskProductId,
   });
 
-  // Fetch related risk covers
   const { data: existingCovers = [] } = useQuery({
     queryKey: ['riskCovers', riskProductId],
     queryFn: () => riskProductId ? base44.entities.RiskCovers.filter({ risk_product_id: riskProductId }) : [],
     enabled: !!riskProductId,
   });
 
-  // Populate form when editing
   useEffect(() => {
-    if (riskProduct) {
-      setProvider(riskProduct.provider || '');
-      setRiskCovers(existingCovers);
+    if (riskProduct) setProvider(riskProduct.provider || '');
+  }, [riskProduct]);
+
+  const toggleBenefit = (key) => {
+    setSelectedBenefits(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+    if (!benefitData[key]) {
+      setBenefitData(prev => ({ ...prev, [key]: { ...defaultBenefitData[key] } }));
     }
-  }, [riskProduct, existingCovers]);
+  };
+
+  const updateBenefitData = (key, data) => {
+    setBenefitData(prev => ({ ...prev, [key]: data }));
+  };
+
+  // Calculate total monthly premium across all selected benefits
+  const totalPremium = selectedBenefits.reduce((sum, key) => {
+    const d = benefitData[key] || {};
+    return sum + (parseFloat(d.monthly_premium) || 0);
+  }, 0);
 
   const saveMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async () => {
       let productId = riskProductId;
-      
-      // Create or update risk product
       if (!riskProductId) {
-        const created = await base44.entities.RiskProducts.create({
-          proposal_id: proposalId,
-          provider: data.provider
-        });
+        const created = await base44.entities.RiskProducts.create({ proposal_id: proposalId, provider });
         productId = created.id;
       } else {
-        await base44.entities.RiskProducts.update(riskProductId, {
-          provider: data.provider
-        });
+        await base44.entities.RiskProducts.update(riskProductId, { provider });
       }
 
-      // Save risk covers
-      for (const cover of data.covers) {
-        if (cover.id) {
-          // Update existing
-          await base44.entities.RiskCovers.update(cover.id, cover);
-        } else {
-          // Create new
-          await base44.entities.RiskCovers.create({
-            ...cover,
-            risk_product_id: productId
-          });
-        }
+      // Save each selected benefit as a RiskCover record
+      for (const key of selectedBenefits) {
+        const benefit = BENEFITS.find(b => b.key === key);
+        const d = benefitData[key] || {};
+        await base44.entities.RiskCovers.create({
+          risk_product_id: productId,
+          cover_type: benefit.label,
+          amount_required: parseFloat(d.sum_assured || d.main_member || d.monthly_benefit) || 0,
+          premium: parseFloat(d.monthly_premium) || 0,
+          annual_premium_increase_percent: parseFloat(d.annual_premium_increase) || 0,
+          annual_cover_increase_percent: parseFloat(d.annual_cover_increase) || 0,
+        });
       }
 
       return productId;
     },
-    onSuccess: () => {
-      navigate(`/proposal/${proposalId}`);
-    }
+    onSuccess: () => navigate(`/proposal/${proposalId}`),
   });
-
-  const handleAddCover = () => {
-    if (!newCover.cover_type || !newCover.premium) {
-      alert('Please fill in cover type and premium');
-      return;
-    }
-
-    setRiskCovers([
-      ...riskCovers,
-      {
-        cover_type: newCover.cover_type,
-        amount_required: parseFloat(newCover.amount_required) || 0,
-        premium: parseFloat(newCover.premium) || 0,
-        annual_premium_increase_percent: parseFloat(newCover.annual_premium_increase_percent) || 0,
-        annual_cover_increase_percent: parseFloat(newCover.annual_cover_increase_percent) || 0
-      }
-    ]);
-
-    setNewCover({
-      cover_type: '',
-      amount_required: '',
-      premium: '',
-      annual_premium_increase_percent: '',
-      annual_cover_increase_percent: ''
-    });
-  };
-
-  const handleRemoveCover = (index) => {
-    setRiskCovers(riskCovers.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!provider) {
-      alert('Please select a provider');
-      return;
-    }
-
-    if (riskCovers.length === 0) {
-      alert('Please add at least one risk cover');
-      return;
-    }
-
+    if (!provider) { alert('Please select a provider'); return; }
+    if (selectedBenefits.length === 0) { alert('Please select at least one benefit'); return; }
     setIsSubmitting(true);
-    await saveMutation.mutate({
-      provider,
-      covers: riskCovers
-    });
+    await saveMutation.mutate();
     setIsSubmitting(false);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b border-border px-6 py-4">
-        <button
-          onClick={() => navigate(`/proposal/${proposalId}`)}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors"
-        >
+      <div className="bg-card border-b border-border px-4 py-3">
+        <button onClick={() => navigate(`/proposal/${proposalId}`)} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
           Back to proposal
         </button>
       </div>
 
-      <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-navy mb-2">
-          {riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          {riskProductId ? 'Update risk product and covers' : 'Create a new risk product with cover types'}
-        </p>
+      <div className="max-w-7xl mx-auto p-3">
+        <h1 className="text-lg font-bold text-navy mb-1">{riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}</h1>
+        <p className="text-xs text-muted-foreground mb-3">{riskProductId ? 'Update risk product and benefits' : 'Create a new risk product with benefits'}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Provider Section */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-bold text-navy mb-4">Risk Provider</h2>
-            
-            <div>
-              <Label className="text-sm font-semibold text-navy mb-2 block">Provider</Label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Provider */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-2">Risk Provider</h2>
+            <div className="max-w-xs">
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
               <Select value={provider} onValueChange={setProvider}>
-                <SelectTrigger className="rounded-sm">
-                  <SelectValue placeholder="Select provider" />
-                </SelectTrigger>
+                <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
                 <SelectContent>
-                  {RISK_PROVIDERS.map(prov => (
-                    <SelectItem key={prov} value={prov}>{prov}</SelectItem>
-                  ))}
+                  {RISK_PROVIDERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Risk Covers Section */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-bold text-navy mb-6">Risk Covers</h2>
+          {/* Benefits */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-2">Benefits</h2>
 
-            {/* Existing Covers */}
-            {riskCovers.length > 0 && (
-              <div className="space-y-4 mb-6">
-                {riskCovers.map((cover, index) => (
-                  <div key={index} className="border border-border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-navy">{cover.cover_type}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Premium: R{parseFloat(cover.premium).toLocaleString()} {cover.annual_premium_increase_percent ? `(+${cover.annual_premium_increase_percent}% p.a.)` : ''}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCover(index)}
-                        className="p-2 text-destructive hover:bg-red-50 rounded transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {cover.amount_required > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        Sum Assured: R{parseFloat(cover.amount_required).toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Benefit toggles */}
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              {BENEFITS.map(b => {
+                const selected = selectedBenefits.includes(b.key);
+                return (
+                  <button
+                    key={b.key}
+                    type="button"
+                    onClick={() => toggleBenefit(b.key)}
+                    className={`px-3 py-2 border rounded-sm text-xs font-medium text-left transition-all ${
+                      selected ? 'border-ocean bg-ocean/10 text-ocean' : 'border-border text-navy hover:border-ocean/50'
+                    }`}
+                  >
+                    <span className="mr-1">{selected ? '✓' : '○'}</span>
+                    {b.label}
+                  </button>
+                );
+              })}
+            </div>
 
-            {/* Add New Cover */}
-            <div className="border-t border-border pt-6">
-              <h3 className="text-sm font-bold text-navy mb-4">Add Risk Cover</h3>
-              
-              <div className="space-y-4">
-                {/* Cover Type */}
-                <div>
-                  <Label className="text-xs font-semibold text-navy mb-1.5 block">Cover Type</Label>
-                  <Select value={newCover.cover_type} onValueChange={(v) => setNewCover({ ...newCover, cover_type: v })}>
-                    <SelectTrigger className="rounded-sm">
-                      <SelectValue placeholder="Select cover type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COVER_TYPES.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Amount Required */}
-                  <div>
-                    <Label className="text-xs font-semibold text-navy mb-1.5 block">Sum Assured (Optional)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newCover.amount_required}
-                      onChange={(e) => setNewCover({ ...newCover, amount_required: e.target.value })}
-                      placeholder="Amount"
-                      className="rounded-sm"
+            {/* Selected benefit details */}
+            <div className="space-y-3">
+              {selectedBenefits.map(key => {
+                const benefit = BENEFITS.find(b => b.key === key);
+                return (
+                  <div key={key} className="border border-ocean/30 rounded-sm p-3 bg-ocean/5">
+                    <h3 className="text-xs font-bold text-ocean uppercase tracking-wider mb-1">{benefit.label}</h3>
+                    <BenefitFields
+                      benefitKey={key}
+                      data={benefitData[key] || defaultBenefitData[key]}
+                      onChange={(d) => updateBenefitData(key, d)}
                     />
                   </div>
-
-                  {/* Premium */}
-                  <div>
-                    <Label className="text-xs font-semibold text-navy mb-1.5 block">Monthly Premium</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newCover.premium}
-                      onChange={(e) => setNewCover({ ...newCover, premium: e.target.value })}
-                      placeholder="Premium"
-                      className="rounded-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Annual Premium Increase */}
-                  <div>
-                    <Label className="text-xs font-semibold text-navy mb-1.5 block">Annual Premium Increase %</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newCover.annual_premium_increase_percent}
-                      onChange={(e) => setNewCover({ ...newCover, annual_premium_increase_percent: e.target.value })}
-                      placeholder="0.00"
-                      className="rounded-sm"
-                    />
-                  </div>
-
-                  {/* Annual Cover Increase */}
-                  <div>
-                    <Label className="text-xs font-semibold text-navy mb-1.5 block">Annual Cover Increase %</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newCover.annual_cover_increase_percent}
-                      onChange={(e) => setNewCover({ ...newCover, annual_cover_increase_percent: e.target.value })}
-                      placeholder="0.00"
-                      className="rounded-sm"
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={handleAddCover}
-                  className="w-full flex items-center justify-center gap-2 border border-teal text-teal bg-transparent hover:bg-teal/5 py-2 rounded-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Cover
-                </Button>
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <Button
-              type="button"
-              onClick={() => navigate(`/proposal/${proposalId}`)}
-              variant="outline"
-              className="flex-1 py-3 rounded-sm border-border hover:bg-muted"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || !provider || riskCovers.length === 0}
-              className="flex-1 bg-teal hover:bg-teal/90 text-white py-3 rounded-sm font-medium disabled:opacity-50"
-            >
+          {/* Total Premium */}
+          {selectedBenefits.length > 0 && (
+            <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3 flex items-center justify-between">
+              <span className="text-xs font-semibold text-navy uppercase tracking-wider">Total Monthly Premium</span>
+              <span className="text-lg font-bold text-navy">R {formatCurrency(totalPremium)}</span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}`)} variant="outline" className="flex-1 h-9 rounded-sm text-sm">Cancel</Button>
+            <Button type="submit" disabled={isSubmitting || !provider || selectedBenefits.length === 0} className="flex-1 h-9 bg-teal hover:bg-teal/90 text-white rounded-sm text-sm font-medium disabled:opacity-50">
               {isSubmitting ? 'Saving...' : riskProductId ? 'Update Risk Product' : 'Add Risk Product'}
             </Button>
           </div>

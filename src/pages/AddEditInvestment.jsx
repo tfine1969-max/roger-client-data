@@ -131,7 +131,7 @@ export default function AddEditInvestment() {
         </button>
       </div>
 
-      <div className="max-w-5xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-3">
         <h1 className="text-lg font-bold text-navy mb-1">
           {investmentId ? 'Edit Investment' : 'Add Investment'}
         </h1>
@@ -139,7 +139,7 @@ export default function AddEditInvestment() {
           {investmentId ? 'Update investment details' : 'Create a new investment recommendation'}
         </p>
 
-        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-3 space-y-3">
           {/* Jurisdiction */}
           <div>
             <Label className="text-sm font-semibold text-navy mb-2 block">Jurisdiction</Label>

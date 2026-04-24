@@ -106,11 +106,11 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Draft">Draft</SelectItem>
-              <SelectItem value="Modified">Modified</SelectItem>
-              <SelectItem value="PDF Generated">PDF Generated</SelectItem>
+              <SelectItem value="New">New</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Awaiting Client Signature">Awaiting Client Signature</SelectItem>
+              <SelectItem value="Signed">Signed</SelectItem>
               <SelectItem value="Sent">Sent</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
