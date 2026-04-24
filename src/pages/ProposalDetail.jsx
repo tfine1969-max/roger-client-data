@@ -11,6 +11,7 @@ import RiskProductsList from '@/components/proposal/RiskProductsList';
 import AttachmentsSection from '@/components/proposal/AttachmentsSection';
 import PdfSection from '@/components/proposal/PdfSection';
 import SignatureSection from '@/components/proposal/SignatureSection';
+import ProposalSidePanel from '@/components/proposal/ProposalSidePanel';
 
 export default function ProposalDetail() {
   const { id } = useParams();
@@ -51,10 +52,31 @@ export default function ProposalDetail() {
   });
 
   // Fetch risk products
-  const { data: riskProducts = [] } = useQuery({
+  const { data: riskProductsRaw = [] } = useQuery({
     queryKey: ['riskProducts', id],
     queryFn: () => base44.entities.RiskProducts.filter({ proposal_id: id }),
     enabled: !!id,
+  });
+
+  // Fetch all risk covers for all risk products
+  const { data: allRiskCovers = [] } = useQuery({
+    queryKey: ['allRiskCovers', id],
+    queryFn: async () => {
+      const products = await base44.entities.RiskProducts.filter({ proposal_id: id });
+      if (!products.length) return [];
+      const coversArrays = await Promise.all(
+        products.map(p => base44.entities.RiskCovers.filter({ risk_product_id: p.id }))
+      );
+      return coversArrays.flat();
+    },
+    enabled: !!id,
+  });
+
+  // Enrich riskProducts with their covers and total_premium
+  const riskProducts = riskProductsRaw.map(rp => {
+    const covers = allRiskCovers.filter(c => c.risk_product_id === rp.id);
+    const total_premium = covers.reduce((s, c) => s + (parseFloat(c.premium) || 0), 0);
+    return { ...rp, _covers: covers, total_premium };
   });
 
   // Fetch attachments
@@ -100,61 +122,69 @@ export default function ProposalDetail() {
         </button>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 space-y-4">
-        {/* Header Section */}
-        <ProposalHeader
-          proposal={proposal}
-          client={client}
-          onUpdate={handleFieldChange}
-          isSaving={isSaving}
-        />
+      <div className="flex gap-4 max-w-screen-2xl mx-auto p-4">
+        {/* Main content */}
+        <div className="flex-1 min-w-0 space-y-4">
+          <ProposalHeader
+            proposal={proposal}
+            client={client}
+            onUpdate={handleFieldChange}
+            isSaving={isSaving}
+          />
 
-        {/* Financial Profile */}
-        <FinancialProfile
-          proposal={proposal}
-          client={client}
-          onUpdate={handleFieldChange}
-        />
+          <FinancialProfile
+            proposal={proposal}
+            client={client}
+            onUpdate={handleFieldChange}
+          />
 
-        {/* Investments + Risk Products side by side */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Investments Section */}
-          <div className="bg-card border border-border rounded-lg">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Investments</h2>
-              <Button
-                onClick={() => navigate(`/proposal/${id}/add-investment`)}
-                className="flex items-center gap-1 bg-ocean hover:bg-sky text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </Button>
+          {/* Investments + Risk Products side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-card border border-border rounded-lg">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Investments</h2>
+                <Button
+                  onClick={() => navigate(`/proposal/${id}/add-investment`)}
+                  className="flex items-center gap-1 bg-ocean hover:bg-sky text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add
+                </Button>
+              </div>
+              <InvestmentsList investments={investments} proposalId={id} />
             </div>
-            <InvestmentsList investments={investments} proposalId={id} />
+
+            <div className="bg-card border border-border rounded-lg">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Risk Products</h2>
+                <Button
+                  onClick={() => navigate(`/proposal/${id}/add-risk-product`)}
+                  className="flex items-center gap-1 bg-teal hover:bg-teal/90 text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add
+                </Button>
+              </div>
+              <RiskProductsList riskProducts={riskProducts} proposalId={id} />
+            </div>
           </div>
 
-          {/* Risk Products Section */}
-          <div className="bg-card border border-border rounded-lg">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Risk Products</h2>
-              <Button
-                onClick={() => navigate(`/proposal/${id}/add-risk-product`)}
-                className="flex items-center gap-1 bg-teal hover:bg-teal/90 text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </Button>
-            </div>
-            <RiskProductsList riskProducts={riskProducts} proposalId={id} />
+          {/* Bottom sections */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <AttachmentsSection attachments={attachments} proposalId={id} />
+            <PdfSection proposal={proposal} proposalId={id} />
+            <SignatureSection proposal={proposal} proposalId={id} />
           </div>
         </div>
 
-        {/* Bottom sections */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <AttachmentsSection attachments={attachments} proposalId={id} />
-          <PdfSection proposal={proposal} proposalId={id} />
-          <SignatureSection proposal={proposal} proposalId={id} />
-        </div>
+        {/* Right side panel */}
+        <ProposalSidePanel
+          client={client}
+          investments={investments}
+          riskProducts={riskProducts}
+          proposal={proposal}
+          proposalId={id}
+        />
       </div>
     </div>
   );
