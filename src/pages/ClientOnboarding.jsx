@@ -423,18 +423,29 @@ export default function ClientOnboarding() {
         onboarding_complete: true,
       });
 
-      await base44.entities.Proposal.create({
-        client_id: clientId,
-        client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
-        reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
-        advisor_name: 'Trevor Fine',
-        proposal_status: 'Pending Review',
-        status: 'new',
-        pdf_status: 'No PDF',
-        advisor_signature_completed: false,
-        client_signature_completed: false,
-        document_version: 1,
-      });
+      const existingProposals = await base44.entities.Proposal.list();
+      const existing = existingProposals.find(p => p.client_id === clientId);
+
+      if (existing) {
+        await base44.entities.Proposal.update(existing.id, {
+          client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
+          proposal_status: 'Pending Review',
+          status: 'new',
+        });
+      } else {
+        await base44.entities.Proposal.create({
+          client_id: clientId,
+          client_name: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client',
+          reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
+          advisor_name: 'Trevor Fine',
+          proposal_status: 'Pending Review',
+          status: 'new',
+          pdf_status: 'No PDF',
+          advisor_signature_completed: false,
+          client_signature_completed: false,
+          document_version: 1,
+        });
+      }
 
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
