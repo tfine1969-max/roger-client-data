@@ -42,16 +42,13 @@ export default function ClientLogin() {
 
       const client = clients[0];
 
-      // Store client id in sessionStorage
       sessionStorage.setItem('pending_client_id', client.id);
+      sessionStorage.setItem('pending_client_email', client.email);
 
-      // Check onboarding status and navigate accordingly
-      if (client.client_status === 'Onboarded' || client.onboarding_complete === true) {
-        // Already onboarded, go to dashboard
+      if (client.onboarding_complete === true) {
         toast.success('Login successful');
         navigate('/client-dashboard', { replace: true });
       } else {
-        // Not onboarded yet, go to onboarding
         toast.success('Please complete your profile');
         navigate('/client-onboarding', { replace: true });
       }
