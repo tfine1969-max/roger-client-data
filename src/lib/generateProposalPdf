@@ -1,0 +1,483 @@
+import jsPDF from 'jspdf';
+
+export default function generateProposalPdf(proposal, investments = [], riskProducts = []) {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const W = 210;
+  const M = 20;
+  const CW = W - M * 2;
+  let y = 0;
+
+  const navy   = [14, 65, 102];
+  const ocean  = [26, 100, 148];
+  const teal   = [74, 155, 175];
+  const white  = [255, 255, 255];
+  const muted  = [138, 154, 170];
+  const bg     = [247, 249, 251];
+  const border = [216, 228, 236];
+  const black  = [30, 30, 30];
+
+  const fmtR = (val) => {
+    if (!val && val !== 0) return '—';
+    const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+    if (isNaN(n)) return String(val);
+    return 'R ' + n.toLocaleString('en-ZA');
+  };
+
+  const pb = (needed) => {
+    if (y + needed > 275) { doc.addPage(); y = 20; }
+  };
+
+  const hRule = () => {
+    doc.setDrawColor(...border);
+    doc.line(M, y, W - M, y);
+    y += 6;
+  };
+
+  const secTitle = (title, color = navy) => {
+    pb(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...color);
+    doc.text(title.toUpperCase(), M, y);
+    y += 5;
+  };
+
+  const dataRow = (label, value) => {
+    pb(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...muted);
+    doc.text(String(label), M, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...navy);
+    doc.text(String(value || '—'), W - M, y, { align: 'right' });
+    y += 5;
+  };
+
+  const bodyText = (text, size = 8) => {
+    pb(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(size);
+    doc.setTextColor(...black);
+    const lines = doc.splitTextToSize(String(text), CW);
+    lines.forEach(line => { pb(5); doc.text(line, M, y); y += 4.5; });
+    y += 2;
+  };
+
+  const checkBox = (label, checked) => {
+    pb(6);
+    doc.setFontSize(8);
+    doc.setTextColor(...black);
+    doc.setFont('helvetica', 'normal');
+    doc.rect(M, y - 3.5, 3.5, 3.5);
+    if (checked) { doc.setFont('helvetica', 'bold'); doc.text('✓', M + 0.5, y - 0.2); }
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, M + 6, y);
+    y += 5;
+  };
+
+  const signLine = (label, width = 80) => {
+    pb(14);
+    doc.setDrawColor(...navy);
+    doc.line(M, y, M + width, y);
+    y += 4;
+    doc.setFontSize(7);
+    doc.setTextColor(...muted);
+    doc.text(label, M, y);
+    y += 8;
+  };
+
+  // ── PAGE 1: COVER / PROPOSAL SUMMARY ──────────────────────────────────────
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, 32, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...white);
+  doc.text('wealthworks', M, 14);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('Financial Proposal', W - M, 11, { align: 'right' });
+  doc.setFontSize(7);
+  doc.setTextColor(200, 200, 200);
+  doc.text(`${proposal.reference || ''}  ·  ${new Date().toLocaleDateString('en-ZA')}`, W - M, 17, { align: 'right' });
+  doc.text('FSP 28337  |  FSP 45624', W - M, 23, { align: 'right' });
+  y = 42;
+
+  doc.setFontSize(7); doc.setTextColor(...ocean); doc.setFont('helvetica', 'bold');
+  doc.text('PREPARED FOR', M, y); y += 5;
+  doc.setFontSize(13); doc.setTextColor(...navy);
+  doc.text(proposal.client_name || '—', M, y); y += 5;
+  doc.setFontSize(8); doc.setTextColor(...muted); doc.setFont('helvetica', 'normal');
+  doc.text(`${proposal.risk_profile || '—'} risk profile  ·  ${proposal.time_horizon || '—'}`, M, y);
+  y += 4; hRule(); y += 2;
+
+  // Investments summary
+  if (investments.length > 0) {
+    secTitle('Investment Recommendations', ocean);
+    investments.forEach((inv, i) => {
+      pb(20);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+      doc.text(`${inv.provider || '—'}`, M, y);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+      doc.text(`${inv.jurisdiction || ''} · ${inv.currency || ''}`, W - M, y, { align: 'right' });
+      y += 5;
+      doc.setFontSize(7.5); doc.setTextColor(...black);
+      doc.text(inv.product_type || '', M, y); y += 4;
+      if (inv.amount > 0) dataRow('Lump sum', `${inv.currency} ${Number(inv.amount).toLocaleString('en-ZA')}`);
+      if (inv.recurring_amount > 0) dataRow('Recurring', `${inv.currency} ${Number(inv.recurring_amount).toLocaleString('en-ZA')}`);
+      if (inv.initial_fee_percent > 0) dataRow('Initial fee', `${inv.initial_fee_percent}%`);
+      if (inv.annual_advice_fee_percent > 0) dataRow('Annual advice fee', `${inv.annual_advice_fee_percent}%`);
+      if (Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0) {
+        dataRow('Underlying funds', inv.underlying_funds.join(', '));
+      }
+      if (i < investments.length - 1) { y += 2; doc.setDrawColor(...border); doc.line(M, y, W - M, y); y += 4; }
+    });
+    if (proposal.investment_rationale) {
+      y += 3;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...muted);
+      doc.text('SUITABILITY RATIONALE', M, y); y += 4;
+      bodyText(proposal.investment_rationale);
+    }
+    hRule();
+  }
+
+  // Risk products summary
+  if (riskProducts.length > 0) {
+    secTitle('Risk Cover Recommendations', teal);
+    riskProducts.forEach((rp, i) => {
+      pb(20);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+      doc.text(rp.provider || '—', M, y); y += 5;
+      if (Array.isArray(rp._covers)) {
+        rp._covers.forEach(cover => {
+          dataRow(cover.cover_type, `R ${Number(cover.premium || 0).toLocaleString('en-ZA')} pm`);
+          if (cover.amount_required > 0) dataRow('  Sum assured', fmtR(cover.amount_required));
+        });
+      }
+      if (rp.total_premium > 0) {
+        doc.setTextColor(...teal);
+        dataRow('Total monthly premium', fmtR(rp.total_premium));
+        doc.setTextColor(...navy);
+      }
+      if (i < riskProducts.length - 1) { y += 2; doc.setDrawColor(...border); doc.line(M, y, W - M, y); y += 4; }
+    });
+    if (proposal.risk_cover_rationale) {
+      y += 3;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...muted);
+      doc.text('SUITABILITY RATIONALE', M, y); y += 4;
+      bodyText(proposal.risk_cover_rationale);
+    }
+    hRule();
+  }
+
+  // Personal message
+  if (proposal.personal_message) {
+    pb(20);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...ocean);
+    doc.text('MESSAGE FROM YOUR ADVISOR', M, y); y += 5;
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+    const msgLines = doc.splitTextToSize(proposal.personal_message, CW);
+    msgLines.forEach(l => { pb(5); doc.text(l, M, y); y += 4.5; });
+    y += 4; hRule();
+  }
+
+  // Advisor signature
+  pb(40);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...navy);
+  doc.text('ADVISOR SIGNATURE', M, y); y += 6;
+  if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
+    doc.addImage(proposal.advisor_signature_data, 'PNG', M, y, 60, 18); y += 22;
+  } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
+    doc.setFont('times', 'italic'); doc.setFontSize(18); doc.setTextColor(...navy);
+    doc.text(proposal.advisor_signature_data, M, y + 6); y += 14;
+  }
+  doc.setDrawColor(...navy); doc.line(M, y, M + 80, y); y += 4;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...navy);
+  doc.text(proposal.advisor_name || '—', M, y); y += 4;
+  doc.setFontSize(7); doc.setTextColor(...muted);
+  doc.text(`Date: ${proposal.sign_date || '—'}`, M, y); y += 10;
+
+  // Client acceptance box
+  pb(44);
+  doc.setFillColor(...bg); doc.rect(M, y, CW, 40, 'F');
+  doc.setDrawColor(...border); doc.rect(M, y, CW, 40, 'S');
+  y += 7;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...navy);
+  doc.text('CLIENT ACCEPTANCE', M + 6, y); y += 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+  doc.text('I have read and understand the above recommendations.', M + 6, y); y += 12;
+  doc.setDrawColor(...navy); doc.line(M + 6, y, M + 86, y); y += 4;
+  doc.setFontSize(7); doc.setTextColor(...navy);
+  doc.text(`${proposal.client_name || '—'}  ·  Date: _______________`, M + 6, y); y += 14;
+
+  // Footer disclaimer
+  pb(16);
+  doc.setDrawColor(...border); doc.line(M, y, W - M, y); y += 5;
+  doc.setFontSize(6); doc.setTextColor(...muted); doc.setFont('helvetica', 'normal');
+  ['This proposal does not constitute a binding offer and is subject to underwriting where applicable.',
+   'Wealth Works (Pty) Ltd — FSP 28337 (Cat I)  |  Wealthworks Investments (Pty) Ltd — FSP 45624 (Cat II)',
+   'Confidential — intended solely for the named recipient.'
+  ].forEach(l => { doc.text(l, W / 2, y, { align: 'center' }); y += 3.5; });
+
+  // ── PAGE: DISCLOSURE & TERMS OF BUSINESS ──────────────────────────────────
+  doc.addPage(); y = 20;
+
+  doc.setFillColor(...navy); doc.rect(0, 0, W, 18, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...white);
+  doc.text('DISCLOSURE AND TERMS OF BUSINESS', W / 2, 11, { align: 'center' });
+  y = 26;
+
+  const disclosureBody = [
+    ['INTRODUCTION', `Thank you for affording me the opportunity to review your insurance/financial portfolio. In the spirit of transparency and to ensure that you have the information necessary to make an informed decision in terms of my role as your advisor and intermediary, I would like to provide you with some background regarding myself and our business, as well as information required in terms of the Financial Intermediary Act 37 of 2002 (FAIS). This Disclosure and Terms of Business Document supports our commitment to a full disclosure of all relevant and material information appropriate to your insurance requirements, enabling you to make well-informed decisions during the course of our professional relationship with you.`],
+    ['OUR DETAILS', `Full trade name: Wealth Works (Pty) Ltd | Reg no: 2006/018307/07 | FAIS licence: 28337 (Category 1)\nFull trade name: Wealthworks Investments (Pty) Ltd | Reg no: 2012/215566/07 | FAIS licence: 45624 (Category 2)\n\nWe are licensed to provide advice and discretionary intermediary services on financial products for which we are remunerated by means of statutory commission and fees.\n\nLong-Term Insurance: Category A, B and C | Retail Pension Benefits | Pension Funds Benefits (excluding retail) | Participatory interests in Collective Investment Schemes`],
+    ['KEY INDIVIDUALS', `Trevor Fine – B Compt H DIP Tax CFP\nMalcolm Munsamy – Certificate in Financial Planning, RE5, RE1\nRoger Eskinazi – Higher Diploma Financial Markets, MBA (Cum Laude), RE5/RE1/RE3`],
+    ['BUSINESS ADDRESS', `1st Floor, Dunkeld Place, 12 North Road, Dunkeld West | Tel: 011 325 2514\nCube Workspace, The Pavilion Building, Corner Dock and Portswood Road, V&A Waterfront 8001`],
+    ['COMPLIANCE OFFICER', `Justin Joannides – Crux Compliance Practitioners CO3485 | Tel: 011-234 4991 | justin@cruxconsulting.co.za`],
+    ['ACCREDITED PROVIDERS', `Allan Gray | Discovery Life | Hollard | Liberty | PPS | Momentum | Sanlam | Investec | Prime | Gryphon | Julius Baer | Credo | Old Mutual | Bright Rock`],
+    ['CONFLICTS OF INTEREST', `We have adopted and implemented a Conflict of Interest Management Policy. In the event of a potential conflict of interest, the interest of our client will be accorded priority over our own interests. A copy of our policy is available upon written request.`],
+    ['COMPLAINTS', `Contact: Trevor Fine | trevor@wealthworks.co.za | 1st Floor, Dunkeld Place, 12 North Road, Dunkeld West, 2196\nFAIS Ombud: Kasteel Office Park, Orange Building 2nd Floor, 546 Jochemus Street, Erasmuskloof, Pretoria 0048 | info@faisombud.co.za | 012 762 5000`],
+    ['PRIVACY STATEMENT', `Personal Information refers to information about you, your spouse, your dependents and your beneficiaries. By proceeding, you give us permission to process personal information for the purpose of rendering sound financial advice, quotation and application purposes, obtaining information from financial institutions, and for administration purposes within the group.`],
+  ];
+
+  disclosureBody.forEach(([heading, text]) => {
+    pb(10);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+    doc.text(heading, M, y); y += 4;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+    const lines = doc.splitTextToSize(text, CW);
+    lines.forEach(l => { pb(5); doc.text(l, M, y); y += 4; });
+    y += 3;
+  });
+
+  // ── PAGE: RECORD OF ADVICE (ROA) ──────────────────────────────────────────
+  doc.addPage(); y = 20;
+
+  doc.setFillColor(...navy); doc.rect(0, 0, W, 18, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...white);
+  doc.text('RECORD OF ADVICE (ROA)', W / 2, 11, { align: 'center' });
+  y = 26;
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', W / 2, y, { align: 'center' });
+  y += 8;
+
+  // 1. Client details
+  secTitle('1. Client Details (FICA Verified)');
+  dataRow('Client / Entity Name', proposal.client_name || '—');
+  dataRow('ID or Registration Number', proposal.client_id_number || '—');
+  dataRow('Date of Birth', proposal.client_dob || '—');
+  dataRow('Email', proposal.client_email || '—');
+  dataRow('Mobile Number', proposal.client_mobile || '—');
+  dataRow('Client Type', proposal.client_type === 'natural_person' ? 'Individual' : proposal.client_type || 'Individual');
+  y += 2;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+  doc.text('FICA Status', M, y); y += 5;
+  ['Identity Verified', 'Proof of Address Verified', 'Source of Funds Confirmed', 'Beneficial Ownership Verified (if applicable)'].forEach(item => {
+    checkBox(item, false);
+  });
+  y += 2; hRule();
+
+  // 2. FSP details
+  secTitle('2. Financial Services Provider Details');
+  dataRow('FSP Name', 'Wealth Works (Pty) Ltd  |  Wealthworks Investments (Pty) Ltd');
+  dataRow('FSP Licence Number', '28337  |  45624');
+  dataRow('Advisor Name', proposal.advisor_name || 'Trevor Fine');
+  y += 2;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+  doc.text('Compliance Disclosures Provided:', M, y); y += 5;
+  ['FAIS Disclosure Letter', 'Conflict of Interest Policy', 'Complaints Resolution Process'].forEach(item => checkBox(item, false));
+  y += 2; hRule();
+
+  // 3. Purpose of advice
+  secTitle('3. Purpose of Advice');
+  const advisoryNeeds = Array.isArray(proposal.advisory_needs) ? proposal.advisory_needs : [];
+  ['Wealth Creation / Growth', 'Capital Preservation', 'Income Generation', 'Offshore Diversification', 'Retirement Planning', 'Risk Cover'].forEach(item => {
+    checkBox(item, advisoryNeeds.some(n => n.toLowerCase().includes(item.toLowerCase().split('/')[0].trim())));
+  });
+  y += 2; hRule();
+
+  // 4. Client financial profile
+  secTitle('4. Client Financial Profile');
+  dataRow('Annual Income Band', proposal.gross_annual_income_band || '—');
+  dataRow('Net Worth Band', proposal.net_worth_band || '—');
+  dataRow('Liquidity Requirements', proposal.liquidity_requirement || proposal.client_liquidity_needs || '—');
+  dataRow('Investment Horizon', proposal.time_horizon || '—');
+  y += 2; hRule();
+
+  // 5. Risk profiling
+  secTitle('5. Risk Profiling Outcome');
+  dataRow('Risk Profile', proposal.risk_profile || '—');
+  ['Tolerance for volatility', 'Time horizon', 'Liquidity needs', 'Reaction to market declines'].forEach(item => checkBox(item, true));
+  y += 2; hRule();
+
+  // 6. Basis of advice
+  secTitle('6. Basis of Advice');
+  bodyText('This recommendation is based on: the client\'s stated objectives, the financial profile, the assessed risk tolerance, and current market conditions and product suitability. The advice provided is appropriate to the client\'s circumstances and aligns with their risk-return expectations.');
+  hRule();
+
+  // 7. Product recommendations
+  secTitle('7. Product / Strategy Recommendation');
+  if (investments.length > 0) {
+    investments.forEach(inv => {
+      dataRow('Product', inv.product_type || '—');
+      dataRow('Provider', inv.provider || '—');
+      if (inv.amount > 0) dataRow('Investment Amount', fmtR(inv.amount));
+      if (inv.recurring_amount > 0) dataRow('Recurring Amount', fmtR(inv.recurring_amount));
+      y += 2;
+    });
+  }
+  if (riskProducts.length > 0) {
+    riskProducts.forEach(rp => {
+      dataRow('Provider', rp.provider || '—');
+      if (Array.isArray(rp._covers)) {
+        rp._covers.forEach(cover => {
+          dataRow(cover.cover_type, `Premium: ${fmtR(cover.premium)} pm`);
+        });
+      }
+      y += 2;
+    });
+  }
+  hRule();
+
+  // 8. Motivation
+  secTitle('8. Motivation for Recommendation');
+  if (proposal.investment_rationale || proposal.risk_cover_rationale) {
+    bodyText(proposal.investment_rationale || proposal.risk_cover_rationale);
+  } else {
+    bodyText('This recommendation is suitable because it aligns with the client\'s objective, the risk profile of the product matches the client\'s risk tolerance, the investment horizon is appropriate for the selected strategy, and the product structure supports the client\'s liquidity requirements.');
+  }
+  hRule();
+
+  // 9. Material risks
+  secTitle('9. Material Risks Disclosed');
+  ['Market volatility and potential capital loss', 'Liquidity constraints (where applicable)', 'Product specific risks', 'Currency risks', 'Early withdrawal penalties'].forEach(r => checkBox(r, true));
+  hRule();
+
+  // 10. Costs & fees
+  secTitle('10. Costs, Fees & Remuneration');
+  bodyText('The client has been informed of: initial fees (if applicable), ongoing fees, advisor remuneration/commission, and product costs.');
+  if (investments.length > 0) {
+    investments.forEach(inv => {
+      if (inv.initial_fee_percent > 0) dataRow(`${inv.provider} — Initial fee`, `${inv.initial_fee_percent}%`);
+      if (inv.annual_advice_fee_percent > 0) dataRow(`${inv.provider} — Annual advice fee`, `${inv.annual_advice_fee_percent}%`);
+    });
+  }
+  hRule();
+
+  // 13. FICA source of funds
+  secTitle('13. FICA — Source of Funds Declaration');
+  const sourceOfFunds = Array.isArray(proposal.source_of_funds) ? proposal.source_of_funds : [];
+  ['Salary / Employment', 'Business Income', 'Investment Proceeds', 'Inheritance / Gift'].forEach(item => {
+    checkBox(item, sourceOfFunds.some(s => s.toLowerCase().includes(item.toLowerCase().split('/')[0].trim())));
+  });
+  y += 2; hRule();
+
+  // 15. Advisor declaration
+  pb(40);
+  secTitle('15. Advisor Declaration');
+  bodyText('I confirm that: the advice provided is appropriate and suitable, all disclosures required under FAIS have been made, and this recommendation is in the client\'s best interest.');
+  dataRow('Advisor Name', proposal.advisor_name || 'Trevor Fine');
+  y += 4;
+  if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
+    doc.addImage(proposal.advisor_signature_data, 'PNG', M, y, 50, 15); y += 18;
+  } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
+    doc.setFont('times', 'italic'); doc.setFontSize(14); doc.setTextColor(...navy);
+    doc.text(proposal.advisor_signature_data, M, y + 5); y += 12;
+  }
+  signLine('Advisor Signature  ·  Date: ' + (proposal.sign_date || '_______________'));
+
+  // 16. Client declaration
+  pb(40);
+  secTitle('16. Client Declaration');
+  bodyText('I confirm that: I have provided complete and accurate information, the advice and associated risks have been explained to me, I understand the product and its implications, and I have had the opportunity to ask questions.');
+  dataRow('Client Name', proposal.client_name || '—');
+  y += 4;
+  signLine('Client Signature  ·  Date: _______________');
+
+  // ── MANDATE PAGES (Document B only) ───────────────────────────────────────
+  if (proposal.mandate_included === 'Yes') {
+    doc.addPage(); y = 20;
+
+    doc.setFillColor(...navy); doc.rect(0, 0, W, 18, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...white);
+    doc.text('CONSOLIDATED DISCRETIONARY MANDATE', W / 2, 11, { align: 'center' });
+    y = 26;
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('Between', W / 2, y, { align: 'center' }); y += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text('WEALTHWORKS INVESTMENTS (PTY) LTD', W / 2, y, { align: 'center' }); y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Registration Number 2012/215566/07 ("The FSP")', W / 2, y, { align: 'center' }); y += 8;
+    doc.text('AND', W / 2, y, { align: 'center' }); y += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text(proposal.client_name || '___________________________', W / 2, y, { align: 'center' }); y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`ID / Registration Number: ${proposal.client_id_number || '___________________________'}`, W / 2, y, { align: 'center' }); y += 5;
+    doc.text('("The Investor")', W / 2, y, { align: 'center' }); y += 12;
+    hRule();
+
+    const mandateSections = [
+      ['1. Background to the Investment Mandate', '1.1. This Investment Mandate authorises The FSP to make investment decisions on behalf of The Investor within strictly defined and managed parameters.\n1.2. In order to streamline the decision-making within the investment process, specifically in terms of market timing, re-balancing and asset allocation, it is necessary that The Investor authorises The FSP to act autonomously.\n1.3. The FSP\'s registration with the Financial Sector Conduct Authority (FSCA) under a discretionary Mandate requires that this Mandate be signed by both parties.'],
+      ['2. Authorisation', '2.1. The FSP is the holder of a Category II FSP license and is authorized to render intermediary services of a discretionary nature in respect of investments and products.\n2.2. The FSP shall exercise its discretion in the management on behalf of The Investor.\n2.5. The Investor hereby authorizes The FSP to manage investments that will include but not necessarily be limited to, listed and unlisted securities, unit trusts, collective investment schemes, bonds, derivatives, and other instruments.'],
+      ['3. Investment Objectives and Risk Level', `Risk Level: ${proposal.risk_profile || '_______________'}\nInvestment Objectives: ${Array.isArray(proposal.advisory_needs) ? proposal.advisory_needs.join(', ') : '_______________'}`],
+      ['8. Investment Advice and Reporting', 'The FSP undertakes to administer and manage the investments in accordance with the wealth management objectives indicated in this Mandate. The FSP shall provide The Investor with relevant information regarding the investment portfolio on a regular basis, with a minimum of quarterly updates.'],
+      ['9. Commencement and Termination', 'Either party may terminate this Mandate on 60 (sixty) calendar days\' notice. Notice shall be given in writing and either posted by registered mail, hand-delivered or emailed to the other party\'s nominated email address.'],
+      ['10. Legislation and Regulations', 'The FSP has current obligations in terms of: Financial Intelligence Centre Act No. 38 of 2001 (FICA), Prevention of Organised Crime Act of 2001 (POCA), and the Policyholder Protection Rules (PPR). The Investor declares that all monies are legitimate funds as defined in terms of FICA and POCA.'],
+      ['12. Confidentiality', 'The FSP undertakes not to disclose or make available any Confidential Information to any third party, without the prior written authority of The Investor, unless compelled to by a court order.'],
+    ];
+
+    mandateSections.forEach(([heading, text]) => {
+      pb(12);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+      doc.text(heading, M, y); y += 5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+      const lines = doc.splitTextToSize(text, CW);
+      lines.forEach(l => { pb(5); doc.text(l, M, y); y += 4; });
+      y += 4;
+    });
+
+    hRule();
+
+    // Mandate signature page
+    pb(60);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text('ANNEXURE A — MODEL PORTFOLIOS', M, y); y += 5;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+    dataRow('Risk Tolerance Level', proposal.risk_profile || '—');
+    dataRow('Investment Objectives', Array.isArray(proposal.advisory_needs) ? proposal.advisory_needs.join(', ') : '—');
+    y += 4; hRule();
+
+    pb(80);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text('SIGNATURES', M, y); y += 8;
+
+    // Investor signature
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('Signature of Investor:', M, y); y += 10;
+    doc.setDrawColor(...navy); doc.line(M, y, M + 100, y); y += 5;
+    doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text('Full name: ' + (proposal.client_name || '___________________________'), M, y); y += 8;
+    doc.setDrawColor(...navy); doc.line(M, y, M + 60, y); y += 5;
+    doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text('Date: _______________', M, y); y += 12;
+
+    // FSP signature
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('For and on behalf of The FSP (Wealthworks Investments (Pty) Ltd):', M, y); y += 10;
+    if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
+      doc.addImage(proposal.advisor_signature_data, 'PNG', M, y, 50, 15); y += 18;
+    } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
+      doc.setFont('times', 'italic'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text(proposal.advisor_signature_data, M, y + 5); y += 12;
+    }
+    doc.setDrawColor(...navy); doc.line(M, y, M + 100, y); y += 5;
+    doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text('Authorised signatory: ' + (proposal.advisor_name || 'Trevor Fine'), M, y); y += 8;
+    doc.setDrawColor(...navy); doc.line(M, y, M + 60, y); y += 5;
+    doc.text('Date: ' + (proposal.sign_date || '_______________'), M, y);
+  }
+
+  return doc;
+}

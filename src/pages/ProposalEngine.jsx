@@ -154,7 +154,7 @@ export default function ProposalEngine() {
 
   const handleGeneratePdf = () => {
     if (!localData) return;
-    const doc = generateProposalPdf(localData);
+    const doc = generateProposalPdf(localData, investments, riskProducts);
     doc.save(`${localData.reference || 'proposal'}.pdf`);
     toast.success('PDF downloaded');
   };
@@ -165,7 +165,7 @@ export default function ProposalEngine() {
       return;
     }
     setIsSending(true);
-    const doc = generateProposalPdf(localData);
+    const doc = generateProposalPdf(localData, investments, riskProducts);
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
