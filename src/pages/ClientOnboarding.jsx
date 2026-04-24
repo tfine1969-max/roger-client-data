@@ -338,10 +338,6 @@ export default function ClientOnboarding() {
         advisory_needs: formData.advisory_needs,
       };
     } else if (currentStep === 5) {
-      if (!formData.identity_document_uploaded || !formData.proof_of_address_uploaded) {
-        toast.error('Identity document and proof of address are required');
-        return;
-      }
       stepData = {
         identity_document_uploaded: formData.identity_document_uploaded,
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
@@ -920,9 +916,9 @@ export default function ClientOnboarding() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'REQUIRED', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible' },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'REQUIRED · MAX 3 MONTHS', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
-                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'REQUIRED', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
+                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible' },
+                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
+                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
                   { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
                 ].map(doc => (
                   <div key={doc.key} className="border border-border rounded p-3">
