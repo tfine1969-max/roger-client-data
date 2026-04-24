@@ -365,6 +365,8 @@ export default function ProposalEngine() {
               <div className="lg:sticky lg:top-4">
                 <ProposalPreview
                   proposal={localData}
+                  investments={investments}
+                  riskProducts={riskProducts}
                   onGeneratePdf={handleGeneratePdf}
                   onSend={handleSend}
                   canSend={hasSig}
