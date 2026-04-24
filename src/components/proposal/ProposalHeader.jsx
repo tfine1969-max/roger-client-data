@@ -26,6 +26,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
   };
 
   const handleMandateToggle = async (value) => {
+    setMandateValue(value);
     const docType = value === 'Yes' ? 'Document B' : 'Document A';
     await onUpdate('mandate_included', value);
     await onUpdate('output_document_type', docType);
@@ -49,7 +50,11 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
     (proposal.status === 'new' ? 'Pending Review' : proposal.status) || '';
 
   // Mandate defaults to 'No' if not yet set
-  const mandateValue = proposal.mandate_included || 'No';
+  const [mandateValue, setMandateValue] = React.useState(proposal.mandate_included || 'No');
+
+  React.useEffect(() => {
+    setMandateValue(proposal.mandate_included || 'No');
+  }, [proposal.mandate_included]);
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
