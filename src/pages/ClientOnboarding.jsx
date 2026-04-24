@@ -306,6 +306,7 @@ export default function ClientOnboarding() {
         employment_status: formData.employment_status,
         occupation: formData.occupation,
         employer: formData.employer,
+        industry: formData.industry,
         source_of_funds: formData.source_of_funds,
         sa_tax_number: formData.sa_tax_number,
         tax_residency: formData.tax_residency,
