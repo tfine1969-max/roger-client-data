@@ -20,9 +20,29 @@ const STEPS = [
 ];
 
 const ADVISORY_NEEDS = [
-  'Local and offshore investments', 'Retirement planning', 'Life & risk cover',
-  'Estate planning', 'Tax planning', 'Business assurance', 'Education planning',
+  'Local and offshore investments', 'Life & risk cover',
+  'Estate planning', 'Tax planning', 'Business assurance',
 ];
+
+const calcRiskScore = (fd) => {
+  let s = 0;
+  const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
+  const horizonMap = { 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 };
+  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 };
+  const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
+  s += dropMap[fd.portfolio_drop_response] || 0;
+  s += horizonMap[fd.time_horizon] || 0;
+  s += liquidMap[fd.liquidity_requirement] || 0;
+  s += objMap[fd.primary_investment_objective] || 0;
+  return Math.round(Math.min(10, s));
+};
+const scoreToProfile = (score) => {
+  if (score <= 2) return 'Conservative';
+  if (score <= 4) return 'Cautious';
+  if (score <= 6) return 'Moderate';
+  if (score <= 8) return 'Growth';
+  return 'Aggressive';
+};
 
 const emptyDirector = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -39,6 +59,8 @@ export default function ClientOnboardingCompany() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingStep, setIsSavingStep] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [profileOverridden, setProfileOverridden] = useState(false);
+  const [profileInitialised, setProfileInitialised] = useState(false);
 
   const [formData, setFormData] = useState({
     entity_name: '',
@@ -130,10 +152,19 @@ export default function ClientOnboardingCompany() {
           advisory_needs: Array.isArray(client.advisory_needs) ? client.advisory_needs : prev.advisory_needs,
         }));
       }
-    }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); });
+    }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
   }, [navigate]);
 
   const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+
+  useEffect(() => {
+    if (!profileInitialised || profileOverridden) return;
+    if (formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) {
+      const suggested = scoreToProfile(calcRiskScore(formData));
+      setFormData(prev => prev.risk_profile === suggested ? prev : { ...prev, risk_profile: suggested });
+    }
+  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
+
   const toggleNeed = (item) => setFormData(prev => ({
     ...prev,
     advisory_needs: prev.advisory_needs.includes(item)
@@ -411,16 +442,34 @@ export default function ClientOnboardingCompany() {
                   </div>
                 ))}
               </div>
+              {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
+                <div className="mt-3 p-3 bg-ocean/5 border border-ocean/20 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
+                    <span className="text-sm font-bold text-ocean">{calcRiskScore(formData)} / 10</span>
+                  </div>
+                  <div className="w-full bg-border rounded-full h-2 mb-1">
+                    <div className="h-2 rounded-full bg-ocean transition-all" style={{ width: `${calcRiskScore(formData) * 10}%` }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Auto-selecting <strong>{scoreToProfile(calcRiskScore(formData))}</strong> profile</p>
+                </div>
+              )}
               <div className="mt-3">
-                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-2">RISK PROFILE *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
+                  {profileOverridden && (
+                    <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
+                  )}
+                </div>
                 <div className="grid grid-cols-5 gap-2">
                   {['Conservative','Cautious','Moderate','Growth','Aggressive'].map(v => (
-                    <button key={v} type="button" onClick={() => handleChange('risk_profile', v)}
+                    <button key={v} type="button" onClick={() => { setProfileOverridden(true); handleChange('risk_profile', v); }}
                       className={`p-2 border rounded text-left transition-all ${formData.risk_profile === v ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
                       <p className={`text-xs font-semibold ${formData.risk_profile === v ? 'text-ocean' : 'text-navy'}`}>{v}</p>
                     </button>
                   ))}
                 </div>
+                {profileOverridden && <p className="text-[10px] text-warn mt-1">⚠ Profile manually overridden — calculated score suggests <strong>{scoreToProfile(calcRiskScore(formData))}</strong></p>}
               </div>
             </div>
             <div className="border border-border rounded p-3">
@@ -439,30 +488,73 @@ export default function ClientOnboardingCompany() {
 
         {/* STEP 6 — Documents */}
         {currentStep === 6 && (
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', desc: 'SA ID / Smart Card / Passport' },
-              { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', desc: 'Utility bill / bank statement' },
-              { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', desc: '3 months bank statements' },
-              { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', desc: 'Current policy documents or statements' },
-            ].map(doc => (
-              <div key={doc.key} className="border border-border rounded p-3">
-                <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
-                {formData[doc.key] ? (
-                  <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                    <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
+                  { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
+                  { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
+                  { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
+                ].map(doc => (
+                  <div key={doc.key} className="border border-border rounded p-3">
+                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                    {formData[doc.key] ? (
+                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
+                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                      </div>
+                    ) : (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                        </div>
+                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                      </label>
+                    )}
                   </div>
-                ) : (
-                  <label className="block cursor-pointer">
-                    <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
-                      <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                      <p className="text-[10px] text-ocean mt-2">Click to upload</p>
-                    </div>
-                    <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                  </label>
-                )}
+                ))}
               </div>
-            ))}
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER DIRECTOR DOCUMENTS</p>
+              <div className="space-y-3">
+                {directors.map((d, idx) => {
+                  const name = [d.first_name, d.last_name].filter(Boolean).join(' ') || `Director ${idx + 1}`;
+                  const idKey = `director_${idx}_id_uploaded`;
+                  const addrKey = `director_${idx}_addr_uploaded`;
+                  return (
+                    <div key={idx} className="border border-border rounded p-3">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Director {idx + 1} — {name}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: idKey, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
+                          { key: addrKey, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
+                        ].map(doc => (
+                          <div key={doc.key} className="border border-border rounded p-2">
+                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
+                            {formData[doc.key] ? (
+                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
+                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                              </div>
+                            ) : (
+                              <label className="block cursor-pointer">
+                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
+                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                                </div>
+                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                              </label>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -480,7 +572,7 @@ export default function ClientOnboardingCompany() {
               {[
                 { label: 'COMPANY NAME', value: formData.entity_name },
                 { label: 'RISK PROFILE', value: formData.risk_profile || '—' },
-                { label: 'DIRECTORS', value: `${directors.filter(d => d.full_name).length} added` },
+                { label: 'DIRECTORS', value: `${directors.filter(d => d.first_name || d.last_name).length} added` },
                 { label: 'ADVISOR', value: 'Trevor Fine' },
               ].map(s => (
                 <div key={s.label} className="border border-border rounded p-3">
