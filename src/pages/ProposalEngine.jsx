@@ -212,13 +212,15 @@ export default function ProposalEngine() {
       <div className="sticky top-0 z-30 flex flex-col shadow-sm">
         <TopBar advisorName={advisor.name} statusText={localData.reference} />
 
-        {/* Client context strip */}
-        <div className="bg-navy text-white px-6 py-2 flex items-center justify-between w-full text-xs">
-          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Client</span><span className="font-semibold">{localData.client_name}</span></div>
-          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Risk Profile</span><span className="font-medium">{localData.risk_profile || '—'}</span></div>
-          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Time Horizon</span><span className="font-medium">{localData.time_horizon || '—'}</span></div>
-          <div className="max-w-[300px]"><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs</span><span className="font-medium">{Array.isArray(localData.advisory_needs) && localData.advisory_needs.length > 0 ? localData.advisory_needs.join(', ') : '—'}</span></div>
-          <div><span className="font-mono text-[10px] text-white/60">{localData.reference}</span></div>
+        {/* Progress bar */}
+        <div className="bg-navy px-6 py-3">
+          <div className="w-full bg-white/20 rounded-full h-1.5">
+            <div 
+              className="bg-forest h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${(completedSteps.length + 1) * 25}%` }}
+            />
+          </div>
+          <p className="text-white/60 text-[9px] mt-1.5">Step {['client_details', 'recommendations', 'suitability', 'review'].indexOf(activeStep) + 1} of 4</p>
         </div>
 
         {/* Step navbar */}
