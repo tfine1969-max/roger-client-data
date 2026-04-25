@@ -118,7 +118,7 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
   const hasSig = mode === 'draw' ? hasDrawn : typedName.trim().length > 0;
 
   return (
-    <div className="border border-border bg-card border-t-2 border-t-navy mb-3">
+    <div className="border border-border bg-card border-t-2 border-t-navy h-full">
       <div className="p-4">
         <div className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy mb-2.5">
           WealthWorks signature — required before sending

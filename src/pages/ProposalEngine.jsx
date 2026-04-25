@@ -354,19 +354,20 @@ export default function ProposalEngine() {
                   />
                 </div>
 
-                <SignaturePad
-                  advisorKey={advisorKey}
-                  signDate={localData.sign_date}
-                  onSignDateChange={v => handleFieldChange('sign_date', v)}
-                  onSignatureChange={handleSignatureChange}
-                  initialData={localData.advisor_signature_data}
-                  initialType={localData.advisor_signature_type}
-                />
-
-                <QuoteUpload
-                  existingUrl={localData.quote_file_url}
-                  onFileUploaded={url => handleFieldChange('quote_file_url', url)}
-                />
+                <div className="max-w-[900px] grid grid-cols-2 gap-6 mb-3">
+                  <SignaturePad
+                    advisorKey={advisorKey}
+                    signDate={localData.sign_date}
+                    onSignDateChange={v => handleFieldChange('sign_date', v)}
+                    onSignatureChange={handleSignatureChange}
+                    initialData={localData.advisor_signature_data}
+                    initialType={localData.advisor_signature_type}
+                  />
+                  <QuoteUpload
+                    existingUrl={localData.quote_file_url}
+                    onFileUploaded={url => handleFieldChange('quote_file_url', url)}
+                  />
+                </div>
               </div>
 
               <div className="lg:sticky lg:top-4">

@@ -20,7 +20,7 @@ export default function QuoteUpload({ onFileUploaded, existingUrl }) {
   const hasFile = !!fileName;
 
   return (
-    <div className="border border-border bg-card p-4 mb-3">
+    <div className="border border-border bg-card p-4 h-full">
       <div className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy mb-2.5">
         Quote PDF
         <span className="text-[11px] font-normal normal-case tracking-normal text-muted-foreground ml-2">
