@@ -5,8 +5,8 @@ import { ChevronRight, Edit2 } from 'lucide-react';
 function Field({ label, value }) {
   return (
     <div>
-      <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
-      <p className="text-xs font-medium text-navy mt-0.5">{value || '—'}</p>
+      <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase mb-0.5">{label}</p>
+      <p className="text-sm font-medium text-navy">{value || '—'}</p>
     </div>
   );
 }
@@ -30,7 +30,7 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
             <Edit2 className="w-3 h-3" /> Edit
           </button>
         </div>
-        <div className="p-3 grid grid-cols-4 gap-x-4 gap-y-2.5">
+        <div className="p-5 grid grid-cols-4 gap-x-6 gap-y-4">
           <Field label="Full Name" value={data.client_name} />
           <Field label="ID Number" value={data.client_id_number} />
           <Field label="Date of Birth" value={data.client_dob} />
@@ -45,24 +45,6 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
               <p className="text-xs font-medium text-navy mt-0.5">{data.advisory_needs.join(' · ')}</p>
             </div>
           )}
-        </div>
-      </div>
-
-      <div className="border border-border bg-card mb-3">
-        <div className="px-4 py-2 bg-muted border-b border-border flex items-center justify-between">
-          <span className="text-[10px] font-semibold tracking-wider uppercase text-navy">Needs Identified</span>
-          <span className="text-[9px] text-muted-foreground">Select all that apply</span>
-        </div>
-        <div className="p-3 grid grid-cols-2 gap-2">
-          {NEEDS_OPTIONS.map(opt => (
-            <label key={opt.id} className={`flex items-center gap-2 p-2 border cursor-pointer text-xs font-medium transition-colors ${needs.includes(opt.id) ? 'border-navy bg-navy/5 text-navy' : 'border-border text-muted-foreground hover:border-navy/40'}`}>
-              <div className={`w-3 h-3 border flex-shrink-0 flex items-center justify-center ${needs.includes(opt.id) ? 'bg-navy border-navy' : 'border-muted-foreground'}`}>
-                {needs.includes(opt.id) && <span className="text-white text-[7px] font-bold">✓</span>}
-              </div>
-              {opt.label}
-              <input type="checkbox" checked={needs.includes(opt.id)} onChange={() => toggleNeed(opt.id)} className="sr-only" />
-            </label>
-          ))}
         </div>
       </div>
 
