@@ -354,7 +354,7 @@ export default function ProposalEngine() {
                   />
                 </div>
 
-                <div className="max-w-[900px] grid grid-cols-2 gap-6 mb-3">
+                <div className="max-w-[900px] mx-auto grid grid-cols-2 gap-6 mb-3">
                   <SignaturePad
                     advisorKey={advisorKey}
                     signDate={localData.sign_date}
