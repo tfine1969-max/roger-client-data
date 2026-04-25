@@ -312,8 +312,19 @@ export default function ClientOnboardingTrust() {
                 <Input className="mt-1 h-8 text-sm" value={formData.trust_number} onChange={e => handleChange('trust_number', e.target.value)} placeholder="e.g. IT1234/2015" />
               </div>
               <div>
-                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST DEED DATE</Label>
-                <Input type="date" className="mt-1 h-8 text-sm" value={formData.trust_deed_date} onChange={e => handleChange('trust_deed_date', e.target.value)} />
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST DEED DATE (dd-mm-yyyy)</Label>
+                <Input
+                  className="mt-1 h-8 text-sm"
+                  placeholder="dd-mm-yyyy"
+                  value={formData.trust_deed_date}
+                  onChange={e => {
+                    let v = e.target.value.replace(/[^0-9]/g, '');
+                    if (v.length > 2) v = v.slice(0, 2) + '-' + v.slice(2);
+                    if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5, 9);
+                    handleChange('trust_deed_date', v);
+                  }}
+                  maxLength={10}
+                />
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT EMAIL</Label>
