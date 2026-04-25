@@ -157,7 +157,7 @@ export default function ProposalDetail() {
           </div>
 
           {/* Bottom sections */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-3 gap-6 items-start">
             <AttachmentsSection attachments={attachments} proposalId={id} />
             <PdfSection proposal={proposal} proposalId={id} />
             <SignatureSection proposal={proposal} proposalId={id} />

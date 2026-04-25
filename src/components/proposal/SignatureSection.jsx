@@ -12,7 +12,7 @@ export default function SignatureSection({ proposal, proposalId }) {
 
   return (
     <div className="bg-card border border-border rounded-lg p-4">
-      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">Signatures & Distribution</h2>
+      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-4">Signatures & Distribution</h2>
 
       <div className="space-y-2 mb-3">
         {/* Advisor signature status */}

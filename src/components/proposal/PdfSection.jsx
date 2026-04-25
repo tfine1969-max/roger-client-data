@@ -8,7 +8,7 @@ export default function PdfSection({ proposal, proposalId }) {
 
   return (
     <div className="bg-card border border-border rounded-lg p-4">
-      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">PDF Document</h2>
+      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-4">PDF Document</h2>
       <div className="space-y-3">
         {proposal.proposal_pdf_url ? (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
