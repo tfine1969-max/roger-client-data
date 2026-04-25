@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import ProposalHeader from '@/components/proposal/ProposalHeader';
 import InvestmentsList from '@/components/proposal/InvestmentsList';
 import RiskProductsList from '@/components/proposal/RiskProductsList';
-import AttachmentsSection from '@/components/proposal/AttachmentsSection';
 import PdfSection from '@/components/proposal/PdfSection';
 import SignatureSection from '@/components/proposal/SignatureSection';
 import ProposalSidePanel from '@/components/proposal/ProposalSidePanel';
@@ -157,8 +156,7 @@ export default function ProposalDetail() {
           </div>
 
           {/* Bottom sections */}
-          <div className="grid grid-cols-3 gap-6 items-stretch">
-            <AttachmentsSection attachments={attachments} proposalId={id} />
+          <div className="grid grid-cols-2 gap-6 items-stretch">
             <PdfSection proposal={proposal} proposalId={id} />
             <SignatureSection proposal={proposal} proposalId={id} />
           </div>

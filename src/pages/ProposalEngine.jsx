@@ -364,8 +364,10 @@ export default function ProposalEngine() {
                     initialType={localData.advisor_signature_type}
                   />
                   <QuoteUpload
-                    existingUrl={localData.quote_file_url}
-                    onFileUploaded={url => handleFieldChange('quote_file_url', url)}
+                   existingUrl={localData.quote_file_url}
+                   onFileUploaded={url => handleFieldChange('quote_file_url', url)}
+                   existingAppFormUrl={localData.app_form_url}
+                   onAppFormUploaded={url => handleFieldChange('app_form_url', url)}
                   />
                 </div>
               </div>
