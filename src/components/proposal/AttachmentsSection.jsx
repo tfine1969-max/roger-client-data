@@ -30,50 +30,34 @@ export default function AttachmentsSection({ attachments, proposalId }) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <h2 className="text-lg font-bold text-navy mb-6">Attachments</h2>
+    <div className="bg-card border border-border rounded-lg p-4">
+      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">Attachments</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-3">
         {/* Quote Upload */}
         <div>
-          <label className="text-xs font-semibold text-navy uppercase tracking-wide block mb-3">
+          <label className="text-xs font-semibold text-navy uppercase tracking-wide block mb-1.5">
             Quote PDF
           </label>
-          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-ocean transition-colors">
+          <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean transition-colors">
             {quoteAttachment ? (
-              <div className="space-y-3">
-                <FileText className="w-8 h-8 mx-auto text-ocean" />
-                <p className="text-sm font-medium text-navy">Quote attached</p>
-                <a
-                  href={quoteAttachment.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-ocean hover:underline"
-                >
-                  Download
-                </a>
-                <button className="block text-xs text-destructive hover:underline w-full">
-                  Remove
-                </button>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-ocean shrink-0" />
+                  <span className="text-xs font-medium text-navy">Quote attached</span>
+                </div>
+                <a href={quoteAttachment.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-ocean hover:underline">Download</a>
               </div>
             ) : (
-              <div className="space-y-3">
-                <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Drag or click to upload</p>
-                <button
-                  onClick={() => quoteRef.current?.click()}
-                  disabled={uploading}
-                  className="text-xs text-ocean hover:underline font-medium"
-                >
-                  {uploading ? 'Uploading...' : 'Upload Quote'}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">No file uploaded</span>
+                </div>
+                <button onClick={() => quoteRef.current?.click()} disabled={uploading} className="text-xs text-ocean hover:underline font-medium shrink-0">
+                  {uploading ? 'Uploading...' : 'Upload'}
                 </button>
-                <input
-                  ref={quoteRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => handleUpload(e, 'Quote')}
-                  className="hidden"
-                />
+                <input ref={quoteRef} type="file" accept=".pdf" onChange={(e) => handleUpload(e, 'Quote')} className="hidden" />
               </div>
             )}
           </div>
@@ -81,44 +65,28 @@ export default function AttachmentsSection({ attachments, proposalId }) {
 
         {/* Application Form Upload */}
         <div>
-          <label className="text-xs font-semibold text-navy uppercase tracking-wide block mb-3">
+          <label className="text-xs font-semibold text-navy uppercase tracking-wide block mb-1.5">
             Application Form
           </label>
-          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-ocean transition-colors">
+          <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean transition-colors">
             {formAttachment ? (
-              <div className="space-y-3">
-                <FileText className="w-8 h-8 mx-auto text-ocean" />
-                <p className="text-sm font-medium text-navy">Form attached</p>
-                <a
-                  href={formAttachment.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-ocean hover:underline"
-                >
-                  Download
-                </a>
-                <button className="block text-xs text-destructive hover:underline w-full">
-                  Remove
-                </button>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-ocean shrink-0" />
+                  <span className="text-xs font-medium text-navy">Form attached</span>
+                </div>
+                <a href={formAttachment.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-ocean hover:underline">Download</a>
               </div>
             ) : (
-              <div className="space-y-3">
-                <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Drag or click to upload</p>
-                <button
-                  onClick={() => formRef.current?.click()}
-                  disabled={uploading}
-                  className="text-xs text-ocean hover:underline font-medium"
-                >
-                  {uploading ? 'Uploading...' : 'Upload Form'}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">No file uploaded</span>
+                </div>
+                <button onClick={() => formRef.current?.click()} disabled={uploading} className="text-xs text-ocean hover:underline font-medium shrink-0">
+                  {uploading ? 'Uploading...' : 'Upload'}
                 </button>
-                <input
-                  ref={formRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => handleUpload(e, 'Application Form')}
-                  className="hidden"
-                />
+                <input ref={formRef} type="file" accept=".pdf" onChange={(e) => handleUpload(e, 'Application Form')} className="hidden" />
               </div>
             )}
           </div>
