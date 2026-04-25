@@ -61,15 +61,18 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
         const client = clientMap[p.client_id] || clientMap[p.client] || null;
 
         const clientName = client
-          ? `${client.first_name || ''} ${client.last_name || ''}`.trim() || client.full_name
+          ? client.entity_name || client.trust_name || client.company_name
+            || `${client.first_name || ''} ${client.last_name || ''}`.trim()
+            || client.full_name
           : p.client_name || '—';
 
-        // Pull advisory needs from linked client record
-        const needs = Array.isArray(p.advisory_needs) && p.advisory_needs.length > 0
-          ? p.advisory_needs.join(', ')
-          : Array.isArray(client?.advisory_needs) && client.advisory_needs.length > 0
-          ? client.advisory_needs.join(', ')
-          : '—';
+        // Pull advisory needs from proposal first, then client
+        const rawNeeds = (Array.isArray(p.advisory_needs) && p.advisory_needs.length > 0)
+          ? p.advisory_needs
+          : (Array.isArray(client?.advisory_needs) && client.advisory_needs.length > 0)
+          ? client.advisory_needs
+          : null;
+        const needs = rawNeeds ? rawNeeds.join(', ') : '—';
 
         return (
           <div
