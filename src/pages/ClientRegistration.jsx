@@ -162,6 +162,7 @@ const TEST_PROFILES = [
 export default function ClientRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [entityType, setEntityType] = useState('Individual');
   const [formData, setFormData] = useState({
     email: '',
     mobile: '',
@@ -182,6 +183,11 @@ export default function ClientRegistration() {
       password: 'Test1234!',
       confirmPassword: 'Test1234!',
     });
+    // Set entity type based on profile
+    const ct = profile.onboarding?.client_type || 'Natural Person';
+    if (ct === 'Trust') setEntityType('Trust');
+    else if (ct === 'Company') setEntityType('Company');
+    else setEntityType('Individual');
     // Store onboarding seed so ClientOnboarding can pre-populate
     sessionStorage.setItem('test_onboarding_seed', JSON.stringify(profile.onboarding));
     toast.success(`Filled with ${profile.label} test data`);
@@ -234,14 +240,25 @@ export default function ClientRegistration() {
 
       sessionStorage.setItem('pending_client_id', clientId);
       sessionStorage.setItem('pending_client_email', formData.email);
+      sessionStorage.setItem('pending_entity_type', entityType);
+
+      // Persist entity type on the client record
+      const clientTypeMap = { Individual: 'Natural Person', Trust: 'Trust', Company: 'Company' };
+      await base44.entities.Clients.update(clientId, { client_type: clientTypeMap[entityType] || 'Natural Person' });
+
+      const onboardingRoute = entityType === 'Trust' ? '/client-onboarding-trust'
+        : entityType === 'Company' ? '/client-onboarding-company'
+        : '/client-onboarding';
 
       // TEST MODE: skip OTP for @test.co.za emails
       if (TEST_MODE && isTestEmail(formData.email)) {
         await base44.entities.Clients.update(clientId, { otp_verified: true });
         toast.success('Test email — OTP skipped. Proceeding to onboarding.');
-        navigate('/client-onboarding', { replace: true });
+        navigate(onboardingRoute, { replace: true });
       } else {
         toast.success('Account created. Verify your OTP to continue.');
+        // Store destination so OTP page knows where to redirect
+        sessionStorage.setItem('pending_onboarding_route', onboardingRoute);
         navigate('/client-otp', { replace: true });
       }
     } catch (error) {
@@ -297,6 +314,24 @@ export default function ClientRegistration() {
             <p className="text-muted-foreground mb-8">Register to begin your onboarding</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Entity Type */}
+              <div>
+                <Label className="text-sm font-semibold text-navy">I am registering as</Label>
+                <div className="flex gap-2 mt-1.5">
+                  {['Individual', 'Trust', 'Company'].map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setEntityType(type)}
+                      className={`flex-1 py-2 text-sm font-medium border rounded-sm transition-all ${
+                        entityType === type ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <Label className="text-sm font-semibold text-navy">Email Address</Label>
                 <Input

@@ -14,6 +14,8 @@ import ClientOTP from '@/pages/ClientOTP';
 import ClientLogin from '@/pages/ClientLogin';
 import ClientOnboarding from '@/pages/ClientOnboarding';
 import ClientOnboardingConfirmation from '@/pages/ClientOnboardingConfirmation';
+import ClientOnboardingTrust from '@/pages/ClientOnboardingTrust';
+import ClientOnboardingCompany from '@/pages/ClientOnboardingCompany';
 import Inbox from '@/pages/Inbox';
 import CreateProposal from '@/pages/CreateProposal';
 import ProposalDetail from '@/pages/ProposalDetail';
@@ -103,6 +105,8 @@ const AuthenticatedApp = () => {
       <Route path="/client-login" element={<ClientLogin />} />
       <Route path="/client-otp" element={<ProtectedClientInitRoute element={<ClientOTP />} />} />
       <Route path="/client-onboarding" element={<ProtectedClientInitRoute element={<ClientOnboarding />} />} />
+      <Route path="/client-onboarding-trust" element={<ProtectedClientInitRoute element={<ClientOnboardingTrust />} />} />
+      <Route path="/client-onboarding-company" element={<ProtectedClientInitRoute element={<ClientOnboardingCompany />} />} />
       <Route path="/client-confirmation" element={<ProtectedClientInitRoute element={<ClientOnboardingConfirmation />} />} />
       <Route path="/client-dashboard" element={<ProtectedClientInitRoute element={<ClientDashboard />} />} />
 

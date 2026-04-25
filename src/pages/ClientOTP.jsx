@@ -55,7 +55,9 @@ export default function ClientOTP() {
       });
 
       toast.success('OTP verified successfully');
-      navigate('/client-onboarding', { replace: true });
+      const dest = sessionStorage.getItem('pending_onboarding_route') || '/client-onboarding';
+      sessionStorage.removeItem('pending_onboarding_route');
+      navigate(dest, { replace: true });
     } catch (error) {
       toast.error(error.message || 'OTP verification failed');
     } finally {
