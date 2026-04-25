@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
+import PersonCard from '@/components/onboarding/PersonCard';
 
 const STEPS = [
   { number: 1, label: 'Trust details' },
@@ -24,7 +25,11 @@ const ADVISORY_NEEDS = [
 ];
 
 const emptyTrustee = () => ({
-  full_name: '', sa_id_number: '', date_of_birth: '', residential_address: '', email: '', mobile: '',
+  title: '', first_name: '', last_name: '', identity_type: 'SA ID',
+  id_number: '', passport_country: '', date_of_birth: '',
+  gender: '', marital_status: '', nationality: '',
+  email: '', mobile: '',
+  street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
 
 export default function ClientOnboardingTrust() {
@@ -159,7 +164,7 @@ export default function ClientOnboardingTrust() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-      if (trustees.some(t => !t.full_name || !t.sa_id_number)) { toast.error('Please complete all trustee details'); return; }
+      if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
       data = { trustees_list: trustees };
     } else if (currentStep === 3) {
       data = { trust_deed_uploaded: formData.trust_deed_uploaded, loa_uploaded: formData.loa_uploaded, trustee_ids_uploaded: formData.trustee_ids_uploaded };
@@ -249,7 +254,7 @@ export default function ClientOnboardingTrust() {
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 max-w-3xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
         <div className="mb-4">
           <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF {STEPS.length} · TRUST ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
@@ -307,44 +312,17 @@ export default function ClientOnboardingTrust() {
         {/* STEP 2 — Trustees */}
         {currentStep === 2 && (
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Add all trustees of this trust. Minimum 2 trustees required.</p>
+            <p className="text-xs text-muted-foreground">Add all trustees of this trust. Minimum 2 required.</p>
             {trustees.map((trustee, idx) => (
-              <div key={idx} className="border border-border rounded p-3 relative">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold text-navy uppercase tracking-wider">Trustee {idx + 1}</h3>
-                  {trustees.length > 2 && (
-                    <button type="button" onClick={() => removeTrustee(idx)} className="text-muted-foreground hover:text-danger transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">FULL NAME *</Label>
-                    <Input className="mt-1 h-8 text-sm" value={trustee.full_name} onChange={e => updateTrustee(idx, 'full_name', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA ID NUMBER *</Label>
-                    <Input className="mt-1 h-8 text-sm" maxLength="13" value={trustee.sa_id_number} onChange={e => updateTrustee(idx, 'sa_id_number', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH</Label>
-                    <Input type="date" className="mt-1 h-8 text-sm" value={trustee.date_of_birth} onChange={e => updateTrustee(idx, 'date_of_birth', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMAIL</Label>
-                    <Input type="email" className="mt-1 h-8 text-sm" value={trustee.email} onChange={e => updateTrustee(idx, 'email', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MOBILE</Label>
-                    <Input type="tel" className="mt-1 h-8 text-sm" value={trustee.mobile} onChange={e => updateTrustee(idx, 'mobile', e.target.value)} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RESIDENTIAL ADDRESS</Label>
-                    <Input className="mt-1 h-8 text-sm" value={trustee.residential_address} onChange={e => updateTrustee(idx, 'residential_address', e.target.value)} />
-                  </div>
-                </div>
-              </div>
+              <PersonCard
+                key={idx}
+                person={trustee}
+                idx={idx}
+                role="Trustee"
+                onUpdate={updateTrustee}
+                onRemove={removeTrustee}
+                canRemove={trustees.length > 2}
+              />
             ))}
             <button type="button" onClick={addTrustee} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add trustee

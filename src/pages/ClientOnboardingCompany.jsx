@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
+import PersonCard from '@/components/onboarding/PersonCard';
 
 const STEPS = [
   { number: 1, label: 'Company details' },
@@ -24,7 +25,11 @@ const ADVISORY_NEEDS = [
 ];
 
 const emptyDirector = () => ({
-  full_name: '', sa_id_number: '', date_of_birth: '', residential_address: '', email: '', mobile: '',
+  title: '', first_name: '', last_name: '', identity_type: 'SA ID',
+  id_number: '', passport_country: '', date_of_birth: '',
+  gender: '', marital_status: '', nationality: '',
+  email: '', mobile: '',
+  street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
 
 export default function ClientOnboardingCompany() {
@@ -159,7 +164,7 @@ export default function ClientOnboardingCompany() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-      if (directors.some(d => !d.full_name || !d.sa_id_number)) { toast.error('Please complete all director details'); return; }
+      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
       data = { cipc_registration_uploaded: formData.cipc_registration_uploaded, moi_uploaded: formData.moi_uploaded, director_ids_uploaded: formData.director_ids_uploaded };
@@ -249,7 +254,7 @@ export default function ClientOnboardingCompany() {
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 max-w-3xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
         <div className="mb-4">
           <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF {STEPS.length} · COMPANY ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
@@ -307,44 +312,17 @@ export default function ClientOnboardingCompany() {
         {/* STEP 2 — Directors */}
         {currentStep === 2 && (
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Add all directors of this company. Minimum 2 directors required.</p>
+            <p className="text-xs text-muted-foreground">Add all directors of this company. Minimum 2 required.</p>
             {directors.map((director, idx) => (
-              <div key={idx} className="border border-border rounded p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold text-navy uppercase tracking-wider">Director {idx + 1}</h3>
-                  {directors.length > 2 && (
-                    <button type="button" onClick={() => removeDirector(idx)} className="text-muted-foreground hover:text-danger transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">FULL NAME *</Label>
-                    <Input className="mt-1 h-8 text-sm" value={director.full_name} onChange={e => updateDirector(idx, 'full_name', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA ID NUMBER *</Label>
-                    <Input className="mt-1 h-8 text-sm" maxLength="13" value={director.sa_id_number} onChange={e => updateDirector(idx, 'sa_id_number', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH</Label>
-                    <Input type="date" className="mt-1 h-8 text-sm" value={director.date_of_birth} onChange={e => updateDirector(idx, 'date_of_birth', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMAIL</Label>
-                    <Input type="email" className="mt-1 h-8 text-sm" value={director.email} onChange={e => updateDirector(idx, 'email', e.target.value)} />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MOBILE</Label>
-                    <Input type="tel" className="mt-1 h-8 text-sm" value={director.mobile} onChange={e => updateDirector(idx, 'mobile', e.target.value)} />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RESIDENTIAL ADDRESS</Label>
-                    <Input className="mt-1 h-8 text-sm" value={director.residential_address} onChange={e => updateDirector(idx, 'residential_address', e.target.value)} />
-                  </div>
-                </div>
-              </div>
+              <PersonCard
+                key={idx}
+                person={director}
+                idx={idx}
+                role="Director"
+                onUpdate={updateDirector}
+                onRemove={removeDirector}
+                canRemove={directors.length > 2}
+              />
             ))}
             <button type="button" onClick={addDirector} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add director
