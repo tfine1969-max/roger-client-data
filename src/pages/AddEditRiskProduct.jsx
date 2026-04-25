@@ -289,7 +289,7 @@ export default function AddEditRiskProduct() {
 
       return productId;
     },
-    onSuccess: () => navigate(`/proposal/${proposalId}`),
+    onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
   });
 
   const handleSubmit = async (e) => {
@@ -304,9 +304,9 @@ export default function AddEditRiskProduct() {
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-card border-b border-border px-4 py-3">
-        <button onClick={() => navigate(`/proposal/${proposalId}`)} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
+        <button onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
-          Back to proposal
+          Back to Step 2
         </button>
       </div>
 
@@ -381,7 +381,7 @@ export default function AddEditRiskProduct() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}`)} variant="outline" className="flex-1 h-9 rounded-sm text-sm">Cancel</Button>
+            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} variant="outline" className="flex-1 h-9 rounded-sm text-sm">Cancel</Button>
             <Button type="submit" disabled={isSubmitting || !provider || selectedBenefits.length === 0} className="flex-1 h-9 bg-teal hover:bg-teal/90 text-white rounded-sm text-sm font-medium disabled:opacity-50">
               {isSubmitting ? 'Saving...' : riskProductId ? 'Update Risk Product' : 'Add Risk Product'}
             </Button>

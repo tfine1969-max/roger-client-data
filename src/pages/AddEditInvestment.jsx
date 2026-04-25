@@ -82,7 +82,7 @@ export default function AddEditInvestment() {
         await base44.entities.Investments.create({ ...data, proposal_id: proposalId });
       }
     },
-    onSuccess: () => navigate(`/proposal/${proposalId}`),
+    onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
   });
 
   const handleSubmit = async (e) => {
@@ -129,9 +129,9 @@ export default function AddEditInvestment() {
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-card border-b border-border px-4 py-2.5">
-        <button onClick={() => navigate(`/proposal/${proposalId}`)} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
+        <button onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" />
-          Back to proposal
+          Back to Step 2
         </button>
       </div>
 
@@ -297,7 +297,7 @@ export default function AddEditInvestment() {
 
           {/* Actions */}
           <div className="flex gap-3 pt-2 border-t border-border">
-            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}`)} variant="outline" className="flex-1 h-8 rounded-sm text-xs">Cancel</Button>
+            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} variant="outline" className="flex-1 h-8 rounded-sm text-xs">Cancel</Button>
             <Button type="submit" disabled={isSubmitting || !formData.provider || (!formData.lump_sum && !formData.recurring)}
               className="flex-1 h-8 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
               {isSubmitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
