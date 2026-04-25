@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ADVISORS } from '@/lib/constants';
 
+const todayISO = () => new Date().toISOString().split('T')[0];
+
 export default function SignaturePad({ advisorKey, signDate, onSignDateChange, onSignatureChange, initialData, initialType }) {
   const canvasRef = useRef(null);
   const [mode, setMode] = useState(initialType || 'draw');
@@ -8,6 +10,11 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
   const [hasDrawn, setHasDrawn] = useState(false);
   const drawingRef = useRef(false);
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
+
+  // Auto-populate date with today if not set
+  useEffect(() => {
+    if (!signDate) onSignDateChange(todayISO());
+  }, []);
 
   // Initialize canvas
   useEffect(() => {
@@ -124,14 +131,14 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Signing advisor</label>
             <div className="text-sm text-foreground bg-muted px-3 py-2.5 border border-border">
-              {advisor.name} — {advisor.title}
+              {advisor.name}
             </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold tracking-[.06em] uppercase text-navy">Date</label>
             <input
               type="date"
-              value={signDate || ''}
+              value={signDate || todayISO()}
               onChange={e => onSignDateChange(e.target.value)}
               className="w-full border border-border bg-card px-3 py-2.5 text-sm text-foreground font-raleway outline-none focus:border-ocean transition-colors"
             />
@@ -174,7 +181,7 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
               onClick={() => setMode('type')}
               className={`text-xs font-medium px-3.5 py-1.5 tracking-[.06em] uppercase ${mode === 'type' ? 'bg-navy text-white' : 'bg-muted text-muted-foreground border border-border'}`}
             >
-              T Type
+              Type
             </button>
             <button
               onClick={clear}

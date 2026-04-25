@@ -28,7 +28,7 @@ export default function ProposalPreview({ proposal, investments = [], riskProduc
         <div className="text-[13px] font-medium text-white">wealthworks</div>
         <div className="text-right text-[9px] text-white/60 leading-relaxed">
           <div>Financial proposal</div>
-          <div>{proposal.reference} · {format(new Date(), 'dd/MM/yyyy')}</div>
+          <div>{proposal.reference} · {format(new Date(), 'dd-MM-yyyy')}</div>
         </div>
       </div>
 

@@ -258,7 +258,7 @@ export default function ClientSign() {
                 </button>
                 <button onClick={() => setMode('type')}
                   className={`text-xs font-medium px-3.5 py-1.5 uppercase ${mode === 'type' ? 'bg-navy text-white' : 'text-muted-foreground border border-border'}`}>
-                  T Type
+                  Type
                 </button>
                 <button onClick={clearSig}
                   className="text-xs font-medium px-3.5 py-1.5 uppercase text-danger border border-border ml-auto">
