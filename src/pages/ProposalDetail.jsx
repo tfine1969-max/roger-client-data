@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 
 function Field({ label, value }) {
   return (
@@ -48,18 +48,6 @@ export default function ProposalDetail() {
     enabled: !!proposal?.client_id,
   });
 
-  const { data: investments = [] } = useQuery({
-    queryKey: ['investments', id],
-    queryFn: () => base44.entities.Investments.filter({ proposal_id: id }),
-    enabled: !!id,
-  });
-
-  const { data: riskProductsRaw = [] } = useQuery({
-    queryKey: ['riskProducts', id],
-    queryFn: () => base44.entities.RiskProducts.filter({ proposal_id: id }),
-    enabled: !!id,
-  });
-
   if (isLoading || !proposal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -96,15 +84,20 @@ export default function ProposalDetail() {
         </div>
       </div>
 
+      {/* Step navbar */}
+      <div className="bg-card border-b border-border px-6">
+        <div className="flex">
+          {['01 · Client Details', '02 · Recommendations', '03 · Suitability & Sign', '04 · Review & Send'].map((label, i) => (
+            <div key={i} className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 whitespace-nowrap ${
+              i === 0 ? 'border-navy text-navy' : 'border-transparent text-muted-foreground'
+            }`}>
+              {label}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-3xl mx-auto p-6 space-y-6">
-        {/* Open Engine CTA */}
-        <button
-          onClick={() => navigate(`/proposal/${id}/engine`)}
-          className="w-full bg-navy hover:bg-ocean text-white py-4 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-          Open Proposal Engine
-        </button>
 
         {/* Client summary */}
         <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -135,41 +128,6 @@ export default function ProposalDetail() {
           </div>
         )}
 
-        {/* Products summary */}
-        {(investments.length > 0 || riskProductsRaw.length > 0) && (
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
-            <div className="px-4 py-2.5 bg-muted border-b border-border">
-              <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider">Products Recommended</h2>
-            </div>
-            <div className="p-4 grid grid-cols-2 gap-4">
-              {investments.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-semibold text-ocean uppercase tracking-wider mb-2">Investments</p>
-                  <div className="space-y-1.5">
-                    {investments.map(inv => (
-                      <div key={inv.id} className="text-xs">
-                        <span className="font-semibold text-navy">{inv.provider}</span>
-                        <span className="text-muted-foreground"> · {inv.jurisdiction} · {inv.currency}</span>
-                        {inv.amount > 0 && <div className="text-muted-foreground">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</div>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {riskProductsRaw.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-semibold text-teal uppercase tracking-wider mb-2">Risk Products</p>
-                  <div className="space-y-1.5">
-                    {riskProductsRaw.map(rp => (
-                      <div key={rp.id} className="text-xs font-semibold text-navy">{rp.provider}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Notes */}
         {proposal.notes && (
           <div className="bg-card border border-border rounded-lg p-4">
@@ -177,6 +135,14 @@ export default function ProposalDetail() {
             <p className="text-sm text-foreground">{proposal.notes}</p>
           </div>
         )}
+
+        {/* Proceed to Step 2 */}
+        <button
+          onClick={() => navigate(`/proposal/${id}/engine`, { state: { step: 'recommendations' } })}
+          className="w-full bg-navy hover:bg-ocean text-white py-3.5 text-[11px] font-semibold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+        >
+          Proceed to Step 2: Recommendations <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
