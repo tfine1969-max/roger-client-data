@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ClipboardEdit } from 'lucide-react';
 
 const statusBadge = {
   new: { bg: 'bg-amber-50', text: 'text-amber-900', label: 'New' },
@@ -41,7 +41,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
   return (
     <div className="border border-border bg-card overflow-x-auto">
       {/* Header */}
-      <div className="grid grid-cols-[2fr_2fr_1fr_1fr_32px] px-4 py-2.5 bg-muted border-b border-border min-w-[600px]">
+      <div className="grid grid-cols-[2fr_2fr_1fr_1fr_64px] px-4 py-2.5 bg-muted border-b border-border min-w-[600px]">
         {['Client', 'Needs Identified', 'Created', 'Status', ''].map((h, i) => (
           <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground">
             {h}
@@ -78,7 +78,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
           <div
             key={p.id}
             onClick={() => navigate(`/proposal/${p.id}`)}
-            className="grid grid-cols-[2fr_2fr_1fr_1fr_32px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[600px]"
+            className="grid grid-cols-[2fr_2fr_1fr_1fr_64px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[600px]"
           >
             <div>
               <div className="text-[13px] font-medium text-navy">{clientName}</div>
@@ -97,7 +97,14 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
                 {badge.label}
               </span>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end items-center gap-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/proposal/${p.id}/engine`); }}
+                title="Build Proposal"
+                className="p-1 text-muted-foreground hover:text-ocean transition-colors"
+              >
+                <ClipboardEdit className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={(e) => handleDelete(e, p.id)}
                 disabled={deletingId === p.id}

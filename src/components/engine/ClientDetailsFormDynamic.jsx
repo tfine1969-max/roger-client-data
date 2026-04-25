@@ -21,6 +21,21 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
     onChange('needs_identified', labels.join(', '));
   };
 
+  // Determine if this is an entity client (trust or company)
+  const clientType = data.client_type;
+  const isEntity = clientType === 'trust' || clientType === 'company' ||
+    clientType === 'Trust' || clientType === 'Company';
+
+  // For entity: show registration/trust number; for natural person: show ID + DOB
+  const regNumber = data.client_id_number || data.trust_registration_number ||
+    data.company_registration_number || data.trust_number || '';
+
+  const idLabel = clientType === 'trust' || clientType === 'Trust'
+    ? 'IT / Trust Reg No.'
+    : clientType === 'company' || clientType === 'Company'
+    ? 'Company Reg No.'
+    : 'ID Number';
+
   return (
     <div className="w-full">
       <div className="border border-border bg-card mb-3">
@@ -32,9 +47,18 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
         </div>
         <div className="p-5 grid grid-cols-4 gap-x-6 gap-y-4">
           <Field label="Full Name" value={data.client_name} />
-          <Field label="ID Number" value={data.client_id_number} />
-          <Field label="Date of Birth" value={data.client_dob} />
-          <Field label="ID Type" value={data.identification_type === 'sa_id' ? 'SA ID' : 'Passport'} />
+          <Field label={idLabel} value={regNumber} />
+          {isEntity ? (
+            <>
+              <Field label="Email" value={data.client_email} />
+              <Field label="Mobile" value={data.client_mobile} />
+            </>
+          ) : (
+            <>
+              <Field label="Date of Birth" value={data.client_dob} />
+              <Field label="ID Type" value={data.identification_type === 'sa_id' ? 'SA ID' : data.identification_type === 'passport' ? 'Passport' : '—'} />
+            </>
+          )}
           <Field label="Email" value={data.client_email} />
           <Field label="Mobile" value={data.client_mobile} />
           <Field label="Risk Profile" value={data.risk_profile} />
@@ -50,8 +74,7 @@ export default function ClientDetailsFormDynamic({ data, onChange, onProceed }) 
 
       <button
         onClick={onProceed}
-        disabled={needs.length === 0}
-        className="w-full bg-navy text-white py-3 text-[11px] font-medium tracking-[.1em] uppercase hover:bg-ocean transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+        className="w-full bg-navy text-white py-3 text-[11px] font-medium tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
         Proceed to recommendations <ChevronRight className="w-4 h-4" />
       </button>

@@ -1,23 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import ProposalHeader from '@/components/proposal/ProposalHeader';
-import InvestmentsList from '@/components/proposal/InvestmentsList';
-import RiskProductsList from '@/components/proposal/RiskProductsList';
-import PdfSection from '@/components/proposal/PdfSection';
-import SignatureSection from '@/components/proposal/SignatureSection';
-import ProposalSidePanel from '@/components/proposal/ProposalSidePanel';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
+
+function Field({ label, value }) {
+  return (
+    <div>
+      <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase mb-0.5">{label}</p>
+      <p className="text-sm font-medium text-navy">{value || '—'}</p>
+    </div>
+  );
+}
+
+const statusBadge = {
+  new: { bg: 'bg-amber-50', text: 'text-amber-900', label: 'New' },
+  in_progress: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'In Progress' },
+  signed: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'Signed' },
+  sent: { bg: 'bg-green-50', text: 'text-green-900', label: 'Sent' },
+  client_signed: { bg: 'bg-green-100', text: 'text-green-900', label: 'Client Signed' },
+};
 
 export default function ProposalDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch proposal — try Proposal (onboarding) entity first, fall back to Proposals (advisor) entity
   const { data: proposal, isLoading } = useQuery({
     queryKey: ['proposal', id],
     queryFn: async () => {
@@ -31,7 +38,6 @@ export default function ProposalDetail() {
     enabled: !!id,
   });
 
-  // Fetch client details
   const { data: client } = useQuery({
     queryKey: ['client', proposal?.client_id],
     queryFn: async () => {
@@ -42,62 +48,17 @@ export default function ProposalDetail() {
     enabled: !!proposal?.client_id,
   });
 
-  // Fetch investments
   const { data: investments = [] } = useQuery({
     queryKey: ['investments', id],
     queryFn: () => base44.entities.Investments.filter({ proposal_id: id }),
     enabled: !!id,
   });
 
-  // Fetch risk products
   const { data: riskProductsRaw = [] } = useQuery({
     queryKey: ['riskProducts', id],
     queryFn: () => base44.entities.RiskProducts.filter({ proposal_id: id }),
     enabled: !!id,
   });
-
-  // Fetch all risk covers for all risk products
-  const { data: allRiskCovers = [] } = useQuery({
-    queryKey: ['allRiskCovers', id],
-    queryFn: async () => {
-      const products = await base44.entities.RiskProducts.filter({ proposal_id: id });
-      if (!products.length) return [];
-      const coversArrays = await Promise.all(
-        products.map(p => base44.entities.RiskCovers.filter({ risk_product_id: p.id }))
-      );
-      return coversArrays.flat();
-    },
-    enabled: !!id,
-  });
-
-  // Enrich riskProducts with their covers and total_premium
-  const riskProducts = riskProductsRaw.map(rp => {
-    const covers = allRiskCovers.filter(c => c.risk_product_id === rp.id);
-    const total_premium = covers.reduce((s, c) => s + (parseFloat(c.premium) || 0), 0);
-    return { ...rp, _covers: covers, total_premium };
-  });
-
-  // Fetch attachments
-  const { data: attachments = [] } = useQuery({
-    queryKey: ['attachments', id],
-    queryFn: () => base44.entities.Attachments.filter({ proposal_id: id }),
-    enabled: !!id,
-  });
-
-  const updateProposalMutation = useMutation({
-    mutationFn: (data) => proposal?._entity === 'Proposal'
-      ? base44.entities.Proposal.update(id, data)
-      : base44.entities.Proposals.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['proposal', id] });
-    }
-  });
-
-  const handleFieldChange = async (field, value) => {
-    setIsSaving(true);
-    await updateProposalMutation.mutate({ [field]: value });
-    setIsSaving(false);
-  };
 
   if (isLoading || !proposal) {
     return (
@@ -107,69 +68,115 @@ export default function ProposalDetail() {
     );
   }
 
+  const isEntity = client?.client_type === 'Company' || client?.client_type === 'Trust';
+  const clientName = isEntity
+    ? (client?.entity_name || client?.trust_name || proposal.client_name)
+    : (client ? `${client.first_name || ''} ${client.last_name || ''}`.trim() : proposal.client_name) || '—';
+
+  const badge = statusBadge[proposal.status] || statusBadge.new;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-50">
-        <ProposalHeader
-          proposal={proposal}
-          client={client}
-          onUpdate={handleFieldChange}
-          isSaving={isSaving}
-          onBack={() => navigate('/proposals')}
-        />
+      {/* Header */}
+      <div className="bg-navy text-white px-6 py-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold">{clientName}</h1>
+          <p className="text-white/60 text-xs font-mono mt-0.5">{proposal.reference}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-[10px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-sm ${badge.bg} ${badge.text}`}>
+            {badge.label}
+          </span>
+          <button
+            onClick={() => navigate('/proposals')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/80 border border-white/30 rounded-sm hover:bg-white/10 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Inbox
+          </button>
+        </div>
       </div>
 
-      <div className="flex gap-4 max-w-screen-2xl mx-auto p-4">
-        {/* Main content */}
-        <div className="flex-1 min-w-0 space-y-4">
+      <div className="max-w-3xl mx-auto p-6 space-y-6">
+        {/* Open Engine CTA */}
+        <button
+          onClick={() => navigate(`/proposal/${id}/engine`)}
+          className="w-full bg-navy hover:bg-ocean text-white py-4 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+        >
+          <ExternalLink className="w-4 h-4" />
+          Open Proposal Engine
+        </button>
 
-          {/* Investments + Risk Products side by side */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-card border border-border rounded-lg">
-              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Investments</h2>
-                <Button
-                  onClick={() => navigate(`/proposal/${id}/add-investment`)}
-                  className="flex items-center gap-1 bg-ocean hover:bg-sky text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add
-                </Button>
-              </div>
-              <InvestmentsList investments={investments} proposalId={id} />
-            </div>
-
-            <div className="bg-card border border-border rounded-lg">
-              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <h2 className="text-sm font-bold text-navy uppercase tracking-wide">Risk Products</h2>
-                <Button
-                  onClick={() => navigate(`/proposal/${id}/add-risk-product`)}
-                  className="flex items-center gap-1 bg-teal hover:bg-teal/90 text-white px-3 py-1.5 rounded-sm text-xs font-medium h-7"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add
-                </Button>
-              </div>
-              <RiskProductsList riskProducts={riskProducts} proposalId={id} />
-            </div>
+        {/* Client summary */}
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-muted border-b border-border">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider">Client</h2>
           </div>
-
-          {/* Bottom sections */}
-          <div className="grid grid-cols-2 gap-6 items-stretch">
-            <PdfSection proposal={proposal} proposalId={id} />
-            <SignatureSection proposal={proposal} proposalId={id} />
+          <div className="p-5 grid grid-cols-4 gap-x-6 gap-y-4">
+            <Field label="Name" value={clientName} />
+            <Field label={isEntity ? 'Reg / IT No.' : 'ID Number'} value={isEntity ? (client?.trust_number || client?.registration_number) : (client?.sa_id_number || client?.passport_number)} />
+            <Field label="Email" value={client?.email || proposal.client_email} />
+            <Field label="Mobile" value={client?.mobile_number || proposal.client_mobile} />
+            <Field label="Risk Profile" value={proposal.risk_profile || client?.risk_profile} />
+            <Field label="Time Horizon" value={proposal.time_horizon || client?.time_horizon} />
+            <Field label="Advisor" value={proposal.advisor_name} />
+            <Field label="Mandate" value={proposal.mandate_included || 'No'} />
           </div>
         </div>
 
-        {/* Right side panel */}
-        <ProposalSidePanel
-          client={client}
-          investments={investments}
-          riskProducts={riskProducts}
-          proposal={proposal}
-          proposalId={id}
-        />
+        {/* Advisory needs */}
+        {((proposal.advisory_needs || client?.advisory_needs)?.length > 0) && (
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-2">Advisory Needs</h2>
+            <div className="flex flex-wrap gap-2">
+              {(proposal.advisory_needs || client?.advisory_needs || []).map(n => (
+                <span key={n} className="px-2.5 py-1 bg-secondary text-navy text-xs font-medium rounded-sm">{n}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Products summary */}
+        {(investments.length > 0 || riskProductsRaw.length > 0) && (
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="px-4 py-2.5 bg-muted border-b border-border">
+              <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider">Products Recommended</h2>
+            </div>
+            <div className="p-4 grid grid-cols-2 gap-4">
+              {investments.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-semibold text-ocean uppercase tracking-wider mb-2">Investments</p>
+                  <div className="space-y-1.5">
+                    {investments.map(inv => (
+                      <div key={inv.id} className="text-xs">
+                        <span className="font-semibold text-navy">{inv.provider}</span>
+                        <span className="text-muted-foreground"> · {inv.jurisdiction} · {inv.currency}</span>
+                        {inv.amount > 0 && <div className="text-muted-foreground">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {riskProductsRaw.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-semibold text-teal uppercase tracking-wider mb-2">Risk Products</p>
+                  <div className="space-y-1.5">
+                    {riskProductsRaw.map(rp => (
+                      <div key={rp.id} className="text-xs font-semibold text-navy">{rp.provider}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Notes */}
+        {proposal.notes && (
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">Notes</h2>
+            <p className="text-sm text-foreground">{proposal.notes}</p>
+          </div>
+        )}
       </div>
     </div>
   );
