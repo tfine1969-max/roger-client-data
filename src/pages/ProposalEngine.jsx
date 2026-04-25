@@ -266,25 +266,27 @@ export default function ProposalEngine() {
                       <span className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy">Investment Recommendations</span>
                       <span className="text-[8px] font-medium text-white px-2 py-0.5 tracking-[.06em] uppercase bg-ocean">Investment</span>
                     </div>
-                    <div className="p-3 space-y-2">
-                      {investments.map((inv, i) => (
-                        <div key={inv.id || i} className="border-b border-border pb-2 last:border-0 last:pb-0">
-                          <div className="flex justify-between items-center mb-0.5">
-                            <span className="text-xs font-semibold text-navy">{inv.provider}</span>
-                            <span className="text-[9px] text-muted-foreground">{inv.jurisdiction} · {inv.currency}</span>
+                    <div className="p-3">
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        {investments.map((inv, i) => (
+                          <div key={inv.id || i} className="border border-border rounded-sm p-2.5 bg-background">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="text-xs font-semibold text-navy">{inv.provider}</span>
+                              <span className="text-[9px] text-muted-foreground">{inv.jurisdiction} · {inv.currency}</span>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mb-1.5">{inv.product_type}</div>
+                            <div className="space-y-0.5 text-[10px]">
+                              {inv.amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Lump sum</span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></div>}
+                              {inv.recurring_amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Recurring</span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></div>}
+                              {inv.initial_fee_percent > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
+                              {inv.annual_advice_fee_percent > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Annual fee</span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
+                              {Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Funds</span><span className="font-medium text-navy text-right max-w-[60%]">{inv.underlying_funds.join(', ')}</span></div>}
+                            </div>
                           </div>
-                          <div className="text-[10px] text-muted-foreground mb-1">{inv.product_type}</div>
-                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px]">
-                            {inv.amount > 0 && <span><span className="text-muted-foreground">Lump sum: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></span>}
-                            {inv.recurring_amount > 0 && <span><span className="text-muted-foreground">Recurring: </span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></span>}
-                            {inv.initial_fee_percent > 0 && <span><span className="text-muted-foreground">Initial: </span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></span>}
-                            {inv.annual_advice_fee_percent > 0 && <span><span className="text-muted-foreground">Annual fee: </span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></span>}
-                            {Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0 && <span><span className="text-muted-foreground">Funds: </span><span className="font-medium text-navy">{inv.underlying_funds.join(', ')}</span></span>}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                       <textarea
-                        className="border border-border bg-muted text-[11px] text-foreground w-full outline-none p-2 resize-y min-h-[50px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm mt-1"
+                        className="border border-border bg-muted text-[11px] text-foreground w-full outline-none p-2 resize-y min-h-[50px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
                         value={localData.investment_rationale || ''}
                         onChange={e => handleFieldChange('investment_rationale', e.target.value)}
                         placeholder="Suitability rationale..."
@@ -299,31 +301,33 @@ export default function ProposalEngine() {
                       <span className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy">Risk Cover Recommendations</span>
                       <span className="text-[8px] font-medium text-white px-2 py-0.5 tracking-[.06em] uppercase bg-teal">Risk Cover</span>
                     </div>
-                    <div className="p-3 space-y-2">
-                      {riskProducts.map((rp, i) => (
-                        <div key={rp.id || i} className="border-b border-border pb-2 last:border-0 last:pb-0">
-                          <div className="text-xs font-semibold text-navy mb-1">{rp.provider}</div>
-                          <div className="space-y-0.5">
-                            {rp._covers.map((cover, ci) => (
-                              <div key={ci} className="flex justify-between text-[10px]">
-                                <span className="text-muted-foreground">{cover.cover_type}</span>
-                                <span className="text-navy font-medium">
-                                  {cover.amount_required > 0 && `Cover: R ${Number(cover.amount_required).toLocaleString('en-ZA')} · `}
-                                  {cover.premium > 0 && `R ${Number(cover.premium).toLocaleString('en-ZA')} pm`}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                          {rp.total_premium > 0 && (
-                            <div className="flex justify-between text-[10px] font-semibold text-teal pt-1 border-t border-border mt-1">
-                              <span>Total monthly premium</span>
-                              <span>R {Number(rp.total_premium).toLocaleString('en-ZA')}</span>
+                    <div className="p-3">
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        {riskProducts.map((rp, i) => (
+                          <div key={rp.id || i} className="border border-border rounded-sm p-2.5 bg-background">
+                            <div className="text-xs font-semibold text-navy mb-1.5">{rp.provider}</div>
+                            <div className="space-y-0.5">
+                              {rp._covers.map((cover, ci) => (
+                                <div key={ci} className="flex justify-between text-[10px]">
+                                  <span className="text-muted-foreground">{cover.cover_type}</span>
+                                  <div className="text-right">
+                                    {cover.amount_required > 0 && <div className="font-medium text-navy">R {Number(cover.amount_required).toLocaleString('en-ZA')}</div>}
+                                    {cover.premium > 0 && <div className="text-muted-foreground">R {Number(cover.premium).toLocaleString('en-ZA')} pm</div>}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                            {rp.total_premium > 0 && (
+                              <div className="flex justify-between text-[10px] font-semibold text-teal pt-1.5 border-t border-border mt-1.5">
+                                <span>Total pm</span>
+                                <span>R {Number(rp.total_premium).toLocaleString('en-ZA')}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                       <textarea
-                        className="border border-border bg-muted text-[11px] text-foreground w-full outline-none p-2 resize-y min-h-[50px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm mt-1"
+                        className="border border-border bg-muted text-[11px] text-foreground w-full outline-none p-2 resize-y min-h-[50px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
                         value={localData.risk_cover_rationale || ''}
                         onChange={e => handleFieldChange('risk_cover_rationale', e.target.value)}
                         placeholder="Suitability rationale..."
