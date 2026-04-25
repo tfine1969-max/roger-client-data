@@ -196,33 +196,34 @@ export default function ProposalEngine() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <TopBar advisorName={advisor.name} statusText={localData.reference} />
-      <div className="bg-navy text-white px-6 py-2 flex items-center gap-6 text-xs sticky top-0 z-20">
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Client</span><span className="font-semibold">{localData.client_name}</span></div>
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Risk Profile</span><span className="font-medium">{localData.risk_profile || '—'}</span></div>
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Time Horizon</span><span className="font-medium">{localData.time_horizon || '—'}</span></div>
-        <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs</span><span className="font-medium">{localData.needs_identified || '—'}</span></div>
-        <div className="ml-auto"><span className="font-mono text-[10px] text-white/60">{localData.reference}</span></div>
-      </div>
-
-      <div className="bg-card border-b border-border px-4 md:px-6">
-        <div className="flex">
-          <button
-            onClick={() => handleFieldChange('phase', 'client_details')}
-            className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
-              currentPhase === 'client_details' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            01 · Client details
-          </button>
-          <button
-            onClick={() => handleFieldChange('phase', 'recommendations')}
-            className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
-              currentPhase === 'recommendations' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            02 · Recommendations
-          </button>
+      <div className="sticky top-0 z-30 flex flex-col shadow-sm">
+        <TopBar advisorName={advisor.name} statusText={localData.reference} />
+        <div className="bg-navy text-white px-6 py-2 flex items-center gap-6 text-xs">
+          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Client</span><span className="font-semibold">{localData.client_name}</span></div>
+          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Risk Profile</span><span className="font-medium">{localData.risk_profile || '—'}</span></div>
+          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Time Horizon</span><span className="font-medium">{localData.time_horizon || '—'}</span></div>
+          <div><span className="text-white/50 text-[9px] uppercase tracking-wider block">Needs</span><span className="font-medium">{localData.needs_identified || '—'}</span></div>
+          <div className="ml-auto"><span className="font-mono text-[10px] text-white/60">{localData.reference}</span></div>
+        </div>
+        <div className="bg-card border-b border-border px-4 md:px-6">
+          <div className="flex">
+            <button
+              onClick={() => handleFieldChange('phase', 'client_details')}
+              className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
+                currentPhase === 'client_details' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              01 · Client details
+            </button>
+            <button
+              onClick={() => handleFieldChange('phase', 'recommendations')}
+              className={`px-5 py-3 text-[11px] font-semibold tracking-[.08em] uppercase border-b-2 transition-colors ${
+                currentPhase === 'recommendations' ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              02 · Recommendations
+            </button>
+          </div>
         </div>
       </div>
 
