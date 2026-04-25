@@ -24,6 +24,18 @@ export default function ClientOnboardingConfirmation() {
         >
           Go to My Profile
         </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            sessionStorage.removeItem('pending_client_id');
+            sessionStorage.removeItem('pending_client_email');
+            sessionStorage.removeItem('pending_entity_type');
+            window.location.href = 'https://www.wealthworks.co.za';
+          }}
+          className="w-full mt-3 text-white/70 hover:text-white hover:bg-white/10 py-3 rounded-sm font-medium"
+        >
+          Log out
+        </Button>
       </div>
     </div>
   );

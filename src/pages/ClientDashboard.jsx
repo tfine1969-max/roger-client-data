@@ -57,7 +57,8 @@ export default function ClientDashboard() {
   const handleLogout = () => {
     sessionStorage.removeItem('pending_client_id');
     sessionStorage.removeItem('pending_client_email');
-    navigate('/', { replace: true });
+    sessionStorage.removeItem('pending_entity_type');
+    window.location.href = 'https://www.wealthworks.co.za';
   };
 
   if (isLoading) {
