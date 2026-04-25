@@ -279,6 +279,7 @@ export default function ProposalEngine() {
             onGeneratePdf={handleGeneratePdf}
             onSend={handleSend}
             onAttachmentUpload={handleAttachmentUpload}
+            onFieldChange={handleFieldChange}
             isSending={isSending}
           />
         )}
