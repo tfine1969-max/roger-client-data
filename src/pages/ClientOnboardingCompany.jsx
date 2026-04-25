@@ -9,19 +9,18 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 
+// Steps: removed FICA/KYC (old 3) and Financial Profile (old 4)
 const STEPS = [
   { number: 1, label: 'Company details' },
   { number: 2, label: 'Directors' },
-  { number: 3, label: 'FICA / KYC' },
-  { number: 4, label: 'Financial profile' },
-  { number: 5, label: 'Risk & objectives' },
-  { number: 6, label: 'Documents' },
-  { number: 7, label: 'Submit' },
+  { number: 3, label: 'Risk & objectives' },
+  { number: 4, label: 'Documents' },
+  { number: 5, label: 'Submit' },
 ];
 
 const ADVISORY_NEEDS = [
   'Local and offshore investments', 'Life & risk cover',
-  'Estate planning', 'Tax planning', 'Business assurance',
+  'Tax planning', 'Business assurance',
 ];
 
 const calcRiskScore = (fd) => {
@@ -73,15 +72,6 @@ export default function ClientOnboardingCompany() {
     postal_code: '',
     email: '',
     mobile_number: '',
-    // FICA
-    cipc_registration_uploaded: false,
-    moi_uploaded: false,
-    director_ids_uploaded: false,
-    // Financial
-    gross_annual_income_band: '',
-    monthly_investable_surplus: '',
-    net_worth_band: '',
-    total_liabilities: '',
     // Risk
     portfolio_drop_response: '',
     primary_investment_objective: '',
@@ -90,10 +80,10 @@ export default function ClientOnboardingCompany() {
     risk_profile: '',
     advisory_needs: [],
     // Docs
-    identity_document_uploaded: false,
+    cipc_registration_uploaded: false,
+    moi_uploaded: false,
     proof_of_address_uploaded: false,
-    income_proof_uploaded: false,
-    existing_policies_uploaded: false,
+    financial_statements_uploaded: false,
   });
 
   const [directors, setDirectors] = useState([emptyDirector(), emptyDirector()]);
@@ -102,7 +92,6 @@ export default function ClientOnboardingCompany() {
     const id = sessionStorage.getItem('pending_client_id');
     if (!id) { navigate('/client-registration', { replace: true }); return; }
 
-    // Guard: if entity type is set but not Company, redirect to correct flow
     const entityType = sessionStorage.getItem('pending_entity_type');
     if (entityType && entityType !== 'Company') {
       if (entityType === 'Trust') { navigate('/client-onboarding-trust', { replace: true }); return; }
@@ -140,10 +129,6 @@ export default function ClientOnboardingCompany() {
           postal_code: client.postal_code || prev.postal_code,
           email: client.email || prev.email,
           mobile_number: client.mobile_number || prev.mobile_number,
-          gross_annual_income_band: client.gross_annual_income_band || prev.gross_annual_income_band,
-          monthly_investable_surplus: client.monthly_investable_surplus || prev.monthly_investable_surplus,
-          net_worth_band: client.net_worth_band || prev.net_worth_band,
-          total_liabilities: client.total_liabilities || prev.total_liabilities,
           portfolio_drop_response: client.portfolio_drop_response || prev.portfolio_drop_response,
           primary_investment_objective: client.primary_investment_objective || prev.primary_investment_objective,
           time_horizon: client.time_horizon || prev.time_horizon,
@@ -151,6 +136,8 @@ export default function ClientOnboardingCompany() {
           risk_profile: client.risk_profile || prev.risk_profile,
           advisory_needs: Array.isArray(client.advisory_needs) ? client.advisory_needs : prev.advisory_needs,
         }));
+        if (client.risk_profile) setProfileOverridden(true);
+        if (Array.isArray(client.directors_list) && client.directors_list.length > 0) setDirectors(client.directors_list);
       }
     }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
   }, [navigate]);
@@ -206,14 +193,6 @@ export default function ClientOnboardingCompany() {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
-      data = { cipc_registration_uploaded: formData.cipc_registration_uploaded, moi_uploaded: formData.moi_uploaded, director_ids_uploaded: formData.director_ids_uploaded };
-    } else if (currentStep === 4) {
-      data = {
-        gross_annual_income_band: formData.gross_annual_income_band,
-        monthly_investable_surplus: formData.monthly_investable_surplus,
-        net_worth_band: formData.net_worth_band, total_liabilities: formData.total_liabilities,
-      };
-    } else if (currentStep === 5) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
@@ -221,12 +200,12 @@ export default function ClientOnboardingCompany() {
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
       };
-    } else if (currentStep === 6) {
+    } else if (currentStep === 4) {
       data = {
-        identity_document_uploaded: formData.identity_document_uploaded,
+        cipc_registration_uploaded: formData.cipc_registration_uploaded,
+        moi_uploaded: formData.moi_uploaded,
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        income_proof_uploaded: formData.income_proof_uploaded,
-        existing_policies_uploaded: formData.existing_policies_uploaded,
+        financial_statements_uploaded: formData.financial_statements_uploaded,
       };
     }
     const saved = await saveStep(data);
@@ -369,60 +348,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 3 — FICA / KYC */}
+        {/* STEP 3 — Risk & Objectives */}
         {currentStep === 3 && (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Required under FICA (Act 38 of 2001) for company entities.</p>
-            {[
-              { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION DOCUMENTS', desc: 'CoR14.3 / CoR15.1A or equivalent' },
-              { key: 'moi_uploaded', title: 'MEMORANDUM OF INCORPORATION (MOI)', desc: 'Certified copy of current MOI' },
-              { key: 'director_ids_uploaded', title: 'DIRECTOR IDENTITY DOCUMENTS', desc: 'Certified ID copies for all directors' },
-            ].map(doc => (
-              <div key={doc.key} className="border border-border rounded p-3">
-                <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
-                {formData[doc.key] ? (
-                  <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                    <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                  </div>
-                ) : (
-                  <label className="block cursor-pointer">
-                    <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
-                      <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                      <p className="text-[10px] text-ocean mt-2">Click to upload</p>
-                    </div>
-                    <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                  </label>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* STEP 4 — Financial Profile */}
-        {currentStep === 4 && (
-          <div className="border border-border rounded p-3 space-y-3">
-            <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">INCOME & ASSETS</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { field: 'gross_annual_income_band', label: 'GROSS ANNUAL INCOME BAND', opts: ['Under R150,000','R150,000 – R350,000','R350,000 – R750,000','R750,000 – R1.5m','R1.5m – R3m','Over R3m'] },
-                { field: 'monthly_investable_surplus', label: 'MONTHLY INVESTABLE SURPLUS', opts: ['Under R2,000','R2,000 – R5,000','R5,000 – R15,000','R15,000 – R50,000','Over R50,000'] },
-                { field: 'net_worth_band', label: 'NET WORTH BAND', opts: ['Under R500,000','R500k – R2m','R2m – R5m','R5m – R10m','R10m – R20m','Over R20m'] },
-                { field: 'total_liabilities', label: 'TOTAL LIABILITIES', opts: ['None','Under R500,000','R500k – R1m','R1m – R3m','Over R3m'] },
-              ].map(({ field, label, opts }) => (
-                <div key={field}>
-                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">{label}</Label>
-                  <Select value={formData[field]} onValueChange={v => handleChange(field, v)}>
-                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{opts.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5 — Risk & Objectives */}
-        {currentStep === 5 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE</h3>
@@ -458,7 +385,7 @@ export default function ClientOnboardingCompany() {
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
                   {profileOverridden && (
-                    <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
+                    <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
                   )}
                 </div>
                 <div className="grid grid-cols-5 gap-2">
@@ -486,8 +413,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 6 — Documents */}
-        {currentStep === 6 && (
+        {/* STEP 4 — Documents */}
+        {currentStep === 4 && (
           <div className="space-y-4">
             <div>
               <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
@@ -558,8 +485,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 7 — Submit */}
-        {currentStep === 7 && (
+        {/* STEP 5 — Submit */}
+        {currentStep === 5 && (
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
               <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
@@ -586,21 +513,21 @@ export default function ClientOnboardingCompany() {
 
         {/* Navigation */}
         <div className="pt-5 border-t border-border mt-5 flex gap-3">
-          {currentStep > 1 && currentStep < 7 && (
+          {currentStep > 1 && currentStep < 5 && (
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
           )}
           <div className="flex-1" />
-          {currentStep < 6 && (
+          {currentStep < 4 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
             </Button>
           )}
-          {currentStep === 6 && (
+          {currentStep === 4 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
             </Button>
           )}
-          {currentStep === 7 && (
+          {currentStep === 5 && (
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
             </Button>
