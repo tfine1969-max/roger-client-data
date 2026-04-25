@@ -61,7 +61,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving, o
     <div className="bg-card border border-border rounded-lg overflow-hidden">
       {/* Blue header banner */}
       <div className="bg-navy text-white px-5 py-3">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold">{clientName}</h1>
             <p className="text-white/60 text-xs font-mono mt-0.5">{proposal.reference}</p>
@@ -72,9 +72,9 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving, o
               </span>
             )}
           </div>
-          <div className="flex items-start gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {isSaving && (
-              <div className="flex items-center gap-2 text-white/60 text-xs mt-1">
+              <div className="flex items-center gap-2 text-white/60 text-xs">
                 <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" />
                 Saving...
               </div>
