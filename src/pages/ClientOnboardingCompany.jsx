@@ -95,6 +95,14 @@ export default function ClientOnboardingCompany() {
       } catch {}
       sessionStorage.removeItem('test_onboarding_seed');
     }
+    const directorsSeedRaw = sessionStorage.getItem('test_directors_seed');
+    if (directorsSeedRaw) {
+      try {
+        const directorsSeed = JSON.parse(directorsSeedRaw);
+        if (Array.isArray(directorsSeed) && directorsSeed.length > 0) setDirectors(directorsSeed);
+      } catch {}
+      sessionStorage.removeItem('test_directors_seed');
+    }
 
     base44.entities.Clients.list().then(clients => {
       const client = clients.find(c => c.id === id);

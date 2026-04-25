@@ -95,6 +95,14 @@ export default function ClientOnboardingTrust() {
       } catch {}
       sessionStorage.removeItem('test_onboarding_seed');
     }
+    const trusteesSeedRaw = sessionStorage.getItem('test_trustees_seed');
+    if (trusteesSeedRaw) {
+      try {
+        const trusteesSeed = JSON.parse(trusteesSeedRaw);
+        if (Array.isArray(trusteesSeed) && trusteesSeed.length > 0) setTrustees(trusteesSeed);
+      } catch {}
+      sessionStorage.removeItem('test_trustees_seed');
+    }
 
     base44.entities.Clients.list().then(clients => {
       const client = clients.find(c => c.id === id);
@@ -274,7 +282,7 @@ export default function ClientOnboardingTrust() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST DEED DATE</Label>
-                <Input type="date" className="mt-1 h-8 text-sm" value={formData.trust_deed_date} onChange={e => handleChange('trust_deed_date', e.target.value)} />
+                <Input className="mt-1 h-8 text-sm" placeholder="dd-mm-yyyy" value={formData.trust_deed_date} onChange={e => handleChange('trust_deed_date', e.target.value)} />
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT EMAIL</Label>

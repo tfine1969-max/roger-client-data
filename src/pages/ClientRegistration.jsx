@@ -87,6 +87,10 @@ const TEST_PROFILES = [
       monthly_investable_surplus: 'Over R50,000',
       primary_investment_objective: 'Income generation',
     },
+    trustees: [
+      { title: 'Mr', first_name: 'James', last_name: 'Petersen', identity_type: 'SA ID', id_number: '8001015009087', date_of_birth: '01-01-1980', gender: 'Male', marital_status: 'Married', nationality: 'South African', email: 'james.petersen@test.co.za', mobile: '0821234567', street_address: '12 Oak Avenue', suburb: 'Sandton', city: 'Johannesburg', province: 'Gauteng', postal_code: '2196' },
+      { title: 'Mrs', first_name: 'Mary', last_name: 'Petersen', identity_type: 'SA ID', id_number: '7605120089082', date_of_birth: '12-05-1976', gender: 'Female', marital_status: 'Married', nationality: 'South African', email: 'mary.petersen@test.co.za', mobile: '0821234568', street_address: '12 Oak Avenue', suburb: 'Sandton', city: 'Johannesburg', province: 'Gauteng', postal_code: '2196' },
+    ],
   },
   {
     label: 'Green Legacy Trust',
@@ -110,6 +114,11 @@ const TEST_PROFILES = [
       monthly_investable_surplus: 'Over R50,000',
       primary_investment_objective: 'Aggressive growth',
     },
+    trustees: [
+      { title: 'Mr', first_name: 'David', last_name: 'Green', identity_type: 'SA ID', id_number: '7703085009081', date_of_birth: '08-03-1977', gender: 'Male', marital_status: 'Married', nationality: 'South African', email: 'david.green@test.co.za', mobile: '0831234567', street_address: '22 Fern Lane', suburb: 'Durban', city: 'Durban', province: 'KwaZulu-Natal', postal_code: '4001' },
+      { title: 'Mrs', first_name: 'Linda', last_name: 'Green', identity_type: 'SA ID', id_number: '8106150089086', date_of_birth: '15-06-1981', gender: 'Female', marital_status: 'Married', nationality: 'South African', email: 'linda.green@test.co.za', mobile: '0831234568', street_address: '22 Fern Lane', suburb: 'Durban', city: 'Durban', province: 'KwaZulu-Natal', postal_code: '4001' },
+      { title: 'Mr', first_name: 'Kevin', last_name: 'Dlamini', identity_type: 'SA ID', id_number: '8809205009083', date_of_birth: '20-09-1988', gender: 'Male', marital_status: 'Single', nationality: 'South African', email: 'kevin.dlamini@test.co.za', mobile: '0831234569', street_address: '5 Palm Street', suburb: 'Durban', city: 'Durban', province: 'KwaZulu-Natal', postal_code: '4052' },
+    ],
   },
   {
     label: 'Alpha Investments',
@@ -133,6 +142,10 @@ const TEST_PROFILES = [
       monthly_investable_surplus: 'Over R50,000',
       primary_investment_objective: 'Aggressive growth',
     },
+    directors: [
+      { title: 'Mr', first_name: 'Michael', last_name: 'Adams', identity_type: 'SA ID', id_number: '7504105009089', date_of_birth: '10-04-1975', gender: 'Male', marital_status: 'Married', nationality: 'South African', email: 'michael.adams@test.co.za', mobile: '0841234567', street_address: '100 West Street', suburb: 'Sandton', city: 'Johannesburg', province: 'Gauteng', postal_code: '2196' },
+      { title: 'Ms', first_name: 'Priya', last_name: 'Patel', identity_type: 'SA ID', id_number: '8307220459081', date_of_birth: '22-07-1983', gender: 'Female', marital_status: 'Single', nationality: 'South African', email: 'priya.patel@test.co.za', mobile: '0841234568', street_address: '34 Elm Close', suburb: 'Johannesburg', city: 'Johannesburg', province: 'Gauteng', postal_code: '2001' },
+    ],
   },
   {
     label: 'Beta Holdings',
@@ -156,6 +169,11 @@ const TEST_PROFILES = [
       monthly_investable_surplus: 'Over R50,000',
       primary_investment_objective: 'Moderate growth',
     },
+    directors: [
+      { title: 'Mr', first_name: 'Robert', last_name: 'Chen', identity_type: 'SA ID', id_number: '7901155009082', date_of_birth: '15-01-1979', gender: 'Male', marital_status: 'Married', nationality: 'South African', email: 'robert.chen@test.co.za', mobile: '0851234567', street_address: '55 Bree Street', suburb: 'Cape Town', city: 'Cape Town', province: 'Western Cape', postal_code: '8001' },
+      { title: 'Ms', first_name: 'Fatima', last_name: 'Moosa', identity_type: 'SA ID', id_number: '8504280459084', date_of_birth: '28-04-1985', gender: 'Female', marital_status: 'Single', nationality: 'South African', email: 'fatima.moosa@test.co.za', mobile: '0851234568', street_address: '18 Signal Hill Road', suburb: 'Cape Town', city: 'Cape Town', province: 'Western Cape', postal_code: '8001' },
+      { title: 'Mr', first_name: 'Themba', last_name: 'Zulu', identity_type: 'SA ID', id_number: '9112085009086', date_of_birth: '08-12-1991', gender: 'Male', marital_status: 'Single', nationality: 'South African', email: 'themba.zulu@test.co.za', mobile: '0851234569', street_address: '7 Blouberg Rise', suburb: 'Cape Town', city: 'Cape Town', province: 'Western Cape', postal_code: '7441' },
+    ],
   },
 ];
 
@@ -190,6 +208,8 @@ export default function ClientRegistration() {
     else setEntityType('Individual');
     // Store onboarding seed so ClientOnboarding can pre-populate
     sessionStorage.setItem('test_onboarding_seed', JSON.stringify(profile.onboarding));
+    if (profile.trustees) sessionStorage.setItem('test_trustees_seed', JSON.stringify(profile.trustees));
+    if (profile.directors) sessionStorage.setItem('test_directors_seed', JSON.stringify(profile.directors));
     toast.success(`Filled with ${profile.label} test data`);
   };
 
