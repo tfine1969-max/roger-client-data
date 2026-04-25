@@ -76,7 +76,7 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
         onClick={onNext}
         className="w-full bg-navy text-white py-3.5 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
-        Next: Review & Send →
+        Next: Sign & Send →
       </button>
     </div>
   );

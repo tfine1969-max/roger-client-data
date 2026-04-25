@@ -5,7 +5,7 @@ const STEPS = [
   { key: 'client_details', num: '01', label: 'Client Details' },
   { key: 'recommendations', num: '02', label: 'Recommendations' },
   { key: 'suitability', num: '03', label: 'Review' },
-  { key: 'review', num: '04', label: 'Review & Send' },
+  { key: 'review', num: '04', label: 'Sign & Send' },
 ];
 
 export default function StepNavBar({ activeStep, completedSteps = [], onStepClick }) {
