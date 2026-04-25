@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, Plus, CalendarIcon } from 'lucide-react';
+import { format, parse, isValid } from 'date-fns';
 import PersonCard from '@/components/onboarding/PersonCard';
 
 // Steps: removed FICA/KYC (old 3) and Financial Profile (old 4)
@@ -43,21 +46,7 @@ const scoreToProfile = (score) => {
   return 'Aggressive';
 };
 
-// Format ISO date (yyyy-mm-dd) → dd-mm-yyyy for display
-const isoToDisplay = (iso) => {
-  if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  if (!y || !m || !d) return iso;
-  return `${d}-${m}-${y}`;
-};
 
-// Parse dd-mm-yyyy → yyyy-mm-dd for storage
-const displayToIso = (display) => {
-  if (!display) return '';
-  const parts = display.split('-');
-  if (parts.length === 3 && parts[2].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  return display;
-};
 
 const emptyTrustee = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -67,40 +56,7 @@ const emptyTrustee = () => ({
   street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
 
-// Date picker that stores ISO internally but displays dd-mm-yyyy
-function DatePickerField({ label, value, onChange }) {
-  const [displayVal, setDisplayVal] = useState(isoToDisplay(value));
 
-  useEffect(() => {
-    setDisplayVal(isoToDisplay(value));
-  }, [value]);
-
-  const handleInput = (e) => {
-    let raw = e.target.value.replace(/[^0-9]/g, '');
-    if (raw.length > 2) raw = raw.slice(0, 2) + '-' + raw.slice(2);
-    if (raw.length > 5) raw = raw.slice(0, 5) + '-' + raw.slice(5, 9);
-    setDisplayVal(raw);
-    // Only update parent when we have a complete date
-    if (raw.length === 10) {
-      onChange(displayToIso(raw));
-    } else {
-      onChange(raw); // keep partial value
-    }
-  };
-
-  return (
-    <div>
-      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">{label}</Label>
-      <Input
-        className="mt-1 h-8 text-sm"
-        placeholder="dd-mm-yyyy"
-        value={displayVal}
-        onChange={handleInput}
-        maxLength={10}
-      />
-    </div>
-  );
-}
 
 export default function ClientOnboardingTrust() {
   const navigate = useNavigate();
@@ -336,11 +292,29 @@ export default function ClientOnboardingTrust() {
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST REGISTRATION NO. (IT NUMBER) *</Label>
                 <Input className="mt-1 h-8 text-sm" value={formData.trust_number} onChange={e => handleChange('trust_number', e.target.value)} placeholder="e.g. IT1234/2015" />
               </div>
-              <DatePickerField
-                label="TRUST DEED DATE"
-                value={formData.trust_deed_date}
-                onChange={v => handleChange('trust_deed_date', v)}
-              />
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">TRUST DEED DATE</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 text-sm shadow-sm hover:bg-accent/10 transition-colors">
+                      <span className={formData.trust_deed_date ? 'text-foreground' : 'text-muted-foreground'}>
+                        {formData.trust_deed_date
+                          ? (() => { try { return format(parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy'); } catch { return formData.trust_deed_date; } })()
+                          : 'dd-mm-yyyy'}
+                      </span>
+                      <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.trust_deed_date ? (() => { try { const d = parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()); return isValid(d) ? d : undefined; } catch { return undefined; } })() : undefined}
+                      onSelect={date => handleChange('trust_deed_date', date ? format(date, 'yyyy-MM-dd') : '')}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT EMAIL</Label>
                 <Input type="email" className="mt-1 h-8 text-sm" value={formData.email} onChange={e => handleChange('email', e.target.value)} />
@@ -386,7 +360,7 @@ export default function ClientOnboardingTrust() {
                 role="Trustee"
                 onUpdate={updateTrustee}
                 onRemove={removeTrustee}
-                canRemove={trustees.length > 2}
+                canRemove={trustees.length > 2 && idx >= 2}
               />
             ))}
             <button type="button" onClick={addTrustee} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">

@@ -339,7 +339,7 @@ export default function ClientOnboardingCompany() {
                 role="Director"
                 onUpdate={updateDirector}
                 onRemove={removeDirector}
-                canRemove={directors.length > 2}
+                canRemove={directors.length > 2 && idx >= 2}
               />
             ))}
             <button type="button" onClick={addDirector} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
