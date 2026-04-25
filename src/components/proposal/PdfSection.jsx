@@ -7,7 +7,7 @@ export default function PdfSection({ proposal, proposalId }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
+    <div className="bg-card border border-border rounded-lg p-4 h-full">
       <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-4">PDF Document</h2>
       <div className="space-y-3">
         {proposal.proposal_pdf_url ? (

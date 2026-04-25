@@ -11,7 +11,7 @@ export default function SignatureSection({ proposal, proposalId }) {
   const pdfReady = !!proposal.proposal_pdf_url;
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
+    <div className="bg-card border border-border rounded-lg p-4 h-full">
       <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-4">Signatures & Distribution</h2>
 
       <div className="space-y-2 mb-3">

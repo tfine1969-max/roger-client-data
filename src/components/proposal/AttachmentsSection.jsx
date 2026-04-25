@@ -30,7 +30,7 @@ export default function AttachmentsSection({ attachments, proposalId }) {
   };
 
   return (
-    <div className="bg-card rounded-lg p-4">
+    <div className="bg-card rounded-lg p-4 h-full">
       <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-4">Attachments</h2>
 
       <div className="grid grid-cols-1 gap-3">
