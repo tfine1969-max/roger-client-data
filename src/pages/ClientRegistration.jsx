@@ -7,6 +7,158 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+// ─────────────────────────────────────────────────────────────
+// 🧪 TEST MODE — Set to false before go-live
+const TEST_MODE = true;
+// ─────────────────────────────────────────────────────────────
+
+const TEST_PROFILES = [
+  {
+    label: 'James Petersen',
+    sub: 'Individual',
+    email: 'james.individual@test.co.za',
+    mobile: '0821234567',
+    onboarding: {
+      client_type: 'Natural Person',
+      identity_type: 'SA ID',
+      first_name: 'James',
+      last_name: 'Petersen',
+      sa_id_number: '8001015009087',
+      date_of_birth: '1980-01-01',
+      mobile_number: '0821234567',
+      street_address: '12 Oak Avenue',
+      suburb: 'Sandton',
+      city: 'Johannesburg',
+      province: 'Gauteng',
+      postal_code: '2196',
+      risk_profile: 'Moderate',
+      time_horizon: '5–10 years',
+      advisory_needs: ['Local and offshore investments', 'Retirement planning'],
+      gross_annual_income_band: 'R750,000 – R1.5m',
+      monthly_investable_surplus: 'R15,000 – R50,000',
+      primary_investment_objective: 'Moderate growth',
+    },
+  },
+  {
+    label: 'Sarah Nkosi',
+    sub: 'Individual',
+    email: 'sarah.individual@test.co.za',
+    mobile: '0839876543',
+    onboarding: {
+      client_type: 'Natural Person',
+      identity_type: 'SA ID',
+      first_name: 'Sarah',
+      last_name: 'Nkosi',
+      sa_id_number: '9203220459083',
+      date_of_birth: '1992-03-22',
+      mobile_number: '0839876543',
+      street_address: '45 Protea Street',
+      suburb: 'Cape Town',
+      city: 'Cape Town',
+      province: 'Western Cape',
+      postal_code: '8001',
+      risk_profile: 'Growth',
+      time_horizon: '10+ years',
+      advisory_needs: ['Local and offshore investments', 'Estate planning'],
+      gross_annual_income_band: 'R750,000 – R1.5m',
+      monthly_investable_surplus: 'Over R50,000',
+      primary_investment_objective: 'Aggressive growth',
+    },
+  },
+  {
+    label: 'Blue Family Trust',
+    sub: '2 trustees',
+    email: 'blue.trust@test.co.za',
+    mobile: '0821234567',
+    onboarding: {
+      client_type: 'Trust',
+      identity_type: 'Trust',
+      entity_name: 'Blue Family Trust',
+      trust_number: 'IT1234/2015',
+      street_address: '8 Willow Road',
+      suburb: 'Pretoria',
+      city: 'Pretoria',
+      province: 'Gauteng',
+      postal_code: '0181',
+      risk_profile: 'Cautious',
+      time_horizon: '3–5 years',
+      advisory_needs: ['Estate planning', 'Tax planning'],
+      gross_annual_income_band: 'Over R3m',
+      monthly_investable_surplus: 'Over R50,000',
+      primary_investment_objective: 'Income generation',
+    },
+  },
+  {
+    label: 'Green Legacy Trust',
+    sub: '3 trustees',
+    email: 'green.trust@test.co.za',
+    mobile: '0821234567',
+    onboarding: {
+      client_type: 'Trust',
+      identity_type: 'Trust',
+      entity_name: 'Green Legacy Trust',
+      trust_number: 'IT5678/2018',
+      street_address: '22 Fern Lane',
+      suburb: 'Durban',
+      city: 'Durban',
+      province: 'KwaZulu-Natal',
+      postal_code: '4001',
+      risk_profile: 'Aggressive',
+      time_horizon: '10+ years',
+      advisory_needs: ['Local and offshore investments', 'Retirement planning', 'Estate planning'],
+      gross_annual_income_band: 'Over R3m',
+      monthly_investable_surplus: 'Over R50,000',
+      primary_investment_objective: 'Aggressive growth',
+    },
+  },
+  {
+    label: 'Alpha Investments',
+    sub: '(Pty) Ltd · 2 directors',
+    email: 'alpha.company@test.co.za',
+    mobile: '0821234567',
+    onboarding: {
+      client_type: 'Company',
+      identity_type: 'Registration',
+      entity_name: 'Alpha Investments (Pty) Ltd',
+      registration_number: '2015/123456/07',
+      street_address: '100 West Street',
+      suburb: 'Sandton',
+      city: 'Johannesburg',
+      province: 'Gauteng',
+      postal_code: '2196',
+      risk_profile: 'Growth',
+      time_horizon: '5–10 years',
+      advisory_needs: ['Local and offshore investments', 'Tax planning'],
+      gross_annual_income_band: 'Over R3m',
+      monthly_investable_surplus: 'Over R50,000',
+      primary_investment_objective: 'Aggressive growth',
+    },
+  },
+  {
+    label: 'Beta Holdings',
+    sub: '(Pty) Ltd · 3 directors',
+    email: 'beta.company@test.co.za',
+    mobile: '0821234567',
+    onboarding: {
+      client_type: 'Company',
+      identity_type: 'Registration',
+      entity_name: 'Beta Holdings (Pty) Ltd',
+      registration_number: '2018/789012/07',
+      street_address: '55 Bree Street',
+      suburb: 'Cape Town',
+      city: 'Cape Town',
+      province: 'Western Cape',
+      postal_code: '8001',
+      risk_profile: 'Moderate',
+      time_horizon: '3–5 years',
+      advisory_needs: ['Local and offshore investments', 'Retirement planning', 'Tax planning'],
+      gross_annual_income_band: 'Over R3m',
+      monthly_investable_surplus: 'Over R50,000',
+      primary_investment_objective: 'Moderate growth',
+    },
+  },
+];
+
 export default function ClientRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -14,13 +166,28 @@ export default function ClientRegistration() {
     email: '',
     mobile: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  // Quick-fill: populate email, mobile, password fields and store onboarding seed
+  const handleQuickFill = (profile) => {
+    setFormData({
+      email: profile.email,
+      mobile: profile.mobile,
+      password: 'Test1234!',
+      confirmPassword: 'Test1234!',
+    });
+    // Store onboarding seed so ClientOnboarding can pre-populate
+    sessionStorage.setItem('test_onboarding_seed', JSON.stringify(profile.onboarding));
+    toast.success(`Filled with ${profile.label} test data`);
+  };
+
+  const isTestEmail = (email) => email.toLowerCase().trim().endsWith('@test.co.za');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,11 +220,9 @@ export default function ClientRegistration() {
       let clientId;
 
       if (existing) {
-        // Reuse the existing client record — do not create a duplicate
         clientId = existing.id;
         toast.success('Welcome back. Continue your onboarding.');
       } else {
-        // Create a new client record
         const clientRecord = await base44.entities.Clients.create({
           email: formData.email,
           mobile_number: formData.mobile,
@@ -65,13 +230,20 @@ export default function ClientRegistration() {
           otp_verified: false,
         });
         clientId = clientRecord.id;
-        toast.success('Account created. Verify your OTP to continue.');
       }
 
       sessionStorage.setItem('pending_client_id', clientId);
       sessionStorage.setItem('pending_client_email', formData.email);
 
-      navigate('/client-otp', { replace: true });
+      // TEST MODE: skip OTP for @test.co.za emails
+      if (TEST_MODE && isTestEmail(formData.email)) {
+        await base44.entities.Clients.update(clientId, { otp_verified: true });
+        toast.success('Test email — OTP skipped. Proceeding to onboarding.');
+        navigate('/client-onboarding', { replace: true });
+      } else {
+        toast.success('Account created. Verify your OTP to continue.');
+        navigate('/client-otp', { replace: true });
+      }
     } catch (error) {
       toast.error(error.message || 'Registration failed');
     } finally {
@@ -92,7 +264,34 @@ export default function ClientRegistration() {
       </div>
 
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
+
+          {/* ── TEST MODE BANNER ── */}
+          {TEST_MODE && (
+            <div className="mb-4 border-2 border-amber-400 bg-amber-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🧪</span>
+                <span className="font-bold text-amber-800 text-sm tracking-wide uppercase">TEST MODE — Remove before go-live</span>
+              </div>
+              <p className="text-xs text-amber-700 mb-3">
+                Click a profile to auto-fill all fields. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {TEST_PROFILES.map((profile) => (
+                  <button
+                    key={profile.email}
+                    type="button"
+                    onClick={() => handleQuickFill(profile)}
+                    className="text-left px-3 py-2 bg-white border border-amber-300 rounded hover:bg-amber-100 hover:border-amber-500 transition-all"
+                  >
+                    <div className="text-xs font-semibold text-amber-900">{profile.label}</div>
+                    <div className="text-[10px] text-amber-600">{profile.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="bg-card border border-border rounded-lg p-8">
             <h1 className="text-3xl font-bold text-navy mb-2">Create Account</h1>
             <p className="text-muted-foreground mb-8">Register to begin your onboarding</p>

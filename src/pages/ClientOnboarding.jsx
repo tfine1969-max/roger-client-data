@@ -149,6 +149,18 @@ export default function ClientOnboarding() {
       navigate('/client-registration', { replace: true });
       return;
     }
+
+    // Apply test seed first (if present), then overlay with any saved client data
+    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
+    if (seedRaw) {
+      try {
+        const seed = JSON.parse(seedRaw);
+        setFormData(prev => ({ ...prev, ...seed }));
+        if (seed.risk_profile) setProfileOverridden(true);
+      } catch {}
+      sessionStorage.removeItem('test_onboarding_seed');
+    }
+
     base44.entities.Clients.list()
       .then(clients => {
         const client = clients.find(c => c.id === id);
