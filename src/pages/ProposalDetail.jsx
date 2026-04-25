@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProposalHeader from '@/components/proposal/ProposalHeader';
 import InvestmentsList from '@/components/proposal/InvestmentsList';
@@ -111,22 +111,14 @@ export default function ProposalDetail() {
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky header */}
-      <div className="sticky top-0 z-50 bg-card border-b border-border px-4 py-2 flex items-center gap-3">
-        <button
-          onClick={() => navigate('/proposals')}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-        <div className="flex-1 min-w-0">
-          <ProposalHeader
-            proposal={proposal}
-            client={client}
-            onUpdate={handleFieldChange}
-            isSaving={isSaving}
-          />
-        </div>
+      <div className="sticky top-0 z-50">
+        <ProposalHeader
+          proposal={proposal}
+          client={client}
+          onUpdate={handleFieldChange}
+          isSaving={isSaving}
+          onBack={() => navigate('/proposals')}
+        />
       </div>
 
       <div className="flex gap-4 max-w-screen-2xl mx-auto p-4">

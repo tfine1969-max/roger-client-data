@@ -19,7 +19,7 @@ const STATUS_MAP = {
   'Sent': 'sent',
 };
 
-export default function ProposalHeader({ proposal, client, onUpdate, isSaving }) {
+export default function ProposalHeader({ proposal, client, onUpdate, isSaving, onBack }) {
   const handleUpdate = async (field, value) => {
     await onUpdate(field, value);
     toast.success('Saved');
@@ -61,7 +61,7 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
     <div className="bg-card border border-border rounded-lg overflow-hidden">
       {/* Blue header banner */}
       <div className="bg-navy text-white px-5 py-3">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold">{clientName}</h1>
             <p className="text-white/60 text-xs font-mono mt-0.5">{proposal.reference}</p>
@@ -72,12 +72,23 @@ export default function ProposalHeader({ proposal, client, onUpdate, isSaving })
               </span>
             )}
           </div>
-          {isSaving && (
-            <div className="flex items-center gap-2 text-white/60 text-xs mt-1">
-              <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" />
-              Saving...
-            </div>
-          )}
+          <div className="flex items-start gap-3 shrink-0">
+            {isSaving && (
+              <div className="flex items-center gap-2 text-white/60 text-xs mt-1">
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" />
+                Saving...
+              </div>
+            )}
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/80 border border-white/30 rounded-sm hover:bg-white/10 hover:text-white transition-colors"
+              >
+                ← Back to Inbox
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
