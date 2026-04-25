@@ -164,7 +164,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
         onClick={onNext}
         className="w-full bg-navy text-white py-3.5 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
-        Next: Suitability & Sign →
+        Next: Review →
       </button>
     </div>
   );
