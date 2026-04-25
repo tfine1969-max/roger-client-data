@@ -264,8 +264,8 @@ export default function ProposalEngine() {
           <Step03Suitability
             data={localData}
             onFieldChange={handleFieldChange}
-            onSignatureChange={handleSignatureChange}
-            advisorKey={advisorKey}
+            investments={investments}
+            riskProducts={riskProducts}
             onNext={() => setActiveStep('review')}
           />
         )}
