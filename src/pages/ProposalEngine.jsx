@@ -13,13 +13,15 @@ import generateProposalPdf from '@/lib/generateProposalPdf';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
+import { useLocation } from 'react-router-dom';
 
 export default function ProposalEngine() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState(null);
-  const [activeStep, setActiveStep] = useState('client_details');
+  const [activeStep, setActiveStep] = useState(location.state?.step || 'client_details');
   const [isSending, setIsSending] = useState(false);
 
   // ── Data fetching ──────────────────────────────────────────────────────────

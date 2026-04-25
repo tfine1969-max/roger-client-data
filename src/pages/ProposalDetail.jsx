@@ -141,7 +141,7 @@ export default function ProposalDetail() {
           onClick={() => navigate(`/proposal/${id}/engine`, { state: { step: 'recommendations' } })}
           className="w-full bg-navy hover:bg-ocean text-white py-3.5 text-[11px] font-semibold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
         >
-          Proceed to Step 2: Recommendations <ChevronRight className="w-4 h-4" />
+          Step 2: Add Products (Investments & Risk Cover) <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
