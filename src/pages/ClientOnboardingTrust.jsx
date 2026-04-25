@@ -75,6 +75,13 @@ export default function ClientOnboardingTrust() {
     const id = sessionStorage.getItem('pending_client_id');
     if (!id) { navigate('/client-registration', { replace: true }); return; }
 
+    // Guard: if entity type is set but not Trust, redirect to correct flow
+    const entityType = sessionStorage.getItem('pending_entity_type');
+    if (entityType && entityType !== 'Trust') {
+      if (entityType === 'Company') { navigate('/client-onboarding-company', { replace: true }); return; }
+      navigate('/client-onboarding', { replace: true }); return;
+    }
+
     const seedRaw = sessionStorage.getItem('test_onboarding_seed');
     if (seedRaw) {
       try {

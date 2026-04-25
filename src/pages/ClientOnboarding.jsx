@@ -150,10 +150,16 @@ export default function ClientOnboarding() {
       return;
     }
 
-    // Redirect Trust/Company to their own flows
+    // Redirect Trust/Company to their own flows — do this BEFORE any async work
     const entityType = sessionStorage.getItem('pending_entity_type');
-    if (entityType === 'Trust') { navigate('/client-onboarding-trust', { replace: true }); return; }
-    if (entityType === 'Company') { navigate('/client-onboarding-company', { replace: true }); return; }
+    if (entityType === 'Trust') {
+      navigate('/client-onboarding-trust', { replace: true });
+      return;
+    }
+    if (entityType === 'Company') {
+      navigate('/client-onboarding-company', { replace: true });
+      return;
+    }
 
     // Apply test seed first (if present), then overlay with any saved client data
     const seedRaw = sessionStorage.getItem('test_onboarding_seed');
