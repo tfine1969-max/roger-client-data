@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProposalHeader from '@/components/proposal/ProposalHeader';
-import FinancialProfile from '@/components/proposal/FinancialProfile';
 import InvestmentsList from '@/components/proposal/InvestmentsList';
 import RiskProductsList from '@/components/proposal/RiskProductsList';
 import AttachmentsSection from '@/components/proposal/AttachmentsSection';
@@ -111,32 +110,28 @@ export default function ProposalDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b border-border px-4 py-3">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-50 bg-card border-b border-border px-4 py-2 flex items-center gap-3">
         <button
           onClick={() => navigate('/proposals')}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm"
+          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to inbox
+          Back
         </button>
-      </div>
-
-      <div className="flex gap-4 max-w-screen-2xl mx-auto p-4">
-        {/* Main content */}
-        <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex-1 min-w-0">
           <ProposalHeader
             proposal={proposal}
             client={client}
             onUpdate={handleFieldChange}
             isSaving={isSaving}
           />
+        </div>
+      </div>
 
-          <FinancialProfile
-            proposal={proposal}
-            client={client}
-            onUpdate={handleFieldChange}
-          />
+      <div className="flex gap-4 max-w-screen-2xl mx-auto p-4">
+        {/* Main content */}
+        <div className="flex-1 min-w-0 space-y-4">
 
           {/* Investments + Risk Products side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
