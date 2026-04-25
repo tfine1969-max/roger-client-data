@@ -141,7 +141,9 @@ export default function ClientOnboardingTrust() {
           time_horizon: client.time_horizon || prev.time_horizon,
           liquidity_requirement: client.liquidity_requirement || prev.liquidity_requirement,
           risk_profile: client.risk_profile || prev.risk_profile,
-          advisory_needs: Array.isArray(client.advisory_needs) ? client.advisory_needs : prev.advisory_needs,
+          advisory_needs: Array.isArray(client.advisory_needs)
+            ? client.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n))
+            : prev.advisory_needs,
         }));
         if (client.risk_profile) setProfileOverridden(true);
         if (Array.isArray(client.trustees_list) && client.trustees_list.length > 0) setTrustees(client.trustees_list);
