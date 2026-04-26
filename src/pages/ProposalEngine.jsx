@@ -153,9 +153,9 @@ export default function ProposalEngine() {
     debouncedSave(updated);
   };
 
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = async () => {
     if (!localData) return;
-    const doc = generateProposalPdf(localData, investments, riskProducts);
+    const doc = await generateProposalPdf(localData, investments, riskProducts);
     doc.save(`${localData.reference || 'proposal'}.pdf`);
     toast.success('PDF downloaded');
   };
@@ -163,7 +163,7 @@ export default function ProposalEngine() {
   const handleSend = async () => {
     if (!localData?.advisor_signature_data) { toast.error('Please sign in Step 03 before sending'); return; }
     setIsSending(true);
-    const doc = generateProposalPdf(localData, investments, riskProducts);
+    const doc = await generateProposalPdf(localData, investments, riskProducts);
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
