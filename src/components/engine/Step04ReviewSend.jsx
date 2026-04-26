@@ -11,17 +11,17 @@ function productFingerprint(investments, riskProducts) {
 
 function AttachmentCell({ type, attachment, onAttachmentUpload }) {
   return (
-    <div className="border border-border bg-background flex items-center justify-between px-2 py-1">
+    <div className="border border-border bg-background flex items-center justify-center gap-1.5 px-2 py-1">
       {attachment ? (
         <>
           <FileText className="w-2.5 h-2.5 text-ocean shrink-0" />
           <a href={attachment.file_url} target="_blank" rel="noopener noreferrer"
-            className="text-[9px] text-ocean hover:underline font-medium ml-1">View</a>
+            className="text-[9px] text-ocean hover:underline font-medium">View</a>
         </>
       ) : (
         <>
           <Upload className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
-          <label className="text-[9px] text-ocean hover:underline font-medium cursor-pointer ml-1">
+          <label className="text-[9px] text-ocean hover:underline font-medium cursor-pointer">
             Upload
             <input type="file" accept=".pdf" className="hidden" onChange={e => onAttachmentUpload(e, type)} />
           </label>
