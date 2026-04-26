@@ -23,7 +23,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
     ? 'Company Reg No.'
     : 'ID Number';
 
-  const mandateValue = data.mandate_included || 'No';
+  const mandateValue = data.mandate_included !== null && data.mandate_included !== undefined ? data.mandate_included : 'No';
   const displayStatus = data.proposal_status || (data.status === 'new' ? 'Pending Review' : data.status) || '';
 
   const handleMandateToggle = (value) => {
