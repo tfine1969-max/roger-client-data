@@ -163,8 +163,7 @@ export default function AddEditInvestment() {
       investment_mandate: formData.investment_mandate,
       applicable_annexure: formData.investment_mandate === 'Yes' ? formData.applicable_annexure : null,
     };
-    await saveMutation.mutate(dataToSave);
-    setIsSubmitting(false);
+    saveMutation.mutate(dataToSave);
   };
 
   const handleJurisdictionChange = (value) => {
