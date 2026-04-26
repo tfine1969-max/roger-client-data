@@ -295,22 +295,8 @@ export default function AddEditInvestment() {
           <div className="bg-card border border-border rounded-lg p-3 space-y-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Investment Details</h3>
 
-            {/* Row 1: Provider, Product Type, Jurisdiction, Currency */}
+            {/* Row 1: Jurisdiction, Currency, Provider, Product Type */}
             <div className="grid grid-cols-4 gap-3">
-              <div>
-                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
-                <Select value={formData.provider} onValueChange={v => setFormData(prev => ({ ...prev, provider: v }))}>
-                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
-                  <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
-                <Select value={formData.product_type} onValueChange={v => setFormData(prev => ({ ...prev, product_type: v }))}>
-                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>{PRODUCT_TYPES.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Jurisdiction</Label>
                 <div className="flex gap-1">
@@ -334,6 +320,20 @@ export default function AddEditInvestment() {
                     <SelectContent>{CURRENCIES_OFFSHORE.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 )}
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
+                <Select value={formData.provider} onValueChange={v => setFormData(prev => ({ ...prev, provider: v }))}>
+                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
+                  <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
+                <Select value={formData.product_type} onValueChange={v => setFormData(prev => ({ ...prev, product_type: v }))}>
+                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>{PRODUCT_TYPES.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
+                </Select>
               </div>
             </div>
 
