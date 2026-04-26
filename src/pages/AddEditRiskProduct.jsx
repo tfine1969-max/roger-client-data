@@ -75,7 +75,7 @@ function BenefitFields({ benefitKey, data, onChange }) {
   const selectCls = "h-8 text-xs rounded-sm";
 
   if (benefitKey === 'life_cover') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
       <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
       <Field label="Annual Premium Increase %"><NumInput value={data.annual_premium_increase} onChange={v => set('annual_premium_increase', v)} /></Field>
@@ -84,7 +84,7 @@ function BenefitFields({ benefitKey, data, onChange }) {
   );
 
   if (benefitKey === 'disability_lump') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
       <Field label="Definition">
         <Select value={data.definition} onValueChange={v => set('definition', v)}>
@@ -100,7 +100,7 @@ function BenefitFields({ benefitKey, data, onChange }) {
   );
 
   if (benefitKey === 'income_protection') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Monthly Benefit Amount (R)"><NumInput value={data.monthly_benefit} onChange={v => set('monthly_benefit', v)} /></Field>
       <Field label="Waiting Period">
         <Select value={data.waiting_period} onValueChange={v => set('waiting_period', v)}>
@@ -132,7 +132,7 @@ function BenefitFields({ benefitKey, data, onChange }) {
   );
 
   if (benefitKey === 'dread_disease') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
       <Field label="Type">
         <Select value={data.type} onValueChange={v => set('type', v)}>
@@ -148,14 +148,14 @@ function BenefitFields({ benefitKey, data, onChange }) {
   );
 
   if (benefitKey === 'accidental_death') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
       <Field label="Monthly Premium (R)"><NumInput value={data.monthly_premium} onChange={v => set('monthly_premium', v)} /></Field>
     </div>
   );
 
   if (benefitKey === 'funeral_cover') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Main Member Cover (R)"><NumInput value={data.main_member} onChange={v => set('main_member', v)} /></Field>
       <Field label="Spouse Cover (R)"><NumInput value={data.spouse} onChange={v => set('spouse', v)} /></Field>
       <Field label="Children Cover (R)"><NumInput value={data.children} onChange={v => set('children', v)} /></Field>
@@ -164,7 +164,7 @@ function BenefitFields({ benefitKey, data, onChange }) {
   );
 
   if (benefitKey === 'business_assurance') return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid grid-cols-2 gap-1.5 mt-1">
       <Field label="Sum Assured (R)"><NumInput value={data.sum_assured} onChange={v => set('sum_assured', v)} /></Field>
       <Field label="Type">
         <Select value={data.type} onValueChange={v => set('type', v)}>
@@ -317,14 +317,14 @@ export default function AddEditRiskProduct() {
         </button>
       </div>
 
-      <div className="max-w-7xl mx-auto p-3">
-        <h1 className="text-lg font-bold text-navy mb-1">{riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}</h1>
-        <p className="text-xs text-muted-foreground mb-3">{riskProductId ? 'Update risk product and benefits' : 'Create a new risk product with benefits'}</p>
+      <div className="max-w-7xl mx-auto p-2">
+         <h1 className="text-base font-bold text-navy mb-0.5">{riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}</h1>
+         <p className="text-[11px] text-muted-foreground mb-2">{riskProductId ? 'Update risk product and benefits' : 'Create a new risk product with benefits'}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+         <form onSubmit={handleSubmit} className="space-y-2">
           {/* Provider */}
-          <div className="bg-card border border-border rounded-lg p-3">
-            <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-2">Risk Provider</h2>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1.5">Risk Provider</h2>
             <div className="max-w-xs">
               <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
               <Select value={provider} onValueChange={setProvider}>
@@ -337,11 +337,11 @@ export default function AddEditRiskProduct() {
           </div>
 
           {/* Benefits */}
-          <div className="bg-card border border-border rounded-lg p-3">
-            <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-2">Benefits</h2>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1.5">Benefits</h2>
 
             {/* Benefit toggles */}
-            <div className="grid grid-cols-4 gap-2 mb-3">
+            <div className="grid grid-cols-4 gap-1.5 mb-2">
               {BENEFITS.map(b => {
                 const selected = selectedBenefits.includes(b.key);
                 return (
@@ -361,12 +361,12 @@ export default function AddEditRiskProduct() {
             </div>
 
             {/* Selected benefit details */}
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {selectedBenefits.map(key => {
                 const benefit = BENEFITS.find(b => b.key === key);
                 return (
-                  <div key={key} className="border border-ocean/30 rounded-sm p-3 bg-ocean/5">
-                    <h3 className="text-xs font-bold text-ocean uppercase tracking-wider mb-1">{benefit.label}</h3>
+                  <div key={key} className="border border-ocean/30 rounded-sm p-1.5 bg-ocean/5">
+                    <h3 className="text-[9px] font-bold text-ocean uppercase tracking-wider mb-1">{benefit.label}</h3>
                     <BenefitFields
                       benefitKey={key}
                       data={benefitData[key] || defaultBenefitData[key]}
@@ -379,16 +379,16 @@ export default function AddEditRiskProduct() {
           </div>
 
           {/* Reason for Recommendation */}
-          <div className="bg-card border border-border rounded-lg p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <h2 className="text-xs font-bold text-navy uppercase tracking-wider">Reason for Recommendation</h2>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider">Reason for Recommendation</h2>
               <LibraryButton onOpen={() => setLibraryOpen(true)} />
             </div>
             <Textarea
               value={reason}
               onChange={e => setReason(e.target.value)}
               placeholder="Why is this risk product recommended for this client..."
-              className="rounded-sm min-h-[64px] text-xs"
+              className="rounded-sm min-h-[48px] text-xs"
             />
             {libraryOpen && (
               <PhraseLibrary
@@ -403,16 +403,16 @@ export default function AddEditRiskProduct() {
 
           {/* Total Premium */}
           {selectedBenefits.length > 0 && (
-            <div className="bg-navy/5 border border-navy/20 rounded-lg px-4 py-3 flex items-center justify-between">
-              <span className="text-xs font-semibold text-navy uppercase tracking-wider">Total Monthly Premium</span>
-              <span className="text-lg font-bold text-navy">R {formatCurrency(totalPremium)}</span>
+            <div className="bg-navy/5 border border-navy/20 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-navy uppercase tracking-wider">Total Monthly Premium</span>
+              <span className="text-base font-bold text-navy">R {formatCurrency(totalPremium)}</span>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
-            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} variant="outline" className="flex-1 h-9 rounded-sm text-sm">Cancel</Button>
-            <Button type="submit" disabled={isSubmitting || !provider || selectedBenefits.length === 0} className="flex-1 h-9 bg-teal hover:bg-teal/90 text-white rounded-sm text-sm font-medium disabled:opacity-50">
+          <div className="flex gap-2">
+            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} variant="outline" className="flex-1 h-8 rounded-sm text-xs">Cancel</Button>
+            <Button type="submit" disabled={isSubmitting || !provider || selectedBenefits.length === 0} className="flex-1 h-8 bg-teal hover:bg-teal/90 text-white rounded-sm text-xs font-medium disabled:opacity-50">
               {isSubmitting ? 'Saving...' : riskProductId ? 'Update Risk Product' : 'Add Risk Product'}
             </Button>
           </div>
