@@ -55,12 +55,13 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-b from-[#1B3A5C] via-[#e8eef4] to-background flex flex-col">
 
       {/* Navbar */}
-      <nav className="bg-[#1B3A5C] px-6 py-3.5">
-        <div className="max-w-6xl mx-auto">
+      <nav className="bg-[#1B3A5C] px-6 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <span className="text-white text-xl font-light tracking-widest lowercase">wealthworks</span>
           <img
-            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
-            alt="WealthWorks"
-            style={{ width: '160px', mixBlendMode: 'screen', background: 'transparent' }}
+            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/WW_leaves.png"
+            alt=""
+            style={{ height: '50px', mixBlendMode: 'screen' }}
           />
         </div>
       </nav>
