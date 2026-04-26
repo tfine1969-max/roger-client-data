@@ -59,13 +59,16 @@ export default function Landing() {
       {/* Header */}
       <div className="bg-navy border-b border-border/30 px-6 py-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold text-white">WealthWorks</h1>
+          <img src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png" alt="WealthWorks" className="h-10 brightness-0 invert" />
         </div>
       </div>
 
       {/* Hero Section */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-2xl w-full text-center">
+          <div className="flex justify-center mb-6">
+            <img src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png" alt="WealthWorks" style={{ width: '200px' }} />
+          </div>
           <h2 className="text-4xl md:text-5xl font-bold text-navy mb-4">
             Financial Proposal Platform
           </h2>
