@@ -5,6 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
 import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
+import ProductReplacement from '@/components/engine/ProductReplacement';
+import { toast } from 'sonner';
 
 export default function Step03Suitability({ data, onFieldChange, investments, riskProducts, onNext }) {
   const navigate = useNavigate();
@@ -29,6 +31,28 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
     await base44.entities.RiskProducts.delete(rpId);
     qc.invalidateQueries({ queryKey: ['riskProducts', proposalId] });
     qc.invalidateQueries({ queryKey: ['allRiskCovers', proposalId] });
+  };
+
+  const handleNext = () => {
+    // Validate replacement if enabled
+    if (data.is_replacement) {
+      const replacements = data.replacement_products || [];
+      if (replacements.length === 0) {
+        toast.error('At least one replacement must be added');
+        return;
+      }
+      for (const r of replacements) {
+        if (!r.replacement_reason?.trim()) {
+          toast.error('Reason for Replacement is required for each block');
+          return;
+        }
+        if (!r.penalties_disclosed) {
+          toast.error('Surrender penalties must be marked as disclosed for all replacements');
+          return;
+        }
+      }
+    }
+    onNext();
   };
 
   return (
@@ -107,6 +131,9 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
         </div>
       </div>
 
+      {/* Product Replacement */}
+      <ProductReplacement data={data} onFieldChange={onFieldChange} />
+
       {/* Personalised Message */}
       <div className="bg-card border border-border rounded-lg p-3">
         <div className="flex items-center justify-between mb-1.5">
@@ -129,7 +156,7 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
 
       {/* Next */}
       <button
-        onClick={onNext}
+        onClick={handleNext}
         className="w-full bg-navy text-white py-2.5 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
         Next: Sign & Send →

@@ -341,6 +341,38 @@
       "type": "boolean",
       "default": false,
       "description": "Include Annexure C (Alternative, Direct Securities)"
+    },
+    "is_replacement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this advice involves product replacement"
+    },
+    "replacement_products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "existing_product_provider": {
+            "type": "string"
+          },
+          "existing_product_type": {
+            "type": "string"
+          },
+          "existing_policy_number": {
+            "type": "string"
+          },
+          "replacement_reason": {
+            "type": "string"
+          },
+          "penalties_disclosed": {
+            "type": "boolean"
+          },
+          "waiting_periods_disclosed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Array of replacement product details"
     }
   },
   "required": [
