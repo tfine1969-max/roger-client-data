@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       client_initials_completed: false
     });
 
-    return Response.json({ success: true, message: 'Mandate change processed' });
+    return Response.json({ success: true, mandate_included, output_document_type });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
