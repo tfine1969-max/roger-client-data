@@ -59,9 +59,9 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-white text-xl font-light tracking-widest lowercase">wealthworks</span>
           <img
-            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/WW_leaves.png"
+            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/b93b73a45_WWleaves.png"
             alt=""
-            style={{ height: '50px', mixBlendMode: 'screen' }}
+            style={{ height: '50px', mixBlendMode: 'multiply' }}
           />
         </div>
       </nav>
