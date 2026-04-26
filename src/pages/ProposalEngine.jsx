@@ -141,9 +141,11 @@ export default function ProposalEngine() {
   );
 
   const handleFieldChange = (field, value) => {
-    const updated = { ...localData, [field]: value };
-    setLocalData(updated);
-    debouncedSave(updated);
+    setLocalData(prev => {
+      const updated = { ...prev, [field]: value };
+      debouncedSave(updated);
+      return updated;
+    });
   };
 
   const handleSignatureChange = (data, type) => {
