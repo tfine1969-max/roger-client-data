@@ -82,7 +82,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   const tickItem = (label, checked) => {
     if (!checked) return;
     roaPb(6); doc.setFontSize(8); doc.setTextColor(...black);
-    doc.setFont('helvetica','bold'); doc.text('✓', M, y);
+    doc.setFont('helvetica','bold'); doc.text('/', M, y);
     doc.setFont('helvetica','normal'); doc.text(label, M+6, y); y += 5;
   };
 
