@@ -67,7 +67,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+      <div className="flex-1 flex flex-col items-center px-6 pt-8 pb-8">
         <div className="max-w-2xl w-full text-center">
           <img
             src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
