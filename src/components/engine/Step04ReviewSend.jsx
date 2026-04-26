@@ -1,6 +1,5 @@
 import React from 'react';
 import { CheckCircle2, Download, FileText, FileSignature, Upload } from 'lucide-react';
-import ProposalPreview from '@/components/engine/ProposalPreview';
 import SignaturePad from '@/components/engine/SignaturePad';
 
 export default function Step04ReviewSend({
@@ -13,8 +12,7 @@ export default function Step04ReviewSend({
   const formAttachment = attachments.find(a => a.attachment_type === 'Application Form');
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 items-start">
-      <div className="space-y-4">
+    <div className="space-y-4">
 
         {/* 2x2 grid */}
         <div className="grid grid-cols-2 gap-6 items-stretch">
@@ -202,20 +200,6 @@ export default function Step04ReviewSend({
           </div>
 
         </div>
-      </div>
-
-      {/* Side panel */}
-      <div className="lg:sticky lg:top-4">
-        <ProposalPreview
-          proposal={data}
-          investments={investments}
-          riskProducts={riskProducts}
-          onGeneratePdf={onGeneratePdf}
-          onSend={onSend}
-          canSend={hasSig}
-          isSending={isSending}
-        />
-      </div>
     </div>
   );
 }
