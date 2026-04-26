@@ -183,6 +183,31 @@ const OFFSHORE_FUNDS = [
 
 const CURRENCIES_OFFSHORE = ['USD', 'GBP', 'EUR', 'AUD'];
 const FREQUENCIES = ['Monthly', 'Quarterly', 'Annually'];
+const PRODUCT_TYPES = [
+  'Unit Trust / Discretionary Investment',
+  'Unit Trust / LISP Platform',
+  'Endowment',
+  'Retirement Annuity',
+  'Living Annuity',
+  'Preservation Fund',
+  'Tax-Free Investment',
+  'Discretionary Investment',
+  'Offshore Unit Trust',
+  'Offshore Investment Platform',
+  'Offshore Discretionary Investment',
+  'Offshore Discretionary Portfolio',
+  'Offshore Share Portfolio',
+  'Offshore Investment Bond',
+  'Model Portfolio',
+];
+const UNDERLYING_FUNDS_OPTIONS = [
+  'Balanced Fund',
+  'Equity Fund',
+  'Fixed Income Fund',
+  'Money Market Fund',
+  'Property Fund',
+  'Diversified Fund',
+];
 
 const detectAnnexure = (productType, jurisdiction) => {
   const pt  = String(productType  || '').toLowerCase();
@@ -218,6 +243,7 @@ export default function AddEditInvestment() {
     product_type:              '',
     fund_allocations:          [emptyFundRow()],
     custom_fund:               '',
+    underlying_funds:          [],
     lump_sum:                  false,
     recurring:                 false,
     lump_sum_amount:           '',
@@ -398,6 +424,15 @@ export default function AddEditInvestment() {
 
   const handleProductTypeChange = (value) => {
     setFormData(prev => ({ ...prev, product_type: value, fund_allocations: [emptyFundRow()] }));
+  };
+
+  const handleUnderlyingFundsChange = (fund) => {
+    setFormData(prev => {
+      const updated = prev.underlying_funds.includes(fund)
+        ? prev.underlying_funds.filter(f => f !== fund)
+        : [...prev.underlying_funds, fund];
+      return { ...prev, underlying_funds: updated };
+    });
   };
 
   const providers      = Object.keys(PROVIDER_MAP[formData.jurisdiction] || {});
