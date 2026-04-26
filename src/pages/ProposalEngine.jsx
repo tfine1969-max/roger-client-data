@@ -123,6 +123,20 @@ export default function ProposalEngine() {
     });
   }, [proposal, allClients]);
 
+  // ── Step change invalidations ─────────────────────────────────────────────
+  useEffect(() => {
+    if (activeStep === 'client_details') {
+      queryClient.invalidateQueries({ queryKey: ['proposal', id] });
+    }
+  }, [activeStep]);
+
+  useEffect(() => {
+    if (activeStep === 'recommendations') {
+      queryClient.invalidateQueries({ queryKey: ['investments', id] });
+      queryClient.invalidateQueries({ queryKey: ['proposal', id] });
+    }
+  }, [activeStep]);
+
   // ── Mutations ─────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.Proposal.update(id, data),
