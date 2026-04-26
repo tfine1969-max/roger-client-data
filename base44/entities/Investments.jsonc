@@ -98,20 +98,14 @@
       "default": "No",
       "description": "Is this investment subject to a discretionary mandate"
     },
-    "annexure_A": {
-      "type": "boolean",
-      "default": false,
-      "description": "Include Annexure A \u2014 Model Portfolios"
-    },
-    "annexure_B": {
-      "type": "boolean",
-      "default": false,
-      "description": "Include Annexure B \u2014 Collective Investments & Offshore"
-    },
-    "annexure_C": {
-      "type": "boolean",
-      "default": false,
-      "description": "Include Annexure C \u2014 Alternative & Direct Securities"
+    "applicable_annexure": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "description": "Which annexure this investment belongs to (only if investment_mandate = Yes)"
     }
   },
   "required": [
