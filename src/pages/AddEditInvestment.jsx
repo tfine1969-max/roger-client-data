@@ -484,4 +484,223 @@ export default function AddEditInvestment() {
 
           {/* ── INVESTMENT DETAILS ── */}
           <div className="bg-card border border-border rounded-lg p-3 space-y-3">
-            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Investment Detai
+            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Investment Details</h3>
+
+            {/* Row 1: Jurisdiction, Currency, Provider, Product Type */}
+            <div className="grid grid-cols-4 gap-3">
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Jurisdiction</Label>
+                <div className="flex gap-1">
+                  {['Local', 'Offshore'].map(opt => (
+                    <button key={opt} type="button" onClick={() => handleJurisdictionChange(opt)}
+                      className={`flex-1 h-8 text-xs font-medium border rounded-sm transition-all ${
+                        formData.jurisdiction === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'
+                      }`}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Currency</Label>
+                {formData.jurisdiction === 'Local' ? (
+                  <Input value="ZAR" disabled className="h-8 text-xs rounded-sm bg-muted" />
+                ) : (
+                  <Select value={formData.currency} onValueChange={v => setFormData(prev => ({ ...prev, currency: v }))}>
+                    <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>{CURRENCIES_OFFSHORE.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
+                <Select value={formData.provider} onValueChange={v => setFormData(prev => ({ ...prev, provider: v }))}>
+                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
+                  <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
+                <Select value={formData.product_type} onValueChange={v => setFormData(prev => ({ ...prev, product_type: v }))}>
+                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>{PRODUCT_TYPES.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Underlying Funds */}
+            <div>
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Underlying Funds</Label>
+              <div className="grid grid-cols-5 gap-2">
+                {UNDERLYING_FUNDS_OPTIONS.map(fund => (
+                  <label key={fund} className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-sm cursor-pointer transition-colors text-xs ${
+                    formData.underlying_funds.includes(fund) ? 'border-ocean bg-ocean/5 text-ocean' : 'border-border text-navy hover:border-ocean/50'
+                  }`}>
+                    <input type="checkbox" checked={formData.underlying_funds.includes(fund)}
+                      onChange={() => handleUnderlyingFundsChange(fund)} className="sr-only" />
+                    <span className="font-bold">{formData.underlying_funds.includes(fund) ? '✓' : '○'}</span>
+                    {fund}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Fund */}
+            <div>
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Custom Fund Description (Optional)</Label>
+              <Textarea value={formData.custom_fund}
+                onChange={e => setFormData(prev => ({ ...prev, custom_fund: e.target.value }))}
+                placeholder="Describe custom fund if not listed above"
+                className="rounded-sm min-h-[56px] text-xs" />
+            </div>
+
+            {/* Contribution Type */}
+            <div>
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Contribution Type</Label>
+              <div className="flex gap-2">
+                <label className={toggleClass(formData.lump_sum)}>
+                  <input type="checkbox" checked={formData.lump_sum}
+                    onChange={e => setFormData(prev => ({ ...prev, lump_sum: e.target.checked }))} className="sr-only" />
+                  <span>{formData.lump_sum ? '✓' : '○'}</span> Lump Sum
+                </label>
+                <label className={toggleClass(formData.recurring)}>
+                  <input type="checkbox" checked={formData.recurring}
+                    onChange={e => setFormData(prev => ({ ...prev, recurring: e.target.checked }))} className="sr-only" />
+                  <span>{formData.recurring ? '✓' : '○'}</span> Recurring
+                </label>
+              </div>
+            </div>
+
+            {/* Amounts */}
+            <div className="grid grid-cols-2 gap-3">
+              {formData.lump_sum && (
+                <div>
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
+                    Lump Sum Amount ({formData.currency})
+                  </Label>
+                  <Input value={amountDisplay}
+                    onChange={e => { setAmountDisplay(e.target.value); setFormData(prev => ({ ...prev, lump_sum_amount: e.target.value.replace(/,/g,'') })); }}
+                    onBlur={() => { const n=parseFloat(formData.lump_sum_amount); if(!isNaN(n)) setAmountDisplay(n.toLocaleString('en-ZA')); }}
+                    onFocus={() => setAmountDisplay(formData.lump_sum_amount||'')}
+                    placeholder="0" className="h-8 text-xs rounded-sm" />
+                </div>
+              )}
+              {formData.recurring && (
+                <div>
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
+                    Recurring Amount ({formData.currency})
+                  </Label>
+                  <Input value={recurringDisplay}
+                    onChange={e => { setRecurringDisplay(e.target.value); setFormData(prev => ({ ...prev, recurring_amount: e.target.value.replace(/,/g,'') })); }}
+                    onBlur={() => { const n=parseFloat(formData.recurring_amount); if(!isNaN(n)) setRecurringDisplay(n.toLocaleString('en-ZA')); }}
+                    onFocus={() => setRecurringDisplay(formData.recurring_amount||'')}
+                    placeholder="0" className="h-8 text-xs rounded-sm" />
+                </div>
+              )}
+              {formData.recurring && (
+                <div>
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Frequency</Label>
+                  <Select value={formData.frequency} onValueChange={v => setFormData(prev => ({ ...prev, frequency: v }))}>
+                    <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select frequency" /></SelectTrigger>
+                    <SelectContent>{FREQUENCIES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── FEE STRUCTURE — conditional on mandate/annexure ── */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Fee Structure</h3>
+
+            {/* No mandate OR Annexure A — standard fees */}
+            {(formData.investment_mandate === 'No' || activeAnnexure === 'A') && (
+              <div className="grid grid-cols-3 gap-3">
+                {feeInput('Initial Fee', 'initial_fee_percent')}
+                {feeInput('Annual Advice Fee', 'annual_advice_fee_percent')}
+                {feeInput('Platform Fee', 'platform_fee_percent')}
+              </div>
+            )}
+
+            {/* Annexure B fees */}
+            {formData.investment_mandate === 'Yes' && activeAnnexure === 'B' && (
+              <div className="space-y-3">
+                <p className="text-[10px] text-muted-foreground">Fee structure per Annexure B — Collective Investments & Offshore Platforms</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {feeInput('Management Fee % p.a. of NAV', 'management_fee_percent')}
+                  {feeInput('Performance Fee % of NAV increase', 'performance_fee_percent')}
+                  {feeInput('Performance Hurdle Rate', 'hurdle_rate_percent')}
+                </div>
+                <div className="bg-muted/40 rounded-sm p-2.5 text-[10px] text-muted-foreground space-y-1">
+                  <p>2.1. The Investor shall pay The FSP a Management Fee of <strong>{formData.management_fee_percent||'___'}%</strong> per annum of the NAV of the Portfolio.</p>
+                  <p>2.2. The Management Fee shall be determined monthly in arrears on the last Business Day of each Month and is payable within 2 (two) business Days of the presentation of the invoice.</p>
+                  <p>2.3. The Investor shall pay The FSP an annual Performance Fee of <strong>{formData.performance_fee_percent||'___'}%</strong> of the increase in the NAV in excess of the performance hurdle rate of <strong>{formData.hurdle_rate_percent||'___'}%</strong>.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Annexure C fees */}
+            {formData.investment_mandate === 'Yes' && activeAnnexure === 'C' && (
+              <div className="space-y-3">
+                <p className="text-[10px] text-muted-foreground">Fee structure per Annexure C — Alternative Investments & Direct Securities</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {feeInput('Annual Management Fee % of NAV', 'management_fee_percent')}
+                  {feeInput('Initial Structuring Fee % of investment', 'structuring_fee_percent')}
+                  {feeInput('Annual Raising Fee % of investment', 'raising_fee_percent')}
+                  {feeInput('Performance / Carry Fee %', 'carry_fee_percent')}
+                  {feeInput('Carry Hurdle Rate %', 'carry_hurdle_percent')}
+                </div>
+                <div className="bg-muted/40 rounded-sm p-2.5 text-[10px] text-muted-foreground space-y-1">
+                  <p>2.1. An annual management fee of maximum <strong>{formData.management_fee_percent||'___'}%</strong> based on the NAV of the fund. Payable monthly in arrears.</p>
+                  <p>2.2. An initial structuring fee limited to a maximum of <strong>{formData.structuring_fee_percent||'___'}%</strong> of the investment value.</p>
+                  <p>2.3. An annual raising fee limited to <strong>{formData.raising_fee_percent||'___'}%</strong> of the investment.</p>
+                  <p>2.4. A performance / carry fee of <strong>{formData.carry_fee_percent||'___'}%</strong> will be charged above the hurdle rate of <strong>{formData.carry_hurdle_percent||'___'}%</strong>.</p>
+                  <p>2.5. Any other fees explicitly agreed upon by The Investor from time to time in writing.</p>
+                  <p>2.6. These fees are reflected net of VAT and are deducted from the investment consideration.</p>
+                  <p>2.7. The FSP does not participate in any conditional incentive arrangements.</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── REASON FOR RECOMMENDATION ── */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <div className="flex items-center justify-between mb-1">
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Reason for Recommendation</Label>
+              <LibraryButton onOpen={() => setLibraryOpen(true)} />
+            </div>
+            <Textarea value={formData.reason_for_recommendation}
+              onChange={e => setFormData(prev => ({ ...prev, reason_for_recommendation: e.target.value }))}
+              placeholder="Why is this product recommended for this client..."
+              className="rounded-sm min-h-[64px] text-xs" />
+            {libraryOpen && (
+              <PhraseLibrary
+                onSelect={(phrase) => {
+                  const current   = formData.reason_for_recommendation;
+                  const separator = current && !current.trim().endsWith('.') ? '. ' : current ? ' ' : '';
+                  setFormData(prev => ({ ...prev, reason_for_recommendation: current + separator + phrase }));
+                }}
+                onClose={() => setLibraryOpen(false)}
+              />
+            )}
+          </div>
+
+          {/* ── ACTIONS ── */}
+          <div className="flex gap-3">
+            <Button type="button"
+              onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })}
+              variant="outline" className="flex-1 h-9 rounded-sm text-xs">
+              Cancel
+            </Button>
+            <Button type="submit"
+              disabled={isSubmitting || !formData.provider || (!formData.lump_sum && !formData.recurring)}
+              className="flex-1 h-9 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
+              {isSubmitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
+            </Button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  );
+}
