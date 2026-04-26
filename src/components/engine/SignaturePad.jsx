@@ -118,8 +118,8 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
   const hasSig = mode === 'draw' ? hasDrawn : typedName.trim().length > 0;
 
   return (
-    <div className="border border-border bg-card border-t-2 border-t-navy h-full">
-      <div className="p-3">
+    <div className="border border-border bg-card border-t-2 border-t-navy h-full flex flex-col">
+      <div className="p-4 flex flex-col flex-1">
         <div className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy mb-1.5">
           Advisor Signature — required before sending
         </div>
@@ -141,7 +141,13 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
               value={signDate || todayISO()}
               onChange={e => onSignDateChange(e.target.value)}
               className="w-full border border-border bg-card px-2 py-1.5 text-xs text-foreground font-raleway outline-none focus:border-ocean transition-colors"
+              style={{ colorScheme: 'light' }}
             />
+            {(signDate || todayISO()) && (
+              <p className="text-[9px] text-muted-foreground">
+                {(() => { const d = new Date(signDate || todayISO()); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; })()}
+              </p>
+            )}
           </div>
         </div>
 
