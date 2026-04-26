@@ -43,17 +43,26 @@
       "type": "string",
       "description": "Custom fund description"
     },
+    "reason_for_recommendation": {
+      "type": "string",
+      "description": "Advisor's reason for recommending this product"
+    },
     "contribution_type": {
       "type": "string",
       "enum": [
         "Lump Sum",
-        "Recurring"
+        "Recurring",
+        "Both"
       ],
       "description": "Contribution type"
     },
     "amount": {
       "type": "number",
-      "description": "Contribution amount"
+      "description": "Lump sum amount"
+    },
+    "recurring_amount": {
+      "type": "number",
+      "description": "Recurring contribution amount"
     },
     "frequency": {
       "type": "string",
@@ -79,9 +88,74 @@
     "fund_ter_percent": {
       "type": "number",
       "description": "Fund TER percentage"
+    },
+    "investment_mandate": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "default": "No",
+      "description": "Is this investment subject to a discretionary mandate"
+    },
+    "annexure_A": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure A \u2014 Model Portfolios"
+    },
+    "annexure_B": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure B \u2014 Collective Investments & Offshore"
+    },
+    "annexure_C": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure C \u2014 Alternative & Direct Securities"
     }
   },
   "required": [
     "proposal_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }

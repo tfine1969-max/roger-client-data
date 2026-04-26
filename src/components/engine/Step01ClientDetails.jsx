@@ -31,29 +31,13 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
   const mandateValue = data.mandate_included !== null && data.mandate_included !== undefined ? data.mandate_included : 'No';
   const displayStatus = data.proposal_status || (data.status === 'new' ? 'Pending Review' : data.status) || '';
 
-  const handleMandateToggle = async (value) => {
-    const outputDocType = value === 'Yes' ? 'Document B' : 'Document A';
-    onFieldChange('mandate_included', value);
-    onFieldChange('output_document_type', outputDocType);
-    // Save mandate_included directly to Proposal
-    await base44.entities.Proposal.update(proposalId, {
-      mandate_included: value,
-      output_document_type: outputDocType
-    });
-    qc.invalidateQueries({ queryKey: ['proposal', proposalId] });
-  };
-
   const handleStatusChange = (value) => {
     const statusMap = { 'Pending Review': 'new', 'In Progress': 'in_progress', 'Awaiting Client Signature': 'in_progress', 'Signed': 'signed', 'Sent': 'sent' };
     onFieldChange('proposal_status', value);
     onFieldChange('status', statusMap[value] || 'new');
   };
 
-  const handleAnnexureOverride = async (field, value) => {
-    onFieldChange(field, value);
-    await base44.entities.Proposal.update(proposalId, { [field]: value });
-    qc.invalidateQueries({ queryKey: ['proposal', proposalId] });
-  };
+
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -96,7 +80,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-      {/* Advisor / Mandate / Status */}
+      {/* Advisor / Mandate Status (Read-Only) / Status */}
       <div className="bg-card border border-border rounded-lg p-4">
         <div className="grid grid-cols-3 gap-4">
           <div>
@@ -111,18 +95,15 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
             </Select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Mandate Included</label>
-            <div className="flex gap-2">
-              {['Yes', 'No'].map(opt => (
-                <button key={opt} type="button" onClick={() => handleMandateToggle(opt)}
-                  className={`px-3 h-8 text-xs font-medium border rounded-sm transition-all ${
-                    mandateValue === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'
-                  }`}>
-                  {opt}
-                </button>
-              ))}
+            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Mandate Status</label>
+            <div className="flex items-center">
+              {mandateValue === 'Yes' ? (
+                <span className="inline-block px-3 h-8 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-sm">✓ Mandate Included — Doc B</span>
+              ) : (
+                <span className="inline-block px-3 h-8 py-1.5 text-xs font-semibold text-muted-foreground bg-muted rounded-sm">No Mandate — Doc A</span>
+              )}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{mandateValue === 'Yes' ? 'Doc B — CDM' : 'Doc A — Disclosure & ROA'}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Mandate status is set automatically when investments are added in Step 02</p>
           </div>
           <div>
             <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Status</label>
@@ -136,82 +117,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-      {/* Mandate Annexures — only show when mandate_included === 'Yes' */}
-      {mandateValue === 'Yes' && (
-        <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-          <h2 className="text-[10px] font-semibold tracking-wider uppercase text-navy">Mandate Annexures</h2>
 
-          {/* Detected Product Types */}
-          <div>
-            <p className="text-[9px] font-semibold tracking-wider text-navy uppercase mb-1.5">Detected Product Types</p>
-            {(!data.selected_product_types || data.selected_product_types.length === 0) ? (
-              <p className="text-[10px] text-muted-foreground italic">No products added yet — annexures will be detected automatically when recommendations are added in Step 02</p>
-            ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {data.selected_product_types.map(type => (
-                  <span key={type} className="px-2.5 py-1 bg-navy/10 border border-navy/20 rounded-sm text-[9px] font-medium text-navy">
-                    {type}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Annexure Status */}
-          <div>
-            <p className="text-[9px] font-semibold tracking-wider text-navy uppercase mb-1.5">Annexure Status</p>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Annexure A — Model Portfolios', field: 'include_annexure_A' },
-                { label: 'Annexure B — Collective Investments & Offshore Platforms', field: 'include_annexure_B' },
-                { label: 'Annexure C — Alternative Investments & Direct Securities', field: 'include_annexure_C' }
-              ].map(ann => (
-                <div key={ann.field} className="flex items-center justify-between px-2.5 py-1.5 bg-muted/40 rounded-sm">
-                  <span className="text-[10px] text-navy font-medium">{ann.label}</span>
-                  <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-sm ${
-                    data[ann.field] ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {data[ann.field] ? 'Included' : 'Not applicable'}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[8px] text-muted-foreground italic mt-1.5">Annexures are automatically determined by the product types added in Step 02</p>
-          </div>
-
-          {/* Manual Override */}
-          <div>
-            <p className="text-[9px] font-semibold tracking-wider text-navy uppercase mb-1.5">Manual Override</p>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Force include Annexure A', field: 'include_annexure_A' },
-                { label: 'Force include Annexure B', field: 'include_annexure_B' },
-                { label: 'Force include Annexure C', field: 'include_annexure_C' }
-              ].map(override => (
-                <div key={override.field} className="flex items-center justify-between px-2.5 py-1.5 bg-muted/30 rounded-sm border border-border">
-                  <span className="text-[10px] text-navy font-medium">{override.label}</span>
-                  <div className="flex gap-1">
-                    {['Yes', 'No'].map(opt => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => handleAnnexureOverride(override.field, opt === 'Yes')}
-                        className={`px-2 h-6 text-[9px] font-medium border rounded-sm transition-all ${
-                          (data[override.field] ? true : false) === (opt === 'Yes')
-                            ? 'bg-navy text-white border-navy'
-                            : 'bg-card text-navy border-border hover:border-navy'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Next button */}
 

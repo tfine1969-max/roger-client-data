@@ -40,6 +40,10 @@ export default function AddEditInvestment() {
     annual_advice_fee_percent: '',
     platform_fee_percent: '',
     reason_for_recommendation: '',
+    investment_mandate: 'No',
+    annexure_A: false,
+    annexure_B: false,
+    annexure_C: false,
   });
   const [amountDisplay, setAmountDisplay] = useState('');
   const [recurringDisplay, setRecurringDisplay] = useState('');
@@ -72,6 +76,10 @@ export default function AddEditInvestment() {
         annual_advice_fee_percent: investment.annual_advice_fee_percent || '',
         platform_fee_percent: investment.platform_fee_percent || '',
         reason_for_recommendation: investment.reason_for_recommendation || '',
+        investment_mandate: investment.investment_mandate || 'No',
+        annexure_A: investment.annexure_A || false,
+        annexure_B: investment.annexure_B || false,
+        annexure_C: investment.annexure_C || false,
       });
       if (investment.amount) setAmountDisplay(Number(investment.amount).toLocaleString('en-ZA'));
       if (investment.recurring_amount) setRecurringDisplay(Number(investment.recurring_amount).toLocaleString('en-ZA'));
@@ -85,6 +93,19 @@ export default function AddEditInvestment() {
       } else {
         await base44.entities.Investments.create({ ...data, proposal_id: proposalId });
       }
+      // Recalculate proposal-level mandate after investment save
+      const allInvestments = await base44.entities.Investments.filter({ proposal_id: proposalId });
+      const mandateInvestments = allInvestments.filter(inv => inv.investment_mandate === 'Yes');
+      const mandate_included = mandateInvestments.length > 0 ? 'Yes' : 'No';
+      const include_annexure_A = mandateInvestments.some(inv => inv.annexure_A === true);
+      const include_annexure_B = mandateInvestments.some(inv => inv.annexure_B === true);
+      const include_annexure_C = mandateInvestments.some(inv => inv.annexure_C === true);
+      await base44.entities.Proposal.update(proposalId, {
+        mandate_included,
+        include_annexure_A,
+        include_annexure_B,
+        include_annexure_C,
+      });
     },
     onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
   });
@@ -108,6 +129,10 @@ export default function AddEditInvestment() {
       annual_advice_fee_percent: parseFloat(formData.annual_advice_fee_percent) || 0,
       platform_fee_percent: parseFloat(formData.platform_fee_percent) || 0,
       reason_for_recommendation: formData.reason_for_recommendation,
+      investment_mandate: formData.investment_mandate,
+      annexure_A: formData.annexure_A,
+      annexure_B: formData.annexure_B,
+      annexure_C: formData.annexure_C,
     };
     await saveMutation.mutate(dataToSave);
     setIsSubmitting(false);
@@ -298,6 +323,122 @@ export default function AddEditInvestment() {
                   placeholder="0.00" className="h-8 text-xs rounded-sm" />
               </div>
             </div>
+          </div>
+
+          {/* Discretionary Mandate Section */}
+          <div className="border-t border-border pt-2">
+            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-2">Discretionary Mandate</h3>
+            <div>
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Is this investment subject to a discretionary mandate?</Label>
+              <div className="flex gap-1.5">
+                {['Yes', 'No'].map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, investment_mandate: opt })}
+                    className={`flex-1 px-3 h-8 text-xs font-medium border rounded-sm transition-all ${
+                      formData.investment_mandate === opt
+                        ? 'bg-navy text-white border-navy'
+                        : 'bg-card text-navy border-border hover:border-navy'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {formData.investment_mandate === 'Yes' && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <h4 className="text-[10px] font-semibold text-ocean uppercase tracking-wider mb-2">Mandate Annexures</h4>
+
+                {/* Auto-detect annexures */}
+                {(() => {
+                  const productLower = String(formData.product_type || '').toLowerCase();
+                  const jurisdictionLower = String(formData.jurisdiction || '').toLowerCase();
+                  const autoA = productLower.includes('model portfolio');
+                  const autoB = productLower.includes('unit trust') || productLower.includes('cis') || productLower.includes('collective') || jurisdictionLower.includes('off');
+                  const autoC = productLower.includes('private equity') || productLower.includes('real estate') || productLower.includes('unlisted') || productLower.includes('alternative') || productLower.includes('share') || productLower.includes('etf') || productLower.includes('direct');
+
+                  return (
+                    <>
+                      <div className="space-y-1.5 mb-2">
+                        {autoA && <span className="inline-block px-2 py-1 text-[9px] font-semibold text-white bg-green-600 rounded-sm">✓ Annexure A — Model Portfolios</span>}
+                        {autoB && <span className="inline-block px-2 py-1 text-[9px] font-semibold text-white bg-green-600 rounded-sm">✓ Annexure B — Collective Investments & Offshore</span>}
+                        {autoC && <span className="inline-block px-2 py-1 text-[9px] font-semibold text-white bg-green-600 rounded-sm">✓ Annexure C — Alternative & Direct Securities</span>}
+                      </div>
+
+                      {/* Manual overrides for non-auto-detected */}
+                      <div className="space-y-2">
+                        {!autoA && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 bg-muted/40 rounded-sm">
+                            <span className="text-[10px] text-navy font-medium">Also include Annexure A</span>
+                            <div className="flex gap-1">
+                              {['Yes', 'No'].map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, annexure_A: opt === 'Yes' })}
+                                  className={`px-2 h-6 text-[9px] font-medium border rounded-sm transition-all ${
+                                    (formData.annexure_A ? 'Yes' : 'No') === opt
+                                      ? 'bg-navy text-white border-navy'
+                                      : 'bg-card text-navy border-border hover:border-navy'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {!autoB && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 bg-muted/40 rounded-sm">
+                            <span className="text-[10px] text-navy font-medium">Also include Annexure B</span>
+                            <div className="flex gap-1">
+                              {['Yes', 'No'].map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, annexure_B: opt === 'Yes' })}
+                                  className={`px-2 h-6 text-[9px] font-medium border rounded-sm transition-all ${
+                                    (formData.annexure_B ? 'Yes' : 'No') === opt
+                                      ? 'bg-navy text-white border-navy'
+                                      : 'bg-card text-navy border-border hover:border-navy'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {!autoC && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 bg-muted/40 rounded-sm">
+                            <span className="text-[10px] text-navy font-medium">Also include Annexure C</span>
+                            <div className="flex gap-1">
+                              {['Yes', 'No'].map(opt => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, annexure_C: opt === 'Yes' })}
+                                  className={`px-2 h-6 text-[9px] font-medium border rounded-sm transition-all ${
+                                    (formData.annexure_C ? 'Yes' : 'No') === opt
+                                      ? 'bg-navy text-white border-navy'
+                                      : 'bg-card text-navy border-border hover:border-navy'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Reason for Recommendation */}
