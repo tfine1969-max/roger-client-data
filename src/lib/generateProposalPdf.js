@@ -1,820 +1,460 @@
 import jsPDF from 'jspdf';
-import { ADVISORS } from '@/lib/constants';
 
-// ─── Brand colours ────────────────────────────────────────────────────────────
-const NAVY   = [27, 58, 92];    // #1B3A5C
-const WHITE  = [255, 255, 255];
-const MUTED  = [120, 140, 160];
-const BORDER = [210, 220, 230];
-const BG     = [245, 248, 251];
-const GOLD   = [196, 151, 58];
-const TEAL   = [74, 155, 175];
-
-// ─── Page layout ──────────────────────────────────────────────────────────────
-const PW       = 210;
-const PH       = 297;
-const ML       = 18;
-const MR       = 18;
-const CW       = PW - ML - MR;
-const HEADER_H = 22;
-const FOOTER_H = 14;
-const TOP_Y    = HEADER_H + 8;
-const BOT_Y    = PH - FOOTER_H - 6;
-
-const LOGO_URL = 'https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmtDate(v) {
-  if (!v) return '—';
-  const d = new Date(v);
-  if (isNaN(d)) return String(v);
-  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-}
-
-function fmtNum(v, cur = 'R') {
-  if (!v && v !== 0) return '—';
-  const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
-  if (isNaN(n)) return String(v);
-  return `${cur} ${n.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
-
-function fmtPct(v) {
-  if (v === undefined || v === null || v === '') return '—';
-  return `${v}%`;
-}
-
-function orDash(v) { return v || '—'; }
-
-function capitalise(s) {
-  if (!s) return '—';
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-}
-
-// ─── Header (called on every page after it is created) ────────────────────────
-// Clean white header — logo top-right only, no coloured banner
-function addHeader(doc, logoDataUrl) {
-  // White background strip
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, PW, HEADER_H, 'F');
-  // Thin bottom border line
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(ML, HEADER_H - 0.5, PW - MR, HEADER_H - 0.5);
-  doc.setLineWidth(0.2);
-  // Logo top-right
-  if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', PW - MR - 40, 2, 40, 16); } catch (_) {}
+const fmtDate = (val) => {
+  if (!val) return '—';
+  if (/^\d{2}-\d{2}-\d{4}$/.test(val)) return val;
+  if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
+    const [y, m, d] = val.split('T')[0].split('-');
+    return `${d}-${m}-${y}`;
   }
-}
-
-// ─── Footer (called during final pass over all pages) ─────────────────────────
-function addFooter(doc, pageNum, totalPages) {
-  const fy = PH - FOOTER_H + 2;
-  doc.setDrawColor(...BORDER);
-  doc.line(ML, fy - 1, PW - MR, fy - 1);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
-  doc.setTextColor(...MUTED);
-  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', ML, fy + 4);
-  doc.text(`Page ${pageNum} of ${totalPages}`, PW / 2, fy + 4, { align: 'center' });
-  doc.text('Initials: ___________', PW - MR, fy + 4, { align: 'right' });
-}
-
-// ─── New page helper ──────────────────────────────────────────────────────────
-function newPage(doc, logoDataUrl) {
-  doc.addPage();
-  addHeader(doc, logoDataUrl);
-  return TOP_Y;
-}
-
-// ─── Page-break guard ─────────────────────────────────────────────────────────
-function pb(doc, y, needed, logoDataUrl) {
-  if (y + needed > BOT_Y) return newPage(doc, logoDataUrl);
-  return y;
-}
-
-// ─── Section heading (navy bar) ───────────────────────────────────────────────
-function sectionHead(doc, num, title, y) {
-  doc.setFillColor(...NAVY);
-  doc.rect(ML, y, CW, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...WHITE);
-  doc.text(`${num}.  ${title.toUpperCase()}`, ML + 3, y + 5);
-  return y + 11;
-}
-
-// ─── Sub-heading ──────────────────────────────────────────────────────────────
-function subHead(doc, title, y) {
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...NAVY);
-  doc.text(title.toUpperCase(), ML, y);
-  doc.setDrawColor(...TEAL);
-  doc.setLineWidth(0.3);
-  doc.line(ML, y + 1.5, PW - MR, y + 1.5);
-  doc.setLineWidth(0.2);
-  return y + 7;
-}
-
-// ─── Label / value row ────────────────────────────────────────────────────────
-function row(doc, label, value, y, indent = 0) {
-  const lx = ML + indent;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...MUTED);
-  doc.text(label, lx, y);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...NAVY);
-  const vStr = (value !== undefined && value !== null && value !== '') ? value : '—';
-  const vLines = doc.splitTextToSize(vStr, CW * 0.52);
-  doc.text(vLines, ML + CW, y, { align: 'right' });
-  return y + (vLines.length > 1 ? vLines.length * 4.2 : 5);
-}
-
-// ─── Tick item (replaces checkbox — shows ✓ + label as text) ─────────────────
-function tickItem(doc, label, y, indent = 0) {
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...NAVY);
-  doc.text('✓', ML + indent, y);
-  doc.text(label, ML + indent + 6, y);
-  return y + 5.5;
-}
-
-// ─── Wrapped paragraph ────────────────────────────────────────────────────────
-function para(doc, text, y, indent = 0, size = 7.5) {
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(size);
-  doc.setTextColor(...NAVY);
-  const lines = doc.splitTextToSize(text, CW - indent);
-  doc.text(lines, ML + indent, y);
-  return y + lines.length * (size * 0.44) + 2;
-}
-
-// ─── Advisor signature block ──────────────────────────────────────────────────
-function renderAdvisorSig(doc, proposal, advisorName, y) {
-  // Render the actual signature image / typed name
-  if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
-    try {
-      doc.addImage(proposal.advisor_signature_data, 'PNG', ML, y, 60, 16);
-    } catch (_) {}
-    y += 18;
-  } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
-    doc.setFont('times', 'italic');
-    doc.setFontSize(17);
-    doc.setTextColor(...NAVY);
-    doc.text(proposal.advisor_signature_data, ML, y + 9);
-    y += 15;
-  } else {
-    // blank line placeholder
-    y += 16;
-  }
-  doc.setDrawColor(...NAVY);
-  doc.line(ML, y, ML + 80, y);
-  y += 4;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...NAVY);
-  doc.text(advisorName, ML, y);
-  doc.text(`Date: ${fmtDate(proposal.sign_date)}`, ML + 90, y);
-  return y + 8;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// DISCLOSURE TEXT
-// ═══════════════════════════════════════════════════════════════════════════════
-const DISCLOSURE_SECTIONS = [
-  {
-    title: 'INTRODUCTION',
-    body: 'Wealth Works (Pty) Ltd (FSP 28337) and Wealthworks Investments (Pty) Ltd (FSP 45624) are authorised Financial Services Providers in terms of the Financial Advisory and Intermediary Services Act, No. 37 of 2002 (FAIS Act). This disclosure document is provided to you in terms of section 4 of the FAIS General Code of Conduct and contains information you are entitled to receive before we provide you with any financial services.'
-  },
-  {
-    title: 'OUR DETAILS',
-    body: 'Wealth Works (Pty) Ltd | FSP 28337 | Category I\nWealthworks Investments (Pty) Ltd | FSP 45624 | Category II\nRegistered Address: The Offices of Hyde Park, 1st Floor, Jan Smuts Avenue, Hyde Park, Johannesburg, 2196\nTelephone: +27 11 325 2750 | Email: info@wealthworks.co.za'
-  },
-  {
-    title: 'KEY INDIVIDUALS',
-    body: 'Trevor Fine — Group Managing Director | Key Individual: FSP 28337 & FSP 45624\nRoger Eskinazi — Partner, Cape Town | Representative: FSP 28337\nMalcolm Munsamy — Representative: FSP 28337'
-  },
-  {
-    title: 'COMPLIANCE OFFICER',
-    body: 'Our compliance function is managed by an independent compliance officer registered with the Financial Sector Conduct Authority (FSCA). The details of our compliance officer are available on request and are maintained in our compliance register.'
-  },
-  {
-    title: 'SHAREHOLDING',
-    body: 'Wealth Works (Pty) Ltd is a privately held company. No shareholding exceeding 10% is held in any product supplier that would constitute a material conflict of interest. Full details of our shareholding structure are available on request.'
-  },
-  {
-    title: 'ACCREDITATION FROM PRODUCT SUPPLIERS',
-    body: 'We hold accreditation with the following product suppliers (non-exhaustive): Glacier by Sanlam, Momentum Wealth, Allan Gray, Investec, Prime Investments, Credo Wealth, Julius Baer, PPS Investments, Discovery Life, Hollard, BrightRock. A full and current list of accreditations is available on request.'
-  },
-  {
-    title: 'ADDITIONAL PROFESSIONAL SERVICES',
-    body: 'Where we refer you to an attorney, accountant, tax practitioner or other professional, such referral does not constitute advice under FAIS. Any fees payable to such professionals are separate and distinct from our advisory fees and are subject to separate agreement between you and that professional.'
-  },
-  {
-    title: 'CONFLICTS OF INTEREST',
-    body: 'We maintain a Conflicts of Interest Management Policy in terms of section 3A of the FAIS General Code of Conduct. A copy of this policy is available on our website and on request. We disclose all material conflicts of interest at the point of advice. We do not receive any consideration or remuneration that would constitute a conflict of interest.'
-  },
-  {
-    title: 'STAFF INCENTIVES, GIFTS AND DONATIONS',
-    body: 'Our remuneration practices comply with the FAIS Act and applicable Regulations. We do not pay or receive incentives or gifts that would constitute conflicts of interest. Any gifts received from product suppliers above the threshold prescribed by the FSCA are disclosed in our gifts register, which is available on request.'
-  },
-  {
-    title: 'PRIVACY STATEMENT',
-    body: 'We collect and process your personal information to provide financial services, comply with legal obligations and improve our services. Your information is protected in terms of the Protection of Personal Information Act, No. 4 of 2013 (POPIA). We will not share your personal information with third parties without your consent, except where required by law or necessary to render our services. You have the right to access, correct, and object to the processing of your personal information. Please contact our Information Officer for any privacy-related queries.'
-  },
-  {
-    title: 'COMPLAINTS',
-    body: 'If you are dissatisfied with our service, you may submit a written complaint to: complaints@wealthworks.co.za. We will acknowledge receipt within 24 hours and endeavour to resolve your complaint within 10 business days. If your complaint remains unresolved, you may escalate it to:\n\nFAIS Ombud: 0860 324 766 | info@faisombud.co.za | www.faisombud.co.za\nFinancial Sector Conduct Authority (FSCA): 0800 202 087 | info@fsca.co.za'
-  }
-];
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN EXPORT
-// ═══════════════════════════════════════════════════════════════════════════════
-export default async function generateProposalPdf(proposal, investments = [], riskProducts = []) {
-
-  // ── Pre-load logo ──────────────────────────────────────────────────────────
-  let logoDataUrl = null;
   try {
-    const resp = await fetch(LOGO_URL);
-    const blob = await resp.blob();
-    logoDataUrl = await new Promise((res, rej) => {
-      const fr = new FileReader();
-      fr.onload = () => res(fr.result);
-      fr.onerror = rej;
-      fr.readAsDataURL(blob);
-    });
-  } catch (_) {}
+    const d = new Date(val);
+    if (!isNaN(d)) return [String(d.getDate()).padStart(2,'0'),String(d.getMonth()+1).padStart(2,'0'),d.getFullYear()].join('-');
+  } catch(_) {}
+  return val;
+};
 
+const todayDMY = () => {
+  const d = new Date();
+  return [String(d.getDate()).padStart(2,'0'),String(d.getMonth()+1).padStart(2,'0'),d.getFullYear()].join('-');
+};
+
+const fmtR = (val) => {
+  if (!val && val !== 0) return '—';
+  const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+  if (isNaN(n)) return String(val);
+  return 'R ' + n.toLocaleString('en-ZA');
+};
+
+export default function generateProposalPdf(proposal, investments = [], riskProducts = []) {
   const doc = new jsPDF('p', 'mm', 'a4');
-  const clientName  = proposal.client_name || '—';
-  const advisorObj  = ADVISORS[proposal.advisor_key] || ADVISORS.trevor;
-  const advisorName = proposal.advisor_name || advisorObj.name;
+  const W = 210, H = 297, M = 20, CW = W - M * 2;
+  let y = 0, pageNum = 0;
 
-  // ── Pull financial profile data, checking multiple possible locations ──────
-  const oid = proposal.onboarding_import_data || {};
-  const incomeBand      = proposal.annual_income_band            || proposal.gross_annual_income_band      || oid.gross_annual_income_band      || oid.annual_income_band      || 'Not provided';
-  const netWorthBand    = proposal.net_worth_band                || oid.net_worth_band                || 'Not provided';
-  const monthlySurplus  = proposal.monthly_investable_surplus    || oid.monthly_investable_surplus    || 'Not provided';
-  const liquidityReq    = proposal.liquidity_requirement         || proposal.client_liquidity_needs   || oid.liquidity_requirement          || 'Not provided';
-  const rawSourceFunds  = proposal.source_of_funds               || oid.source_of_funds               || [];
-  const sourceFundsArr  = Array.isArray(rawSourceFunds) ? rawSourceFunds : [String(rawSourceFunds)];
-  const sourceFundsStr  = sourceFundsArr.length > 0 ? sourceFundsArr.join(', ') : 'Investment Proceeds';
+  const navy=[14,65,102], ocean=[26,100,148], teal=[74,155,175], white=[255,255,255],
+        muted=[138,154,170], bg=[247,249,251], border=[216,228,236], black=[30,30,30];
 
-  // ── Advisory needs ────────────────────────────────────────────────────────
-  const advisory  = Array.isArray(proposal.advisory_needs) ? proposal.advisory_needs.map(n => n.toLowerCase()) : [];
-  const needsArr  = Array.isArray(proposal.needs_array)    ? proposal.needs_array    : [];
-  const isEntity  = ['company','trust','Company','Trust'].includes(proposal.client_type);
-  const clientTypeLabel = isEntity
-    ? (proposal.client_type.charAt(0).toUpperCase() + proposal.client_type.slice(1).toLowerCase())
-    : 'Individual';
+  const addLogoTopRight = () => {
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+    doc.text('wealthworks', W-M, 12, {align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text('FSP 28337  |  FSP 45624', W-M, 17, {align:'right'});
+  };
 
-  // ── Mandate flag ──────────────────────────────────────────────────────────
-  const mandateIncluded = proposal.mandate_included === 'Yes';
+  const addFooter = (pn) => {
+    const fy = H - 10;
+    doc.setDrawColor(...border); doc.line(M, fy-3, W-M, fy-3);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, fy);
+    doc.text(String(pn), W/2, fy, {align:'center'});
+    doc.text('Initials: ___________', W-M, fy, {align:'right'});
+  };
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER (full navy, no standard header/footer)
-  // ════════════════════════════════════════════════════════════════════════════
-  doc.setFillColor(...NAVY);
-  doc.rect(0, 0, PW, PH, 'F');
-
-  // Logo centred (top section)
-  if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', (PW - 80) / 2, 38, 80, 38); } catch (_) {}
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.setTextColor(...WHITE);
-  doc.text('FINANCIAL PROPOSAL', PW / 2, 108, { align: 'center' });
-
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.8);
-  doc.line(ML + 28, 113, PW - MR - 28, 113);
-  doc.setLineWidth(0.2);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(170, 195, 220);
-  doc.text('PREPARED FOR', PW / 2, 124, { align: 'center' });
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(...WHITE);
-  doc.text(clientName, PW / 2, 134, { align: 'center' });
-
-  const coverDetails = [
-    ['Reference',    orDash(proposal.reference)],
-    ['Date',         fmtDate(proposal.sign_date || new Date().toISOString())],
-    ['Advisor',      advisorName],
-    ['Risk Profile', orDash(proposal.risk_profile)],
-    ['Time Horizon', orDash(proposal.time_horizon)],
-  ];
-  let cy = 150;
-  coverDetails.forEach(([lbl, vl]) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(170, 195, 220);
-    doc.text(lbl, PW / 2 - 32, cy, { align: 'right' });
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...WHITE);
-    doc.text(vl, PW / 2 - 27, cy);
-    cy += 9;
-  });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(120, 150, 180);
-  doc.text('This document is confidential and intended solely for the named recipient.', PW / 2, PH - 20, { align: 'center' });
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // PAGES 2–3 — DISCLOSURE
-  // ════════════════════════════════════════════════════════════════════════════
-  let y = newPage(doc, logoDataUrl);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...NAVY);
-  doc.text('DISCLOSURE AND TERMS OF BUSINESS', ML, y);
-  y += 10;
-
-  for (const section of DISCLOSURE_SECTIONS) {
-    y = pb(doc, y, 22, logoDataUrl);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...NAVY);
-    doc.text(section.title, ML, y);
-    y += 3;
-    doc.setDrawColor(...TEAL);
-    doc.setLineWidth(0.3);
-    doc.line(ML, y, ML + CW, y);
-    doc.setLineWidth(0.2);
-    y += 3;
-    y = para(doc, section.body, y, 0, 7.5);
-    y += 4;
-  }
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // ROA START — new page
-  // ════════════════════════════════════════════════════════════════════════════
-  y = newPage(doc, logoDataUrl);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(...NAVY);
-  doc.text('RECORD OF ADVICE', ML, y);
-  y += 4;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...MUTED);
-  doc.text(`Reference: ${orDash(proposal.reference)}   |   Date: ${fmtDate(proposal.sign_date || new Date().toISOString())}`, ML, y);
-  y += 9;
-
-  // ── S1: Client Details ────────────────────────────────────────────────────
-  y = pb(doc, y, 70, logoDataUrl);
-  y = sectionHead(doc, 1, 'Client Details (FICA Verified)', y);
-
-  y = row(doc, 'Client / Entity Name',      clientName,                              y);
-  y = row(doc, 'ID / Registration Number',  orDash(proposal.client_id_number),       y);
-  if (!isEntity) y = row(doc, 'Date of Birth', fmtDate(proposal.client_dob),         y);
-  y = row(doc, 'Email',                     orDash(proposal.client_email),           y);
-  y = row(doc, 'Mobile',                    orDash(proposal.client_mobile),          y);
-  y = row(doc, 'Tax Residency',             orDash(proposal.client_tax_residency),   y);
-  y = row(doc, 'Client Type',               clientTypeLabel,                         y);
-  y += 3;
-
-  // FICA status — as plain text ticks (Fix 2)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.setTextColor(...MUTED);
-  doc.text('FICA STATUS', ML, y);
-  y += 5;
-  const ficaItems = [
-    'Identity Verified',
-    'Proof of Address Verified',
-    'Source of Funds Confirmed',
-    isEntity ? 'Beneficial Ownership Verified' : 'Beneficial Ownership — N/A (Individual)',
-  ];
-  ficaItems.forEach(f => { y = tickItem(doc, f, y); });
-  y += 2;
-
-  // ── S2: FSP Details ───────────────────────────────────────────────────────
-  y = pb(doc, y, 45, logoDataUrl);
-  y = sectionHead(doc, 2, 'Financial Services Provider Details', y);
-  y = row(doc, 'FSP Name',           'Wealth Works (Pty) Ltd  |  Wealthworks Investments (Pty) Ltd', y);
-  y = row(doc, 'FSP Licence Numbers','28337  |  45624',  y);
-  y = row(doc, 'Advisor Name',       advisorName,         y);
-  y += 3;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.setTextColor(...MUTED);
-  doc.text('COMPLIANCE DISCLOSURES PROVIDED', ML, y);
-  y += 5;
-  // Plain tick list (Fix 2)
-  y = tickItem(doc, 'FAIS Disclosure Letter', y);
-  y = tickItem(doc, 'Conflict of Interest Policy', y);
-  y = tickItem(doc, 'Complaints Resolution Process', y);
-  y += 2;
-
-  // ── S3: Purpose of Advice ─────────────────────────────────────────────────
-  y = pb(doc, y, 45, logoDataUrl);
-  y = sectionHead(doc, 3, 'Purpose of Advice', y);
-
-  // Build list of SELECTED purposes only (Fix 2)
-  const allPurposes = [
-    { label: 'Wealth Creation / Growth',   check: needsArr.includes('investment') || advisory.some(n => n.includes('invest') || n.includes('wealth') || n.includes('growth')) },
-    { label: 'Offshore Diversification',   check: advisory.some(n => n.includes('offshore')) },
-    { label: 'Retirement Planning',        check: advisory.some(n => n.includes('retire')) },
-    { label: 'Risk Cover / Protection',    check: needsArr.includes('risk_cover') || advisory.some(n => n.includes('risk') || n.includes('cover') || n.includes('life')) },
-    { label: 'Capital Preservation',       check: advisory.some(n => n.includes('capital') || n.includes('estate') || n.includes('preserv')) },
-    { label: 'Income Generation',          check: advisory.some(n => n.includes('income') || n.includes('tax')) },
-    { label: 'Business Assurance',         check: advisory.some(n => n.includes('business')) },
-    { label: 'Estate Planning',            check: advisory.some(n => n.includes('estate')) },
-  ];
-  const selectedPurposes = allPurposes.filter(p => p.check);
-  if (selectedPurposes.length === 0) {
-    // Fallback: show whatever is in needs_array
-    if (needsArr.includes('investment')) y = tickItem(doc, 'Wealth Creation / Growth', y);
-    if (needsArr.includes('risk_cover')) y = tickItem(doc, 'Risk Cover / Protection', y);
-    if (selectedPurposes.length === 0 && needsArr.length === 0) y = tickItem(doc, 'General Financial Planning', y);
-  } else {
-    selectedPurposes.forEach(p => { y = tickItem(doc, p.label, y); });
-  }
-  y += 2;
-
-  // ── S4: Financial Profile ─────────────────────────────────────────────────
-  y = pb(doc, y, 45, logoDataUrl);
-  y = sectionHead(doc, 4, 'Client Financial Profile', y);
-  y = row(doc, 'Annual Income Band',         incomeBand     || 'Not provided', y);
-  y = row(doc, 'Net Worth Band',             netWorthBand   || 'Not provided', y);
-  y = row(doc, 'Monthly Investable Surplus', monthlySurplus || 'Not provided', y);
-  y = row(doc, 'Liquidity Requirements',     liquidityReq   || 'Not provided', y);
-  y = row(doc, 'Investment Horizon',         orDash(proposal.time_horizon), y);
-  y += 2;
-
-  // ── S5: Risk Profiling ────────────────────────────────────────────────────
-  y = pb(doc, y, 45, logoDataUrl);
-  y = sectionHead(doc, 5, 'Risk Profiling Outcome', y);
-
-  // Risk profile as plain text with ✓ on selected only (Fix 2)
-  const profiles = ['Conservative', 'Cautious', 'Moderate', 'Growth', 'Aggressive'];
-  profiles.forEach(p => {
-    if (p === proposal.risk_profile) {
-      y = tickItem(doc, `${p} (Selected)`, y);
-    } else {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...MUTED);
-      doc.text(`    ${p}`, ML, y);
-      y += 5.5;
+  const roaPb = (needed) => {
+    if (y + needed > H - 18) {
+      addFooter(pageNum); doc.addPage(); pageNum += 1; y = 28; addLogoTopRight();
     }
+  };
+
+  const hRule = () => { doc.setDrawColor(...border); doc.line(M,y,W-M,y); y += 6; };
+
+  const secTitle = (title, color=navy) => {
+    roaPb(12); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.setTextColor(...color); doc.text(title.toUpperCase(), M, y); y += 5;
+  };
+
+  const dataRow = (label, value) => {
+    roaPb(6); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(...muted); doc.text(String(label), M, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+    doc.text(String(value||'—'), W-M, y, {align:'right'}); y += 5;
+  };
+
+  const bodyText = (text, size=8) => {
+    if (!text) return;
+    roaPb(10); doc.setFont('helvetica','normal'); doc.setFontSize(size);
+    doc.setTextColor(...black);
+    const lines = doc.splitTextToSize(String(text), CW);
+    lines.forEach(line => { roaPb(5); doc.text(line, M, y); y += 4.5; });
+    y += 2;
+  };
+
+  const tickItem = (label, checked) => {
+    if (!checked) return;
+    roaPb(6); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.setFont('helvetica','bold'); doc.text('✓', M, y);
+    doc.setFont('helvetica','normal'); doc.text(label, M+6, y); y += 5;
+  };
+
+  const checkBox = (label, checked) => {
+    roaPb(6); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.setDrawColor(...navy); doc.rect(M, y-3.5, 3.5, 3.5);
+    if (checked) { doc.setFont('helvetica','bold'); doc.text('✓', M+0.3, y-0.2); }
+    doc.setFont('helvetica','normal'); doc.text(label, M+6, y); y += 5;
+  };
+
+  const signLine = (label, width=80) => {
+    roaPb(16); doc.setDrawColor(...navy); doc.line(M, y, M+width, y); y += 4;
+    doc.setFontSize(7); doc.setTextColor(...muted); doc.text(label, M, y); y += 8;
+  };
+
+  // Parse
+  const clientName = proposal.client_name || '—';
+  const advisorName = proposal.advisor_name || 'Trevor Fine';
+  const riskProfile = proposal.risk_profile || '—';
+  const timeHorizon = proposal.time_horizon || '—';
+  const reference = proposal.reference || '—';
+  const signDate = fmtDate(proposal.sign_date) || todayDMY();
+  const today = todayDMY();
+  const advisoryNeeds = Array.isArray(proposal.advisory_needs) ? proposal.advisory_needs : [];
+  const sourceOfFunds = Array.isArray(proposal.source_of_funds) ? proposal.source_of_funds : [];
+  const normalisedRiskProducts = riskProducts.map(rp => ({...rp, covers: rp.covers || rp._covers || []}));
+
+  // ── PAGE 1: COVER (clean white, logo top right, no navy banner) ────────────
+  pageNum = 1; y = 20;
+  addLogoTopRight();
+  y = 50;
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(...navy);
+  doc.text('Financial Proposal', M, y); y += 10;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+  doc.text('Prepared for', M, y); y += 6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...navy);
+  doc.text(clientName, M, y); y += 8;
+  doc.setDrawColor(...border); doc.line(M, y, M+80, y); y += 8;
+
+  [['Reference',reference],['Date',today],['Advisor',advisorName],
+   ['FSP Numbers','FSP 28337  |  FSP 45624'],['Risk Profile',riskProfile],['Time Horizon',timeHorizon]
+  ].forEach(([label, value]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+    doc.text(label, M, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+    doc.text(String(value), M+45, y); y += 6;
   });
+  addFooter(pageNum);
+
+  // ── PAGES 2–3: DISCLOSURE & TERMS OF BUSINESS ─────────────────────────────
+  doc.addPage(); pageNum = 2; y = 28; addLogoTopRight();
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...navy);
+  doc.text('DISCLOSURE AND TERMS OF BUSINESS', M, y); y += 8;
+  doc.setDrawColor(...navy); doc.line(M, y, W-M, y); y += 8;
+
+  const disclosureSections = [
+    ['INTRODUCTION','Thank you for affording me the opportunity to review your insurance/financial portfolio. In the spirit of transparency and to ensure that you have the information necessary to make an informed decision in terms of my role as your advisor and intermediary, I would like to provide you with some background regarding myself and our business, as well as information required in terms of the Financial Intermediary Act 37 of 2002 (FAIS). This Disclosure and Terms of Business Document supports our commitment to a full disclosure of all relevant and material information appropriate to your insurance requirements, enabling you to make well-informed decisions during the course of our professional relationship with you.'],
+    ['OUR DETAILS','Full trade name: Wealth Works (Pty) Ltd | Registration number: 2006/018307/07 | FAIS licence number: 28337 (Category 1)\n\nFull trade name: Wealthworks Investments (Pty) Ltd | Registration number: 2012/215566/07 | FAIS licence number: 45624 (Category 2)\n\nWe are licensed to provide advice and discretionary intermediary services on financial products for which we are remunerated by means of statutory commission and fees.\n\nFinancial products we are authorised to advise on: Long-Term Insurance Category A, B and C | Retail Pension Benefits | Pension Funds Benefits (excluding retail) | Participatory interests in Collective Investment Schemes'],
+    ['KEY INDIVIDUALS','Trevor Fine – B Compt H DIP Tax CFP\nMalcolm Munsamy – Certificate in Financial Planning, RE5, RE1\nRoger Eskinazi – Higher Diploma Financial Markets, MBA (Cum Laude), RE5/RE1/RE3'],
+    ['BUSINESS ADDRESS','1st Floor, Dunkeld Place, 12 North Road, Dunkeld West | Tel: 011 325 2514\nCube Workspace, The Pavilion Building, Corner Dock and Portswood Road, V&A Waterfront 8001'],
+    ['COMPLIANCE OFFICER','Justin Joannides – Crux Compliance Practitioners CO3485 | Tel: 011-234 4991 | justin@cruxconsulting.co.za'],
+    ['ACCREDITED PROVIDERS','Allan Gray | Discovery Life | Hollard | Liberty | PPS | Momentum | Sanlam | Investec | Prime | Gryphon | Julius Baer | Credo | Old Mutual | Bright Rock'],
+    ['CONFLICTS OF INTEREST','We have adopted and implemented a Conflict of Interest Management Policy. In the event of a potential conflict of interest, the interest of our client will be accorded priority over our own interests. A copy of our policy is available upon written request.'],
+    ['COMPLAINTS','Contact: Trevor Fine | trevor@wealthworks.co.za | 1st Floor, Dunkeld Place, 12 North Road, Dunkeld West, 2196\n\nFAIS Ombud: Kasteel Office Park, Orange Building 2nd Floor, 546 Jochemus Street, Erasmuskloof, Pretoria 0048 | info@faisombud.co.za | 012 762 5000'],
+    ['PRIVACY STATEMENT','Personal Information refers to information about you, your spouse, your dependents and your beneficiaries. By proceeding, you give us permission to process personal information for the purpose of rendering sound financial advice, quotation and application purposes, obtaining information from financial institutions, and for administration purposes within the group. We will not sell, share or disclose your personal information to any third parties without your consent, except where required to do so by law.'],
+    ['TERMS OF ENGAGEMENT','Our engagement is governed by the following terms:\n\n1. We will act in your best interests at all times and provide advice that is appropriate to your financial needs and circumstances.\n2. We will disclose all material information relevant to the advice provided.\n3. We will maintain the confidentiality of all information you provide to us.\n4. Our remuneration is disclosed in the relevant product documentation and in this proposal.\n5. You have the right to cancel any product within the cooling-off period specified in the product terms.\n6. This proposal does not constitute a binding offer and is subject to underwriting where applicable.\n7. Past performance is not indicative of future results. Investments are subject to market risk.'],
+    ['COOLING-OFF RIGHTS','You have the right to cancel certain financial products within a stipulated cooling-off period without penalty. This period is typically 30 days from inception of the policy or investment. Please refer to the specific product documentation for the applicable cooling-off terms. Cancellation requests must be submitted in writing to the relevant product provider.'],
+    ['PROFESSIONAL INDEMNITY','Wealth Works (Pty) Ltd and Wealthworks Investments (Pty) Ltd maintain professional indemnity insurance as required under the FAIS Act. Details of the insurer and policy limits are available upon request.'],
+  ];
+
+  disclosureSections.forEach(([heading, text]) => {
+    if (y + 20 > H - 18) { addFooter(pageNum); doc.addPage(); pageNum += 1; y = 28; addLogoTopRight(); }
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+    doc.text(heading, M, y); y += 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+    const lines = doc.splitTextToSize(text, CW);
+    lines.forEach(l => {
+      if (y + 5 > H - 18) { addFooter(pageNum); doc.addPage(); pageNum += 1; y = 28; addLogoTopRight(); }
+      doc.text(l, M, y); y += 4;
+    });
+    y += 4;
+  });
+  addFooter(pageNum);
+
+  // ── PAGES 4+: RECORD OF ADVICE (ROA) — ALL 16 SECTIONS ───────────────────
+  doc.addPage(); pageNum += 1; y = 28; addLogoTopRight();
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...navy);
+  doc.text('RECORD OF ADVICE (ROA)', M, y); y += 6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, y); y += 8;
+  doc.setDrawColor(...navy); doc.line(M, y, W-M, y); y += 8;
+
+  // Section 1
+  secTitle('1. Client Details (FICA Verified)');
+  dataRow('Client / Entity Name', clientName);
+  dataRow('ID or Registration Number', proposal.client_id_number || '—');
+  dataRow('Date of Birth', fmtDate(proposal.client_dob) || '—');
+  dataRow('Email', proposal.client_email || '—');
+  dataRow('Mobile Number', proposal.client_mobile || '—');
+  const rawType = proposal.client_type || '';
+  let clientTypeDisplay = 'Individual';
+  if (rawType==='trust') clientTypeDisplay='Trust';
+  else if (rawType==='company'||rawType==='entity') clientTypeDisplay='Company';
+  else if (rawType&&rawType!=='natural_person'&&rawType!=='individual') clientTypeDisplay=rawType.charAt(0).toUpperCase()+rawType.slice(1);
+  dataRow('Client Type', clientTypeDisplay);
   y += 2;
+  roaPb(30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+  doc.text('FICA Verification Checklist', M, y); y += 5;
+  ['Identity Verified','Proof of Address Verified','Source of Funds Confirmed','Beneficial Ownership Verified (if applicable)'].forEach(item => checkBox(item, false));
+  y += 2; hRule();
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
-  doc.setTextColor(...MUTED);
-  doc.text('KEY INDICATORS CONFIRMED', ML, y);
-  y += 5;
-  [
-    'Risk questionnaire completed and signed by client',
-    'Client understands the risk/return trade-off',
-    'Portfolio volatility appropriate to profile',
-    'Liquidity needs considered in profile selection',
-  ].forEach(r => { y = tickItem(doc, r, y); });
-  y += 2;
+  // Section 2
+  secTitle('2. Financial Services Provider Details');
+  dataRow('FSP Name', 'Wealth Works (Pty) Ltd  |  Wealthworks Investments (Pty) Ltd');
+  dataRow('FSP Licence Number', '28337  |  45624');
+  dataRow('Advisor Name', advisorName);
+  dataRow('Date of Advice', today);
+  y += 2; roaPb(30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+  doc.text('Compliance Disclosures Provided:', M, y); y += 5;
+  ['FAIS Disclosure Letter / Terms of Business','Conflict of Interest Policy','Complaints Resolution Process'].forEach(item => checkBox(item, false));
+  y += 2; hRule();
 
-  // ── S6: Basis of Advice ───────────────────────────────────────────────────
-  y = pb(doc, y, 50, logoDataUrl);
-  y = sectionHead(doc, 6, 'Basis of Advice', y);
-  y = para(doc,
-    'This advice is based on information provided by the client during the financial planning process. The advisor has considered the client\'s risk profile, financial position, investment objectives, time horizon and existing portfolio before making these recommendations. The advice is appropriate and suitable for the client\'s circumstances as disclosed.',
-    y, 0, 7.5);
-  if (proposal.personal_message) {
-    y += 3;
-    y = para(doc, proposal.personal_message, y, 0, 7.5);
-  }
-  y += 2;
+  // Section 3
+  secTitle('3. Purpose of Advice / Advisory Needs Identified');
+  [['Local investments',['local','investment','wealth','growth','local and offshore']],
+   ['Offshore investments',['offshore']],
+   ['Life & risk cover',['life','risk cover','risk','insurance']],
+   ['Tax planning',['tax']],
+   ['Business assurance',['business']],
+   ['Retirement planning',['retirement']],
+   ['Education planning',['education']],
+   ['Estate planning',['estate']],
+  ].forEach(([label, keywords]) => {
+    const checked = keywords.some(kw => advisoryNeeds.some(n => String(n).toLowerCase().includes(kw)));
+    tickItem(label, checked);
+  });
+  y += 2; hRule();
 
-  // ── S7: Product Recommendations ───────────────────────────────────────────
-  y = pb(doc, y, 30, logoDataUrl);
-  y = sectionHead(doc, 7, 'Product / Strategy Recommendations', y);
+  // Section 4
+  secTitle('4. Client Financial Profile');
+  dataRow('Annual Income Band', proposal.annual_income_band || proposal.gross_annual_income_band || '—');
+  dataRow('Net Worth Band', proposal.net_worth_band || '—');
+  dataRow('Liquidity Requirement', proposal.liquidity_requirement || proposal.client_liquidity_needs || '—');
+  dataRow('Investment Horizon', timeHorizon);
+  dataRow('Tax Residency', proposal.tax_residency || '—');
+  y += 2; hRule();
 
+  // Section 5
+  secTitle('5. Risk Profiling Outcome');
+  dataRow('Risk Profile Outcome', riskProfile);
+  y += 2; roaPb(30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+  doc.text('Factors considered in risk assessment:', M, y); y += 5;
+  ['Tolerance for volatility','Investment time horizon','Liquidity needs','Reaction to market declines','Investment experience'].forEach(item => tickItem(item, true));
+  y += 2; hRule();
+
+  // Section 6
+  secTitle('6. Basis of Advice');
+  bodyText('This recommendation is based on: the client\'s stated objectives, the financial profile disclosed, the assessed risk tolerance, and current market conditions and product suitability. The advice provided is appropriate to the client\'s circumstances and aligns with their risk-return expectations. All relevant information has been considered and the basis of advice is consistent with the client\'s best interests as required under FAIS.');
+  hRule();
+
+  // Section 7
+  secTitle('7. Product / Strategy Recommendation');
   if (investments.length > 0) {
-    y = pb(doc, y, 12, logoDataUrl);
-    y = subHead(doc, 'Investments', y);
-    investments.forEach((inv, idx) => {
-      y = pb(doc, y, 42, logoDataUrl);
-      doc.setFillColor(...BG);
-      doc.rect(ML, y - 3, CW, 7, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(...NAVY);
-      doc.text(`Investment ${idx + 1}: ${orDash(inv.provider)} — ${orDash(inv.product_type)}`, ML + 2, y + 1.5);
-      y += 9;
-      y = row(doc, 'Provider',             orDash(inv.provider),     y);
-      y = row(doc, 'Product Type',         orDash(inv.product_type), y);
-      y = row(doc, 'Jurisdiction / Currency', `${orDash(inv.jurisdiction)} / ${orDash(inv.currency)}`, y);
-      if (inv.amount > 0)           y = row(doc, 'Lump Sum Amount',            fmtNum(inv.amount, inv.currency),           y);
-      if (inv.recurring_amount > 0) y = row(doc, `Recurring (${orDash(inv.frequency)})`, fmtNum(inv.recurring_amount, inv.currency), y);
-      const funds = Array.isArray(inv.underlying_funds) && inv.underlying_funds.length ? inv.underlying_funds.join(', ') : '—';
-      y = row(doc, 'Underlying Funds',     funds,                    y);
-      y = row(doc, 'Term / Structure',     orDash(proposal.time_horizon), y);
+    roaPb(15); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...ocean);
+    doc.text('Investment Products', M, y); y += 5;
+    investments.forEach((inv, i) => {
+      roaPb(40);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+      doc.text(inv.provider||'—', M, y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+      doc.text([inv.jurisdiction,inv.currency].filter(Boolean).join(' · '), W-M, y, {align:'right'}); y += 5;
+      dataRow('Product Type', inv.product_type||'—');
+      if (inv.amount>0) dataRow('Lump Sum', `${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`);
+      if (inv.recurring_amount>0) dataRow('Recurring Contribution', `${inv.currency||'R'} ${Number(inv.recurring_amount).toLocaleString('en-ZA')}`);
+      if (Array.isArray(inv.underlying_funds)&&inv.underlying_funds.length>0) dataRow('Underlying Funds', inv.underlying_funds.join(', '));
       if (inv.reason_for_recommendation) {
+        y += 2; doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+        doc.splitTextToSize(`Reason: ${inv.reason_for_recommendation}`, CW).forEach(l => { roaPb(5); doc.text(l,M,y); y+=4; });
         y += 2;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(...MUTED);
-        doc.text('REASON FOR RECOMMENDATION', ML, y);
-        y += 4;
-        y = para(doc, inv.reason_for_recommendation, y, 3, 7.5);
       }
-      y += 5;
+      if (i<investments.length-1) { y+=2; doc.setDrawColor(...border); doc.line(M,y,W-M,y); y+=4; }
     });
+    y += 4;
   }
-
-  if (riskProducts.length > 0) {
-    y = pb(doc, y, 12, logoDataUrl);
-    y = subHead(doc, 'Risk Products', y);
-    riskProducts.forEach((rp, idx) => {
-      y = pb(doc, y, 42, logoDataUrl);
-      doc.setFillColor(...BG);
-      doc.rect(ML, y - 3, CW, 7, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(...NAVY);
-      const coverStr = (rp._covers || []).map(c => c.cover_type).join(', ') || '—';
-      doc.text(`Risk Product ${idx + 1}: ${orDash(rp.provider)} — ${coverStr}`, ML + 2, y + 1.5);
-      y += 9;
-      y = row(doc, 'Provider', orDash(rp.provider), y);
-      (rp._covers || []).forEach(cover => {
-        y = row(doc, `${cover.cover_type} — Sum Assured`,    cover.amount_required > 0 ? fmtNum(cover.amount_required) : '—', y);
-        y = row(doc, `${cover.cover_type} — Monthly Premium`, cover.premium > 0 ? fmtNum(cover.premium) : '—',              y);
-        if (cover.annual_premium_increase_percent > 0) y = row(doc, 'Annual Premium Increase', fmtPct(cover.annual_premium_increase_percent), y);
-        if (cover.annual_cover_increase_percent > 0)   y = row(doc, 'Annual Cover Increase',   fmtPct(cover.annual_cover_increase_percent),   y);
+  if (normalisedRiskProducts.length > 0) {
+    roaPb(15); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...teal);
+    doc.text('Risk Cover Products', M, y); y += 5;
+    normalisedRiskProducts.forEach((rp, i) => {
+      roaPb(30);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+      doc.text(rp.provider||'—', M, y); y += 5;
+      rp.covers.forEach(cover => {
+        dataRow(cover.cover_type, `Premium: ${fmtR(cover.premium)} pm`);
+        if (cover.amount_required>0) dataRow('  Sum Assured', fmtR(cover.amount_required));
       });
-      if (rp.total_premium > 0) y = row(doc, 'Total Monthly Premium', fmtNum(rp.total_premium), y);
+      if (rp.total_premium>0) { doc.setTextColor(...teal); dataRow('Total Monthly Premium', fmtR(rp.total_premium)); doc.setTextColor(...navy); }
       if (rp.reason_for_recommendation) {
-        y += 2;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.setTextColor(...MUTED);
-        doc.text('REASON FOR RECOMMENDATION', ML, y);
-        y += 4;
-        y = para(doc, rp.reason_for_recommendation, y, 3, 7.5);
+        y+=2; doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+        doc.splitTextToSize(`Reason: ${rp.reason_for_recommendation}`, CW).forEach(l => { roaPb(5); doc.text(l,M,y); y+=4; });
+        y+=2;
       }
-      y += 5;
+      if (i<normalisedRiskProducts.length-1) { y+=2; doc.setDrawColor(...border); doc.line(M,y,W-M,y); y+=4; }
     });
   }
+  y += 2; hRule();
 
-  // ── S8: Motivation ────────────────────────────────────────────────────────
-  y = pb(doc, y, 30, logoDataUrl);
-  y = sectionHead(doc, 8, 'Motivation for Recommendation', y);
-  y = para(doc,
-    proposal.personal_message ||
-    'Based on the client\'s financial profile, risk tolerance and investment objectives, the recommendations above are considered the most appropriate solutions available from our accredited product panel.',
-    y, 0, 7.5);
-  y += 2;
+  // Section 8
+  secTitle('8. Motivation for Recommendation');
+  bodyText(proposal.overall_suitability_rationale || proposal.investment_rationale || proposal.risk_cover_rationale ||
+    'This recommendation is suitable because it aligns with the client\'s stated objectives, the risk profile of the recommended products matches the client\'s assessed risk tolerance, the investment horizon is appropriate for the selected strategies, and the product structure supports the client\'s liquidity requirements and financial profile.');
+  hRule();
 
-  // ── S9: Material Risks Disclosed ─────────────────────────────────────────
-  y = pb(doc, y, 45, logoDataUrl);
-  y = sectionHead(doc, 9, 'Material Risks Disclosed', y);
-  [
-    'Market risk — investment values may fluctuate and are not guaranteed',
-    'Inflation risk — real returns may be eroded over time if returns do not exceed inflation',
-    'Liquidity risk — funds may not be accessible at short notice without penalty',
-    'Currency risk — offshore investments are subject to exchange rate movements',
-    'Counterparty / provider risk — subject to the financial soundness of the product provider',
-  ].forEach(r => { y = tickItem(doc, r, y); });
-  y += 2;
+  // Section 9
+  secTitle('9. Material Risks Disclosed to Client');
+  ['Market volatility and potential capital loss','Liquidity constraints (where applicable)','Product-specific risks',
+   'Currency and exchange rate risks (for offshore products)','Early withdrawal penalties','Inflation risk','Counterparty risk'
+  ].forEach(r => tickItem(r, true));
+  y += 2; hRule();
 
-  // ── S10: Costs, Fees & Remuneration ──────────────────────────────────────
-  y = pb(doc, y, 40, logoDataUrl);
-  y = sectionHead(doc, 10, 'Costs, Fees & Remuneration', y);
-  if (investments.length > 0) {
-    investments.forEach((inv) => {
-      y = pb(doc, y, 30, logoDataUrl);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(...NAVY);
-      doc.text(`${orDash(inv.provider)} — ${orDash(inv.product_type)}`, ML, y);
-      y += 5;
-      y = row(doc, 'Initial Advice Fee',          fmtPct(inv.initial_fee_percent),      y);
-      y = row(doc, 'Annual Advice Fee (ongoing)',  fmtPct(inv.annual_advice_fee_percent), y);
-      y = row(doc, 'Platform Fee',                fmtPct(inv.platform_fee_percent),      y);
-      if (inv.fund_ter_percent) y = row(doc, 'Fund TER', fmtPct(inv.fund_ter_percent),   y);
-      y += 3;
-    });
-  } else {
-    y = para(doc, 'Fee disclosure not applicable — no investment products recommended.', y, 0, 7.5);
+  // Section 10
+  secTitle('10. Costs, Fees & Remuneration');
+  bodyText('The client has been informed of all applicable costs and fees including: initial advice fees, ongoing advice fees, product administration costs, and advisor remuneration / commission where applicable. All fees are disclosed in the relevant product documentation.');
+  investments.forEach(inv => {
+    if (inv.initial_fee_percent>0) dataRow(`${inv.provider} — Initial fee`, `${inv.initial_fee_percent}%`);
+    if (inv.annual_advice_fee_percent>0) dataRow(`${inv.provider} — Annual advice fee`, `${inv.annual_advice_fee_percent}%`);
+  });
+  y += 2; hRule();
+
+  // Section 11
+  secTitle('11. Replacement of Existing Products');
+  const isReplacement = proposal.is_replacement===true||proposal.is_replacement==='Yes';
+  tickItem('This advice involves the replacement of an existing financial product', isReplacement);
+  tickItem('No existing products are being replaced', !isReplacement);
+  if (isReplacement && proposal.replacement_details) bodyText(proposal.replacement_details);
+  else if (!isReplacement) bodyText('The advice provided does not involve the replacement of any existing financial products. No replacement analysis was required.');
+  y += 2; hRule();
+
+  // Section 12
+  secTitle('12. Alternative Products Considered');
+  bodyText(proposal.alternatives_considered ||
+    'Alternative products from accredited providers were considered in arriving at this recommendation. The selected product(s) were determined to be the most suitable based on the client\'s financial profile, risk tolerance, stated objectives, and cost-benefit analysis. Details of alternatives are available upon request.');
+  y += 2; hRule();
+
+  // Section 13
+  secTitle('13. FICA — Source of Funds Declaration');
+  [['Salary / Employment income',['salary','employment']],
+   ['Business income / Profits',['business']],
+   ['Investment proceeds / Returns',['investment','proceeds']],
+   ['Inheritance / Gift',['inheritance','gift']],
+   ['Retirement / Pension income',['retirement','pension']],
+   ['Property / Asset sale',['property','asset','sale']],
+   ['Other',['other']],
+  ].forEach(([label, keywords]) => {
+    const checked = keywords.some(kw => sourceOfFunds.some(s => String(s).toLowerCase().includes(kw)));
+    tickItem(label, checked);
+  });
+  y += 2; hRule();
+
+  // Section 14
+  secTitle('14. Specific Needs Analysis');
+  bodyText(proposal.specific_needs_analysis ||
+    `The client's identified advisory needs are: ${advisoryNeeds.join(', ')||'as discussed'}. The client's risk profile is ${riskProfile} with a time horizon of ${timeHorizon}. All recommendations are tailored to the client's specific circumstances as disclosed during the advice process.`);
+  y += 2; hRule();
+
+  // Section 15
+  roaPb(60);
+  secTitle('15. Advisor Declaration');
+  bodyText('I confirm that: the advice provided is appropriate and suitable to the client\'s needs and circumstances, all disclosures required under the FAIS Act have been made, this recommendation is in the client\'s best interest, and the information in this Record of Advice is accurate and complete to the best of my knowledge.');
+  dataRow('Advisor Name', advisorName);
+  dataRow('Date', signDate);
+  y += 6;
+  if (proposal.advisor_signature_type==='draw' && proposal.advisor_signature_data) {
+    roaPb(25); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,60,18); y += 22;
+  } else if (proposal.advisor_signature_type==='type' && proposal.advisor_signature_data) {
+    roaPb(20); doc.setFont('times','italic'); doc.setFontSize(16); doc.setTextColor(...navy);
+    doc.text(proposal.advisor_signature_data, M, y+6); y += 14;
   }
-  y += 2;
+  doc.setDrawColor(...navy); doc.line(M,y,M+80,y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+  doc.text(`Advisor Signature  ·  Date: ${signDate}`, M, y); y+=10;
+  hRule();
 
-  // ── S11: Alternatives Considered ─────────────────────────────────────────
-  y = pb(doc, y, 30, logoDataUrl);
-  y = sectionHead(doc, 11, 'Alternatives Considered', y);
-  y = para(doc,
-    'Alternative products and providers on our accreditation panel were considered prior to making this recommendation. The recommended solutions best align with the client\'s risk profile, investment time horizon, cost structure and stated financial objectives as disclosed during the financial planning process. No superior or materially different alternative was identified that would better serve the client\'s needs.',
-    y, 0, 7.5);
-  y += 2;
-
-  // ── S12: Replacement Analysis ─────────────────────────────────────────────
-  y = pb(doc, y, 30, logoDataUrl);
-  y = sectionHead(doc, 12, 'Replacement Analysis', y);
-  y = para(doc,
-    'Where an existing financial product is being replaced, the advisor has considered the costs, penalties, and implications of such replacement and is satisfied that the replacement is in the best interest of the client.',
-    y, 0, 7.5);
-  y += 2;
-  y = row(doc, 'Existing product being replaced',        '—', y);
-  y = row(doc, 'Replacement justified (Yes / No)',       '—', y);
-  y = row(doc, 'Client informed of all implications',    '—', y);
-  y += 2;
-
-  // ── S13: FICA Source of Funds Declaration ─────────────────────────────────
-  y = pb(doc, y, 40, logoDataUrl);
-  y = sectionHead(doc, 13, 'FICA Source of Funds Declaration', y);
-  y = row(doc, 'Declared Source(s) of Funds', sourceFundsStr, y);
-  y += 3;
-  y = tickItem(doc, 'Client acknowledges all fees and charges applicable to the recommended products', y);
-  y = tickItem(doc, 'Client has been informed of all material implications of the recommendations', y);
-  y += 2;
-
-  // ── S14: Limitations of Advice ────────────────────────────────────────────
-  y = pb(doc, y, 35, logoDataUrl);
-  y = sectionHead(doc, 14, 'Limitations of Advice', y);
-  y = para(doc,
-    'This advice is limited to the financial services and products listed in this Record of Advice. We have not provided advice on matters outside our FSP licence categories. Our advice is based solely on information disclosed by the client — incomplete or inaccurate disclosure may affect the appropriateness of this advice. Past performance of investments does not guarantee future results. The values of investments may go down as well as up.',
-    y, 0, 7.5);
-  y += 2;
-
-  // ── S15: Advisor Declaration ──────────────────────────────────────────────
-  y = pb(doc, y, 65, logoDataUrl);
-  y = sectionHead(doc, 15, 'Advisor Declaration', y);
-  y = para(doc,
-    'I, the undersigned authorised representative, declare that:\n' +
-    '1. I am duly authorised under FSP 28337 and/or FSP 45624;\n' +
-    '2. I have conducted this advice in accordance with the FAIS General Code of Conduct;\n' +
-    '3. The recommendations made are appropriate and suitable for the client\'s disclosed circumstances;\n' +
-    '4. All material conflicts of interest have been disclosed to the client;\n' +
-    '5. This Record of Advice accurately reflects the advice rendered.',
-    y, 0, 7.5);
-  y += 5;
-  y = renderAdvisorSig(doc, proposal, advisorName, y);  // Fix 4
-
-  // ── S16: Client Declaration ───────────────────────────────────────────────
-  y = pb(doc, y, 55, logoDataUrl);
-  y = sectionHead(doc, 16, 'Client Declaration', y);
-  y = para(doc,
-    'I, the undersigned, confirm that:\n' +
-    '1. I have read and understood this Record of Advice and the Disclosure Document;\n' +
-    '2. The information I provided is accurate and complete to the best of my knowledge;\n' +
-    '3. I have been made aware of all fees, charges, and material risks;\n' +
-    '4. I accept the recommendations made herein and consent to the processing of my personal information.',
-    y, 0, 7.5);
-  y += 5;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...MUTED);
-  doc.text('Client Name:', ML, y);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...NAVY);
-  doc.text(clientName, ML + 26, y);
-  y += 9;
-  doc.setDrawColor(...NAVY);
-  doc.line(ML, y, ML + 90, y);
+  // Section 16
+  roaPb(50);
+  secTitle('16. Client Declaration & Acceptance');
+  bodyText('I confirm that: I have provided complete and accurate information to the advisor, the advice and all associated risks have been explained to me in a clear and understandable manner, I understand the recommended product(s) and their implications, I have had the opportunity to ask questions and received satisfactory answers, and I accept the recommendations as set out in this Record of Advice.');
+  dataRow('Client Name', clientName);
   y += 4;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...MUTED);
-  doc.text('Client Signature', ML, y);
-  doc.text('Date: _______________', ML + 95, y);
+  signLine(`Client Signature  ·  Date: _______________`, 80);
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // MANDATE PAGES (Fix 3) — only if mandate_included === 'Yes'
-  // ════════════════════════════════════════════════════════════════════════════
-  if (mandateIncluded) {
-    y = newPage(doc, logoDataUrl);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...NAVY);
-    doc.text('CONSOLIDATED DISCRETIONARY MANDATE', ML, y);
-    y += 4;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    doc.text('Wealthworks Investments (Pty) Ltd — FSP 45624', ML, y);
-    y += 9;
-
-    y = para(doc,
-      'This Consolidated Discretionary Mandate ("Mandate") is entered into between Wealthworks Investments (Pty) Ltd (FSP 45624) ("the Manager") and the client named on the cover page of this Financial Proposal ("the Client"). By signing this Mandate, the Client grants the Manager the authority described herein to manage the Client\'s portfolio on a discretionary basis in accordance with the Client\'s stated investment objectives and risk profile.',
-      y, 0, 7.5);
-    y += 5;
-
-    const mandateSections = [
-      {
-        title: '1. APPOINTMENT AND AUTHORITY',
-        body: 'The Client hereby appoints the Manager as discretionary manager of the Client\'s investment portfolio. The Manager is authorised to buy, sell, switch and otherwise deal in financial products on the Client\'s behalf without requiring prior consent for each individual transaction, provided such transactions are consistent with the Client\'s agreed investment mandate, risk profile and objectives.'
-      },
-      {
-        title: '2. INVESTMENT OBJECTIVES AND RISK PROFILE',
-        body: `The Client's stated risk profile is: ${orDash(proposal.risk_profile)}. The Manager shall invest the Client's assets in accordance with this risk profile and the investment objectives disclosed in the Record of Advice. The investment time horizon is: ${orDash(proposal.time_horizon)}.`
-      },
-      {
-        title: '3. INVESTMENT RESTRICTIONS',
-        body: 'The Manager shall not invest the Client\'s assets in any financial product that falls outside the Client\'s agreed risk profile without the Client\'s prior written consent. The Manager shall not invest in unlisted financial instruments, derivative instruments for speculative purposes, or any instrument that would expose the Client to unlimited liability.'
-      },
-      {
-        title: '4. FEES AND REMUNERATION',
-        body: 'The Manager\'s remuneration for discretionary management services is disclosed in Section 10 (Costs, Fees & Remuneration) of the Record of Advice forming part of this document. The Manager may be remunerated by way of an annual advice fee, which shall be disclosed to the Client and agreed prior to implementation.'
-      },
-      {
-        title: '5. REPORTING',
-        body: 'The Manager shall provide the Client with quarterly portfolio valuations and an annual performance report. The Client may request a portfolio report at any time. All reporting shall be provided in writing or via the Manager\'s approved electronic communication platform.'
-      },
-      {
-        title: '6. TERMINATION',
-        body: 'Either party may terminate this Mandate by giving 30 (thirty) days\' written notice to the other party. On termination, the Manager shall cease all discretionary activity and shall account to the Client for all assets held on the Client\'s behalf. Any accrued but unpaid fees shall remain payable on termination.'
-      },
-      {
-        title: '7. CONFLICTS OF INTEREST',
-        body: 'The Manager maintains a Conflicts of Interest Management Policy in terms of the FAIS Act. A copy of this policy is available on request. The Manager undertakes to disclose all material conflicts of interest to the Client as they arise.'
-      },
-      {
-        title: '8. GOVERNING LAW',
-        body: 'This Mandate is governed by the laws of the Republic of South Africa. Any disputes arising from this Mandate shall be subject to the jurisdiction of the South African courts or, at the election of either party, to arbitration in terms of the Arbitration Act, No. 42 of 1965.'
-      },
-      {
-        title: '9. CLIENT ACKNOWLEDGEMENTS',
-        body: 'The Client acknowledges that:\n(a) The Manager is authorised to act on the Client\'s behalf on a discretionary basis;\n(b) The Client has been advised of the risks associated with discretionary management;\n(c) Past performance of the portfolio does not guarantee future performance;\n(d) The value of investments may fluctuate and the Client may receive back less than the amount invested.'
-      }
-    ];
-
-    for (const ms of mandateSections) {
-      y = pb(doc, y, 25, logoDataUrl);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(...NAVY);
-      doc.text(ms.title, ML, y);
-      y += 4;
-      y = para(doc, ms.body, y, 0, 7.5);
-      y += 4;
-    }
-
-    // Mandate Advisor Signature
-    y = pb(doc, y, 50, logoDataUrl);
-    y = subHead(doc, 'Advisor Acceptance', y);
-    y = para(doc, 'I confirm that I have explained the terms of this Mandate to the Client and that the Client understands and accepts same.', y, 0, 7.5);
-    y += 4;
-    y = renderAdvisorSig(doc, proposal, advisorName, y);
-
-    // Mandate Client Signature
-    y = pb(doc, y, 40, logoDataUrl);
-    y = subHead(doc, 'Client Acceptance', y);
-    y = para(doc, 'I have read and understood the terms of this Consolidated Discretionary Mandate and agree to be bound by its provisions.', y, 0, 7.5);
-    y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    doc.text('Client Name:', ML, y);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...NAVY);
-    doc.text(clientName, ML + 26, y);
-    y += 9;
-    doc.setDrawColor(...NAVY);
-    doc.line(ML, y, ML + 90, y);
-    y += 4;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...MUTED);
-    doc.text('Client Signature', ML, y);
-    doc.text('Date: _______________', ML + 95, y);
+  if (proposal.personal_message) {
+    roaPb(30); doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...ocean);
+    doc.text('MESSAGE FROM YOUR ADVISOR', M, y); y+=5;
+    doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+    doc.splitTextToSize(proposal.personal_message, CW).forEach(l => { roaPb(5); doc.text(l,M,y); y+=4.5; });
+    y+=4;
   }
+  addFooter(pageNum);
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // FINAL PASS — Add header + footer to every page
-  // Page 1 (cover) gets logo top-right + footer; interior pages get full header + footer
-  // ════════════════════════════════════════════════════════════════════════════
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    if (i === 1) {
-      // Cover page: only add footer (logo is already centred in body)
-      // Cover footer — white text on navy background
-      const fy = PH - FOOTER_H + 2;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.5);
-      doc.setTextColor(120, 150, 180);
-      doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', ML, fy + 4);
-      doc.text(`Page ${i} of ${totalPages}`, PW / 2, fy + 4, { align: 'center' });
-      doc.text('Initials: ___________', PW - MR, fy + 4, { align: 'right' });
-    } else {
-      addHeader(doc, logoDataUrl);
-      addFooter(doc, i, totalPages);
+  // ── MANDATE (appended only if mandate_included = "Yes") ───────────────────
+  if (proposal.mandate_included==='Yes') {
+    doc.addPage(); pageNum+=1; y=28; addLogoTopRight();
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...navy);
+    doc.text('CONSOLIDATED DISCRETIONARY MANDATE', M, y); y+=6;
+    doc.setDrawColor(...navy); doc.line(M,y,W-M,y); y+=10;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('Between', W/2, y, {align:'center'}); y+=7;
+    doc.setFont('helvetica','bold'); doc.text('WEALTHWORKS INVESTMENTS (PTY) LTD', W/2, y, {align:'center'}); y+=5;
+    doc.setFont('helvetica','normal'); doc.text('Registration Number 2012/215566/07 ("The FSP")', W/2, y, {align:'center'}); y+=7;
+    doc.text('AND', W/2, y, {align:'center'}); y+=7;
+    doc.setFont('helvetica','bold'); doc.text(clientName, W/2, y, {align:'center'}); y+=5;
+    doc.setFont('helvetica','normal');
+    doc.text(`ID / Registration Number: ${proposal.client_id_number||'___________________________'}`, W/2, y, {align:'center'}); y+=5;
+    doc.text('("The Investor")', W/2, y, {align:'center'}); y+=10;
+    doc.setDrawColor(...border); doc.line(M,y,W-M,y); y+=8;
+
+    [['1. Background to the Investment Mandate','1.1. This Investment Mandate authorises The FSP to make investment decisions on behalf of The Investor within strictly defined and managed parameters.\n1.2. In order to streamline the decision-making within the investment process, specifically in terms of market timing, re-balancing and asset allocation, it is necessary that The Investor authorises The FSP to act autonomously.\n1.3. The FSP\'s registration with the Financial Sector Conduct Authority (FSCA) under a discretionary Mandate requires that this Mandate be signed by both parties.'],
+     ['2. Authorisation','2.1. The FSP is the holder of a Category II FSP license and is authorised to render intermediary services of a discretionary nature in respect of investments and products.\n2.2. The FSP shall exercise its discretion in the management of investments on behalf of The Investor.\n2.3. The Investor hereby authorises The FSP to manage investments that will include but not necessarily be limited to listed and unlisted securities, unit trusts, collective investment schemes, bonds, derivatives, and other instruments.'],
+     ['3. Investment Objectives and Risk Level',`Risk Level: ${riskProfile}\nInvestment Objectives: ${advisoryNeeds.length>0?advisoryNeeds.join(', '):'_______________'}`],
+     ['8. Investment Advice and Reporting','The FSP undertakes to administer and manage the investments in accordance with the wealth management objectives indicated in this Mandate. The FSP shall provide The Investor with relevant information regarding the investment portfolio on a regular basis, with a minimum of quarterly updates.'],
+     ['9. Commencement and Termination','Either party may terminate this Mandate on 60 (sixty) calendar days\' notice. Notice shall be given in writing and either posted by registered mail, hand-delivered or emailed to the other party\'s nominated email address.'],
+     ['10. Legislation and Regulations','The FSP has current obligations in terms of: Financial Intelligence Centre Act No. 38 of 2001 (FICA), Prevention of Organised Crime Act of 2001 (POCA), and the Policyholder Protection Rules (PPR). The Investor declares that all monies are legitimate funds as defined in terms of FICA and POCA.'],
+     ['12. Confidentiality','The FSP undertakes not to disclose or make available any Confidential Information to any third party, without the prior written authority of The Investor, unless compelled to do so by a court order or applicable law.'],
+    ].forEach(([heading, text]) => {
+      if (y+20>H-18) { addFooter(pageNum); doc.addPage(); pageNum+=1; y=28; addLogoTopRight(); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+      doc.text(heading, M, y); y+=5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+      doc.splitTextToSize(text, CW).forEach(l => {
+        if (y+5>H-18) { addFooter(pageNum); doc.addPage(); pageNum+=1; y=28; addLogoTopRight(); }
+        doc.text(l,M,y); y+=4;
+      });
+      y+=5;
+    });
+
+    doc.setDrawColor(...border); doc.line(M,y,W-M,y); y+=6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text('ANNEXURE A — MODEL PORTFOLIOS', M, y); y+=6;
+    dataRow('Risk Tolerance Level', riskProfile);
+    dataRow('Investment Objectives', advisoryNeeds.length>0?advisoryNeeds.join(', '):'—');
+    y+=4;
+
+    if (y+80>H-18) { addFooter(pageNum); doc.addPage(); pageNum+=1; y=28; addLogoTopRight(); }
+    doc.setDrawColor(...border); doc.line(M,y,W-M,y); y+=6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text('SIGNATURES', M, y); y+=8;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('Signature of Investor:', M, y); y+=10;
+    doc.setDrawColor(...navy); doc.line(M,y,M+100,y); y+=5;
+    doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text(`Full name: ${clientName}`, M, y); y+=7;
+    doc.setDrawColor(...navy); doc.line(M,y,M+60,y); y+=5;
+    doc.text('Date: _______________', M, y); y+=12;
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text('For and on behalf of The FSP (Wealthworks Investments (Pty) Ltd):', M, y); y+=10;
+    if (proposal.advisor_signature_type==='draw'&&proposal.advisor_signature_data) {
+      doc.addImage(proposal.advisor_signature_data,'PNG',M,y,50,15); y+=18;
+    } else if (proposal.advisor_signature_type==='type'&&proposal.advisor_signature_data) {
+      doc.setFont('times','italic'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text(proposal.advisor_signature_data, M, y+5); y+=12;
     }
+    doc.setDrawColor(...navy); doc.line(M,y,M+100,y); y+=5;
+    doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text(`Authorised signatory: ${advisorName}`, M, y); y+=7;
+    doc.setDrawColor(...navy); doc.line(M,y,M+60,y); y+=5;
+    doc.text(`Date: ${signDate}`, M, y);
+    addFooter(pageNum);
   }
 
   return doc;
