@@ -210,20 +210,9 @@ export default function ProposalEngine() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Sticky header */}
       <div className="sticky top-0 z-30 flex flex-col shadow-sm">
-        <TopBar advisorName={advisor.name} statusText={localData.reference} />
+        <TopBar advisorName={advisor.name} clientName={localData.client_name} />
 
-        {/* Progress bar */}
-        <div className="bg-navy px-6 py-3">
-          <div className="w-full bg-white/20 rounded-full h-1.5">
-            <div 
-              className="bg-forest h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${(completedSteps.length + 1) * 25}%` }}
-            />
-          </div>
-          <p className="text-white/60 text-[9px] mt-1.5">Step {['client_details', 'recommendations', 'suitability', 'review'].indexOf(activeStep) + 1} of 4</p>
-        </div>
-
-        {/* Step navbar */}
+        {/* Step navbar (includes progress bar) */}
         <StepNavBar
           activeStep={activeStep}
           completedSteps={completedSteps}
