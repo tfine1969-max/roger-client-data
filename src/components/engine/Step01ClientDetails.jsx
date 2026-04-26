@@ -1,6 +1,8 @@
 import React from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_OPTIONS = ['Pending Review', 'In Progress', 'Awaiting Client Signature', 'Signed', 'Sent'];
 
@@ -14,6 +16,9 @@ function Field({ label, value }) {
 }
 
 export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
+  const qc = useQueryClient();
+  const proposalId = data.id;
+
   const isEntity = data.client_type === 'trust' || data.client_type === 'company'
     || data.client_type === 'Trust' || data.client_type === 'Company';
 
@@ -26,9 +31,16 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
   const mandateValue = data.mandate_included !== null && data.mandate_included !== undefined ? data.mandate_included : 'No';
   const displayStatus = data.proposal_status || (data.status === 'new' ? 'Pending Review' : data.status) || '';
 
-  const handleMandateToggle = (value) => {
+  const handleMandateToggle = async (value) => {
+    const outputDocType = value === 'Yes' ? 'Document B' : 'Document A';
     onFieldChange('mandate_included', value);
-    onFieldChange('output_document_type', value === 'Yes' ? 'Document B' : 'Document A');
+    onFieldChange('output_document_type', outputDocType);
+    // Save mandate_included directly to Proposal
+    await base44.entities.Proposal.update(proposalId, {
+      mandate_included: value,
+      output_document_type: outputDocType
+    });
+    qc.invalidateQueries({ queryKey: ['proposal', proposalId] });
   };
 
   const handleStatusChange = (value) => {
