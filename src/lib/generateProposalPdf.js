@@ -51,20 +51,20 @@ function capitalise(s) {
 }
 
 // ─── Header (called on every page after it is created) ────────────────────────
+// Clean white header — logo top-right only, no coloured banner
 function addHeader(doc, logoDataUrl) {
-  doc.setFillColor(...NAVY);
+  // White background strip
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, PW, HEADER_H, 'F');
+  // Thin bottom border line
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(ML, HEADER_H - 0.5, PW - MR, HEADER_H - 0.5);
+  doc.setLineWidth(0.2);
+  // Logo top-right
   if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', PW - MR - 38, 2, 38, 18); } catch (_) {}
+    try { doc.addImage(logoDataUrl, 'PNG', PW - MR - 40, 2, 40, 16); } catch (_) {}
   }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...WHITE);
-  doc.text('Financial Proposal', ML, 10);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6);
-  doc.setTextColor(180, 200, 220);
-  doc.text('Wealth Works (Pty) Ltd  |  FSP 28337  |  Wealthworks Investments (Pty) Ltd  |  FSP 45624', ML, 17);
 }
 
 // ─── Footer (called during final pass over all pages) ─────────────────────────
@@ -126,7 +126,7 @@ function row(doc, label, value, y, indent = 0) {
   doc.text(label, lx, y);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...NAVY);
-  const vStr = value || '—';
+  const vStr = (value !== undefined && value !== null && value !== '') ? value : '—';
   const vLines = doc.splitTextToSize(vStr, CW * 0.52);
   doc.text(vLines, ML + CW, y, { align: 'right' });
   return y + (vLines.length > 1 ? vLines.length * 4.2 : 5);
@@ -256,10 +256,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   // ── Pull financial profile data, checking multiple possible locations ──────
   const oid = proposal.onboarding_import_data || {};
-  const incomeBand      = proposal.gross_annual_income_band      || oid.gross_annual_income_band      || '—';
-  const netWorthBand    = proposal.net_worth_band                || oid.net_worth_band                || '—';
-  const monthlySurplus  = proposal.monthly_investable_surplus    || oid.monthly_investable_surplus    || '—';
-  const liquidityReq    = proposal.client_liquidity_needs        || oid.liquidity_requirement         || '—';
+  const incomeBand      = proposal.annual_income_band            || proposal.gross_annual_income_band      || oid.gross_annual_income_band      || oid.annual_income_band      || 'Not provided';
+  const netWorthBand    = proposal.net_worth_band                || oid.net_worth_band                || 'Not provided';
+  const monthlySurplus  = proposal.monthly_investable_surplus    || oid.monthly_investable_surplus    || 'Not provided';
+  const liquidityReq    = proposal.liquidity_requirement         || proposal.client_liquidity_needs   || oid.liquidity_requirement          || 'Not provided';
   const rawSourceFunds  = proposal.source_of_funds               || oid.source_of_funds               || [];
   const sourceFundsArr  = Array.isArray(rawSourceFunds) ? rawSourceFunds : [String(rawSourceFunds)];
   const sourceFundsStr  = sourceFundsArr.length > 0 ? sourceFundsArr.join(', ') : 'Investment Proceeds';
@@ -269,7 +269,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   const needsArr  = Array.isArray(proposal.needs_array)    ? proposal.needs_array    : [];
   const isEntity  = ['company','trust','Company','Trust'].includes(proposal.client_type);
   const clientTypeLabel = isEntity
-    ? capitalise(proposal.client_type)
+    ? (proposal.client_type.charAt(0).toUpperCase() + proposal.client_type.slice(1).toLowerCase())
     : 'Individual';
 
   // ── Mandate flag ──────────────────────────────────────────────────────────
@@ -281,6 +281,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.setFillColor(...NAVY);
   doc.rect(0, 0, PW, PH, 'F');
 
+  // Logo centred (top section)
   if (logoDataUrl) {
     try { doc.addImage(logoDataUrl, 'PNG', (PW - 80) / 2, 38, 80, 38); } catch (_) {}
   }
@@ -326,8 +327,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(120, 150, 180);
-  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', PW / 2, PH - 12, { align: 'center' });
-  doc.text('This document is confidential and intended solely for the named recipient.', PW / 2, PH - 7, { align: 'center' });
+  doc.text('This document is confidential and intended solely for the named recipient.', PW / 2, PH - 20, { align: 'center' });
 
   // ════════════════════════════════════════════════════════════════════════════
   // PAGES 2–3 — DISCLOSURE
@@ -447,10 +447,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   // ── S4: Financial Profile ─────────────────────────────────────────────────
   y = pb(doc, y, 45, logoDataUrl);
   y = sectionHead(doc, 4, 'Client Financial Profile', y);
-  y = row(doc, 'Annual Income Band',         incomeBand,     y);
-  y = row(doc, 'Net Worth Band',             netWorthBand,   y);
-  y = row(doc, 'Monthly Investable Surplus', monthlySurplus, y);
-  y = row(doc, 'Liquidity Requirements',     liquidityReq,   y);
+  y = row(doc, 'Annual Income Band',         incomeBand     || 'Not provided', y);
+  y = row(doc, 'Net Worth Band',             netWorthBand   || 'Not provided', y);
+  y = row(doc, 'Monthly Investable Surplus', monthlySurplus || 'Not provided', y);
+  y = row(doc, 'Liquidity Requirements',     liquidityReq   || 'Not provided', y);
   y = row(doc, 'Investment Horizon',         orDash(proposal.time_horizon), y);
   y += 2;
 
@@ -795,14 +795,26 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // FINAL PASS — Add header + footer to every page (Fix 1)
-  // Page 1 (cover) gets only the cover footer, not the standard header/footer
+  // FINAL PASS — Add header + footer to every page
+  // Page 1 (cover) gets logo top-right + footer; interior pages get full header + footer
   // ════════════════════════════════════════════════════════════════════════════
   const totalPages = doc.getNumberOfPages();
-  for (let i = 2; i <= totalPages; i++) {
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    addHeader(doc, logoDataUrl);
-    addFooter(doc, i, totalPages);
+    if (i === 1) {
+      // Cover page: only add footer (logo is already centred in body)
+      // Cover footer — white text on navy background
+      const fy = PH - FOOTER_H + 2;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(120, 150, 180);
+      doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', ML, fy + 4);
+      doc.text(`Page ${i} of ${totalPages}`, PW / 2, fy + 4, { align: 'center' });
+      doc.text('Initials: ___________', PW - MR, fy + 4, { align: 'right' });
+    } else {
+      addHeader(doc, logoDataUrl);
+      addFooter(doc, i, totalPages);
+    }
   }
 
   return doc;
