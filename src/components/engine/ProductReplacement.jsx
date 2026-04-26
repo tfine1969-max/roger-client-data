@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-function ReplacementBlock({ block, index, onUpdate, onDelete }) {
+function ReplacementBlock({ block, index, onUpdate, onDelete, investments = [] }) {
   return (
     <div className="border border-ocean/30 rounded-sm p-2.5 bg-ocean/5 space-y-2">
       <div className="flex items-center justify-between mb-1">
@@ -18,36 +19,65 @@ function ReplacementBlock({ block, index, onUpdate, onDelete }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Existing Product Provider</label>
-          <Input
-            type="text"
-            value={block.existing_product_provider || ''}
-            onChange={e => onUpdate(index, 'existing_product_provider', e.target.value)}
-            placeholder="e.g. Discovery, Momentum"
-            className="h-7 text-xs rounded-sm"
-          />
-        </div>
-        <div>
-          <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Existing Product / Policy</label>
-          <Input
-            type="text"
-            value={block.existing_product_type || ''}
-            onChange={e => onUpdate(index, 'existing_product_type', e.target.value)}
-            placeholder="e.g. Life Policy"
-            className="h-7 text-xs rounded-sm"
-          />
-        </div>
-        <div className="col-span-2">
-          <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Policy / Account Number (Optional)</label>
-          <Input
-            type="text"
-            value={block.existing_policy_number || ''}
-            onChange={e => onUpdate(index, 'existing_policy_number', e.target.value)}
-            placeholder="e.g. POL-2024-12345"
-            className="h-7 text-xs rounded-sm"
-          />
-        </div>
+      <div>
+        <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Existing Product Provider</label>
+        <Input
+          type="text"
+          value={block.existing_product_provider || ''}
+          onChange={e => onUpdate(index, 'existing_product_provider', e.target.value)}
+          placeholder="e.g. Discovery, Momentum"
+          className="h-7 text-xs rounded-sm"
+        />
+      </div>
+      <div>
+        <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Existing Product / Policy</label>
+        <Input
+          type="text"
+          value={block.existing_product_type || ''}
+          onChange={e => onUpdate(index, 'existing_product_type', e.target.value)}
+          placeholder="e.g. Life Policy"
+          className="h-7 text-xs rounded-sm"
+        />
+      </div>
+      <div className="col-span-2">
+        <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Policy / Account Number (Optional)</label>
+        <Input
+          type="text"
+          value={block.existing_policy_number || ''}
+          onChange={e => onUpdate(index, 'existing_policy_number', e.target.value)}
+          placeholder="e.g. POL-2024-12345"
+          className="h-7 text-xs rounded-sm"
+        />
+      </div>
+      <div className="col-span-2">
+        <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">New Product Replacing This</label>
+        <Select
+          value={block.replacing_investment_id || ''}
+          onValueChange={(val) => {
+            const inv = investments.find(i => i.id === val);
+            if (inv) {
+              const label = `${inv.provider}${inv.product_type ? ` — ${inv.product_type}` : ''}`;
+              onUpdate(index, 'replacing_investment_id', val);
+              onUpdate(index, 'replacing_investment_label', label);
+            }
+          }}
+        >
+          <SelectTrigger className="h-7 text-xs rounded-sm">
+            <SelectValue placeholder="Select investment" />
+          </SelectTrigger>
+          <SelectContent>
+            {investments.length === 0 ? (
+              <div className="text-xs text-muted-foreground p-2">No investments added yet</div>
+            ) : (
+              investments.map(inv => (
+                <SelectItem key={inv.id} value={inv.id}>
+                  {inv.provider}{inv.product_type ? ` — ${inv.product_type}` : ''}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
         <div className="col-span-2">
           <label className="text-[9px] font-semibold text-navy uppercase tracking-wider block mb-0.5">Reason for Replacement *</label>
           <Textarea
@@ -100,7 +130,7 @@ function ReplacementBlock({ block, index, onUpdate, onDelete }) {
   );
 }
 
-export default function ProductReplacement({ data, onFieldChange }) {
+export default function ProductReplacement({ data, onFieldChange, investments = [] }) {
   const isReplacement = data.is_replacement || false;
   const replacements = data.replacement_products || [];
 
@@ -172,6 +202,7 @@ export default function ProductReplacement({ data, onFieldChange }) {
               index={idx}
               onUpdate={handleUpdateBlock}
               onDelete={handleDeleteBlock}
+              investments={investments}
             />
           ))}
 

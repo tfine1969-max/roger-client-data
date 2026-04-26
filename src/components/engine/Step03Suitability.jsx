@@ -132,7 +132,7 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
       </div>
 
       {/* Product Replacement */}
-      <ProductReplacement data={data} onFieldChange={onFieldChange} />
+      <ProductReplacement data={data} onFieldChange={onFieldChange} investments={investments} />
 
       {/* Personalised Message */}
       <div className="bg-card border border-border rounded-lg p-3">

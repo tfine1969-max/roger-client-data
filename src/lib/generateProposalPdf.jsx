@@ -98,6 +98,48 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     doc.setFontSize(7); doc.setTextColor(...muted); doc.text(label, M, y); y += 8;
   };
 
+  const statusItem = (label) => {
+    roaPb(6); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.setFont('helvetica','normal'); doc.text(`• ${label}`, M, y); y += 5;
+  };
+
+  const spacer = (h) => { y += h; };
+
+  const h3 = (text) => {
+    roaPb(8); doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...ocean);
+    doc.text(text, M, y); y += 5;
+  };
+
+  const table = (rows) => {
+    const colW = [CW * 0.35, CW * 0.65];
+    roaPb(rows.length * 5);
+    rows.forEach((row, idx) => {
+      doc.setFontSize(8); doc.setTextColor(...black);
+      if (idx === 0) { doc.setFont('helvetica','bold'); doc.setTextColor(...navy); }
+      else { doc.setFont('helvetica','normal'); }
+      const label = String(row[0] || '');
+      const value = String(row[1] || '—');
+      doc.text(label, M, y);
+      const lines = doc.splitTextToSize(value, colW[1]);
+      if (lines.length > 1) {
+        doc.text(lines[0], M + colW[0] + 2, y);
+        let lineY = y + 4;
+        for (let i = 1; i < lines.length; i++) {
+          doc.text(lines[i], M + colW[0] + 2, lineY);
+          lineY += 4;
+          y += 4;
+        }
+      } else {
+        doc.text(value, M + colW[0] + 2, y);
+      }
+      y += 5;
+    });
+  };
+
+  const thinRule = () => { roaPb(5); doc.setDrawColor(...border); doc.line(M, y, W-M, y); y += 2; };
+
+  const pb = (needed) => { roaPb(needed); };
+
   // Parse
   const clientName = proposal.client_name || '—';
   const advisorName = proposal.advisor_name || 'Trevor Fine';
@@ -314,13 +356,42 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   });
   y += 2; hRule();
 
-  // Section 11
-  secTitle('11. Replacement of Existing Products');
-  const isReplacement = proposal.is_replacement===true||proposal.is_replacement==='Yes';
-  tickItem('This advice involves the replacement of an existing financial product', isReplacement);
-  tickItem('No existing products are being replaced', !isReplacement);
-  if (isReplacement && proposal.replacement_details) bodyText(proposal.replacement_details);
-  else if (!isReplacement) bodyText('The advice provided does not involve the replacement of any existing financial products. No replacement analysis was required.');
+  // Section 11 — Replacement of Existing Products
+  spacer(8);
+  h3('11. Replacement of Existing Products');
+  spacer(2);
+  const replacementProducts = Array.isArray(proposal.replacement_products) ? proposal.replacement_products : [];
+  const isReplacement = proposal.is_replacement === true || proposal.is_replacement === 'Yes';
+
+  if (!isReplacement || replacementProducts.length === 0) {
+    statusItem('No existing products are being replaced in this recommendation');
+  } else {
+    statusItem('This advice involves the replacement of existing financial products');
+    spacer(4);
+    replacementProducts.forEach((rep, i) => {
+      pb(50);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+      doc.text(`Replacement ${i + 1}`, M, y); y += 6;
+      table([
+        ['Existing Provider', rep.existing_product_provider || '—'],
+        ['Existing Product', rep.existing_product_type || '—'],
+        ...(rep.existing_policy_number ? [['Policy Number', rep.existing_policy_number]] : []),
+        ['Replaced By', rep.replacing_investment_label || '—'],
+        ['Penalties Disclosed', rep.penalties_disclosed ? 'Yes' : 'No'],
+        ['Waiting Periods Disclosed', rep.waiting_periods_disclosed ? 'Yes' : 'No'],
+      ]);
+      if (rep.replacement_reason) {
+        spacer(2);
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...ocean);
+        doc.text('REASON FOR REPLACEMENT', M, y); y += 5;
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+        const lines = doc.splitTextToSize(rep.replacement_reason, CW);
+        lines.forEach(l => { pb(5); doc.text(l, M, y); y += 4.5; });
+        y += 3;
+      }
+      if (i < replacementProducts.length - 1) { spacer(4); thinRule(); spacer(4); }
+    });
+  }
   y += 2; hRule();
 
   // Section 12
