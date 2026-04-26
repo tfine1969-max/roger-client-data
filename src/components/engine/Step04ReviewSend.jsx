@@ -16,12 +16,13 @@ export default function Step04ReviewSend({
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 items-start">
       <div className="space-y-4">
 
-        {/* Attachments | PDF | Signatures */}
-        <div className="grid grid-cols-3 gap-4 items-stretch">
-          {/* Attachments */}
-          <div className="bg-card border border-border rounded-lg p-4">
+        {/* 2x2 grid */}
+        <div className="grid grid-cols-2 gap-6 items-stretch">
+
+          {/* TOP-LEFT: Attachments */}
+          <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
             <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Attachments</h2>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
               {[
                 { type: 'Quote', label: 'Quote PDF', attachment: quoteAttachment },
                 { type: 'Application Form', label: 'Application Form', attachment: formAttachment },
@@ -57,30 +58,47 @@ export default function Step04ReviewSend({
             </div>
           </div>
 
-          {/* PDF */}
-          <div className="bg-card border border-border rounded-lg p-4">
+          {/* TOP-RIGHT: Advisor Signature */}
+          <div className="flex flex-col">
+            <SignaturePad
+              advisorKey={data.advisor_key || 'trevor'}
+              signDate={data.sign_date}
+              onSignDateChange={(date) => onFieldChange('sign_date', date)}
+              onSignatureChange={(sigData, sigType) => {
+                onFieldChange('advisor_signature_data', sigData);
+                onFieldChange('advisor_signature_type', sigType);
+              }}
+              initialData={data.advisor_signature_data}
+              initialType={data.advisor_signature_type}
+            />
+          </div>
+
+          {/* BOTTOM-LEFT: PDF Document */}
+          <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
             <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">PDF Document</h2>
-            {data.proposal_pdf_url ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-green-700" />
-                    <div>
-                      <p className="text-xs font-semibold text-green-900">PDF Generated</p>
-                      <p className="text-[10px] text-green-700">Current version available</p>
+            <div className="flex-1">
+              {data.proposal_pdf_url ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-green-700" />
+                      <div>
+                        <p className="text-xs font-semibold text-green-900">PDF Generated</p>
+                        <p className="text-[10px] text-green-700">Current version available</p>
+                      </div>
                     </div>
+                    <a href={data.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-2 py-1 bg-green-700 text-white rounded-sm text-xs font-medium">
+                      <Download className="w-3 h-3" /> Download
+                    </a>
                   </div>
-                  <a href={data.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-2 py-1 bg-green-700 text-white rounded-sm text-xs font-medium">
-                    <Download className="w-3 h-3" /> Download
-                  </a>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                <p className="text-xs text-blue-900">No PDF generated yet.</p>
-              </div>
-            )}
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                  <p className="text-xs text-blue-900">No PDF generated yet.</p>
+                </div>
+              )}
+            </div>
             <button onClick={onGeneratePdf}
               className="w-full bg-navy hover:bg-ocean text-white py-2 text-xs font-medium uppercase tracking-wide flex items-center justify-center gap-2 rounded-sm">
               <FileText className="w-3.5 h-3.5" />
@@ -88,10 +106,10 @@ export default function Step04ReviewSend({
             </button>
           </div>
 
-          {/* Signatures status + send */}
-          <div className="bg-card border border-border rounded-lg p-4">
+          {/* BOTTOM-RIGHT: Signatures & Distribution */}
+          <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
             <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Signatures & Distribution</h2>
-            <div className="space-y-2 mb-3">
+            <div className="space-y-2 mb-3 flex-1">
               {[
                 { label: 'Advisor signature', signed: !!data.advisor_signature_data },
                 { label: 'Client signature', signed: !!data.client_signature_data },
@@ -117,23 +135,9 @@ export default function Step04ReviewSend({
               <FileSignature className="w-3.5 h-3.5" />
               {isSending ? 'Generating...' : 'Finalise & Get Signing Link'}
             </button>
-            {!hasSig && <p className="text-[10px] text-muted-foreground text-center mt-1">Sign below to proceed</p>}
+            {!hasSig && <p className="text-[10px] text-muted-foreground text-center mt-1">Sign above to proceed</p>}
           </div>
-        </div>
 
-        {/* Advisor Signature */}
-        <div className="bg-card border border-border rounded-lg p-4">
-          <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Advisor Signature</h2>
-          <SignaturePad
-            signatureData={data.advisor_signature_data}
-            signatureType={data.advisor_signature_type}
-            signDate={data.sign_date}
-            onSignatureChange={(sigData, sigType) => {
-              onFieldChange('advisor_signature_data', sigData);
-              onFieldChange('advisor_signature_type', sigType);
-            }}
-            onDateChange={(date) => onFieldChange('sign_date', date)}
-          />
         </div>
       </div>
 
