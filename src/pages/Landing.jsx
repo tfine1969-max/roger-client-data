@@ -55,7 +55,7 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-b from-[#1B3A5C] via-[#e8eef4] to-background flex flex-col">
 
       {/* Navbar */}
-      <nav className="bg-[#1B3A5C] px-6 py-3">
+      <nav className="px-6 py-3" style={{ backgroundColor: 'rgb(38, 84, 124)' }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-white text-xl font-light tracking-widest lowercase">wealthworks</span>
           <img
