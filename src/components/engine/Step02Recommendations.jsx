@@ -4,10 +4,12 @@ import { debounce } from 'lodash';
 import { Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 function ReasonField({ entityId, entityType, initialValue }) {
   const [value, setValue] = useState(initialValue || '');
   const [open, setOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const qc = useQueryClient();
   const save = useCallback(
     debounce(async (v) => {
@@ -22,21 +24,37 @@ function ReasonField({ entityId, entityType, initialValue }) {
     [entityId, entityType]
   );
 
+  const handlePhraseSelect = (phrase) => {
+    const separator = value && !value.trim().endsWith('.') ? '. ' : value ? ' ' : '';
+    const newVal = value + separator + phrase;
+    setValue(newVal);
+    save(newVal);
+  };
+
   return (
     <div className="border-t border-border mt-1.5 pt-1">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1 text-[9px] font-semibold tracking-wider text-muted-foreground uppercase w-full text-left"
-      >
-        <ChevronDown className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-        Reason {value ? '✓' : ''}
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="flex items-center gap-1 text-[9px] font-semibold tracking-wider text-muted-foreground uppercase text-left"
+        >
+          <ChevronDown className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+          Reason {value ? '✓' : ''}
+        </button>
+        <LibraryButton onOpen={() => { setOpen(true); setLibraryOpen(true); }} />
+      </div>
       {open && (
         <textarea
           className="border border-border bg-muted text-[10px] text-foreground w-full outline-none p-1.5 resize-none min-h-[48px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm mt-1"
           value={value}
           onChange={e => { setValue(e.target.value); save(e.target.value); }}
           placeholder="Why is this product recommended for this client..."
+        />
+      )}
+      {libraryOpen && (
+        <PhraseLibrary
+          onSelect={handlePhraseSelect}
+          onClose={() => setLibraryOpen(false)}
         />
       )}
     </div>

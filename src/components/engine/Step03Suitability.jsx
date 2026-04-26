@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
+import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 export default function Step03Suitability({ data, onFieldChange, investments, riskProducts, onNext }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const proposalId = data.id;
+  const [libraryOpen, setLibraryOpen] = useState(false);
+
+  const handlePhraseSelect = (phrase) => {
+    const current = data.personal_message || '';
+    const separator = current && !current.trim().endsWith('.') ? '. ' : current ? ' ' : '';
+    onFieldChange('personal_message', current + separator + phrase);
+  };
 
   const handleDeleteInvestment = async (invId) => {
     if (!window.confirm('Delete this investment?')) return;
@@ -101,13 +109,22 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
 
       {/* Personalised Message */}
       <div className="bg-card border border-border rounded-lg p-3">
-        <h2 className="text-[9px] font-semibold tracking-wider uppercase text-navy mb-1.5">Personalised Message to Client</h2>
+        <div className="flex items-center justify-between mb-1.5">
+          <h2 className="text-[9px] font-semibold tracking-wider uppercase text-navy">Personalised Message to Client</h2>
+          <LibraryButton onOpen={() => setLibraryOpen(true)} />
+        </div>
         <Textarea
           value={data.personal_message || ''}
           onChange={e => onFieldChange('personal_message', e.target.value)}
           placeholder="e.g. Dear A.B., Based on your answers I have prepared the following recommendation..."
           className="rounded-sm min-h-[64px] text-[12px] leading-relaxed"
         />
+        {libraryOpen && (
+          <PhraseLibrary
+            onSelect={handlePhraseSelect}
+            onClose={() => setLibraryOpen(false)}
+          />
+        )}
       </div>
 
       {/* Next */}
