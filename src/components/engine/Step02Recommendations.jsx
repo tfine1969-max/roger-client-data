@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 
 function ReasonField({ entityId, entityType, initialValue }) {
   const [value, setValue] = useState(initialValue || '');
+  const [open, setOpen] = useState(false);
   const qc = useQueryClient();
   const save = useCallback(
     debounce(async (v) => {
@@ -22,14 +23,22 @@ function ReasonField({ entityId, entityType, initialValue }) {
   );
 
   return (
-    <div className="border-t border-border pt-2 mt-2">
-      <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase mb-1">Reason for Recommendation</p>
-      <textarea
-        className="border border-border bg-muted text-[10px] text-foreground w-full outline-none p-1.5 resize-y min-h-[52px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm"
-        value={value}
-        onChange={e => { setValue(e.target.value); save(e.target.value); }}
-        placeholder="Why is this product recommended for this client..."
-      />
+    <div className="border-t border-border mt-1.5 pt-1">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 text-[9px] font-semibold tracking-wider text-muted-foreground uppercase w-full text-left"
+      >
+        <ChevronDown className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        Reason {value ? '✓' : ''}
+      </button>
+      {open && (
+        <textarea
+          className="border border-border bg-muted text-[10px] text-foreground w-full outline-none p-1.5 resize-none min-h-[48px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm mt-1"
+          value={value}
+          onChange={e => { setValue(e.target.value); save(e.target.value); }}
+          placeholder="Why is this product recommended for this client..."
+        />
+      )}
     </div>
   );
 }
@@ -52,41 +61,41 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Investments */}
       <div className="bg-card border border-border overflow-hidden border-t-2 border-t-ocean">
-        <div className="px-3 py-2.5 border-b border-border bg-muted flex items-center justify-between">
+        <div className="px-3 py-2 border-b border-border bg-muted flex items-center justify-between">
           <span className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy">Investments</span>
           <button
             onClick={() => navigate(`/proposal/${proposalId}/add-investment`)}
-            className="flex items-center gap-1 bg-ocean text-white px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide hover:bg-sky transition-colors rounded-sm"
+            className="flex items-center gap-1 bg-ocean text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide hover:bg-sky transition-colors rounded-sm"
           >
             <Plus className="w-3 h-3" /> Add Investment
           </button>
         </div>
-        <div className="p-3">
+        <div className="p-2">
           {investments.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No investments added yet. Click "Add Investment" to begin.</p>
+            <p className="text-xs text-muted-foreground text-center py-3">No investments added yet.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {investments.map((inv) => (
-                <div key={inv.id} className="border border-border rounded-sm p-3 bg-background">
-                  <div className="flex justify-between items-start mb-1">
+                <div key={inv.id} className="border border-border rounded-sm p-2 bg-background">
+                  <div className="flex justify-between items-center mb-0.5">
                     <span className="text-xs font-semibold text-navy">{inv.provider}</span>
                     <div className="flex items-center gap-1">
                       <span className="text-[9px] text-muted-foreground">{inv.jurisdiction} · {inv.currency}</span>
                       <button onClick={() => navigate(`/proposal/${proposalId}/investment/${inv.id}`)}
                         className="p-0.5 text-muted-foreground hover:text-ocean transition-colors ml-1">
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-2.5 h-2.5" />
                       </button>
                       <button onClick={() => handleDeleteInvestment(inv.id)}
                         className="p-0.5 text-muted-foreground hover:text-danger transition-colors">
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   </div>
-                  <div className="text-[10px] text-muted-foreground mb-1">{inv.product_type}</div>
-                  <div className="space-y-0.5 text-[10px]">
+                  {inv.product_type && <div className="text-[9px] text-muted-foreground mb-1">{inv.product_type}</div>}
+                  <div className="space-y-px text-[9px]">
                     {inv.amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Lump sum</span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></div>}
                     {inv.recurring_amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Recurring</span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></div>}
                     {inv.initial_fee_percent > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
@@ -105,38 +114,38 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
 
       {/* Risk Products */}
       <div className="bg-card border border-border overflow-hidden border-t-2 border-t-teal">
-        <div className="px-3 py-2.5 border-b border-border bg-muted flex items-center justify-between">
+        <div className="px-3 py-2 border-b border-border bg-muted flex items-center justify-between">
           <span className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy">Risk Products</span>
           <button
             onClick={() => navigate(`/proposal/${proposalId}/add-risk-product`)}
-            className="flex items-center gap-1 bg-teal text-white px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide hover:bg-teal/80 transition-colors rounded-sm"
+            className="flex items-center gap-1 bg-teal text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide hover:bg-teal/80 transition-colors rounded-sm"
           >
             <Plus className="w-3 h-3" /> Add Risk Product
           </button>
         </div>
-        <div className="p-3">
+        <div className="p-2">
           {riskProducts.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No risk products added yet. Click "Add Risk Product" to begin.</p>
+            <p className="text-xs text-muted-foreground text-center py-3">No risk products added yet.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {riskProducts.map((rp) => (
-                <div key={rp.id} className="border border-border rounded-sm p-3 bg-background">
-                  <div className="flex justify-between items-start mb-1.5">
+                <div key={rp.id} className="border border-border rounded-sm p-2 bg-background">
+                  <div className="flex justify-between items-center mb-1">
                     <span className="text-xs font-semibold text-navy">{rp.provider}</span>
                     <div className="flex items-center gap-1">
                       <button onClick={() => navigate(`/proposal/${proposalId}/risk-product/${rp.id}`)}
                         className="p-0.5 text-muted-foreground hover:text-ocean transition-colors">
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-2.5 h-2.5" />
                       </button>
                       <button onClick={() => handleDeleteRisk(rp.id)}
                         className="p-0.5 text-muted-foreground hover:text-danger transition-colors">
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-px">
                     {(rp._covers || []).map((cover, ci) => (
-                      <div key={ci} className="flex justify-between text-[10px]">
+                      <div key={ci} className="flex justify-between text-[9px]">
                         <span className="text-muted-foreground">{cover.cover_type}</span>
                         <div className="text-right">
                           {cover.amount_required > 0 && <div className="font-medium text-navy">R {Number(cover.amount_required).toLocaleString('en-ZA')}</div>}
@@ -146,7 +155,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                     ))}
                   </div>
                   {rp.total_premium > 0 && (
-                    <div className="flex justify-between text-[10px] font-semibold text-teal pt-1.5 border-t border-border mt-1.5">
+                    <div className="flex justify-between text-[9px] font-semibold text-teal pt-1 border-t border-border mt-1">
                       <span>Total pm</span>
                       <span>R {Number(rp.total_premium).toLocaleString('en-ZA')}</span>
                     </div>
@@ -162,7 +171,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
       {/* Next */}
       <button
         onClick={onNext}
-        className="w-full bg-navy text-white py-3.5 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
+        className="w-full bg-navy text-white py-3 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
         Next: Review →
       </button>
