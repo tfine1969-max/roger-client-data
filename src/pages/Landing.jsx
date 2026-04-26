@@ -60,8 +60,7 @@ export default function Landing() {
           <img
             src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
             alt="WealthWorks"
-            className="brightness-0 invert"
-            style={{ width: '160px', background: 'transparent' }}
+            style={{ width: '160px', mixBlendMode: 'screen', background: 'transparent' }}
           />
         </div>
       </nav>
@@ -73,7 +72,7 @@ export default function Landing() {
             src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
             alt="WealthWorks"
             className="mx-auto mb-5"
-            style={{ width: '220px', background: 'transparent' }}
+            style={{ width: '220px', mixBlendMode: 'multiply', background: 'transparent' }}
           />
           <h1 className="text-3xl md:text-4xl font-bold text-navy mb-2 leading-tight">
             WealthWorks Advisory Portal
