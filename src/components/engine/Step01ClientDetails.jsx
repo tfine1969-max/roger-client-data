@@ -1,8 +1,6 @@
 import React from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_OPTIONS = ['Pending Review', 'In Progress', 'Awaiting Client Signature', 'Signed', 'Sent'];
 
@@ -16,9 +14,6 @@ function Field({ label, value }) {
 }
 
 export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
-  const qc = useQueryClient();
-  const proposalId = data.id;
-
   const isEntity = data.client_type === 'trust' || data.client_type === 'company'
     || data.client_type === 'Trust' || data.client_type === 'Company';
 
@@ -28,19 +23,23 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
     ? 'Company Reg No.'
     : 'ID Number';
 
-  const mandateValue = data.mandate_included !== null && data.mandate_included !== undefined ? data.mandate_included : 'No';
   const displayStatus = data.proposal_status || (data.status === 'new' ? 'Pending Review' : data.status) || '';
 
   const handleStatusChange = (value) => {
-    const statusMap = { 'Pending Review': 'new', 'In Progress': 'in_progress', 'Awaiting Client Signature': 'in_progress', 'Signed': 'signed', 'Sent': 'sent' };
+    const statusMap = {
+      'Pending Review': 'new',
+      'In Progress': 'in_progress',
+      'Awaiting Client Signature': 'in_progress',
+      'Signed': 'signed',
+      'Sent': 'sent',
+    };
     onFieldChange('proposal_status', value);
     onFieldChange('status', statusMap[value] || 'new');
   };
 
-
-
   return (
     <div className="max-w-3xl mx-auto space-y-4">
+
       {/* Client Summary */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="px-4 py-2.5 bg-muted border-b border-border flex items-center justify-between">
@@ -80,13 +79,15 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-      {/* Advisor / Mandate Status (Read-Only) / Status */}
+      {/* Advisor / Status */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Advisor</label>
             <Select value={data.advisor_name || ''} onValueChange={v => onFieldChange('advisor_name', v)}>
-              <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select advisor" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs rounded-sm">
+                <SelectValue placeholder="Select advisor" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Trevor Fine">Trevor Fine</SelectItem>
                 <SelectItem value="Roger Eskinazi">Roger Eskinazi</SelectItem>
@@ -95,20 +96,11 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
             </Select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Mandate Status</label>
-            <div className="flex items-center">
-              {mandateValue === 'Yes' ? (
-                <span className="inline-block px-3 h-8 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-sm">✓ Mandate Included — Doc B</span>
-              ) : (
-                <span className="inline-block px-3 h-8 py-1.5 text-xs font-semibold text-muted-foreground bg-muted rounded-sm">No Mandate — Doc A</span>
-              )}
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Mandate status is set automatically when investments are added in Step 02</p>
-          </div>
-          <div>
             <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Status</label>
             <Select value={displayStatus} onValueChange={handleStatusChange}>
-              <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs rounded-sm">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
@@ -117,10 +109,6 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-
-
-      {/* Next button */}
-
       {/* Next button */}
       <button
         onClick={onNext}
@@ -128,6 +116,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
       >
         Next: Add Recommendations →
       </button>
+
     </div>
   );
 }
