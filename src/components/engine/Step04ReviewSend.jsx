@@ -22,39 +22,102 @@ export default function Step04ReviewSend({
           {/* TOP-LEFT: Attachments */}
           <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
             <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Attachments</h2>
-            <div className="space-y-3 flex-1">
-              {[
-                { type: 'Quote', label: 'Quote PDF', attachment: quoteAttachment },
-                { type: 'Application Form', label: 'Application Form', attachment: formAttachment },
-              ].map(({ type, label, attachment }) => (
-                <div key={type}>
-                  <p className="text-[10px] font-semibold text-navy uppercase tracking-wide mb-1">{label}</p>
-                  <div className="border-2 border-dashed border-border rounded flex items-center justify-between px-3 h-10 hover:border-ocean transition-colors">
-                    {attachment ? (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-3.5 h-3.5 text-ocean" />
-                          <span className="text-xs font-medium text-navy">Attached</span>
+            <div className="space-y-4 flex-1 overflow-y-auto max-h-[420px]">
+              {/* One section per investment */}
+              {investments.map((inv) => {
+                const providerLabel = `${inv.provider}${inv.product_type ? ` — ${inv.product_type}` : ''}`;
+                const quoteKey = `Quote::${inv.id}`;
+                const formKey = `Application Form::${inv.id}`;
+                const quoteAtt = attachments.find(a => a.attachment_type === quoteKey);
+                const formAtt = attachments.find(a => a.attachment_type === formKey);
+                return (
+                  <div key={inv.id} className="space-y-2">
+                    <p className="text-[10px] font-bold text-ocean uppercase tracking-wider border-b border-border pb-1">{providerLabel}</p>
+                    {[
+                      { type: quoteKey, label: 'Quote PDF', attachment: quoteAtt },
+                      { type: formKey, label: 'Application Form', attachment: formAtt },
+                    ].map(({ type, label, attachment }) => (
+                      <div key={type}>
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">{label}</p>
+                        <div className="border-2 border-dashed border-border rounded flex items-center justify-between px-3 h-9 hover:border-ocean transition-colors">
+                          {attachment ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-3 h-3 text-ocean" />
+                                <span className="text-xs font-medium text-navy">Attached</span>
+                              </div>
+                              <a href={attachment.file_url} target="_blank" rel="noopener noreferrer"
+                                className="text-xs text-ocean hover:underline">Download</a>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Upload className="w-3 h-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">No file</span>
+                              </div>
+                              <label className="text-xs text-ocean hover:underline font-medium cursor-pointer">
+                                Upload
+                                <input type="file" accept=".pdf" className="hidden"
+                                  onChange={e => onAttachmentUpload(e, type)} />
+                              </label>
+                            </>
+                          )}
                         </div>
-                        <a href={attachment.file_url} target="_blank" rel="noopener noreferrer"
-                          className="text-xs text-ocean hover:underline">Download</a>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <Upload className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">No file</span>
-                        </div>
-                        <label className="text-xs text-ocean hover:underline font-medium cursor-pointer">
-                          Upload
-                          <input type="file" accept=".pdf" className="hidden"
-                            onChange={e => onAttachmentUpload(e, type)} />
-                        </label>
-                      </>
-                    )}
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+              {/* One section per risk product */}
+              {riskProducts.map((rp) => {
+                const providerLabel = `${rp.provider}${(rp._covers || []).length ? ` — ${rp._covers.map(c => c.cover_type).join(', ')}` : ''}`;
+                const quoteKey = `Quote::${rp.id}`;
+                const formKey = `Application Form::${rp.id}`;
+                const quoteAtt = attachments.find(a => a.attachment_type === quoteKey);
+                const formAtt = attachments.find(a => a.attachment_type === formKey);
+                return (
+                  <div key={rp.id} className="space-y-2">
+                    <p className="text-[10px] font-bold text-teal uppercase tracking-wider border-b border-border pb-1">{providerLabel}</p>
+                    {[
+                      { type: quoteKey, label: 'Quote PDF', attachment: quoteAtt },
+                      { type: formKey, label: 'Application Form', attachment: formAtt },
+                    ].map(({ type, label, attachment }) => (
+                      <div key={type}>
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">{label}</p>
+                        <div className="border-2 border-dashed border-border rounded flex items-center justify-between px-3 h-9 hover:border-ocean transition-colors">
+                          {attachment ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-3 h-3 text-ocean" />
+                                <span className="text-xs font-medium text-navy">Attached</span>
+                              </div>
+                              <a href={attachment.file_url} target="_blank" rel="noopener noreferrer"
+                                className="text-xs text-ocean hover:underline">Download</a>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Upload className="w-3 h-3 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">No file</span>
+                              </div>
+                              <label className="text-xs text-ocean hover:underline font-medium cursor-pointer">
+                                Upload
+                                <input type="file" accept=".pdf" className="hidden"
+                                  onChange={e => onAttachmentUpload(e, type)} />
+                              </label>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+
+              {investments.length === 0 && riskProducts.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">No products added yet.</p>
+              )}
             </div>
           </div>
 
