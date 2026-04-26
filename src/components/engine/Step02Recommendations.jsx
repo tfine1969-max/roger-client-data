@@ -110,25 +110,13 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
     qc.invalidateQueries({ queryKey: ['allRiskCovers', proposalId] });
   };
 
+  // Run auto-detection on Step 02 load with all current investments
   useEffect(() => {
-    if (investments.length > 0) {
-      updateProductTypes(investments, proposalId);
-    }
+    updateProductTypes(investments, proposalId);
   }, [investments, proposalId]);
-
-  const mandateIncluded = qc.getQueryData(['proposal', proposalId])?.mandate_included === 'Yes';
-  const noAnnexures = !qc.getQueryData(['proposal', proposalId])?.include_annexure_A &&
-    !qc.getQueryData(['proposal', proposalId])?.include_annexure_B &&
-    !qc.getQueryData(['proposal', proposalId])?.include_annexure_C;
-  const showMandateWarning = mandateIncluded && noAnnexures;
 
   return (
     <div className="space-y-3">
-      {showMandateWarning && (
-        <div className="bg-warn/10 border border-warn text-warn p-3 rounded-sm text-[11px] font-medium">
-          ⚠ At least one annexure must be included. Please ensure product types are correctly set.
-        </div>
-      )}
       {/* Investments */}
       <div className="bg-card border border-border overflow-hidden border-t-2 border-t-ocean">
         <div className="px-3 py-2 border-b border-border bg-muted flex items-center justify-between">

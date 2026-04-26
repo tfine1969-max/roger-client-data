@@ -38,6 +38,9 @@ export default function Step04ReviewSend({
 }) {
   const hasSig = !!data.advisor_signature_data;
   const hasPdf = !!data.proposal_pdf_url;
+  const mandateIncluded = data.mandate_included === 'Yes';
+  const noAnnexures = !data.include_annexure_A && !data.include_annexure_B && !data.include_annexure_C;
+  const showMandateWarning = mandateIncluded && noAnnexures;
 
   // Track whether products changed after last PDF generation
   const [pdfFingerprint, setPdfFingerprint] = useState(() =>
@@ -192,6 +195,14 @@ export default function Step04ReviewSend({
       {/* BOTTOM-RIGHT: PDF Document */}
       <div className="bg-card border border-border rounded-lg p-3 flex flex-col">
         <h2 className="text-[9px] font-bold text-navy uppercase tracking-wider mb-2">PDF Document</h2>
+
+        {showMandateWarning && (
+          <div className="p-2 bg-amber-50 border border-amber-200 rounded-sm flex items-start gap-1.5 mb-2">
+            <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-[9px] text-amber-800">At least one annexure must be included. Please ensure product types are correctly set.</p>
+          </div>
+        )}
+
         <div className="flex-1">
           {pdfOutdated ? (
             <div className="flex items-start gap-2 bg-amber-50 border border-amber-300 rounded-sm px-2.5 py-2 mb-2">
