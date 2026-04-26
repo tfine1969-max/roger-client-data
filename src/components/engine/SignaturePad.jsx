@@ -157,8 +157,8 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
             <canvas
               ref={canvasRef}
               width={800}
-              height={90}
-              className="block w-full h-[90px] cursor-crosshair touch-none bg-white"
+              height={70}
+              className="block w-full h-[70px] cursor-crosshair touch-none bg-white"
             />
           ) : (
             <input

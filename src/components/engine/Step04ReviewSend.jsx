@@ -37,61 +37,57 @@ function AttachmentRow({ type, label, attachment, onAttachmentUpload }) {
 export default function Step04ReviewSend({
   data, investments, riskProducts, attachments,
   onGeneratePdf, onSend, onAttachmentUpload, onFieldChange,
-  isSending,
+  isSending, proposalId,
 }) {
   const hasSig = !!data.advisor_signature_data;
+  const signingLink = data.status === 'sent' && proposalId
+    ? `${window.location.origin}/sign?id=${proposalId}`
+    : null;
 
   return (
     <div className="space-y-4">
-      {/* 2x2 grid */}
-      <div className="grid grid-cols-2 gap-6 items-stretch">
+      {/* Row 1: Attachments (left) | Advisor Signature (right) */}
+      <div className="grid grid-cols-2 gap-6">
 
-        {/* TOP-LEFT: Attachments */}
+        {/* LEFT: Attachments */}
         <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
           <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Attachments</h2>
-          <div className="space-y-4 flex-1 overflow-y-auto max-h-[420px]">
-
+          <div className="space-y-3 overflow-y-auto max-h-[280px]">
             {investments.map((inv) => {
               const providerLabel = `${inv.provider}${inv.product_type ? ` — ${inv.product_type}` : ''}`;
               const quoteKey = `Quote::${inv.id}`;
               const formKey = `Application Form::${inv.id}`;
-              const quoteAtt = attachments.find(a => a.attachment_type === quoteKey);
-              const formAtt = attachments.find(a => a.attachment_type === formKey);
               return (
                 <div key={inv.id} className="space-y-2">
                   <p className="text-[10px] font-bold text-ocean uppercase tracking-wider border-b border-border pb-1">{providerLabel}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <AttachmentRow type={quoteKey} label="Quote PDF" attachment={quoteAtt} onAttachmentUpload={onAttachmentUpload} />
-                    <AttachmentRow type={formKey} label="Application Form" attachment={formAtt} onAttachmentUpload={onAttachmentUpload} />
+                    <AttachmentRow type={quoteKey} label="Quote PDF" attachment={attachments.find(a => a.attachment_type === quoteKey)} onAttachmentUpload={onAttachmentUpload} />
+                    <AttachmentRow type={formKey} label="Application Form" attachment={attachments.find(a => a.attachment_type === formKey)} onAttachmentUpload={onAttachmentUpload} />
                   </div>
                 </div>
               );
             })}
-
             {riskProducts.map((rp) => {
               const providerLabel = `${rp.provider}${(rp._covers || []).length ? ` — ${rp._covers.map(c => c.cover_type).join(', ')}` : ''}`;
               const quoteKey = `Quote::${rp.id}`;
               const formKey = `Application Form::${rp.id}`;
-              const quoteAtt = attachments.find(a => a.attachment_type === quoteKey);
-              const formAtt = attachments.find(a => a.attachment_type === formKey);
               return (
                 <div key={rp.id} className="space-y-2">
                   <p className="text-[10px] font-bold text-teal uppercase tracking-wider border-b border-border pb-1">{providerLabel}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <AttachmentRow type={quoteKey} label="Quote PDF" attachment={quoteAtt} onAttachmentUpload={onAttachmentUpload} />
-                    <AttachmentRow type={formKey} label="Application Form" attachment={formAtt} onAttachmentUpload={onAttachmentUpload} />
+                    <AttachmentRow type={quoteKey} label="Quote PDF" attachment={attachments.find(a => a.attachment_type === quoteKey)} onAttachmentUpload={onAttachmentUpload} />
+                    <AttachmentRow type={formKey} label="Application Form" attachment={attachments.find(a => a.attachment_type === formKey)} onAttachmentUpload={onAttachmentUpload} />
                   </div>
                 </div>
               );
             })}
-
             {investments.length === 0 && riskProducts.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-4">No products added yet.</p>
             )}
           </div>
         </div>
 
-        {/* TOP-RIGHT: Advisor Signature */}
+        {/* RIGHT: Advisor Signature */}
         <div className="flex flex-col">
           <SignaturePad
             advisorKey={data.advisor_key || 'trevor'}
@@ -106,7 +102,62 @@ export default function Step04ReviewSend({
           />
         </div>
 
-        {/* BOTTOM-LEFT: PDF Document */}
+      </div>
+
+      {/* Row 2: Signatures & Distribution (left) | PDF Document (right) */}
+      <div className="grid grid-cols-2 gap-6">
+
+        {/* LEFT: Signatures & Distribution */}
+        <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
+          <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Signatures & Distribution</h2>
+          <div className="space-y-2 mb-3 flex-1">
+            {[
+              { label: 'Advisor signature', signed: !!data.advisor_signature_data },
+              { label: 'Client signature', signed: !!data.client_signature_data },
+            ].map(({ label, signed }) => (
+              <div key={label} className="flex items-center justify-between p-2 bg-muted/50 rounded-sm">
+                <div className="flex items-center gap-2">
+                  {signed ? <CheckCircle2 className="w-3.5 h-3.5 text-teal" /> : <div className="w-3.5 h-3.5 rounded-full border-2 border-border" />}
+                  <span className="text-xs text-navy font-medium">{label}</span>
+                </div>
+                <span className={`text-[10px] font-semibold ${signed ? 'text-teal' : 'text-muted-foreground'}`}>
+                  {signed ? 'Signed' : 'Pending'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={onSend}
+            disabled={!hasSig || isSending}
+            className={`w-full py-2 text-xs font-medium uppercase tracking-wide flex items-center justify-center gap-2 rounded-sm transition-colors ${
+              hasSig ? 'bg-gold text-white hover:bg-gold/90' : 'bg-muted-foreground/20 text-muted-foreground cursor-not-allowed'
+            }`}
+          >
+            <FileSignature className="w-3.5 h-3.5" />
+            {isSending ? 'Generating...' : 'Finalise & Get Signing Link'}
+          </button>
+          {!hasSig && <p className="text-[10px] text-muted-foreground text-center mt-1">Sign above to proceed</p>}
+          {signingLink && (
+            <div className="mt-3 p-2.5 bg-green-50 border border-green-200 rounded-sm">
+              <p className="text-[9px] font-semibold text-green-800 uppercase tracking-wide mb-1">Client Signing Link</p>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={signingLink}
+                  className="flex-1 text-[10px] text-navy bg-white border border-border px-2 py-1 rounded-sm outline-none truncate"
+                />
+                <button
+                  onClick={() => navigator.clipboard.writeText(signingLink)}
+                  className="text-[10px] px-2 py-1 bg-navy text-white rounded-sm whitespace-nowrap"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: PDF Document */}
         <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
           <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">PDF Document</h2>
           <div className="flex-1">
@@ -137,38 +188,6 @@ export default function Step04ReviewSend({
             <FileText className="w-3.5 h-3.5" />
             {data.proposal_pdf_url ? 'Regenerate PDF' : 'Generate PDF'}
           </button>
-        </div>
-
-        {/* BOTTOM-RIGHT: Signatures & Distribution */}
-        <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
-          <h2 className="text-xs font-bold text-navy uppercase tracking-wider mb-3">Signatures & Distribution</h2>
-          <div className="space-y-2 mb-3 flex-1">
-            {[
-              { label: 'Advisor signature', signed: !!data.advisor_signature_data },
-              { label: 'Client signature', signed: !!data.client_signature_data },
-            ].map(({ label, signed }) => (
-              <div key={label} className="flex items-center justify-between p-2 bg-muted/50 rounded-sm">
-                <div className="flex items-center gap-2">
-                  {signed ? <CheckCircle2 className="w-3.5 h-3.5 text-teal" /> : <div className="w-3.5 h-3.5 rounded-full border-2 border-border" />}
-                  <span className="text-xs text-navy font-medium">{label}</span>
-                </div>
-                <span className={`text-[10px] font-semibold ${signed ? 'text-teal' : 'text-muted-foreground'}`}>
-                  {signed ? 'Signed' : 'Pending'}
-                </span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={onSend}
-            disabled={!hasSig || isSending}
-            className={`w-full py-2 text-xs font-medium uppercase tracking-wide flex items-center justify-center gap-2 rounded-sm transition-colors ${
-              hasSig ? 'bg-gold text-white hover:bg-gold/90' : 'bg-muted-foreground/20 text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            <FileSignature className="w-3.5 h-3.5" />
-            {isSending ? 'Generating...' : 'Finalise & Get Signing Link'}
-          </button>
-          {!hasSig && <p className="text-[10px] text-muted-foreground text-center mt-1">Sign above to proceed</p>}
         </div>
 
       </div>

@@ -281,6 +281,7 @@ export default function ProposalEngine() {
             onAttachmentUpload={handleAttachmentUpload}
             onFieldChange={handleFieldChange}
             isSending={isSending}
+            proposalId={id}
           />
         )}
       </div>
