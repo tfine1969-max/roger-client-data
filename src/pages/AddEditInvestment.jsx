@@ -1,4 +1,3 @@
-// v2
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -11,214 +10,76 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
 
-// ── PROVIDER / PRODUCT MAP ────────────────────────────────────────────────────
 const PROVIDER_MAP = {
   Local: {
-    'Allan Gray': {
-      products: [
-        'Unit Trust / Discretionary Investment',
-        'Endowment',
-        'Retirement Annuity',
-        'Living Annuity',
-        'Preservation Fund',
-      ],
-    },
-    'Glacier by Sanlam': {
-      products: [
-        'Unit Trust / LISP Platform',
-        'Endowment',
-        'Retirement Annuity',
-        'Living Annuity',
-        'Preservation Fund',
-        'Tax-Free Investment',
-      ],
-    },
-    'Momentum Wealth': {
-      products: [
-        'Unit Trust / LISP Platform',
-        'Endowment',
-        'Retirement Annuity',
-        'Living Annuity',
-        'Preservation Fund',
-        'Tax-Free Investment',
-      ],
-    },
-    'Prime Investments': {
-      products: [
-        'Discretionary Investment',
-        'Endowment',
-      ],
-    },
+    'Allan Gray': { products: ['Unit Trust / Discretionary Investment','Endowment','Retirement Annuity','Living Annuity','Preservation Fund'] },
+    'Glacier by Sanlam': { products: ['Unit Trust / LISP Platform','Endowment','Retirement Annuity','Living Annuity','Preservation Fund','Tax-Free Investment'] },
+    'Momentum Wealth': { products: ['Unit Trust / LISP Platform','Endowment','Retirement Annuity','Living Annuity','Preservation Fund','Tax-Free Investment'] },
+    'Prime Investments': { products: ['Discretionary Investment','Endowment'] },
   },
   Offshore: {
-    'Allan Gray': {
-      products: [
-        'Offshore Unit Trust',
-        'Offshore Investment Platform',
-        'Offshore Discretionary Investment',
-      ],
-    },
-    'Credo': {
-      products: [
-        'Offshore Investment Platform',
-        'Offshore Discretionary Portfolio',
-        'Offshore Share Portfolio',
-        'Offshore Model Portfolio',
-      ],
-    },
-    'Glacier International': {
-      products: [
-        'Offshore Investment Platform',
-        'Offshore Investment Bond',
-        'Offshore Endowment',
-        'Offshore Discretionary Portfolio',
-        'Offshore Model Portfolio',
-      ],
-    },
-    'Julius Baer': {
-      products: [
-        'Offshore Discretionary Portfolio',
-        'Offshore Model Portfolio',
-        'Offshore Share Portfolio',
-      ],
-    },
-    'Momentum Wealth International': {
-      products: [
-        'Offshore Investment Platform',
-        'Offshore Discretionary Portfolio',
-      ],
-    },
+    'Allan Gray': { products: ['Offshore Unit Trust','Offshore Investment Platform','Offshore Discretionary Investment'] },
+    'Credo': { products: ['Offshore Investment Platform','Offshore Discretionary Portfolio','Offshore Share Portfolio','Offshore Model Portfolio'] },
+    'Glacier International': { products: ['Offshore Investment Platform','Offshore Investment Bond','Offshore Endowment','Offshore Discretionary Portfolio','Offshore Model Portfolio'] },
+    'Julius Baer': { products: ['Offshore Discretionary Portfolio','Offshore Model Portfolio','Offshore Share Portfolio'] },
+    'Momentum Wealth International': { products: ['Offshore Investment Platform','Offshore Discretionary Portfolio'] },
   },
 };
 
-// ── FUND LISTS — global per jurisdiction ──────────────────────────────────────
 const LOCAL_FUNDS = [
-  'Allan Gray - Orbis Global Balanced Feeder Fund',
-  'Allan Gray - Orbis Global Equity Feeder Fund',
-  'Allan Gray Balanced Fund',
-  'Allan Gray Equity Fund',
-  'Allan Gray Money Market Fund',
-  'Allan Gray Stable Fund',
-  'Allan Gray Tax-Free Balanced Fund',
-  'Allan Gray Tax-Free Balanced Fund (Class A)',
-  'Full Withdrawal Holding Fund',
-  'Partial Withdrawal Holding Fund',
-  'Coronation Balanced Defensive Fund (Class P)',
-  'Coronation Balanced Plus Fund (Class P)',
-  'Coronation Capital Plus Fund (Class P)',
-  'Coronation Global Managed [ZAR] Feeder Fund (Class P)',
-  'Coronation Global Opportunities Equity [ZAR] Feeder Fund (Class P)',
-  'Coronation Strategic Income Fund (Class P)',
-  'Foord Balanced Fund (Class B2)',
-  'Foord Equity Fund (Class B2)',
-  'Foord International Feeder Fund (Class B2)',
-  'M&G Balanced Fund (Class B)',
-  'M&G Dividend Maximiser Fund (Class B)',
-  'M&G Equity Fund (Class B)',
-  'M&G Inflation Plus Fund (Class B)',
-  'Nedgroup Investments Stable Fund (Class A)',
-  'Nedgroup Investments Stable Fund (Class A2)',
-  'Ninety One Cautious Managed Fund (Class H)',
-  'Ninety One Diversified Income Fund (Class H)',
-  'Ninety One Equity Fund (Class E)',
-  'Ninety One Global Franchise Feeder Fund (Class H)',
-  'Ninety One Value Fund (Class H)',
-  'Old Mutual Global Equity Fund (Class B1)',
-  'Prescient Income Provider Fund (Class A2)',
-  'STANLIB Property Income Fund (Class C3)',
-  'Satrix ALSI Index Fund (Class B1)',
-  'Satrix MSCI World Index Fund (Class B2)',
-  'Wealthworks Prime Cautious Fund of Funds (Class A)',
-  'Wealthworks Prime Managed Fund of Funds (Class A)',
+  'Allan Gray - Orbis Global Balanced Feeder Fund','Allan Gray - Orbis Global Equity Feeder Fund',
+  'Allan Gray Balanced Fund','Allan Gray Equity Fund','Allan Gray Money Market Fund','Allan Gray Stable Fund',
+  'Allan Gray Tax-Free Balanced Fund','Allan Gray Tax-Free Balanced Fund (Class A)',
+  'Full Withdrawal Holding Fund','Partial Withdrawal Holding Fund',
+  'Coronation Balanced Defensive Fund (Class P)','Coronation Balanced Plus Fund (Class P)',
+  'Coronation Capital Plus Fund (Class P)','Coronation Global Managed [ZAR] Feeder Fund (Class P)',
+  'Coronation Global Opportunities Equity [ZAR] Feeder Fund (Class P)','Coronation Strategic Income Fund (Class P)',
+  'Foord Balanced Fund (Class B2)','Foord Equity Fund (Class B2)','Foord International Feeder Fund (Class B2)',
+  'M&G Balanced Fund (Class B)','M&G Dividend Maximiser Fund (Class B)','M&G Equity Fund (Class B)','M&G Inflation Plus Fund (Class B)',
+  'Nedgroup Investments Stable Fund (Class A)','Nedgroup Investments Stable Fund (Class A2)',
+  'Ninety One Cautious Managed Fund (Class H)','Ninety One Diversified Income Fund (Class H)',
+  'Ninety One Equity Fund (Class E)','Ninety One Global Franchise Feeder Fund (Class H)','Ninety One Value Fund (Class H)',
+  'Old Mutual Global Equity Fund (Class B1)','Prescient Income Provider Fund (Class A2)',
+  'STANLIB Property Income Fund (Class C3)','Satrix ALSI Index Fund (Class B1)','Satrix MSCI World Index Fund (Class B2)',
+  'Wealthworks Prime Cautious Fund of Funds (Class A)','Wealthworks Prime Managed Fund of Funds (Class A)',
 ];
 
 const OFFSHORE_FUNDS = [
-  'Allan Gray Money Market Fund (ZAR)',
-  'Orbis Global Equity Fund (USD) (Class RRFA)',
-  'Orbis Optimal SA Fund (EUR) (Class A)',
-  'Orbis Optimal SA Fund (USD) (Class A)',
-  'Orbis SICAV Emerging Markets Equity Fund (USD) (Class RRFA)',
-  'Orbis SICAV Global Balanced Fund (USD) (Class RRFA)',
-  'Orbis SICAV Global Cautious Fund (USD) (Class RRFC)',
-  'Orbis SICAV Japan Equity Fund (JPY) (Class RRFA)',
-  'Allan Gray Africa Bond Fund (USD) (Class C)',
-  'Allan Gray Africa ex-SA Equity Fund (USD) (Class C)',
-  'Allan Gray Frontier Markets Equity Fund (USD) (Class C)',
-  'Allan Gray Australia Balanced Fund (AUD)',
-  'Allan Gray Australia Equity Fund (AUD) (Class A)',
-  'Allan Gray Australia Stable Fund (AUD)',
+  'Allan Gray Money Market Fund (ZAR)','Orbis Global Equity Fund (USD) (Class RRFA)',
+  'Orbis Optimal SA Fund (EUR) (Class A)','Orbis Optimal SA Fund (USD) (Class A)',
+  'Orbis SICAV Emerging Markets Equity Fund (USD) (Class RRFA)','Orbis SICAV Global Balanced Fund (USD) (Class RRFA)',
+  'Orbis SICAV Global Cautious Fund (USD) (Class RRFC)','Orbis SICAV Japan Equity Fund (JPY) (Class RRFA)',
+  'Allan Gray Africa Bond Fund (USD) (Class C)','Allan Gray Africa ex-SA Equity Fund (USD) (Class C)',
+  'Allan Gray Frontier Markets Equity Fund (USD) (Class C)','Allan Gray Australia Balanced Fund (AUD)',
+  'Allan Gray Australia Equity Fund (AUD) (Class A)','Allan Gray Australia Stable Fund (AUD)',
   'Artisan Global Value Fund (USD) (Class I)',
   'Baillie Gifford Worldwide Emerging Markets Leading Companies Fund (USD) (Class B)',
   'Baillie Gifford Worldwide Long Term Global Growth Fund (USD) (Class B)',
   'Catalyst Global Real Estate UCITS Fund (USD) (Class B)',
-  'Coronation Global Capital Plus Fund (GBP hedged) (Class P)',
-  'Coronation Global Capital Plus Fund (USD hedged) (Class P)',
-  'Coronation Global Emerging Markets Fund (USD) (Class P)',
-  'Coronation Global Equity Select Fund (USD) (Class P)',
-  'Coronation Global Managed Fund (USD) (Class P)',
-  'Coronation Global Opportunities Equity Fund (USD) (Class P)',
-  'Coronation Global Optimum Growth Fund (USD) (Class P)',
-  'Coronation Global Strategic USD Income Fund (USD) (Class P)',
-  'Dodge & Cox U.S. Stock Fund (USD)',
-  'Dodge & Cox Worldwide Global Stock Fund (USD)',
-  'Fundsmith Equity Fund (GBP) (Class I)',
-  'M&G Global Balanced Fund (USD) (Class B)',
-  'M&G Global Inflation Plus Fund (USD) (Class B)',
-  'Nedgroup Investments Core Global Fund (USD) (Class C)',
-  'Nedgroup Investments Global Cautious Fund (USD) (Class C)',
-  'Nedgroup Investments Global Equity Fund (USD) (Class C)',
-  'Nedgroup Investments Global Flexible Fund (USD) (Class C)',
+  'Coronation Global Capital Plus Fund (GBP hedged) (Class P)','Coronation Global Capital Plus Fund (USD hedged) (Class P)',
+  'Coronation Global Emerging Markets Fund (USD) (Class P)','Coronation Global Equity Select Fund (USD) (Class P)',
+  'Coronation Global Managed Fund (USD) (Class P)','Coronation Global Opportunities Equity Fund (USD) (Class P)',
+  'Coronation Global Optimum Growth Fund (USD) (Class P)','Coronation Global Strategic USD Income Fund (USD) (Class P)',
+  'Dodge & Cox U.S. Stock Fund (USD)','Dodge & Cox Worldwide Global Stock Fund (USD)',
+  'Fundsmith Equity Fund (GBP) (Class I)','M&G Global Balanced Fund (USD) (Class B)','M&G Global Inflation Plus Fund (USD) (Class B)',
+  'Nedgroup Investments Core Global Fund (USD) (Class C)','Nedgroup Investments Global Cautious Fund (USD) (Class C)',
+  'Nedgroup Investments Global Equity Fund (USD) (Class C)','Nedgroup Investments Global Flexible Fund (USD) (Class C)',
   'Nedgroup Investments Global Property Fund (USD) (Class C)',
-  'Ninety One Global Franchise Fund (USD) (Class I)',
-  'Ninety One Global Managed Income Fund (USD) (Class I)',
-  'Ninety One Global Strategic Managed Fund (GBP hedged) (Class I)',
-  'Ninety One Global Strategic Managed Fund (USD) (Class I)',
-  'iShares Emerging Markets Equity Index Fund (USD) (Class F2)',
-  'iShares Europe Equity Index Fund (EUR) (Class D2)',
-  'iShares Global Government Bond Index Fund (USD) (Class F2)',
-  'iShares North America Equity Index Fund (USD) (Class F2)',
+  'Ninety One Global Franchise Fund (USD) (Class I)','Ninety One Global Managed Income Fund (USD) (Class I)',
+  'Ninety One Global Strategic Managed Fund (GBP hedged) (Class I)','Ninety One Global Strategic Managed Fund (USD) (Class I)',
+  'iShares Emerging Markets Equity Index Fund (USD) (Class F2)','iShares Europe Equity Index Fund (EUR) (Class D2)',
+  'iShares Global Government Bond Index Fund (USD) (Class F2)','iShares North America Equity Index Fund (USD) (Class F2)',
   'iShares World Equity Index Fund (USD) (Class F2)',
-  'Wealthworks Global Flexible Fund',
-  'Xhaos Special Opportunities Fund',
+  'Wealthworks Global Flexible Fund','Xhaos Special Opportunities Fund',
 ];
 
-const CURRENCIES_OFFSHORE = ['USD', 'GBP', 'EUR', 'AUD'];
-const FREQUENCIES = ['Monthly', 'Quarterly', 'Annually'];
-const PRODUCT_TYPES = [
-  'Unit Trust / Discretionary Investment',
-  'Unit Trust / LISP Platform',
-  'Endowment',
-  'Retirement Annuity',
-  'Living Annuity',
-  'Preservation Fund',
-  'Tax-Free Investment',
-  'Discretionary Investment',
-  'Offshore Unit Trust',
-  'Offshore Investment Platform',
-  'Offshore Discretionary Investment',
-  'Offshore Discretionary Portfolio',
-  'Offshore Share Portfolio',
-  'Offshore Investment Bond',
-  'Model Portfolio',
-];
-const UNDERLYING_FUNDS_OPTIONS = [
-  'Balanced Fund',
-  'Equity Fund',
-  'Fixed Income Fund',
-  'Money Market Fund',
-  'Property Fund',
-  'Diversified Fund',
-];
+const CURRENCIES_OFFSHORE = ['USD','GBP','EUR','AUD'];
+const FREQUENCIES = ['Monthly','Quarterly','Annually'];
 
 const detectAnnexure = (productType, jurisdiction) => {
-  const pt  = String(productType  || '').toLowerCase();
-  const jur = String(jurisdiction || '').toLowerCase();
+  const pt = String(productType || '').toLowerCase();
   if (pt.includes('model portfolio') || pt.includes('discretionary')) return 'A';
-  if (
-    pt.includes('unit trust') || pt.includes('lisp') || pt.includes('platform') ||
-    pt.includes('bond') || pt.includes('endowment') || jur.includes('off') ||
-    pt.includes('offshore')
-  ) return 'B';
+  if (pt.includes('unit trust') || pt.includes('lisp') || pt.includes('platform') || pt.includes('bond') || pt.includes('endowment') || pt.includes('offshore')) return 'B';
   if (pt.includes('share portfolio') || pt.includes('direct')) return 'C';
   return 'B';
 };
@@ -229,283 +90,201 @@ const ANNEXURE_LABELS = {
   C: 'Annexure C — Alternative Investments & Direct Securities',
 };
 
-const emptyFundRow = () => ({ fund: '', allocation: '', customFund: '' });
+const emptyRow = () => ({ fund: '', allocation: '', customFund: '' });
 
 export default function AddEditInvestment() {
   const { id: proposalId, investmentId } = useParams();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    investment_mandate:        'No',
-    applicable_annexure:       '',
-    jurisdiction:              'Local',
-    currency:                  'ZAR',
-    provider:                  '',
-    product_type:              '',
-    fund_allocations:          [emptyFundRow()],
-    custom_fund:               '',
-    underlying_funds:          [],
-    lump_sum:                  false,
-    recurring:                 false,
-    lump_sum_amount:           '',
-    recurring_amount:          '',
-    frequency:                 '',
-    initial_fee_percent:       '',
-    annual_advice_fee_percent: '',
-    platform_fee_percent:      '',
-    management_fee_percent:    '',
-    performance_fee_percent:   '',
-    hurdle_rate_percent:       '',
-    structuring_fee_percent:   '',
-    raising_fee_percent:       '',
-    carry_fee_percent:         '',
-    carry_hurdle_percent:      '',
-    reason_for_recommendation: '',
+  const [form, setForm] = useState({
+    investment_mandate:'No', applicable_annexure:'', jurisdiction:'Local', currency:'ZAR',
+    provider:'', product_type:'', fund_rows:[emptyRow()], custom_fund:'',
+    lump_sum:false, recurring:false, lump_sum_amount:'', recurring_amount:'', frequency:'',
+    initial_fee_percent:'', annual_advice_fee_percent:'', platform_fee_percent:'',
+    management_fee_percent:'', performance_fee_percent:'', hurdle_rate_percent:'',
+    structuring_fee_percent:'', raising_fee_percent:'', carry_fee_percent:'', carry_hurdle_percent:'',
+    reason_for_recommendation:'',
   });
 
-  const [amountDisplay,    setAmountDisplay]    = useState('');
-  const [recurringDisplay, setRecurringDisplay] = useState('');
-  const [isSubmitting,     setIsSubmitting]     = useState(false);
-  const [libraryOpen,      setLibraryOpen]      = useState(false);
-  const [allocationError,  setAllocationError]  = useState('');
+  const [amtDisplay, setAmtDisplay] = useState('');
+  const [recDisplay, setRecDisplay] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [allocError, setAllocError] = useState('');
 
-  const { data: investment } = useQuery({
+  const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
-    queryFn: () => investmentId
-      ? base44.entities.Investments.filter({ id: investmentId }).then(d => d[0])
-      : null,
+    queryFn: () => investmentId ? base44.entities.Investments.filter({ id: investmentId }).then(d => d[0]) : null,
     enabled: !!investmentId,
   });
 
   useEffect(() => {
-    if (investment) {
-      const isRecurring = investment.contribution_type === 'Recurring' || investment.contribution_type === 'Both';
-      const isLump      = investment.contribution_type === 'Lump Sum'  || investment.contribution_type === 'Both';
-      let fundAllocations = [emptyFundRow()];
-      if (Array.isArray(investment.fund_allocations) && investment.fund_allocations.length > 0) {
-        fundAllocations = investment.fund_allocations;
-      } else if (Array.isArray(investment.underlying_funds) && investment.underlying_funds.length > 0) {
-        fundAllocations = investment.underlying_funds.map(f => ({ fund: f, allocation: '', customFund: '' }));
-      }
-      setFormData({
-        investment_mandate:        investment.investment_mandate        || 'No',
-        applicable_annexure:       investment.applicable_annexure       || '',
-        jurisdiction:              investment.jurisdiction              || 'Local',
-        currency:                  investment.currency                  || 'ZAR',
-        provider:                  investment.provider                  || '',
-        product_type:              investment.product_type              || '',
-        fund_allocations:          fundAllocations,
-        custom_fund:               investment.custom_fund               || '',
-        lump_sum:                  isLump,
-        recurring:                 isRecurring,
-        lump_sum_amount:           investment.amount                    || '',
-        recurring_amount:          investment.recurring_amount          || '',
-        frequency:                 investment.frequency                 || '',
-        initial_fee_percent:       investment.initial_fee_percent       || '',
-        annual_advice_fee_percent: investment.annual_advice_fee_percent || '',
-        platform_fee_percent:      investment.platform_fee_percent      || '',
-        management_fee_percent:    investment.management_fee_percent    || '',
-        performance_fee_percent:   investment.performance_fee_percent   || '',
-        hurdle_rate_percent:       investment.hurdle_rate_percent       || '',
-        structuring_fee_percent:   investment.structuring_fee_percent   || '',
-        raising_fee_percent:       investment.raising_fee_percent       || '',
-        carry_fee_percent:         investment.carry_fee_percent         || '',
-        carry_hurdle_percent:      investment.carry_hurdle_percent      || '',
-        reason_for_recommendation: investment.reason_for_recommendation || '',
-      });
-      if (investment.amount)           setAmountDisplay(Number(investment.amount).toLocaleString('en-ZA'));
-      if (investment.recurring_amount) setRecurringDisplay(Number(investment.recurring_amount).toLocaleString('en-ZA'));
-    }
-  }, [investment]);
+    if (!inv) return;
+    const isRec = inv.contribution_type === 'Recurring' || inv.contribution_type === 'Both';
+    const isLump = inv.contribution_type === 'Lump Sum' || inv.contribution_type === 'Both';
+    let fund_rows = [emptyRow()];
+    if (Array.isArray(inv.fund_allocations) && inv.fund_allocations.length > 0) fund_rows = inv.fund_allocations;
+    else if (Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0) fund_rows = inv.underlying_funds.map(f => ({ fund: f, allocation: '', customFund: '' }));
+    setForm({
+      investment_mandate: inv.investment_mandate || 'No',
+      applicable_annexure: inv.applicable_annexure || '',
+      jurisdiction: inv.jurisdiction || 'Local',
+      currency: inv.currency || 'ZAR',
+      provider: inv.provider || '',
+      product_type: inv.product_type || '',
+      fund_rows,
+      custom_fund: inv.custom_fund || '',
+      lump_sum: isLump, recurring: isRec,
+      lump_sum_amount: inv.amount || '', recurring_amount: inv.recurring_amount || '',
+      frequency: inv.frequency || '',
+      initial_fee_percent: inv.initial_fee_percent || '',
+      annual_advice_fee_percent: inv.annual_advice_fee_percent || '',
+      platform_fee_percent: inv.platform_fee_percent || '',
+      management_fee_percent: inv.management_fee_percent || '',
+      performance_fee_percent: inv.performance_fee_percent || '',
+      hurdle_rate_percent: inv.hurdle_rate_percent || '',
+      structuring_fee_percent: inv.structuring_fee_percent || '',
+      raising_fee_percent: inv.raising_fee_percent || '',
+      carry_fee_percent: inv.carry_fee_percent || '',
+      carry_hurdle_percent: inv.carry_hurdle_percent || '',
+      reason_for_recommendation: inv.reason_for_recommendation || '',
+    });
+    if (inv.amount) setAmtDisplay(Number(inv.amount).toLocaleString('en-ZA'));
+    if (inv.recurring_amount) setRecDisplay(Number(inv.recurring_amount).toLocaleString('en-ZA'));
+  }, [inv]);
 
   useEffect(() => {
-    if (formData.investment_mandate === 'Yes' && formData.product_type) {
-      const detected = detectAnnexure(formData.product_type, formData.jurisdiction);
-      setFormData(prev => ({ ...prev, applicable_annexure: detected }));
+    if (form.investment_mandate === 'Yes' && form.product_type) {
+      setForm(p => ({ ...p, applicable_annexure: detectAnnexure(p.product_type, p.jurisdiction) }));
     }
-  }, [formData.product_type, formData.jurisdiction, formData.investment_mandate]);
+  }, [form.product_type, form.jurisdiction, form.investment_mandate]);
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      if (investmentId) {
-        await base44.entities.Investments.update(investmentId, data);
-      } else {
-        await base44.entities.Investments.create({ ...data, proposal_id: proposalId });
-      }
-      const allInvestments = await base44.entities.Investments.filter({ proposal_id: proposalId });
-      const mandateInvs    = allInvestments.filter(inv => inv.investment_mandate === 'Yes');
+      if (investmentId) await base44.entities.Investments.update(investmentId, data);
+      else await base44.entities.Investments.create({ ...data, proposal_id: proposalId });
+      const all = await base44.entities.Investments.filter({ proposal_id: proposalId });
+      const mi = all.filter(i => i.investment_mandate === 'Yes');
       await base44.entities.Proposal.update(proposalId, {
-        mandate_included:   mandateInvs.length > 0 ? 'Yes' : 'No',
-        include_annexure_A: mandateInvs.some(inv => inv.applicable_annexure === 'A'),
-        include_annexure_B: mandateInvs.some(inv => inv.applicable_annexure === 'B'),
-        include_annexure_C: mandateInvs.some(inv => inv.applicable_annexure === 'C'),
+        mandate_included: mi.length > 0 ? 'Yes' : 'No',
+        include_annexure_A: mi.some(i => i.applicable_annexure === 'A'),
+        include_annexure_B: mi.some(i => i.applicable_annexure === 'B'),
+        include_annexure_C: mi.some(i => i.applicable_annexure === 'C'),
       });
     },
     onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
   });
 
-  // ── Fund allocation helpers ───────────────────────────────────────────────
-  const filledFunds      = formData.fund_allocations.filter(r => r.fund && r.fund !== '__custom__' ? r.fund : r.customFund);
-  const totalAllocation  = formData.fund_allocations.reduce((sum, row) => sum + (parseFloat(row.allocation) || 0), 0);
-  const showAllocPct     = formData.fund_allocations.length > 1;
+  const totalAlloc = form.fund_rows.reduce((s, r) => s + (parseFloat(r.allocation) || 0), 0);
+  const multiRow = form.fund_rows.length > 1;
 
-  const validateAllocations = () => {
-    if (formData.fund_allocations.length <= 1) return true;
-    const filled = formData.fund_allocations.filter(r => r.fund);
+  const validate = () => {
+    if (!multiRow) return true;
+    const filled = form.fund_rows.filter(r => r.fund);
     if (filled.length <= 1) return true;
     const total = filled.reduce((s, r) => s + (parseFloat(r.allocation) || 0), 0);
-    if (Math.abs(total - 100) > 0.01) {
-      setAllocationError(`Fund allocations must total 100%. Current total: ${total.toFixed(1)}%`);
-      return false;
-    }
-    setAllocationError('');
-    return true;
+    if (Math.abs(total - 100) > 0.01) { setAllocError(`Allocations must total 100%. Current: ${total.toFixed(1)}%`); return false; }
+    setAllocError(''); return true;
   };
 
-  const addFundRow    = () => setFormData(prev => ({ ...prev, fund_allocations: [...prev.fund_allocations, emptyFundRow()] }));
-  const removeFundRow = (i) => { setFormData(prev => ({ ...prev, fund_allocations: prev.fund_allocations.filter((_, idx) => idx !== i) })); setAllocationError(''); };
-  const updateFundRow = (i, field, value) => {
-    setFormData(prev => ({ ...prev, fund_allocations: prev.fund_allocations.map((row, idx) => idx === i ? { ...row, [field]: value } : row) }));
-    setAllocationError('');
-  };
+  const addRow = () => setForm(p => ({ ...p, fund_rows: [...p.fund_rows, emptyRow()] }));
+  const removeRow = (i) => { setForm(p => ({ ...p, fund_rows: p.fund_rows.filter((_, idx) => idx !== i) })); setAllocError(''); };
+  const updateRow = (i, field, val) => { setForm(p => ({ ...p, fund_rows: p.fund_rows.map((r, idx) => idx === i ? { ...r, [field]: val } : r) })); setAllocError(''); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateAllocations()) return;
-    setIsSubmitting(true);
-
-    const contribType = formData.lump_sum && formData.recurring ? 'Both' : formData.lump_sum ? 'Lump Sum' : 'Recurring';
-    const activeAnnexure = formData.applicable_annexure || detectAnnexure(formData.product_type, formData.jurisdiction);
-
-    const underlying_funds = formData.fund_allocations
-      .filter(r => r.fund)
-      .map(r => {
-        const name = r.fund === '__custom__' ? (r.customFund || 'Custom Fund') : r.fund;
-        return showAllocPct && r.allocation ? `${name} (${r.allocation}%)` : name;
-      });
-
-    const dataToSave = {
-      investment_mandate:        formData.investment_mandate,
-      applicable_annexure:       formData.investment_mandate === 'Yes' ? activeAnnexure : null,
-      jurisdiction:              formData.jurisdiction,
-      currency:                  formData.currency,
-      provider:                  formData.provider,
-      product_type:              formData.product_type,
-      fund_allocations:          formData.fund_allocations,
-      underlying_funds,
-      custom_fund:               formData.custom_fund,
-      contribution_type:         contribType,
-      amount:                    parseFloat(String(formData.lump_sum_amount).replace(/[\s,]/g, ''))  || 0,
-      recurring_amount:          parseFloat(String(formData.recurring_amount).replace(/[\s,]/g, '')) || 0,
-      frequency:                 formData.frequency,
-      initial_fee_percent:       parseFloat(formData.initial_fee_percent)       || 0,
-      annual_advice_fee_percent: parseFloat(formData.annual_advice_fee_percent) || 0,
-      platform_fee_percent:      parseFloat(formData.platform_fee_percent)      || 0,
-      management_fee_percent:    parseFloat(formData.management_fee_percent)    || 0,
-      performance_fee_percent:   parseFloat(formData.performance_fee_percent)   || 0,
-      hurdle_rate_percent:       parseFloat(formData.hurdle_rate_percent)       || 0,
-      structuring_fee_percent:   parseFloat(formData.structuring_fee_percent)   || 0,
-      raising_fee_percent:       parseFloat(formData.raising_fee_percent)       || 0,
-      carry_fee_percent:         parseFloat(formData.carry_fee_percent)         || 0,
-      carry_hurdle_percent:      parseFloat(formData.carry_hurdle_percent)      || 0,
-      reason_for_recommendation: formData.reason_for_recommendation,
-    };
-
-    saveMutation.mutate(dataToSave);
-    setIsSubmitting(false);
-  };
-
-  const handleJurisdictionChange = (value) => {
-    setFormData(prev => ({ ...prev, jurisdiction: value, currency: value === 'Local' ? 'ZAR' : 'USD', provider: '', product_type: '', fund_allocations: [emptyFundRow()] }));
-  };
-
-  const handleProviderChange = (value) => {
-    setFormData(prev => ({ ...prev, provider: value, product_type: '', fund_allocations: [emptyFundRow()], reason_for_recommendation: '' }));
-  };
-
-  const handleProductTypeChange = (value) => {
-    setFormData(prev => ({ ...prev, product_type: value, fund_allocations: [emptyFundRow()] }));
-  };
-
-  const handleUnderlyingFundsChange = (fund) => {
-    setFormData(prev => {
-      const updated = prev.underlying_funds.includes(fund)
-        ? prev.underlying_funds.filter(f => f !== fund)
-        : [...prev.underlying_funds, fund];
-      return { ...prev, underlying_funds: updated };
+    if (!validate()) return;
+    setSubmitting(true);
+    const contrib = form.lump_sum && form.recurring ? 'Both' : form.lump_sum ? 'Lump Sum' : 'Recurring';
+    const activeAnn = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
+    const underlying_funds = form.fund_rows.filter(r => r.fund).map(r => {
+      const name = r.fund === '__custom__' ? (r.customFund || 'Custom Fund') : r.fund;
+      return multiRow && r.allocation ? `${name} (${r.allocation}%)` : name;
     });
+    saveMutation.mutate({
+      investment_mandate: form.investment_mandate,
+      applicable_annexure: form.investment_mandate === 'Yes' ? activeAnn : null,
+      jurisdiction: form.jurisdiction, currency: form.currency,
+      provider: form.provider, product_type: form.product_type,
+      fund_allocations: form.fund_rows, underlying_funds,
+      custom_fund: form.custom_fund,
+      contribution_type: contrib,
+      amount: parseFloat(String(form.lump_sum_amount).replace(/[\s,]/g,'')) || 0,
+      recurring_amount: parseFloat(String(form.recurring_amount).replace(/[\s,]/g,'')) || 0,
+      frequency: form.frequency,
+      initial_fee_percent: parseFloat(form.initial_fee_percent) || 0,
+      annual_advice_fee_percent: parseFloat(form.annual_advice_fee_percent) || 0,
+      platform_fee_percent: parseFloat(form.platform_fee_percent) || 0,
+      management_fee_percent: parseFloat(form.management_fee_percent) || 0,
+      performance_fee_percent: parseFloat(form.performance_fee_percent) || 0,
+      hurdle_rate_percent: parseFloat(form.hurdle_rate_percent) || 0,
+      structuring_fee_percent: parseFloat(form.structuring_fee_percent) || 0,
+      raising_fee_percent: parseFloat(form.raising_fee_percent) || 0,
+      carry_fee_percent: parseFloat(form.carry_fee_percent) || 0,
+      carry_hurdle_percent: parseFloat(form.carry_hurdle_percent) || 0,
+      reason_for_recommendation: form.reason_for_recommendation,
+    });
+    setSubmitting(false);
   };
 
-  const providers      = Object.keys(PROVIDER_MAP[formData.jurisdiction] || {});
-  const products       = formData.provider ? (PROVIDER_MAP[formData.jurisdiction]?.[formData.provider]?.products || []) : [];
-  const availableFunds = formData.jurisdiction === 'Offshore' ? OFFSHORE_FUNDS : LOCAL_FUNDS;
-  const activeAnnexure = formData.applicable_annexure || detectAnnexure(formData.product_type, formData.jurisdiction);
+  const setF = (field, val) => setForm(p => ({ ...p, [field]: val }));
+
+  const handleJurisdiction = (val) => setForm(p => ({ ...p, jurisdiction: val, currency: val === 'Local' ? 'ZAR' : 'USD', provider: '', product_type: '', fund_rows: [emptyRow()] }));
+  const handleProvider = (val) => setForm(p => ({ ...p, provider: val, product_type: '', fund_rows: [emptyRow()], reason_for_recommendation: '' }));
+  const handleProduct = (val) => setForm(p => ({ ...p, product_type: val, fund_rows: [emptyRow()] }));
+
+  const providers = Object.keys(PROVIDER_MAP[form.jurisdiction] || {});
+  const products = form.provider ? (PROVIDER_MAP[form.jurisdiction]?.[form.provider]?.products || []) : [];
+  const funds = form.jurisdiction === 'Offshore' ? OFFSHORE_FUNDS : LOCAL_FUNDS;
+  const activeAnn = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
 
   const feeInput = (label, field) => (
     <div>
       <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
       <div className="relative">
-        <Input type="number" step="0.01" value={formData[field]}
-          onChange={e => setFormData(prev => ({ ...prev, [field]: e.target.value }))}
-          placeholder="0.00" className="h-8 text-xs rounded-sm pr-6" />
+        <Input type="number" step="0.01" value={form[field]} onChange={e => setF(field, e.target.value)} placeholder="0.00" className="h-8 text-xs rounded-sm pr-6" />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
       </div>
     </div>
   );
 
-  const toggleClass = (active) =>
-    `flex items-center gap-2 px-3 py-2 border rounded-sm cursor-pointer transition-colors flex-1 text-xs font-medium ${
-      active ? 'border-teal bg-teal/5 text-teal' : 'border-border text-navy hover:border-teal/50'
-    }`;
+  const tog = (active) => `flex items-center gap-2 px-3 py-2 border rounded-sm cursor-pointer transition-colors flex-1 text-xs font-medium ${active ? 'border-teal bg-teal/5 text-teal' : 'border-border text-navy hover:border-teal/50'}`;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-card border-b border-border px-4 py-2.5">
-        <button onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })}
-          className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
+        <button onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> Back to Step 2
         </button>
       </div>
-
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-base font-bold text-navy mb-0.5">{investmentId ? 'Edit Investment' : 'Add Investment'}</h1>
         <p className="text-xs text-muted-foreground mb-3">{investmentId ? 'Update investment details' : 'Create a new investment recommendation'}</p>
-
         <form onSubmit={handleSubmit} className="space-y-3">
 
-          {/* ── MANDATE TOGGLE ── */}
+          {/* MANDATE */}
           <div className="bg-card border border-border rounded-lg p-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Discretionary Mandate</h3>
             <div className="flex items-start gap-6">
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Subject to discretionary mandate?</Label>
                 <div className="flex gap-1.5">
-                  {['Yes', 'No'].map(opt => (
+                  {['Yes','No'].map(opt => (
                     <button key={opt} type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, investment_mandate: opt, applicable_annexure: opt === 'No' ? '' : prev.applicable_annexure }))}
-                      className={`px-8 h-8 text-xs font-medium border rounded-sm transition-all ${
-                        formData.investment_mandate === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'
-                      }`}>
+                      onClick={() => setForm(p => ({ ...p, investment_mandate: opt, applicable_annexure: opt === 'No' ? '' : p.applicable_annexure }))}
+                      className={`px-8 h-8 text-xs font-medium border rounded-sm transition-all ${form.investment_mandate === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'}`}>
                       {opt}
                     </button>
                   ))}
                 </div>
               </div>
-
-              {formData.investment_mandate === 'Yes' && (
+              {form.investment_mandate === 'Yes' && (
                 <div className="flex-1">
                   <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
                     Applicable Annexure
-                    {activeAnnexure && (
-                      <span className="ml-2 text-[9px] text-green-600 font-normal normal-case">
-                        Auto-detected: {ANNEXURE_LABELS[activeAnnexure]}
-                      </span>
-                    )}
+                    {activeAnn && <span className="ml-2 text-[9px] text-green-600 font-normal normal-case">Auto-detected: {ANNEXURE_LABELS[activeAnn]}</span>}
                   </Label>
-                  <Select
-                    value={formData.applicable_annexure || activeAnnexure}
-                    onValueChange={v => setFormData(prev => ({ ...prev, applicable_annexure: v }))}
-                  >
+                  <Select value={form.applicable_annexure || activeAnn} onValueChange={v => setF('applicable_annexure', v)}>
                     <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select annexure" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="A">Annexure A — Model / Discretionary Portfolios</SelectItem>
@@ -518,20 +297,16 @@ export default function AddEditInvestment() {
             </div>
           </div>
 
-          {/* ── INVESTMENT DETAILS ── */}
+          {/* INVESTMENT DETAILS */}
           <div className="bg-card border border-border rounded-lg p-3 space-y-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Investment Details</h3>
-
-            {/* Row 1: Jurisdiction, Currency, Provider, Product Type */}
             <div className="grid grid-cols-4 gap-3">
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Jurisdiction</Label>
                 <div className="flex gap-1">
-                  {['Local', 'Offshore'].map(opt => (
-                    <button key={opt} type="button" onClick={() => handleJurisdictionChange(opt)}
-                      className={`flex-1 h-8 text-xs font-medium border rounded-sm transition-all ${
-                        formData.jurisdiction === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'
-                      }`}>
+                  {['Local','Offshore'].map(opt => (
+                    <button key={opt} type="button" onClick={() => handleJurisdiction(opt)}
+                      className={`flex-1 h-8 text-xs font-medium border rounded-sm transition-all ${form.jurisdiction === opt ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border hover:border-navy'}`}>
                       {opt}
                     </button>
                   ))}
@@ -539,10 +314,10 @@ export default function AddEditInvestment() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Currency</Label>
-                {formData.jurisdiction === 'Local' ? (
+                {form.jurisdiction === 'Local' ? (
                   <Input value="ZAR" disabled className="h-8 text-xs rounded-sm bg-muted" />
                 ) : (
-                  <Select value={formData.currency} onValueChange={v => setFormData(prev => ({ ...prev, currency: v }))}>
+                  <Select value={form.currency} onValueChange={v => setF('currency', v)}>
                     <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue /></SelectTrigger>
                     <SelectContent>{CURRENCIES_OFFSHORE.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
@@ -550,94 +325,115 @@ export default function AddEditInvestment() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
-                <Select value={formData.provider} onValueChange={v => setFormData(prev => ({ ...prev, provider: v }))}>
+                <Select value={form.provider} onValueChange={handleProvider}>
                   <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
                   <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
-                <Select value={formData.product_type} onValueChange={v => setFormData(prev => ({ ...prev, product_type: v }))}>
-                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>{PRODUCT_TYPES.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
+                <Select value={form.product_type} onValueChange={handleProduct} disabled={!form.provider}>
+                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} /></SelectTrigger>
+                  <SelectContent>{products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Underlying Funds */}
+            {/* FUND ROWS */}
             <div>
-              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Underlying Funds</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {UNDERLYING_FUNDS_OPTIONS.map(fund => (
-                  <label key={fund} className={`flex items-center gap-1.5 px-2 py-1.5 border rounded-sm cursor-pointer transition-colors text-xs ${
-                    formData.underlying_funds.includes(fund) ? 'border-ocean bg-ocean/5 text-ocean' : 'border-border text-navy hover:border-ocean/50'
-                  }`}>
-                    <input type="checkbox" checked={formData.underlying_funds.includes(fund)}
-                      onChange={() => handleUnderlyingFundsChange(fund)} className="sr-only" />
-                    <span className="font-bold">{formData.underlying_funds.includes(fund) ? '✓' : '○'}</span>
-                    {fund}
-                  </label>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Underlying Funds & Allocation</Label>
+                {multiRow && (
+                  <span className={`text-[10px] font-semibold ${Math.abs(totalAlloc - 100) < 0.01 ? 'text-green-600' : 'text-amber-500'}`}>
+                    Total: {totalAlloc.toFixed(1)}% {Math.abs(totalAlloc - 100) < 0.01 ? '✓' : `— ${(100 - totalAlloc).toFixed(1)}% remaining`}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                {form.fund_rows.map((row, i) => (
+                  <div key={i} className="flex gap-2 items-start">
+                    <div className="flex-1 space-y-1">
+                      <Select value={row.fund} onValueChange={v => updateRow(i, 'fund', v)}>
+                        <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select fund" /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {funds.filter(f => f === row.fund || !form.fund_rows.some((r, idx) => idx !== i && r.fund === f)).map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                          <SelectItem value="__custom__">+ Custom / Other fund</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {row.fund === '__custom__' && (
+                        <Input className="h-8 text-xs rounded-sm" placeholder="Enter fund name" value={row.customFund || ''} onChange={e => updateRow(i, 'customFund', e.target.value)} />
+                      )}
+                    </div>
+                    {multiRow && (
+                      <div className="w-24 relative shrink-0">
+                        <Input type="number" min="0" max="100" step="0.1" value={row.allocation} onChange={e => updateRow(i, 'allocation', e.target.value)} placeholder="0.0" className="h-8 text-xs rounded-sm pr-6" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+                      </div>
+                    )}
+                    {form.fund_rows.length > 1 && (
+                      <button type="button" onClick={() => removeRow(i)} className="p-1.5 text-destructive hover:bg-red-50 rounded transition-colors shrink-0 mt-0.5">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
+              {allocError && (
+                <div className="flex items-center gap-1.5 mt-2 p-2 bg-red-50 border border-red-200 rounded-sm">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                  <span className="text-[11px] text-red-600">{allocError}</span>
+                </div>
+              )}
+              <button type="button" onClick={addRow} className="mt-2 flex items-center gap-1.5 text-[11px] text-ocean hover:text-navy font-medium transition-colors">
+                <Plus className="w-3.5 h-3.5" /> Add another fund
+              </button>
             </div>
 
-            {/* Custom Fund */}
             <div>
-              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Custom Fund Description (Optional)</Label>
-              <Textarea value={formData.custom_fund}
-                onChange={e => setFormData(prev => ({ ...prev, custom_fund: e.target.value }))}
-                placeholder="Describe custom fund if not listed above"
-                className="rounded-sm min-h-[56px] text-xs" />
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Additional Notes (Optional)</Label>
+              <Textarea value={form.custom_fund} onChange={e => setF('custom_fund', e.target.value)} placeholder="Any additional notes on fund selection..." className="rounded-sm min-h-[48px] text-xs" />
             </div>
 
-            {/* Contribution Type */}
             <div>
               <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Contribution Type</Label>
               <div className="flex gap-2">
-                <label className={toggleClass(formData.lump_sum)}>
-                  <input type="checkbox" checked={formData.lump_sum}
-                    onChange={e => setFormData(prev => ({ ...prev, lump_sum: e.target.checked }))} className="sr-only" />
-                  <span>{formData.lump_sum ? '✓' : '○'}</span> Lump Sum
+                <label className={tog(form.lump_sum)}>
+                  <input type="checkbox" checked={form.lump_sum} onChange={e => setF('lump_sum', e.target.checked)} className="sr-only" />
+                  <span>{form.lump_sum ? '✓' : '○'}</span> Lump Sum
                 </label>
-                <label className={toggleClass(formData.recurring)}>
-                  <input type="checkbox" checked={formData.recurring}
-                    onChange={e => setFormData(prev => ({ ...prev, recurring: e.target.checked }))} className="sr-only" />
-                  <span>{formData.recurring ? '✓' : '○'}</span> Recurring
+                <label className={tog(form.recurring)}>
+                  <input type="checkbox" checked={form.recurring} onChange={e => setF('recurring', e.target.checked)} className="sr-only" />
+                  <span>{form.recurring ? '✓' : '○'}</span> Recurring
                 </label>
               </div>
             </div>
 
-            {/* Amounts */}
-            <div className="grid grid-cols-2 gap-3">
-              {formData.lump_sum && (
+            <div className="grid grid-cols-3 gap-3">
+              {form.lump_sum && (
                 <div>
-                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
-                    Lump Sum Amount ({formData.currency})
-                  </Label>
-                  <Input value={amountDisplay}
-                    onChange={e => { setAmountDisplay(e.target.value); setFormData(prev => ({ ...prev, lump_sum_amount: e.target.value.replace(/,/g,'') })); }}
-                    onBlur={() => { const n=parseFloat(formData.lump_sum_amount); if(!isNaN(n)) setAmountDisplay(n.toLocaleString('en-ZA')); }}
-                    onFocus={() => setAmountDisplay(formData.lump_sum_amount||'')}
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Lump Sum ({form.currency})</Label>
+                  <Input value={amtDisplay}
+                    onChange={e => { setAmtDisplay(e.target.value); setF('lump_sum_amount', e.target.value.replace(/,/g,'')); }}
+                    onBlur={() => { const n = parseFloat(form.lump_sum_amount); if (!isNaN(n)) setAmtDisplay(n.toLocaleString('en-ZA')); }}
+                    onFocus={() => setAmtDisplay(form.lump_sum_amount || '')}
                     placeholder="0" className="h-8 text-xs rounded-sm" />
                 </div>
               )}
-              {formData.recurring && (
+              {form.recurring && (
                 <div>
-                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
-                    Recurring Amount ({formData.currency})
-                  </Label>
-                  <Input value={recurringDisplay}
-                    onChange={e => { setRecurringDisplay(e.target.value); setFormData(prev => ({ ...prev, recurring_amount: e.target.value.replace(/,/g,'') })); }}
-                    onBlur={() => { const n=parseFloat(formData.recurring_amount); if(!isNaN(n)) setRecurringDisplay(n.toLocaleString('en-ZA')); }}
-                    onFocus={() => setRecurringDisplay(formData.recurring_amount||'')}
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Recurring ({form.currency})</Label>
+                  <Input value={recDisplay}
+                    onChange={e => { setRecDisplay(e.target.value); setF('recurring_amount', e.target.value.replace(/,/g,'')); }}
+                    onBlur={() => { const n = parseFloat(form.recurring_amount); if (!isNaN(n)) setRecDisplay(n.toLocaleString('en-ZA')); }}
+                    onFocus={() => setRecDisplay(form.recurring_amount || '')}
                     placeholder="0" className="h-8 text-xs rounded-sm" />
                 </div>
               )}
-              {formData.recurring && (
+              {form.recurring && (
                 <div>
                   <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Frequency</Label>
-                  <Select value={formData.frequency} onValueChange={v => setFormData(prev => ({ ...prev, frequency: v }))}>
-                    <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select frequency" /></SelectTrigger>
+                  <Select value={form.frequency} onValueChange={v => setF('frequency', v)}>
+                    <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{FREQUENCIES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -645,96 +441,75 @@ export default function AddEditInvestment() {
             </div>
           </div>
 
-          {/* ── FEE STRUCTURE — conditional on mandate/annexure ── */}
+          {/* FEES */}
           <div className="bg-card border border-border rounded-lg p-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Fee Structure</h3>
-
-            {/* No mandate OR Annexure A — standard fees */}
-            {(formData.investment_mandate === 'No' || activeAnnexure === 'A') && (
+            {(form.investment_mandate === 'No' || activeAnn === 'A') && (
               <div className="grid grid-cols-3 gap-3">
                 {feeInput('Initial Fee', 'initial_fee_percent')}
                 {feeInput('Annual Advice Fee', 'annual_advice_fee_percent')}
                 {feeInput('Platform Fee', 'platform_fee_percent')}
               </div>
             )}
-
-            {/* Annexure B fees */}
-            {formData.investment_mandate === 'Yes' && activeAnnexure === 'B' && (
+            {form.investment_mandate === 'Yes' && activeAnn === 'B' && (
               <div className="space-y-3">
-                <p className="text-[10px] text-muted-foreground">Fee structure per Annexure B — Collective Investments & Offshore Platforms</p>
+                <p className="text-[10px] text-muted-foreground">Per Annexure B — Collective Investments & Offshore Platforms</p>
                 <div className="grid grid-cols-3 gap-3">
-                  {feeInput('Management Fee % p.a. of NAV', 'management_fee_percent')}
-                  {feeInput('Performance Fee % of NAV increase', 'performance_fee_percent')}
-                  {feeInput('Performance Hurdle Rate', 'hurdle_rate_percent')}
+                  {feeInput('Management Fee % p.a. of NAV','management_fee_percent')}
+                  {feeInput('Performance Fee % of NAV increase','performance_fee_percent')}
+                  {feeInput('Performance Hurdle Rate','hurdle_rate_percent')}
                 </div>
-                <div className="bg-muted/40 rounded-sm p-2.5 text-[10px] text-muted-foreground space-y-1">
-                  <p>2.1. The Investor shall pay The FSP a Management Fee of <strong>{formData.management_fee_percent||'___'}%</strong> per annum of the NAV of the Portfolio.</p>
-                  <p>2.2. The Management Fee shall be determined monthly in arrears on the last Business Day of each Month and is payable within 2 (two) business Days of the presentation of the invoice.</p>
-                  <p>2.3. The Investor shall pay The FSP an annual Performance Fee of <strong>{formData.performance_fee_percent||'___'}%</strong> of the increase in the NAV in excess of the performance hurdle rate of <strong>{formData.hurdle_rate_percent||'___'}%</strong>.</p>
+                <div className="bg-muted/40 rounded-sm p-3 space-y-1.5 text-[10px] text-muted-foreground">
+                  <p><strong className="text-navy">2.1.</strong> Management Fee of <strong className="text-navy">{form.management_fee_percent||'___'}%</strong> per annum of NAV.</p>
+                  <p><strong className="text-navy">2.2.</strong> Determined monthly in arrears, payable within 2 business days of invoice.</p>
+                  <p><strong className="text-navy">2.3.</strong> Performance Fee of <strong className="text-navy">{form.performance_fee_percent||'___'}%</strong> of NAV increase above hurdle rate of <strong className="text-navy">{form.hurdle_rate_percent||'___'}%</strong>.</p>
                 </div>
               </div>
             )}
-
-            {/* Annexure C fees */}
-            {formData.investment_mandate === 'Yes' && activeAnnexure === 'C' && (
+            {form.investment_mandate === 'Yes' && activeAnn === 'C' && (
               <div className="space-y-3">
-                <p className="text-[10px] text-muted-foreground">Fee structure per Annexure C — Alternative Investments & Direct Securities</p>
+                <p className="text-[10px] text-muted-foreground">Per Annexure C — Alternative Investments & Direct Securities</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {feeInput('Annual Management Fee % of NAV', 'management_fee_percent')}
-                  {feeInput('Initial Structuring Fee % of investment', 'structuring_fee_percent')}
-                  {feeInput('Annual Raising Fee % of investment', 'raising_fee_percent')}
-                  {feeInput('Performance / Carry Fee %', 'carry_fee_percent')}
-                  {feeInput('Carry Hurdle Rate %', 'carry_hurdle_percent')}
+                  {feeInput('Annual Management Fee % of NAV','management_fee_percent')}
+                  {feeInput('Initial Structuring Fee %','structuring_fee_percent')}
+                  {feeInput('Annual Raising Fee %','raising_fee_percent')}
+                  {feeInput('Performance / Carry Fee %','carry_fee_percent')}
+                  {feeInput('Carry Hurdle Rate %','carry_hurdle_percent')}
                 </div>
-                <div className="bg-muted/40 rounded-sm p-2.5 text-[10px] text-muted-foreground space-y-1">
-                  <p>2.1. An annual management fee of maximum <strong>{formData.management_fee_percent||'___'}%</strong> based on the NAV of the fund. Payable monthly in arrears.</p>
-                  <p>2.2. An initial structuring fee limited to a maximum of <strong>{formData.structuring_fee_percent||'___'}%</strong> of the investment value.</p>
-                  <p>2.3. An annual raising fee limited to <strong>{formData.raising_fee_percent||'___'}%</strong> of the investment.</p>
-                  <p>2.4. A performance / carry fee of <strong>{formData.carry_fee_percent||'___'}%</strong> will be charged above the hurdle rate of <strong>{formData.carry_hurdle_percent||'___'}%</strong>.</p>
-                  <p>2.5. Any other fees explicitly agreed upon by The Investor from time to time in writing.</p>
-                  <p>2.6. These fees are reflected net of VAT and are deducted from the investment consideration.</p>
-                  <p>2.7. The FSP does not participate in any conditional incentive arrangements.</p>
+                <div className="bg-muted/40 rounded-sm p-3 space-y-1.5 text-[10px] text-muted-foreground">
+                  <p><strong className="text-navy">2.1.</strong> Annual management fee of <strong className="text-navy">{form.management_fee_percent||'___'}%</strong> of NAV, payable monthly in arrears.</p>
+                  <p><strong className="text-navy">2.2.</strong> Initial structuring fee of <strong className="text-navy">{form.structuring_fee_percent||'___'}%</strong> of investment value.</p>
+                  <p><strong className="text-navy">2.3.</strong> Annual raising fee of <strong className="text-navy">{form.raising_fee_percent||'___'}%</strong> of investment.</p>
+                  <p><strong className="text-navy">2.4.</strong> Performance / carry fee of <strong className="text-navy">{form.carry_fee_percent||'___'}%</strong> above hurdle rate of <strong className="text-navy">{form.carry_hurdle_percent||'___'}%</strong>.</p>
+                  <p><strong className="text-navy">2.5.</strong> Fees reflected net of VAT, deducted from investment consideration.</p>
+                  <p><strong className="text-navy">2.6.</strong> The FSP does not participate in any conditional incentive arrangements.</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── REASON FOR RECOMMENDATION ── */}
+          {/* REASON */}
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Reason for Recommendation</Label>
               <LibraryButton onOpen={() => setLibraryOpen(true)} />
             </div>
-            <Textarea value={formData.reason_for_recommendation}
-              onChange={e => setFormData(prev => ({ ...prev, reason_for_recommendation: e.target.value }))}
-              placeholder="Why is this product recommended for this client..."
-              className="rounded-sm min-h-[64px] text-xs" />
+            <Textarea value={form.reason_for_recommendation} onChange={e => setF('reason_for_recommendation', e.target.value)} placeholder="Why is this product recommended for this client..." className="rounded-sm min-h-[72px] text-xs" />
             {libraryOpen && (
               <PhraseLibrary
-                onSelect={(phrase) => {
-                  const current   = formData.reason_for_recommendation;
-                  const separator = current && !current.trim().endsWith('.') ? '. ' : current ? ' ' : '';
-                  setFormData(prev => ({ ...prev, reason_for_recommendation: current + separator + phrase }));
-                }}
+                onSelect={(phrase) => { const cur = form.reason_for_recommendation; const sep = cur && !cur.trim().endsWith('.') ? '. ' : cur ? ' ' : ''; setF('reason_for_recommendation', cur + sep + phrase); }}
                 onClose={() => setLibraryOpen(false)}
               />
             )}
           </div>
 
-          {/* ── ACTIONS ── */}
+          {/* ACTIONS */}
           <div className="flex gap-3">
-            <Button type="button"
-              onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })}
-              variant="outline" className="flex-1 h-9 rounded-sm text-xs">
-              Cancel
-            </Button>
-            <Button type="submit"
-              disabled={isSubmitting || !formData.provider || (!formData.lump_sum && !formData.recurring)}
-              className="flex-1 h-9 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
-              {isSubmitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
+            <Button type="button" onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })} variant="outline" className="flex-1 h-9 rounded-sm text-xs">Cancel</Button>
+            <Button type="submit" disabled={submitting || !form.provider || !form.product_type || (!form.lump_sum && !form.recurring)} className="flex-1 h-9 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
+              {submitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
             </Button>
           </div>
-
         </form>
       </div>
     </div>
