@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { Users, Briefcase } from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ export default function Landing() {
   const createTestData = async () => {
     setIsCreatingTestData(true);
     try {
-      // Create test client
       const client = await base44.entities.Clients.create({
         client_source: 'Onboarding',
         client_type: 'Natural Person',
@@ -32,8 +32,6 @@ export default function Landing() {
         client_status: 'Onboarded',
         onboarding_complete: true,
       });
-
-      // Create linked proposal
       await base44.entities.Proposals.create({
         client_id: client.id,
         advisor_name: 'Trevor Fine',
@@ -45,7 +43,6 @@ export default function Landing() {
         client_initials_completed: false,
         document_version: 1,
       });
-
       toast.success('Test client and proposal created');
     } catch (error) {
       toast.error(error.message || 'Failed to create test data');
@@ -55,72 +52,83 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-navy via-blue-50 to-background flex flex-col">
-      {/* Header */}
-      <div className="bg-navy border-b border-border/30 px-6 py-4">
-        <div className="max-w-6xl mx-auto">
-          <img src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png" alt="WealthWorks" className="h-10 brightness-0 invert" />
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#1B3A5C] via-[#e8eef4] to-background flex flex-col">
 
-      {/* Hero Section */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      {/* Navbar */}
+      <nav className="bg-[#1B3A5C] px-6 py-3.5">
+        <div className="max-w-6xl mx-auto">
+          <img
+            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
+            alt="WealthWorks"
+            className="h-9 brightness-0 invert"
+            style={{ width: 'auto', maxWidth: '140px' }}
+          />
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="max-w-2xl w-full text-center">
-          <div className="flex justify-center mb-6">
-            <img src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png" alt="WealthWorks" style={{ width: '200px' }} />
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-navy mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-navy mb-3 leading-tight">
             Financial Proposal Platform
-          </h2>
-          <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
-            Streamline client onboarding, build personalized proposals, and manage financial recommendations with ease.
+          </h1>
+          <p className="text-base text-muted-foreground mb-10 leading-relaxed max-w-lg mx-auto">
+            Streamline client onboarding, build personalised proposals, and manage financial recommendations with ease.
           </p>
 
-          {/* Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Client Onboarding Button */}
+          {/* Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Client Onboarding */}
             <button
               onClick={() => navigate('/client-registration')}
-              className="group relative overflow-hidden bg-white border-2 border-navy rounded-lg p-8 hover:shadow-lg transition-all"
+              className="group relative bg-white border border-navy/20 rounded-lg p-7 text-left hover:shadow-lg hover:border-navy/40 transition-all duration-200"
+              style={{ boxShadow: '0 2px 12px rgba(27,58,92,0.08)' }}
             >
-              <div className="relative z-10">
-                <div className="text-5xl mb-4">👤</div>
-                <h3 className="text-2xl font-bold text-navy mb-2">Client Onboarding</h3>
-                <p className="text-muted-foreground mb-4">
-                  Register as a new client and begin your onboarding journey
-                </p>
-                <div className="inline-block px-6 py-2 bg-navy text-white rounded font-medium text-sm hover:bg-ocean transition-colors">
-                  Get Started →
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-md bg-navy flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-navy mb-1">Client Onboarding</h3>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Register as a new client and begin your onboarding journey.
+                  </p>
+                  <span className="inline-block px-4 py-1.5 bg-navy text-white rounded text-sm font-medium group-hover:bg-ocean transition-colors">
+                    Get Started →
+                  </span>
                 </div>
               </div>
-              <div className="absolute inset-0 bg-navy/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
 
-            {/* Advisor Portal Button */}
+            {/* Advisor Portal */}
             <button
               onClick={() => navigate('/advisor-login')}
-              className="group relative overflow-hidden bg-white border-2 border-ocean rounded-lg p-8 hover:shadow-lg transition-all"
+              className="group relative bg-white border border-navy/20 rounded-lg p-7 text-left hover:shadow-lg hover:border-ocean/40 transition-all duration-200"
+              style={{ boxShadow: '0 2px 12px rgba(27,58,92,0.08)' }}
             >
-              <div className="relative z-10">
-                <div className="text-5xl mb-4">💼</div>
-                <h3 className="text-2xl font-bold text-ocean mb-2">Advisor Portal</h3>
-                <p className="text-muted-foreground mb-4">
-                  Log in to build and manage financial proposals
-                </p>
-                <div className="inline-block px-6 py-2 bg-ocean text-white rounded font-medium text-sm hover:bg-sky transition-colors">
-                  Access Portal →
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-md bg-ocean flex items-center justify-center shrink-0">
+                  <Briefcase className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-navy mb-1">Advisor Portal</h3>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Log in to build and manage financial proposals for your clients.
+                  </p>
+                  <span className="inline-block px-4 py-1.5 bg-ocean text-white rounded text-sm font-medium group-hover:bg-sky transition-colors">
+                    Access Portal →
+                  </span>
                 </div>
               </div>
-              <div className="absolute inset-0 bg-ocean/5 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="bg-card border-t border-border px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-muted-foreground">
-          <p>WealthWorks Advisor Portal — FSP 28337</p>
+      <div className="bg-[#1B3A5C]/10 border-t border-navy/10 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+          <p>Wealth Works (Pty) Ltd | FSP 28337 | Wealthworks Investments (Pty) Ltd | FSP 45624</p>
           {isDev && (
             <button
               onClick={createTestData}
