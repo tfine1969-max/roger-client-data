@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 const LOCAL_PROVIDERS = ['Investec', 'Sanlam', 'Allan Gray', 'Coronation', 'Ninety One'];
 const OFFSHORE_PROVIDERS = ['Vanguard', 'Blackrock', 'Fidelity', 'Charles Schwab', 'Interactive Brokers'];
@@ -38,10 +39,12 @@ export default function AddEditInvestment() {
     initial_fee_percent: '',
     annual_advice_fee_percent: '',
     platform_fee_percent: '',
+    reason_for_recommendation: '',
   });
   const [amountDisplay, setAmountDisplay] = useState('');
   const [recurringDisplay, setRecurringDisplay] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   const { data: investment } = useQuery({
     queryKey: ['investment', investmentId],
@@ -68,6 +71,7 @@ export default function AddEditInvestment() {
         initial_fee_percent: investment.initial_fee_percent || '',
         annual_advice_fee_percent: investment.annual_advice_fee_percent || '',
         platform_fee_percent: investment.platform_fee_percent || '',
+        reason_for_recommendation: investment.reason_for_recommendation || '',
       });
       if (investment.amount) setAmountDisplay(Number(investment.amount).toLocaleString('en-ZA'));
       if (investment.recurring_amount) setRecurringDisplay(Number(investment.recurring_amount).toLocaleString('en-ZA'));
@@ -103,6 +107,7 @@ export default function AddEditInvestment() {
       initial_fee_percent: parseFloat(formData.initial_fee_percent) || 0,
       annual_advice_fee_percent: parseFloat(formData.annual_advice_fee_percent) || 0,
       platform_fee_percent: parseFloat(formData.platform_fee_percent) || 0,
+      reason_for_recommendation: formData.reason_for_recommendation,
     };
     await saveMutation.mutate(dataToSave);
     setIsSubmitting(false);
@@ -293,6 +298,30 @@ export default function AddEditInvestment() {
                   placeholder="0.00" className="h-8 text-xs rounded-sm" />
               </div>
             </div>
+          </div>
+
+          {/* Reason for Recommendation */}
+          <div className="border-t border-border pt-2">
+            <div className="flex items-center justify-between mb-1">
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Reason for Recommendation</Label>
+              <LibraryButton onOpen={() => setLibraryOpen(true)} />
+            </div>
+            <Textarea
+              value={formData.reason_for_recommendation}
+              onChange={e => setFormData({ ...formData, reason_for_recommendation: e.target.value })}
+              placeholder="Why is this product recommended for this client..."
+              className="rounded-sm min-h-[64px] text-xs"
+            />
+            {libraryOpen && (
+              <PhraseLibrary
+                onSelect={(phrase) => {
+                  const current = formData.reason_for_recommendation;
+                  const separator = current && !current.trim().endsWith('.') ? '. ' : current ? ' ' : '';
+                  setFormData(prev => ({ ...prev, reason_for_recommendation: current + separator + phrase }));
+                }}
+                onClose={() => setLibraryOpen(false)}
+              />
+            )}
           </div>
 
           {/* Actions */}

@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 const RISK_PROVIDERS = ['PPS', 'Momentum', 'Discovery', 'Hollard', 'Brightrock'];
 
@@ -183,9 +185,11 @@ export default function AddEditRiskProduct() {
   const { id: proposalId, riskProductId } = useParams();
   const navigate = useNavigate();
   const [provider, setProvider] = useState('');
+  const [reason, setReason] = useState('');
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [benefitData, setBenefitData] = useState({ ...defaultBenefitData });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   const { data: riskProduct } = useQuery({
     queryKey: ['riskProduct', riskProductId],
@@ -200,7 +204,10 @@ export default function AddEditRiskProduct() {
   });
 
   useEffect(() => {
-    if (riskProduct) setProvider(riskProduct.provider || '');
+    if (riskProduct) {
+      setProvider(riskProduct.provider || '');
+      setReason(riskProduct.reason_for_recommendation || '');
+    }
   }, [riskProduct]);
 
   useEffect(() => {
@@ -260,10 +267,10 @@ export default function AddEditRiskProduct() {
     mutationFn: async () => {
       let productId = riskProductId;
       if (!riskProductId) {
-        const created = await base44.entities.RiskProducts.create({ proposal_id: proposalId, provider });
+        const created = await base44.entities.RiskProducts.create({ proposal_id: proposalId, provider, reason_for_recommendation: reason });
         productId = created.id;
       } else {
-        await base44.entities.RiskProducts.update(riskProductId, { provider });
+        await base44.entities.RiskProducts.update(riskProductId, { provider, reason_for_recommendation: reason });
       }
 
       // Delete existing covers before re-saving to avoid duplicates
@@ -369,6 +376,29 @@ export default function AddEditRiskProduct() {
                 );
               })}
             </div>
+          </div>
+
+          {/* Reason for Recommendation */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <h2 className="text-xs font-bold text-navy uppercase tracking-wider">Reason for Recommendation</h2>
+              <LibraryButton onOpen={() => setLibraryOpen(true)} />
+            </div>
+            <Textarea
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              placeholder="Why is this risk product recommended for this client..."
+              className="rounded-sm min-h-[64px] text-xs"
+            />
+            {libraryOpen && (
+              <PhraseLibrary
+                onSelect={(phrase) => {
+                  const separator = reason && !reason.trim().endsWith('.') ? '. ' : reason ? ' ' : '';
+                  setReason(prev => prev + separator + phrase);
+                }}
+                onClose={() => setLibraryOpen(false)}
+              />
+            )}
           </div>
 
           {/* Total Premium */}
