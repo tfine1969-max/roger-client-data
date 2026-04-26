@@ -60,20 +60,26 @@ export default function Landing() {
           <img
             src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
             alt="WealthWorks"
-            className="h-9 brightness-0 invert"
-            style={{ width: 'auto', maxWidth: '140px' }}
+            className="brightness-0 invert"
+            style={{ width: '160px', background: 'transparent' }}
           />
         </div>
       </nav>
 
       {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div className="max-w-2xl w-full text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-navy mb-3 leading-tight">
-            Financial Proposal Platform
+          <img
+            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/48ec7b9f6_logo.png"
+            alt="WealthWorks"
+            className="mx-auto mb-5"
+            style={{ width: '220px', background: 'transparent' }}
+          />
+          <h1 className="text-3xl md:text-4xl font-bold text-navy mb-2 leading-tight">
+            WealthWorks Advisory Portal
           </h1>
-          <p className="text-base text-muted-foreground mb-10 leading-relaxed max-w-lg mx-auto">
-            Streamline client onboarding, build personalised proposals, and manage financial recommendations with ease.
+          <p className="text-xs text-muted-foreground mb-8">
+            Powered by Wealth Works (Pty) Ltd | FSP 28337
           </p>
 
           {/* Cards */}
@@ -129,6 +135,14 @@ export default function Landing() {
       <div className="bg-[#1B3A5C]/10 border-t border-navy/10 px-6 py-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p>Wealth Works (Pty) Ltd | FSP 28337 | Wealthworks Investments (Pty) Ltd | FSP 45624</p>
+          <a
+            href="https://www.wealthworks.co.za"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-navy font-medium hover:underline"
+          >
+            Visit wealthworks.co.za →
+          </a>
           {isDev && (
             <button
               onClick={createTestData}
