@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
@@ -61,6 +61,37 @@ function ReasonField({ entityId, entityType, initialValue }) {
   );
 }
 
+const updateProductTypes = async (invList, proposalId) => {
+  const selectedTypes = new Set();
+
+  invList.forEach(inv => {
+    const pt = String(inv.product_type || '').toLowerCase();
+    const jur = String(inv.jurisdiction || '').toLowerCase();
+
+    if (pt.includes('model portfolio')) selectedTypes.add('Model Portfolio');
+    if (pt.includes('unit trust') || pt.includes('cis') || pt.includes('collective'))
+      selectedTypes.add('Unit Trust / CIS');
+    if (jur.includes('off') || (inv.currency && inv.currency !== 'ZAR' && inv.currency !== 'R'))
+      selectedTypes.add('Offshore Investment Platform');
+    if (pt.includes('private equity') || pt.includes('real estate') || pt.includes('unlisted') || pt.includes('alternative'))
+      selectedTypes.add('Alternative Investment');
+    if (pt.includes('share') || pt.includes('etf') || pt.includes('direct securities'))
+      selectedTypes.add('Direct Securities');
+  });
+
+  const typesArray = Array.from(selectedTypes);
+  const include_annexure_A = typesArray.includes('Model Portfolio');
+  const include_annexure_B = typesArray.includes('Unit Trust / CIS') || typesArray.includes('Offshore Investment Platform');
+  const include_annexure_C = typesArray.includes('Alternative Investment') || typesArray.includes('Direct Securities');
+
+  await base44.entities.Proposal.update(proposalId, {
+    selected_product_types: typesArray,
+    include_annexure_A,
+    include_annexure_B,
+    include_annexure_C,
+  });
+};
+
 export default function Step02Recommendations({ proposalId, investments, riskProducts, onNext }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -69,6 +100,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
     if (!window.confirm('Delete this investment?')) return;
     await base44.entities.Investments.delete(invId);
     qc.invalidateQueries({ queryKey: ['investments', proposalId] });
+    await updateProductTypes(investments.filter(i => i.id !== invId), proposalId);
   };
 
   const handleDeleteRisk = async (rpId) => {
@@ -78,8 +110,25 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
     qc.invalidateQueries({ queryKey: ['allRiskCovers', proposalId] });
   };
 
+  useEffect(() => {
+    if (investments.length > 0) {
+      updateProductTypes(investments, proposalId);
+    }
+  }, [investments, proposalId]);
+
+  const mandateIncluded = qc.getQueryData(['proposal', proposalId])?.mandate_included === 'Yes';
+  const noAnnexures = !qc.getQueryData(['proposal', proposalId])?.include_annexure_A &&
+    !qc.getQueryData(['proposal', proposalId])?.include_annexure_B &&
+    !qc.getQueryData(['proposal', proposalId])?.include_annexure_C;
+  const showMandateWarning = mandateIncluded && noAnnexures;
+
   return (
     <div className="space-y-3">
+      {showMandateWarning && (
+        <div className="bg-warn/10 border border-warn text-warn p-3 rounded-sm text-[11px] font-medium">
+          ⚠ At least one annexure must be included. Please ensure product types are correctly set.
+        </div>
+      )}
       {/* Investments */}
       <div className="bg-card border border-border overflow-hidden border-t-2 border-t-ocean">
         <div className="px-3 py-2 border-b border-border bg-muted flex items-center justify-between">

@@ -296,6 +296,51 @@
     "onboarding_import_data": {
       "type": "object",
       "description": "Full onboarding data imported from external portal"
+    },
+    "mandate_included": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "description": "Whether mandate is included"
+    },
+    "output_document_type": {
+      "type": "string",
+      "enum": [
+        "Document A",
+        "Document B"
+      ],
+      "description": "Output document template"
+    },
+    "selected_product_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Model Portfolio",
+          "Unit Trust / CIS",
+          "Offshore Investment Platform",
+          "Alternative Investment",
+          "Direct Securities"
+        ]
+      },
+      "description": "Auto-detected product types from investments"
+    },
+    "include_annexure_A": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure A (Model Portfolio)"
+    },
+    "include_annexure_B": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure B (Unit Trust / CIS, Offshore)"
+    },
+    "include_annexure_C": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include Annexure C (Alternative, Direct Securities)"
     }
   },
   "required": [
@@ -303,14 +348,13 @@
     "reference"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "created_by": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {
           "created_by": "{{user.email}}"
-        },
-        {
-          "data.client_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -323,9 +367,6 @@
       "$or": [
         {
           "created_by": "{{user.email}}"
-        },
-        {
-          "data.client_email": "{{user.email}}"
         },
         {
           "user_condition": {
