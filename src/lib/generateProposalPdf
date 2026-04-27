@@ -323,7 +323,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
         if (inv.income_required === 'Yes') {
           const incomeAmountStr = inv.income_type === 'Percentage'
             ? `${Number(inv.income_percentage||0).toFixed(2)}%`
-            : `R ${Number(inv.income_amount||0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+            : `${inv.currency || 'R'} ${Number(inv.income_amount||0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
           table([
             ['Income Required','Yes'],
             ['Income Basis', inv.income_type||'—'],

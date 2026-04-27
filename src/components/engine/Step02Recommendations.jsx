@@ -194,7 +194,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                         <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">{Number(inv.income_percentage).toFixed(2)}%</span></div>
                       )}
                       {inv.income_type === 'Fixed Amount' && inv.income_amount > 0 && (
-                        <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">R {Number(inv.income_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">{inv.currency || 'R'} {Number(inv.income_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span></div>
                       )}
                       {inv.income_frequency && <div className="flex justify-between"><span className="text-muted-foreground">Frequency</span><span className="font-medium text-navy">{inv.income_frequency}</span></div>}
                       {inv.income_notes && <div className="text-muted-foreground mt-0.5 italic leading-snug">{inv.income_notes}</div>}
