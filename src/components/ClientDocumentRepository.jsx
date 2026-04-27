@@ -221,20 +221,19 @@ export default function ClientDocumentRepository({ client, onStatusUpdate }) {
                 </td>
                 <td style={{ padding: '14px 12px', textAlign: 'right' }}>
                   {uploaded ? (
-                    <a
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => window.open(fileUrl, '_blank')}
                       style={{
                         background: '#1e3a5f', color: '#ffffff',
                         borderRadius: 6, padding: '6px 14px',
                         fontSize: 11, fontWeight: 700,
                         textDecoration: 'none', display: 'inline-block',
                         letterSpacing: '0.5px',
+                        border: 'none', cursor: 'pointer',
                       }}
                     >
                       ↓ View / Download
-                    </a>
+                    </button>
                   ) : (
                     <span style={{ fontSize: 11, color: '#cbd5e1' }}>
                       Not uploaded
