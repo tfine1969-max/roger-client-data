@@ -274,7 +274,7 @@ export default function Step04ReviewSend({
         </div>
 
         {/* Action buttons */}
-        <div className="space-y-2 mb-5">
+        <div className="space-y-2 mb-5 flex flex-col">
           <button
             onClick={handleCopyLink}
             disabled={!pdfCurrent || sending}
