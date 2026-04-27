@@ -42,7 +42,7 @@ const detectAnnexure = (pt, jur) => {
 };
 
 const emptyRow = () => ({ fund:'', allocation:'', customFund:'' });
-const fmtFee = v => { if (v == null || v === '') return ''; const n = parseFloat(v); return isNaN(n) ? '' : n.toFixed(2); };
+const fmtFee = v => { const n = parseFloat(v); return isNaN(n) ? '0.00' : n.toFixed(2); };
 
 export default function InvestmentForm() {
   const { id: proposalId, investmentId } = useParams();
@@ -60,9 +60,9 @@ export default function InvestmentForm() {
     jurisdiction:'Local', currency:'ZAR', provider:'', product_type:'',
     fund_rows:[emptyRow()], custom_fund:'',
     lump_sum:false, recurring:false, lump_sum_amount:'', recurring_amount:'', frequency:'',
-    initial_fee_percent:'', annual_advice_fee_percent:'', platform_fee_percent:'',
-    management_fee_percent:'', performance_fee_percent:'', hurdle_rate_percent:'',
-    structuring_fee_percent:'', raising_fee_percent:'', carry_fee_percent:'', carry_hurdle_percent:'',
+    initial_fee_percent:'0.00', annual_advice_fee_percent:'0.00', platform_fee_percent:'0.00',
+    management_fee_percent:'0.00', performance_fee_percent:'0.00', hurdle_rate_percent:'0.00',
+    structuring_fee_percent:'0.00', raising_fee_percent:'0.00', carry_fee_percent:'0.00', carry_hurdle_percent:'0.00',
     reason_for_recommendation:'',
     income_required:'No', income_type:'', income_percentage:'', income_amount:'', income_frequency:'', income_notes:'',
   });
@@ -267,7 +267,7 @@ export default function InvestmentForm() {
           type="number" step="0.01"
           value={form[field]}
           onChange={e=>setF(field,e.target.value)}
-          onBlur={e=>{ const n=parseFloat(e.target.value); if(!isNaN(n)) setF(field,n.toFixed(2)); }}
+          onBlur={e=>{ const n=parseFloat(e.target.value); setF(field, isNaN(n) ? '0.00' : n.toFixed(2)); }}
           placeholder="0.00" className="h-8 text-xs rounded-sm pr-6"
         />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
