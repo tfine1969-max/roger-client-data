@@ -152,16 +152,16 @@ export default function AddEditInvestment() {
       lump_sum_amount:           inv.amount                    || '',
       recurring_amount:          inv.recurring_amount          || '',
       frequency:                 inv.frequency                 || '',
-      initial_fee_percent:       inv.initial_fee_percent       != null ? String(inv.initial_fee_percent)       : '',
-      annual_advice_fee_percent: inv.annual_advice_fee_percent != null ? String(inv.annual_advice_fee_percent) : '',
-      platform_fee_percent:      inv.platform_fee_percent      != null ? String(inv.platform_fee_percent)      : '',
-      management_fee_percent:    inv.management_fee_percent    != null ? String(inv.management_fee_percent)    : '',
-      performance_fee_percent:   inv.performance_fee_percent   != null ? String(inv.performance_fee_percent)   : '',
-      hurdle_rate_percent:       inv.hurdle_rate_percent       != null ? String(inv.hurdle_rate_percent)       : '',
-      structuring_fee_percent:   inv.structuring_fee_percent   != null ? String(inv.structuring_fee_percent)   : '',
-      raising_fee_percent:       inv.raising_fee_percent       != null ? String(inv.raising_fee_percent)       : '',
-      carry_fee_percent:         inv.carry_fee_percent         != null ? String(inv.carry_fee_percent)         : '',
-      carry_hurdle_percent:      inv.carry_hurdle_percent      != null ? String(inv.carry_hurdle_percent)      : '',
+      initial_fee_percent:       (inv.initial_fee_percent       !== null && inv.initial_fee_percent       !== undefined) ? String(inv.initial_fee_percent)       : '',
+      annual_advice_fee_percent: (inv.annual_advice_fee_percent !== null && inv.annual_advice_fee_percent !== undefined) ? String(inv.annual_advice_fee_percent) : '',
+      platform_fee_percent:      (inv.platform_fee_percent      !== null && inv.platform_fee_percent      !== undefined) ? String(inv.platform_fee_percent)      : '',
+      management_fee_percent:    (inv.management_fee_percent    !== null && inv.management_fee_percent    !== undefined) ? String(inv.management_fee_percent)    : '',
+      performance_fee_percent:   (inv.performance_fee_percent   !== null && inv.performance_fee_percent   !== undefined) ? String(inv.performance_fee_percent)   : '',
+      hurdle_rate_percent:       (inv.hurdle_rate_percent       !== null && inv.hurdle_rate_percent       !== undefined) ? String(inv.hurdle_rate_percent)       : '',
+      structuring_fee_percent:   (inv.structuring_fee_percent   !== null && inv.structuring_fee_percent   !== undefined) ? String(inv.structuring_fee_percent)   : '',
+      raising_fee_percent:       (inv.raising_fee_percent       !== null && inv.raising_fee_percent       !== undefined) ? String(inv.raising_fee_percent)       : '',
+      carry_fee_percent:         (inv.carry_fee_percent         !== null && inv.carry_fee_percent         !== undefined) ? String(inv.carry_fee_percent)         : '',
+      carry_hurdle_percent:      (inv.carry_hurdle_percent      !== null && inv.carry_hurdle_percent      !== undefined) ? String(inv.carry_hurdle_percent)      : '',
       reason_for_recommendation: inv.reason_for_recommendation || '',
     });
 
@@ -290,7 +290,7 @@ export default function AddEditInvestment() {
     <div>
       <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
       <div className="relative">
-        <Input type="number" step="0.01" value={form[field]}
+        <Input type="number" step="0.01" value={form[field] === '' ? '' : form[field]}
           onChange={e => setF(field, e.target.value)}
           placeholder="0.00" className="h-8 text-xs rounded-sm pr-6" />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
