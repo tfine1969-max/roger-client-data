@@ -20,6 +20,7 @@ import Inbox from '@/pages/Inbox';
 import CreateProposal from '@/pages/CreateProposal';
 import ProposalDetail from '@/pages/ProposalDetail';
 import AddEditInvestment from '@/pages/AddEditInvestment';
+import InvestmentForm from '@/pages/InvestmentForm';
 import AddEditRiskProduct from '@/pages/AddEditRiskProduct';
 import ProposalEngine from '@/pages/ProposalEngine';
 import ClientSign from '@/pages/ClientSign';
@@ -113,8 +114,8 @@ const AuthenticatedApp = () => {
       <Route path="/proposals" element={<ProtectedAdvisorRoute element={<Inbox />} />} />
       <Route path="/create-proposal" element={<ProtectedAdvisorRoute element={<CreateProposal />} />} />
       <Route path="/proposal/:id" element={<ProtectedAdvisorRoute element={<ProposalDetail />} />} />
-      <Route path="/proposal/:id/add-investment" element={<ProtectedAdvisorRoute element={<AddEditInvestment />} />} />
-      <Route path="/proposal/:id/investment/:investmentId" element={<ProtectedAdvisorRoute element={<AddEditInvestment />} />} />
+      <Route path="/proposal/:id/add-investment" element={<ProtectedAdvisorRoute element={<InvestmentForm />} />} />
+      <Route path="/proposal/:id/investment/:investmentId" element={<ProtectedAdvisorRoute element={<InvestmentForm />} />} />
       <Route path="/proposal/:id/add-risk-product" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/risk-product/:riskProductId" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/engine" element={<ProtectedAdvisorRoute element={<ProposalEngine />} />} />
