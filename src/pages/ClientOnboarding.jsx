@@ -445,9 +445,37 @@ export default function ClientOnboarding() {
     if (!clientId) { toast.error('Client record not found'); return; }
     setIsSubmitting(true);
     try {
+      // Fetch current client data
+      const allClients = await base44.entities.Clients.list();
+      const currentClient = allClients.find(c => c.id === clientId);
+      
+      // Update client with document submission timestamp and status
       await base44.entities.Clients.update(clientId, {
         client_status: 'Onboarded',
         onboarding_complete: true,
+        doc_submitted_at: new Date().toISOString(),
+        doc_status: 'Submitted',
+        doc_identity: formData.identity_document_uploaded ? `identity-${clientId}-${Date.now()}` : '',
+        doc_proof_of_address: formData.proof_of_address_uploaded ? `address-${clientId}-${Date.now()}` : '',
+        doc_source_of_funds: formData.income_proof_uploaded ? `income-${clientId}-${Date.now()}` : '',
+        doc_existing_policies: formData.existing_policies_uploaded ? `policies-${clientId}-${Date.now()}` : '',
+      });
+
+      // Send notification email to advisor
+      const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
+      const clientIdNumber = formData.sa_id_number || formData.passport_number || 'N/A';
+      const submittedDocs = [
+        formData.identity_document_uploaded && '✓ Identity Document\n',
+        formData.proof_of_address_uploaded && '✓ Proof of Address\n',
+        formData.income_proof_uploaded && '✓ Income / Source of Funds\n',
+        formData.existing_policies_uploaded && '✓ Existing Policies\n',
+      ].filter(Boolean).join('');
+
+      await base44.integrations.Core.SendEmail({
+        from_name: 'Wealthworks',
+        to: 'tfine1969@gmail.com',
+        subject: `New Client Documents Submitted — ${clientFullName}`,
+        body: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${new Date().toLocaleString('en-ZA')}\n\nDocuments submitted:\n${submittedDocs}`,
       });
 
       const allProposals = await base44.entities.Proposal.list();

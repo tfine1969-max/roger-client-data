@@ -85,9 +85,38 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
             onClick={() => navigate(`/proposal/${p.id}/engine`)}
             className="grid grid-cols-[2fr_2fr_1fr_1fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[600px]"
           >
-            <div>
-              <div className="text-[13px] font-medium text-navy">{clientName}</div>
-              <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.reference}</div>
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="text-[13px] font-medium text-navy">{clientName}</div>
+                <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.reference}</div>
+              </div>
+              {client?.doc_status === 'Verified' && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, color: '#166534',
+                  background: '#f0fdf4', border: '1px solid #bbf7d0',
+                  borderRadius: 10, padding: '2px 8px',
+                }}>
+                  FICA ✓
+                </span>
+              )}
+              {client?.doc_status === 'Incomplete' && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, color: '#9f1239',
+                  background: '#fff1f2', border: '1px solid #fecdd3',
+                  borderRadius: 10, padding: '2px 8px',
+                }}>
+                  FICA ✗
+                </span>
+              )}
+              {client?.doc_status === 'Submitted' && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, color: '#1e40af',
+                  background: '#eff6ff', border: '1px solid #bfdbfe',
+                  borderRadius: 10, padding: '2px 8px',
+                }}>
+                  FICA ⏳
+                </span>
+              )}
             </div>
             <div className="text-xs text-foreground pr-4">{needs}</div>
             <div className="text-xs text-muted-foreground">

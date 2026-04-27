@@ -284,15 +284,72 @@
       ],
       "default": "Draft",
       "description": "Client status"
+    },
+    "doc_identity": {
+      "type": "string",
+      "description": "Identity Document file URL"
+    },
+    "doc_proof_of_address": {
+      "type": "string",
+      "description": "Proof of Address file URL"
+    },
+    "doc_source_of_funds": {
+      "type": "string",
+      "description": "Income / Source of Funds file URL"
+    },
+    "doc_existing_policies": {
+      "type": "string",
+      "description": "Existing Policies file URL"
+    },
+    "doc_submitted_at": {
+      "type": "string",
+      "description": "DateTime when documents were submitted"
+    },
+    "doc_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Submitted",
+        "Verified",
+        "Incomplete"
+      ],
+      "default": "Pending",
+      "description": "Document verification status"
     }
   },
   "required": [
     "client_name"
   ],
   "rls": {
-    "create": {},
-    "read": {},
-    "update": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "delete": {
       "user_condition": {
         "role": "admin"
