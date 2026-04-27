@@ -93,10 +93,16 @@ const ANNEXURE_LABELS = {
 
 const emptyRow = () => ({ fund: '', allocation: '', customFund: '' });
 
+const fmtFee = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  return String(val);
+};
+
 export default function AddEditInvestment() {
   const { id: proposalId, investmentId } = useParams();
   const navigate = useNavigate();
   const isLoadingRef = useRef(true);
+  const [loaded, setLoaded] = useState(false);
 
   const [form, setForm] = useState({
     investment_mandate: 'No', applicable_annexure: '',
@@ -114,7 +120,6 @@ export default function AddEditInvestment() {
   const [submitting, setSubmitting] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [allocError, setAllocError] = useState('');
-  const [loaded, setLoaded] = useState(false);
 
   const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
@@ -127,15 +132,25 @@ export default function AddEditInvestment() {
   useEffect(() => {
     if (!inv) return;
     isLoadingRef.current = true;
+    setLoaded(false);
 
     const isRec  = inv.contribution_type === 'Recurring' || inv.contribution_type === 'Both';
     const isLump = inv.contribution_type === 'Lump Sum'  || inv.contribution_type === 'Both';
 
     let fund_rows = [emptyRow()];
     if (Array.isArray(inv.fund_allocations) && inv.fund_allocations.length > 0) {
-      fund_rows = inv.fund_allocations;
+      fund_rows = inv.fund_allocations.map(r => ({
+        fund: r.fund || '',
+        allocation: r.allocation || '',
+        customFund: r.customFund || '',
+      }));
     } else if (Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0) {
-      fund_rows = inv.underlying_funds.map(f => ({ fund: f, allocation: '', customFund: '' }));
+      fund_rows = inv.underlying_funds.map(f => {
+        // Parse "Fund Name (50%)" format back into fund + allocation
+        const match = String(f).match(/^(.+?)\s*\((\d+(?:\.\d+)?)%\)$/);
+        if (match) return { fund: match[1].trim(), allocation: match[2], customFund: '' };
+        return { fund: f, allocation: '', customFund: '' };
+      });
     }
 
     setForm({
@@ -152,23 +167,26 @@ export default function AddEditInvestment() {
       lump_sum_amount:           inv.amount                    || '',
       recurring_amount:          inv.recurring_amount          || '',
       frequency:                 inv.frequency                 || '',
-      initial_fee_percent:       (inv.initial_fee_percent       !== null && inv.initial_fee_percent       !== undefined) ? String(inv.initial_fee_percent)       : '',
-      annual_advice_fee_percent: (inv.annual_advice_fee_percent !== null && inv.annual_advice_fee_percent !== undefined) ? String(inv.annual_advice_fee_percent) : '',
-      platform_fee_percent:      (inv.platform_fee_percent      !== null && inv.platform_fee_percent      !== undefined) ? String(inv.platform_fee_percent)      : '',
-      management_fee_percent:    (inv.management_fee_percent    !== null && inv.management_fee_percent    !== undefined) ? String(inv.management_fee_percent)    : '',
-      performance_fee_percent:   (inv.performance_fee_percent   !== null && inv.performance_fee_percent   !== undefined) ? String(inv.performance_fee_percent)   : '',
-      hurdle_rate_percent:       (inv.hurdle_rate_percent       !== null && inv.hurdle_rate_percent       !== undefined) ? String(inv.hurdle_rate_percent)       : '',
-      structuring_fee_percent:   (inv.structuring_fee_percent   !== null && inv.structuring_fee_percent   !== undefined) ? String(inv.structuring_fee_percent)   : '',
-      raising_fee_percent:       (inv.raising_fee_percent       !== null && inv.raising_fee_percent       !== undefined) ? String(inv.raising_fee_percent)       : '',
-      carry_fee_percent:         (inv.carry_fee_percent         !== null && inv.carry_fee_percent         !== undefined) ? String(inv.carry_fee_percent)         : '',
-      carry_hurdle_percent:      (inv.carry_hurdle_percent      !== null && inv.carry_hurdle_percent      !== undefined) ? String(inv.carry_hurdle_percent)      : '',
+      initial_fee_percent:       fmtFee(inv.initial_fee_percent),
+      annual_advice_fee_percent: fmtFee(inv.annual_advice_fee_percent),
+      platform_fee_percent:      fmtFee(inv.platform_fee_percent),
+      management_fee_percent:    fmtFee(inv.management_fee_percent),
+      performance_fee_percent:   fmtFee(inv.performance_fee_percent),
+      hurdle_rate_percent:       fmtFee(inv.hurdle_rate_percent),
+      structuring_fee_percent:   fmtFee(inv.structuring_fee_percent),
+      raising_fee_percent:       fmtFee(inv.raising_fee_percent),
+      carry_fee_percent:         fmtFee(inv.carry_fee_percent),
+      carry_hurdle_percent:      fmtFee(inv.carry_hurdle_percent),
       reason_for_recommendation: inv.reason_for_recommendation || '',
     });
 
     if (inv.amount)           setAmtDisplay(Number(inv.amount).toLocaleString('en-ZA'));
     if (inv.recurring_amount) setRecDisplay(Number(inv.recurring_amount).toLocaleString('en-ZA'));
 
-    setTimeout(() => { isLoadingRef.current = false; setLoaded(true); }, 150);
+    setTimeout(() => {
+      isLoadingRef.current = false;
+      setLoaded(true);
+    }, 200);
   }, [inv]);
 
   useEffect(() => {
@@ -286,11 +304,18 @@ export default function AddEditInvestment() {
   const funds     = form.jurisdiction === 'Offshore' ? OFFSHORE_FUNDS : LOCAL_FUNDS;
   const activeAnn = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
 
+  const staticField = (value) => (
+    <div className="h-8 text-xs rounded-sm border border-border bg-muted/50 px-3 flex items-center text-navy font-medium">
+      {value || '—'}
+    </div>
+  );
+
   const feeInput = (label, field) => (
     <div>
       <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
       <div className="relative">
-        <Input type="number" step="0.01" value={form[field] === '' ? '' : form[field]}
+        <Input type="number" step="0.01"
+          value={form[field]}
           onChange={e => setF(field, e.target.value)}
           placeholder="0.00" className="h-8 text-xs rounded-sm pr-6" />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
@@ -303,6 +328,9 @@ export default function AddEditInvestment() {
       active ? 'border-teal bg-teal/5 text-teal' : 'border-border text-navy hover:border-teal/50'
     }`;
 
+  const isEdit = !!investmentId;
+  const showStatic = isEdit && !loaded;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-card border-b border-border px-4 py-2.5">
@@ -313,8 +341,8 @@ export default function AddEditInvestment() {
       </div>
 
       <div className="max-w-4xl mx-auto p-4">
-        <h1 className="text-base font-bold text-navy mb-0.5">{investmentId ? 'Edit Investment' : 'Add Investment'}</h1>
-        <p className="text-xs text-muted-foreground mb-3">{investmentId ? 'Update investment details' : 'Create a new investment recommendation'}</p>
+        <h1 className="text-base font-bold text-navy mb-0.5">{isEdit ? 'Edit Investment' : 'Add Investment'}</h1>
+        <p className="text-xs text-muted-foreground mb-3">{isEdit ? 'Update investment details' : 'Create a new investment recommendation'}</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
 
@@ -383,24 +411,22 @@ export default function AddEditInvestment() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
-                <Select value={form.provider} onValueChange={handleProvider}>
-                  <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
-                  <SelectContent>
-                    {form.provider && !providers.includes(form.provider) && (
-                      <SelectItem value={form.provider}>{form.provider}</SelectItem>
-                    )}
-                    {providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                {showStatic ? staticField(form.provider) : (
+                  <Select value={form.provider} onValueChange={handleProvider}>
+                    <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
+                    <SelectContent>
+                      {form.provider && !providers.includes(form.provider) && (
+                        <SelectItem value={form.provider}>{form.provider}</SelectItem>
+                      )}
+                      {providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
-                {investmentId && !loaded ? (
-                  <div className="h-8 text-xs rounded-sm border border-border bg-muted px-3 flex items-center text-navy">
-                    {form.product_type || 'Loading...'}
-                  </div>
-                ) : (
-                  <Select value={form.product_type} onValueChange={(v) => { if (v === form.product_type) return; handleProduct(v); }} disabled={!form.provider}>
+                {showStatic ? staticField(form.product_type) : (
+                  <Select value={form.product_type} onValueChange={handleProduct} disabled={!form.provider}>
                     <SelectTrigger className="h-8 text-xs rounded-sm">
                       <SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} />
                     </SelectTrigger>
@@ -419,7 +445,7 @@ export default function AddEditInvestment() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Underlying Funds & Allocation</Label>
-                {multiRow && (
+                {multiRow && !showStatic && (
                   <span className={`text-[10px] font-semibold ${Math.abs(totalAlloc - 100) < 0.01 ? 'text-green-600' : 'text-amber-500'}`}>
                     Total: {totalAlloc.toFixed(1)}% {Math.abs(totalAlloc - 100) < 0.01 ? '✓' : `— ${(100 - totalAlloc).toFixed(1)}% remaining`}
                   </span>
@@ -429,11 +455,7 @@ export default function AddEditInvestment() {
                 {form.fund_rows.map((row, i) => (
                   <div key={i} className="flex gap-2 items-start">
                     <div className="flex-1 space-y-1">
-                      {investmentId && !loaded ? (
-                        <div className="h-8 text-xs rounded-sm border border-border bg-muted px-3 flex items-center text-navy">
-                          {row.fund || 'Loading...'}
-                        </div>
-                      ) : (
+                      {showStatic ? staticField(row.fund) : (
                         <Select value={row.fund} onValueChange={v => updateRow(i, 'fund', v)}>
                           <SelectTrigger className="h-8 text-xs rounded-sm">
                             <SelectValue placeholder="Select fund" />
@@ -449,20 +471,26 @@ export default function AddEditInvestment() {
                           </SelectContent>
                         </Select>
                       )}
-                      {row.fund === '__custom__' && (
+                      {row.fund === '__custom__' && !showStatic && (
                         <Input className="h-8 text-xs rounded-sm" placeholder="Enter fund name"
                           value={row.customFund || ''} onChange={e => updateRow(i, 'customFund', e.target.value)} />
                       )}
                     </div>
                     {multiRow && (
-                      <div className="w-24 relative shrink-0">
-                        <Input type="number" min="0" max="100" step="0.1" value={row.allocation}
-                          onChange={e => updateRow(i, 'allocation', e.target.value)}
-                          placeholder="0.0" className="h-8 text-xs rounded-sm pr-6" />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
-                      </div>
+                      showStatic ? (
+                        <div className="w-24 h-8 text-xs rounded-sm border border-border bg-muted/50 px-3 flex items-center text-navy font-medium shrink-0">
+                          {row.allocation ? `${row.allocation}%` : '—'}
+                        </div>
+                      ) : (
+                        <div className="w-24 relative shrink-0">
+                          <Input type="number" min="0" max="100" step="0.1" value={row.allocation}
+                            onChange={e => updateRow(i, 'allocation', e.target.value)}
+                            placeholder="0.0" className="h-8 text-xs rounded-sm pr-6" />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+                        </div>
+                      )
                     )}
-                    {form.fund_rows.length > 1 && (
+                    {!showStatic && form.fund_rows.length > 1 && (
                       <button type="button" onClick={() => removeRow(i)}
                         className="p-1.5 text-destructive hover:bg-red-50 rounded transition-colors shrink-0 mt-0.5">
                         <Trash2 className="w-3.5 h-3.5" />
@@ -477,10 +505,12 @@ export default function AddEditInvestment() {
                   <span className="text-[11px] text-red-600">{allocError}</span>
                 </div>
               )}
-              <button type="button" onClick={addRow}
-                className="mt-2 flex items-center gap-1.5 text-[11px] text-ocean hover:text-navy font-medium transition-colors">
-                <Plus className="w-3.5 h-3.5" /> Add another fund
-              </button>
+              {!showStatic && (
+                <button type="button" onClick={addRow}
+                  className="mt-2 flex items-center gap-1.5 text-[11px] text-ocean hover:text-navy font-medium transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Add another fund
+                </button>
+              )}
             </div>
 
             <div>
@@ -618,7 +648,7 @@ export default function AddEditInvestment() {
             <Button type="submit"
               disabled={submitting || !form.provider || !form.product_type || (!form.lump_sum && !form.recurring)}
               className="flex-1 h-9 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
-              {submitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
+              {submitting ? 'Saving...' : isEdit ? 'Update Investment' : 'Add Investment'}
             </Button>
           </div>
 
