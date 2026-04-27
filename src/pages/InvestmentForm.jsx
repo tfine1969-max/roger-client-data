@@ -260,7 +260,13 @@ export default function InvestmentForm() {
     <div>
       <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
       <div className="relative">
-        <Input type="number" step="0.01" value={form[field]} onChange={e=>setF(field,e.target.value)} placeholder="0.00" className="h-8 text-xs rounded-sm pr-6"/>
+        <Input
+          type="number" step="0.01"
+          value={form[field]}
+          onChange={e=>setF(field,e.target.value)}
+          onBlur={e=>{ const n=parseFloat(e.target.value); if(!isNaN(n)) setF(field,n.toFixed(2)); }}
+          placeholder="0.00" className="h-8 text-xs rounded-sm pr-6"
+        />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
       </div>
     </div>
