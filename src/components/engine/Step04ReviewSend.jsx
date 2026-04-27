@@ -131,19 +131,22 @@ export default function Step04ReviewSend({
           <p className="text-[10px] text-muted-foreground text-center py-4">No products added yet.</p>
         ) : (
           <div className="space-y-2 flex-1">
-            <div className="grid grid-cols-[1fr_1fr_1fr] gap-1 items-center">
+            <div className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-1 items-center">
               <div />
               <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Quote PDF</p>
               <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider text-center">App Form</p>
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Support Doc</p>
             </div>
             {allProducts.map(({ id, label, color }) => {
               const quoteKey = `Quote::${id}`;
               const formKey = `Application Form::${id}`;
+              const supportKey = `Supporting Doc::${id}`;
               return (
-                <div key={id} className="grid grid-cols-[1fr_1fr_1fr] gap-1 items-center">
+                <div key={id} className="grid grid-cols-[1fr_1fr_1fr_1fr] gap-1 items-center">
                   <p className={`text-[9px] font-semibold ${color} truncate pr-1`}>{label}</p>
                   <AttachmentCell type={quoteKey} attachment={attachments.find(a => a.attachment_type === quoteKey)} onAttachmentUpload={onAttachmentUpload} />
                   <AttachmentCell type={formKey} attachment={attachments.find(a => a.attachment_type === formKey)} onAttachmentUpload={onAttachmentUpload} />
+                  <AttachmentCell type={supportKey} attachment={attachments.find(a => a.attachment_type === supportKey)} onAttachmentUpload={onAttachmentUpload} />
                 </div>
               );
             })}

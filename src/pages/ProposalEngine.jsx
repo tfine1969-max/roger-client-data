@@ -178,7 +178,31 @@ export default function ProposalEngine() {
 
   const handleGeneratePdf = async () => {
     if (!localData) return;
+    const { appendAttachmentsToPdf } = await import('@/lib/appendAttachmentsToPdf');
+
     const doc = await generateProposalPdf(localData, investments, riskProducts);
+
+    // Build ordered attachment list: for each investment, Quote → App Form → Supporting Doc
+    const allProducts = [
+      ...investments.map(i => ({ id: i.id, label: `${i.provider}${i.product_type ? ` — ${i.product_type}` : ''}` })),
+      ...riskProducts.map(r => ({ id: r.id, label: `${r.provider}${(r._covers || []).length ? ` — ${r._covers.map(c => c.cover_type).join(', ')}` : ''}` })),
+    ];
+    const orderedAttachments = [];
+    for (const product of allProducts) {
+      for (const [key, docType] of [
+        [`Quote::${product.id}`, 'Quote PDF'],
+        [`Application Form::${product.id}`, 'App Form'],
+        [`Supporting Doc::${product.id}`, 'Supporting Document'],
+      ]) {
+        const att = attachments.find(a => a.attachment_type === key);
+        if (att?.file_url) orderedAttachments.push({ label: product.label, docType, file_url: att.file_url });
+      }
+    }
+
+    // Get current page count from doc (jsPDF internal)
+    let pageNum = doc.internal.getNumberOfPages();
+    await appendAttachmentsToPdf(doc, orderedAttachments, localData.client_initials || '', pageNum);
+
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference || 'proposal'}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });

@@ -20,6 +20,7 @@ export default function SignProposal() {
   const [proposal, setProposal] = useState(null);
   const [investments, setInvestments] = useState([]);
   const [riskProducts, setRiskProducts] = useState([]);
+  const [attachments, setAttachments] = useState([]);
   const [state, setState] = useState('loading'); // loading | invalid | already_signed | ready | submitting | success
   const [initials, setInitials] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -75,9 +76,13 @@ export default function SignProposal() {
         total_premium: (coversArr[i] || []).reduce((s, c) => s + (parseFloat(c.premium) || 0), 0),
       }));
 
+      // Load attachments
+      const propAtts = await base44.entities.Attachments.filter({ proposal_id: found.id });
+
       setProposal(found);
       setInvestments(propInv);
       setRiskProducts(rpWithCovers);
+      setAttachments(propAtts || []);
 
       // Update status to Awaiting Client Signature
       await base44.entities.Proposal.update(found.id, { status: 'Awaiting Client Signature' });
@@ -122,6 +127,27 @@ export default function SignProposal() {
       status: 'Signed',
     };
     const doc = await generateProposalPdf(signedProposal, investments, riskProducts);
+
+    // Append attachments with client initials on every page
+    const { appendAttachmentsToPdf } = await import('@/lib/appendAttachmentsToPdf');
+    const allProducts = [
+      ...investments.map(i => ({ id: i.id, label: `${i.provider}${i.product_type ? ` — ${i.product_type}` : ''}` })),
+      ...riskProducts.map(r => ({ id: r.id, label: `${r.provider}${(r._covers || []).length ? ` — ${r._covers.map(c => c.cover_type).join(', ')}` : ''}` })),
+    ];
+    const orderedAttachments = [];
+    for (const product of allProducts) {
+      for (const [key, docType] of [
+        [`Quote::${product.id}`, 'Quote PDF'],
+        [`Application Form::${product.id}`, 'App Form'],
+        [`Supporting Doc::${product.id}`, 'Supporting Document'],
+      ]) {
+        const att = attachments.find(a => a.attachment_type === key);
+        if (att?.file_url) orderedAttachments.push({ label: product.label, docType, file_url: att.file_url });
+      }
+    }
+    const pageNum = doc.internal.getNumberOfPages();
+    await appendAttachmentsToPdf(doc, orderedAttachments, initials.trim(), pageNum);
+
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${proposal.reference || 'signed'}-signed.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
@@ -232,6 +258,38 @@ export default function SignProposal() {
               className="px-4 py-2 bg-navy text-white text-xs font-semibold rounded-sm hover:bg-ocean transition-colors">
               Open PDF
             </a>
+          </div>
+        )}
+
+        {/* Attachment documents */}
+        {attachments.length > 0 && (
+          <div className="bg-card border border-border rounded-lg p-5">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Supporting Documents</h2>
+            <p className="text-xs text-muted-foreground mb-3">Please review all attached documents below before signing. Your signature and initials will apply to the entire document including all attachments.</p>
+            <div className="space-y-2">
+              {attachments.map((att, i) => {
+                const [docType, productId] = att.attachment_type.split('::');
+                const inv = investments.find(inv => inv.id === productId);
+                const rp = riskProducts.find(rp => rp.id === productId);
+                const productLabel = inv
+                  ? `${inv.provider}${inv.product_type ? ` — ${inv.product_type}` : ''}`
+                  : rp
+                  ? `${rp.provider}`
+                  : 'Product';
+                return (
+                  <div key={i} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-sm border border-border">
+                    <div>
+                      <p className="text-xs font-semibold text-navy">{productLabel}</p>
+                      <p className="text-[10px] text-muted-foreground">{docType}</p>
+                    </div>
+                    <a href={att.file_url} target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-1 bg-navy text-white text-[10px] font-semibold rounded-sm hover:bg-ocean transition-colors">
+                      Open
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
