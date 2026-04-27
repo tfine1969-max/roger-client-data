@@ -185,6 +185,23 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                       <div className="flex justify-between"><span className="text-muted-foreground">Funds</span><span className="font-medium text-navy text-right max-w-[60%]">{inv.underlying_funds.join(', ')}</span></div>
                     )}
                   </div>
+                  {inv.income_required === 'Yes' ? (
+                    <div className="border-t border-border mt-1.5 pt-1.5 space-y-px text-[9px]">
+                      <div className="text-[9px] font-semibold text-ocean uppercase tracking-wide mb-0.5">Income Requirement</div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Income required</span><span className="font-medium text-navy">Yes</span></div>
+                      {inv.income_type && <div className="flex justify-between"><span className="text-muted-foreground">Income basis</span><span className="font-medium text-navy">{inv.income_type}</span></div>}
+                      {inv.income_type === 'Percentage' && inv.income_percentage > 0 && (
+                        <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">{Number(inv.income_percentage).toFixed(2)}%</span></div>
+                      )}
+                      {inv.income_type === 'Fixed Amount' && inv.income_amount > 0 && (
+                        <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">R {Number(inv.income_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span></div>
+                      )}
+                      {inv.income_frequency && <div className="flex justify-between"><span className="text-muted-foreground">Frequency</span><span className="font-medium text-navy">{inv.income_frequency}</span></div>}
+                      {inv.income_notes && <div className="text-muted-foreground mt-0.5 italic leading-snug">{inv.income_notes}</div>}
+                    </div>
+                  ) : (
+                    <div className="border-t border-border mt-1.5 pt-1 text-[9px] text-muted-foreground italic">No income drawdown required from this investment.</div>
+                  )}
                   <ReasonField entityId={inv.id} entityType="investment" initialValue={inv.reason_for_recommendation} />
                 </div>
               ))}

@@ -318,6 +318,30 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
           if(reasons.length>1) reasons.forEach(r=>bullet(r.trim().replace(/\.$/,'')));
           else bullet(inv.reason_for_recommendation);
         }
+        // Income Drawdown section
+        spacer(4); h3('Income Drawdown'); spacer(2);
+        if (inv.income_required === 'Yes') {
+          const incomeAmountStr = inv.income_type === 'Percentage'
+            ? `${Number(inv.income_percentage||0).toFixed(2)}%`
+            : `R ${Number(inv.income_amount||0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+          table([
+            ['Income Required','Yes'],
+            ['Income Basis', inv.income_type||'—'],
+            ['Income Amount', incomeAmountStr],
+            ['Frequency', inv.income_frequency||'—'],
+            ...(inv.income_notes?[['Notes',inv.income_notes]]:[]),
+          ]);
+          spacer(2);
+          pb(12); doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+          doc.splitTextToSize('The client has indicated that an income is required from this investment. The level of income selected should be reviewed regularly to ensure that withdrawals remain sustainable and do not materially erode the investment capital over time.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
+          pb(10); doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(180,60,60);
+          doc.splitTextToSize('Regular withdrawals may reduce the capital value of the investment, particularly where withdrawals exceed investment growth.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
+          doc.setTextColor(...black);
+        } else {
+          pb(6); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+          doc.text('No income drawdown required from this investment.',M,y); y+=6;
+          doc.setTextColor(...black);
+        }
         if (i<investments.length-1){spacer(6);thinRule();spacer(2);}
       });
     }

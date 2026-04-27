@@ -130,6 +130,46 @@
       "default": 0,
       "description": "Carry hurdle rate % (Annexure C)"
     },
+    "income_required": {
+      "type": "string",
+      "enum": [
+        "No",
+        "Yes"
+      ],
+      "default": "No",
+      "description": "Does the investor require an income from this investment?"
+    },
+    "income_type": {
+      "type": "string",
+      "enum": [
+        "Percentage",
+        "Fixed Amount"
+      ],
+      "description": "Income drawdown basis"
+    },
+    "income_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Income drawdown as a percentage of investment value"
+    },
+    "income_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Income drawdown as a fixed amount"
+    },
+    "income_frequency": {
+      "type": "string",
+      "enum": [
+        "Monthly",
+        "Quarterly",
+        "Annually"
+      ],
+      "description": "Frequency of income drawdown"
+    },
+    "income_notes": {
+      "type": "string",
+      "description": "Additional notes on income drawdown requirements"
+    },
     "investment_mandate": {
       "type": "string",
       "enum": [

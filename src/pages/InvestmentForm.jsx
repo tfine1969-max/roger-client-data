@@ -64,6 +64,7 @@ export default function InvestmentForm() {
     management_fee_percent:'', performance_fee_percent:'', hurdle_rate_percent:'',
     structuring_fee_percent:'', raising_fee_percent:'', carry_fee_percent:'', carry_hurdle_percent:'',
     reason_for_recommendation:'',
+    income_required:'No', income_type:'', income_percentage:'', income_amount:'', income_frequency:'', income_notes:'',
   });
 
   const { data: inv } = useQuery({
@@ -116,6 +117,12 @@ export default function InvestmentForm() {
       carry_fee_percent: fmtFee(inv.carry_fee_percent),
       carry_hurdle_percent: fmtFee(inv.carry_hurdle_percent),
       reason_for_recommendation: inv.reason_for_recommendation||'',
+      income_required: inv.income_required || 'No',
+      income_type: inv.income_type || '',
+      income_percentage: fmtFee(inv.income_percentage),
+      income_amount: fmtFee(inv.income_amount),
+      income_frequency: inv.income_frequency || '',
+      income_notes: inv.income_notes || '',
     });
     if (inv.amount) setAmtDisplay(Number(inv.amount).toLocaleString('en-ZA'));
     if (inv.recurring_amount) setRecDisplay(Number(inv.recurring_amount).toLocaleString('en-ZA'));
@@ -188,7 +195,27 @@ export default function InvestmentForm() {
       feePayload.carry_hurdle_percent      = parseFloat(form.carry_hurdle_percent)      || 0;
     }
 
-    console.log('[InvestmentForm] saving:', { annexure: ann, mandate: form.investment_mandate, ...feePayload });
+    // Income drawdown validation
+    if (form.income_required === 'Yes') {
+      if (!form.income_type) { alert('Please select an income type.'); setSubmitting(false); return; }
+      if (!form.income_frequency) { alert('Please select an income frequency.'); setSubmitting(false); return; }
+      if (form.income_type === 'Percentage' && !form.income_percentage) { alert('Please enter the income percentage.'); setSubmitting(false); return; }
+      if (form.income_type === 'Fixed Amount' && !form.income_amount) { alert('Please enter the income amount.'); setSubmitting(false); return; }
+      if (form.income_type === 'Percentage' && parseFloat(form.income_percentage) > 7.5 && !form.income_notes) {
+        alert('Income notes are required when drawdown exceeds 7.50%.'); setSubmitting(false); return;
+      }
+    }
+
+    const incomePayload = {
+      income_required: form.income_required || 'No',
+      income_type: form.income_required === 'Yes' ? (form.income_type || '') : '',
+      income_percentage: form.income_required === 'Yes' && form.income_type === 'Percentage' ? (parseFloat(form.income_percentage) || 0) : 0,
+      income_amount: form.income_required === 'Yes' && form.income_type === 'Fixed Amount' ? (parseFloat(form.income_amount) || 0) : 0,
+      income_frequency: form.income_required === 'Yes' ? (form.income_frequency || '') : '',
+      income_notes: form.income_required === 'Yes' ? (form.income_notes || '') : '',
+    };
+
+    console.log('[InvestmentForm] saving:', { annexure: ann, mandate: form.investment_mandate, ...feePayload, ...incomePayload });
 
     saveMutation.mutate({
       investment_mandate:form.investment_mandate,
@@ -203,6 +230,7 @@ export default function InvestmentForm() {
       frequency:form.frequency,
       reason_for_recommendation:form.reason_for_recommendation,
       ...feePayload,
+      ...incomePayload,
     });
     setSubmitting(false);
   };
@@ -474,6 +502,88 @@ export default function InvestmentForm() {
                   <FeeInput label="Carry Hurdle Rate %" field="carry_hurdle_percent"/>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* INCOME DRAWDOWN */}
+          <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Income Drawdown</h3>
+            <div>
+              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Does the investor require an income to be drawn from this investment?</Label>
+              <div className="flex gap-1.5">
+                {['No','Yes'].map(opt=>(
+                  <button key={opt} type="button" onClick={()=>setF('income_required',opt)}
+                    className={`px-8 h-8 text-xs font-medium border rounded-sm transition-all ${form.income_required===opt?'bg-navy text-white border-navy':'bg-card text-navy border-border hover:border-navy'}`}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {form.income_required==='Yes'&&(
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Basis</Label>
+                    <select value={form.income_type} onChange={e=>setF('income_type',e.target.value)}
+                      className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                      <option value="">Select...</option>
+                      <option value="Percentage">Percentage</option>
+                      <option value="Fixed Amount">Fixed Amount</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Frequency</Label>
+                    <select value={form.income_frequency} onChange={e=>setF('income_frequency',e.target.value)}
+                      className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                      <option value="">Select...</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Quarterly">Quarterly</option>
+                      <option value="Annually">Annually</option>
+                    </select>
+                  </div>
+                </div>
+                {form.income_type==='Percentage'&&(
+                  <div>
+                    <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Percentage</Label>
+                    <div className="relative w-40">
+                      <Input type="number" step="0.01" min="0" value={form.income_percentage}
+                        onChange={e=>setF('income_percentage',e.target.value)}
+                        placeholder="0.00" className="h-8 text-xs rounded-sm pr-6"/>
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+                    </div>
+                    {parseFloat(form.income_percentage)>7.5&&(
+                      <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-red-50 border border-red-200 rounded-sm">
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"/>
+                        <span className="text-[10px] text-red-600">Income drawdown above 7.50% — income notes are required.</span>
+                      </div>
+                    )}
+                    {parseFloat(form.income_percentage)>5&&parseFloat(form.income_percentage)<=7.5&&(
+                      <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-amber-50 border border-amber-200 rounded-sm">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5"/>
+                        <span className="text-[10px] text-amber-700">Income drawdown above 5.00% may increase the risk of capital erosion and should be specifically justified in the Record of Advice.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {form.income_type==='Fixed Amount'&&(
+                  <div>
+                    <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Amount ({form.currency})</Label>
+                    <div className="w-48">
+                      <Input type="number" step="0.01" min="0" value={form.income_amount}
+                        onChange={e=>setF('income_amount',e.target.value)}
+                        placeholder="0.00" className="h-8 text-xs rounded-sm"/>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
+                    Income Notes {parseFloat(form.income_percentage)>7.5?<span className="text-red-500 font-bold ml-1">* Required</span>:null}
+                  </Label>
+                  <Textarea value={form.income_notes} onChange={e=>setF('income_notes',e.target.value)}
+                    placeholder="Provide justification for income drawdown requirements..."
+                    className="rounded-sm min-h-[56px] text-xs"/>
+                </div>
+              </>
             )}
           </div>
 
