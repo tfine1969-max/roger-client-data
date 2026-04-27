@@ -246,19 +246,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                     </div>
                   )}
 
-                  {/* Risk Recommendation Rationale */}
-                  {(rp.risk_recommendation_reasons || []).length > 0 && (
-                    <div className="border-t border-border mt-1.5 pt-1.5">
-                      <p className="text-[9px] font-semibold text-teal uppercase tracking-wide mb-1">Risk Rationale</p>
-                      <ul className="space-y-0.5">
-                        {resolveTexts(rp.risk_recommendation_reasons).map((r, i) => (
-                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
-                            <span className="text-teal shrink-0 mt-0.5">–</span> {r.text}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+
                 </div>
               ))}
             </div>
