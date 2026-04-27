@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
 import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
+import ReasonChecklist from '@/components/engine/ReasonChecklist';
 import ProductReplacement from '@/components/engine/ProductReplacement';
 import { toast } from 'sonner';
 
@@ -14,10 +15,13 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
   const proposalId = data.id;
   const [libraryOpen, setLibraryOpen] = useState(false);
 
+  // personalised_client_message is the active field; personal_message is kept for display fallback
+  const personalisedMessage = data.personalised_client_message || data.personal_message || '';
+
   const handlePhraseSelect = (phrase) => {
-    const current = data.personal_message || '';
+    const current = personalisedMessage;
     const separator = current && !current.trim().endsWith('.') ? '. ' : current ? ' ' : '';
-    onFieldChange('personal_message', current + separator + phrase);
+    onFieldChange('personalised_client_message', current + separator + phrase);
   };
 
   const handleDeleteInvestment = async (invId) => {
@@ -141,8 +145,8 @@ export default function Step03Suitability({ data, onFieldChange, investments, ri
           <LibraryButton onOpen={() => setLibraryOpen(true)} />
         </div>
         <Textarea
-          value={data.personal_message || ''}
-          onChange={e => onFieldChange('personal_message', e.target.value)}
+          value={personalisedMessage}
+          onChange={e => onFieldChange('personalised_client_message', e.target.value)}
           placeholder="e.g. Dear A.B., Based on your answers I have prepared the following recommendation..."
           className="rounded-sm min-h-[64px] text-[12px] leading-relaxed"
         />

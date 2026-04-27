@@ -277,6 +277,8 @@ export default function ProposalEngine() {
             proposalId={id}
             investments={investments}
             riskProducts={riskProducts}
+            proposal={localData}
+            onProposalFieldChange={handleFieldChange}
             onNext={() => setActiveStep('suitability')}
           />
         )}

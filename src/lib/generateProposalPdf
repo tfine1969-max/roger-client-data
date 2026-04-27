@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { base44 } from '@/api/base44Client';
 
 const fmtDate = (val) => {
   if (!val) return '—';
@@ -33,7 +34,15 @@ const fmtPct = (val) => {
   return n.toFixed(2) + '%';
 };
 
-export default function generateProposalPdf(proposal, investments = [], riskProducts = [], signatureData = null) {
+export default async function generateProposalPdf(proposal, investments = [], riskProducts = [], signatureData = null) {
+  // Load all recommendation reasons for resolving IDs to text
+  let allReasons = [];
+  try {
+    allReasons = await base44.entities.RecommendationReasons.list();
+  } catch(_) { allReasons = []; }
+
+  const resolveReasons = (ids) =>
+    (ids || []).map(id => allReasons.find(r => r.id === id)?.text).filter(Boolean);
   const doc = new jsPDF('p', 'mm', 'a4');
   const W = 210, H = 297, M = 20, CW = W - M * 2;
   let y = 0, pageNum = 0;
@@ -335,11 +344,10 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
           ...(inv.recurring_amount>0?[['Recurring Amount',`${inv.currency||'R'} ${Number(inv.recurring_amount).toLocaleString('en-ZA')}`]]:[]),
           ...(Array.isArray(inv.underlying_funds)&&inv.underlying_funds.length>0?[['Portfolio / Fund',inv.underlying_funds.join(', ')]]:[]),
         ]);
-        if (inv.reason_for_recommendation) {
-          spacer(2); h3('Investment Rationale'); spacer(2);
-          const reasons=String(inv.reason_for_recommendation).split(/\.\s+/).filter(r=>r.trim().length>4);
-          if(reasons.length>1) reasons.forEach(r=>bullet(r.trim().replace(/\.$/,'')));
-          else bullet(inv.reason_for_recommendation);
+        const invReasonTexts = resolveReasons(inv.investment_recommendation_reasons);
+        if (invReasonTexts.length > 0) {
+          spacer(2); h3('Investment Recommendation Rationale'); spacer(2);
+          invReasonTexts.forEach(r => bullet(r));
         }
         // Income Drawdown section
         spacer(4); h3('Income Drawdown'); spacer(2);
@@ -352,13 +360,21 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
             ['Income Basis', inv.income_type||'—'],
             ['Income Amount', incomeAmountStr],
             ['Frequency', inv.income_frequency||'—'],
-            ...(inv.income_notes?[['Notes',inv.income_notes]]:[]),
           ]);
+          // Income drawdown rationale from library
+          const incomeReasonTexts = resolveReasons(inv.income_drawdown_reasons);
+          if (incomeReasonTexts.length > 0) {
+            spacer(2); h3('Income Drawdown Rationale'); spacer(2);
+            incomeReasonTexts.forEach(r => bullet(r));
+          }
+          if (inv.income_notes) {
+            spacer(2); pb(8); doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...muted);
+            doc.splitTextToSize(inv.income_notes, CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
+            doc.setTextColor(...black);
+          }
           spacer(2);
-          pb(12); doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(...muted);
-          doc.splitTextToSize('The client has indicated that an income is required from this investment. The level of income selected should be reviewed regularly to ensure that withdrawals remain sustainable and do not materially erode the investment capital over time.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
           pb(10); doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(180,60,60);
-          doc.splitTextToSize('Regular withdrawals may reduce the capital value of the investment, particularly where withdrawals exceed investment growth.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
+          doc.splitTextToSize('Regular withdrawals may reduce the capital value of the investment, particularly where withdrawals exceed investment growth. The income level should be reviewed regularly to assess ongoing sustainability.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
           doc.setTextColor(...black);
         } else {
           pb(6); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
@@ -387,11 +403,10 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
           pb(8); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...teal);
           doc.text('Total Monthly Premium',M,y); doc.text(fmtR(rp.total_premium)+' pm',W-M,y,{align:'right'}); y+=8;
         }
-        if (rp.reason_for_recommendation) {
-          spacer(2); h3('Cover Rationale'); spacer(2);
-          const reasons=String(rp.reason_for_recommendation).split(/\.\s+/).filter(r=>r.trim().length>4);
-          if(reasons.length>1) reasons.forEach(r=>bullet(r.trim().replace(/\.$/,'')));
-          else bullet(rp.reason_for_recommendation);
+        const riskReasonTexts = resolveReasons(rp.risk_recommendation_reasons);
+        if (riskReasonTexts.length > 0) {
+          spacer(2); h3('Risk Recommendation Rationale'); spacer(2);
+          riskReasonTexts.forEach(r => bullet(r));
         }
         if (i<normRiskProducts.length-1){spacer(6);thinRule();spacer(2);}
       });
@@ -720,9 +735,20 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
    'I accept the recommendations as set out in this report',
   ].forEach(b=>bullet(b));
   spacer(6); table([['Client Name',clientName]]); spacer(6);
-  if (proposal.personal_message) {
-    pb(20); doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(...muted);
-    doc.splitTextToSize(`"${proposal.personal_message}"`,CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=5;}); spacer(6);
+  // Personalised client message — use new field, fall back to legacy personal_message
+  const personalisedMsg = proposal.personalised_client_message || proposal.personal_message || '';
+  const personalisedReasonTexts = resolveReasons(proposal.personalised_message_reasons);
+  if (personalisedReasonTexts.length > 0 || personalisedMsg) {
+    pb(16); h3('Personalised Message to Client'); spacer(2);
+    if (personalisedReasonTexts.length > 0) {
+      personalisedReasonTexts.forEach(r => bullet(r));
+      spacer(2);
+    }
+    if (personalisedMsg) {
+      pb(10); doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(...muted);
+      doc.splitTextToSize(`"${personalisedMsg}"`,CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=5;}); spacer(6);
+      doc.setTextColor(...black);
+    }
   }
   clientSignatureBlock('Client Signature');
   addFooter(pageNum);

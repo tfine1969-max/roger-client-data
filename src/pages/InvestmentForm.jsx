@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
+import ReasonChecklist from '@/components/engine/ReasonChecklist';
 
 const PROVIDER_MAP = {
   Local: {
@@ -49,8 +49,17 @@ export default function InvestmentForm() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [loaded, setLoaded] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
   const [allocError, setAllocError] = useState('');
+  const [investmentReasons, setInvestmentReasons] = useState([]);
+  const [incomeDrawdownReasons, setIncomeDrawdownReasons] = useState([]);
+
+  // Load library entries on mount
+  useEffect(() => {
+    base44.entities.RecommendationReasons.list().then(all => {
+      setInvestmentReasons(all.filter(r => r.section_context === 'Investment Product Recommendation' && r.is_active !== false));
+      setIncomeDrawdownReasons(all.filter(r => r.section_context === 'Investment Income Drawdown' && r.is_active !== false));
+    });
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [amtDisplay, setAmtDisplay] = useState('');
   const [recDisplay, setRecDisplay] = useState('');
@@ -63,9 +72,10 @@ export default function InvestmentForm() {
     initial_fee_percent:'0.00', annual_advice_fee_percent:'0.00', platform_fee_percent:'0.00',
     management_fee_percent:'0.00', performance_fee_percent:'0.00', hurdle_rate_percent:'0.00',
     structuring_fee_percent:'0.00', raising_fee_percent:'0.00', carry_fee_percent:'0.00', carry_hurdle_percent:'0.00',
-    reason_for_recommendation:'',
+    investment_recommendation_reasons: [],
+    income_drawdown_reasons: [],
     income_required:'No', income_type:'', income_percentage:'', income_amount:'', income_frequency:'', income_notes:'',
-  });
+    });
 
   const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
@@ -116,7 +126,8 @@ export default function InvestmentForm() {
       raising_fee_percent: fmtFee(inv.raising_fee_percent),
       carry_fee_percent: fmtFee(inv.carry_fee_percent),
       carry_hurdle_percent: fmtFee(inv.carry_hurdle_percent),
-      reason_for_recommendation: inv.reason_for_recommendation||'',
+      investment_recommendation_reasons: inv.investment_recommendation_reasons || [],
+      income_drawdown_reasons: inv.income_drawdown_reasons || [],
       income_required: inv.income_required || 'No',
       income_type: inv.income_type || '',
       income_percentage: fmtFee(inv.income_percentage),
@@ -204,14 +215,24 @@ export default function InvestmentForm() {
       feePayload.carry_hurdle_percent      = parseFloat(form.carry_hurdle_percent)      || 0;
     }
 
+    // Recommendation reasons validation
+    if (!form.investment_recommendation_reasons || form.investment_recommendation_reasons.length === 0) {
+      alert('Please select at least one reason for the investment recommendation.');
+      setSubmitting(false); return;
+    }
+
     // Income drawdown validation
     if (form.income_required === 'Yes') {
+      if (!form.income_drawdown_reasons || form.income_drawdown_reasons.length === 0) {
+        alert('Please select at least one reason for the income drawdown.');
+        setSubmitting(false); return;
+      }
       if (!form.income_type) { alert('Please select an income type.'); setSubmitting(false); return; }
       if (!form.income_frequency) { alert('Please select an income frequency.'); setSubmitting(false); return; }
       if (form.income_type === 'Percentage' && !form.income_percentage) { alert('Please enter the income percentage.'); setSubmitting(false); return; }
       if (form.income_type === 'Fixed Amount' && !form.income_amount) { alert('Please enter the income amount.'); setSubmitting(false); return; }
       if (form.income_type === 'Percentage' && parseFloat(form.income_percentage) > 7.5 && !form.income_notes) {
-        alert('Income notes are required when drawdown exceeds 7.50%.'); setSubmitting(false); return;
+        alert('Additional income notes are required when income drawdown exceeds 7.50%.'); setSubmitting(false); return;
       }
     }
 
@@ -237,7 +258,8 @@ export default function InvestmentForm() {
       amount:parseFloat(String(form.lump_sum_amount).replace(/[\s,]/g,''))||0,
       recurring_amount:parseFloat(String(form.recurring_amount).replace(/[\s,]/g,''))||0,
       frequency:form.frequency,
-      reason_for_recommendation:form.reason_for_recommendation,
+      investment_recommendation_reasons: form.investment_recommendation_reasons || [],
+      income_drawdown_reasons: form.income_required === 'Yes' ? (form.income_drawdown_reasons || []) : [],
       ...feePayload,
       ...incomePayload,
     });
@@ -589,32 +611,53 @@ export default function InvestmentForm() {
                     </div>
                   </div>
                 )}
-                <div>
-                  <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
-                    Income Notes {parseFloat(form.income_percentage)>7.5?<span className="text-red-500 font-bold ml-1">* Required</span>:null}
-                  </Label>
-                  <Textarea value={form.income_notes} onChange={e=>setF('income_notes',e.target.value)}
-                    placeholder="Provide justification for income drawdown requirements..."
-                    className="rounded-sm min-h-[56px] text-xs"/>
-                </div>
+                {/* income_notes is handled in Section B below */}
               </>
             )}
           </div>
 
-          {/* REASON */}
+          {/* SECTION A — Product Recommendation Reasons */}
           <div className="bg-card border border-border rounded-lg p-3">
-            <div className="flex items-center justify-between mb-1">
-              <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Reason for Recommendation</Label>
-              <LibraryButton onOpen={()=>setLibraryOpen(true)}/>
-            </div>
-            <Textarea value={form.reason_for_recommendation} onChange={e=>setF('reason_for_recommendation',e.target.value)}
-              placeholder="Why is this product recommended for this client..." className="rounded-sm min-h-[72px] text-xs"/>
-            {libraryOpen&&(
-              <PhraseLibrary
-                onSelect={phrase=>{const c=form.reason_for_recommendation;const s=c&&!c.trim().endsWith('.')?'. ':c?' ':'';setF('reason_for_recommendation',c+s+phrase);}}
-                onClose={()=>setLibraryOpen(false)}/>
-            )}
+            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">
+              Reason for Investment Recommendation <span className="text-destructive">*</span>
+            </h3>
+            <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that apply to this investment recommendation.</p>
+            <ReasonChecklist
+              reasons={investmentReasons}
+              selectedIds={form.investment_recommendation_reasons}
+              onChange={ids => setF('investment_recommendation_reasons', ids)}
+            />
           </div>
+
+          {/* SECTION B — Income Drawdown Rationale (only if income_required = Yes) */}
+          {form.income_required === 'Yes' && (
+            <div className="bg-card border border-border rounded-lg p-3">
+              <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">
+                Reason for Income Drawdown <span className="text-destructive">*</span>
+              </h3>
+              <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that explain the income drawdown requirement.</p>
+              <ReasonChecklist
+                reasons={incomeDrawdownReasons}
+                selectedIds={form.income_drawdown_reasons}
+                onChange={ids => setF('income_drawdown_reasons', ids)}
+              />
+              <div className="mt-4">
+                <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">
+                  Additional Income Notes
+                  {parseFloat(form.income_percentage) > 7.5 && <span className="text-destructive ml-1">* Required</span>}
+                </Label>
+                <p className="text-[10px] text-muted-foreground mb-1">
+                  Explain why income is required, whether the level appears sustainable, and whether there is any capital erosion risk.
+                </p>
+                <Textarea
+                  value={form.income_notes || ''}
+                  onChange={e => setF('income_notes', e.target.value)}
+                  placeholder="Provide justification for income drawdown requirements..."
+                  className="rounded-sm min-h-[56px] text-xs"
+                />
+              </div>
+            </div>
+          )}
 
           {/* ACTIONS */}
           <div className="flex gap-3">

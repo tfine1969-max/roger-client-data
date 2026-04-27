@@ -51,7 +51,7 @@
         "Outdated"
       ],
       "default": "In Progress",
-      "description": "Proposal status \u2014 managed automatically, never manually"
+      "description": "Proposal status \u2014 managed automatically"
     },
     "signing_token": {
       "type": "string",
@@ -179,7 +179,19 @@
       }
     },
     "personal_message": {
-      "type": "string"
+      "type": "string",
+      "description": "Legacy personalised message field"
+    },
+    "personalised_client_message": {
+      "type": "string",
+      "description": "Advisor-entered personalised client message"
+    },
+    "personalised_message_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Personalised Client Message"
     },
     "advisor_signature_data": {
       "type": "string"

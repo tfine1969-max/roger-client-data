@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
+import ReasonChecklist from '@/components/engine/ReasonChecklist';
 
 const RISK_PROVIDERS = ['PPS', 'Momentum', 'Discovery', 'Hollard', 'Brightrock'];
 
@@ -71,7 +70,6 @@ const NumInput = ({ value, onChange, placeholder = '0' }) => {
 
 function BenefitFields({ benefitKey, data, onChange }) {
   const set = (field, val) => onChange({ ...data, [field]: val });
-
   const selectCls = "h-8 text-xs rounded-sm";
 
   if (benefitKey === 'life_cover') return (
@@ -185,15 +183,26 @@ export default function AddEditRiskProduct() {
   const { id: proposalId, riskProductId } = useParams();
   const navigate = useNavigate();
   const [provider, setProvider] = useState('');
-  const [reason, setReason] = useState('');
+  const [riskReasons, setRiskReasons] = useState([]);
+  const [selectedRiskReasons, setSelectedRiskReasons] = useState([]);
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [benefitData, setBenefitData] = useState({ ...defaultBenefitData });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
+
+  // Load risk recommendation reasons from library
+  useEffect(() => {
+    base44.entities.RecommendationReasons.list().then(all => {
+      setRiskReasons(all.filter(r => r.section_context === 'Risk Product Recommendation' && r.is_active !== false));
+    });
+  }, []);
 
   const { data: riskProduct } = useQuery({
     queryKey: ['riskProduct', riskProductId],
-    queryFn: () => riskProductId ? base44.entities.RiskProducts.filter({ id: riskProductId }).then(d => d[0]) : null,
+    queryFn: async () => {
+      if (!riskProductId) return null;
+      const all = await base44.entities.RiskProducts.list();
+      return all.find(r => r.id === riskProductId) || null;
+    },
     enabled: !!riskProductId,
   });
 
@@ -206,7 +215,7 @@ export default function AddEditRiskProduct() {
   useEffect(() => {
     if (riskProduct) {
       setProvider(riskProduct.provider || '');
-      setReason(riskProduct.reason_for_recommendation || '');
+      setSelectedRiskReasons(riskProduct.risk_recommendation_reasons || []);
     }
   }, [riskProduct]);
 
@@ -257,7 +266,6 @@ export default function AddEditRiskProduct() {
     setBenefitData(prev => ({ ...prev, [key]: data }));
   };
 
-  // Calculate total monthly premium across all selected benefits
   const totalPremium = selectedBenefits.reduce((sum, key) => {
     const d = benefitData[key] || {};
     return sum + (parseFloat(d.monthly_premium) || 0);
@@ -266,21 +274,22 @@ export default function AddEditRiskProduct() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       let productId = riskProductId;
+      const productData = { provider, risk_recommendation_reasons: selectedRiskReasons };
+
       if (!riskProductId) {
-        const created = await base44.entities.RiskProducts.create({ proposal_id: proposalId, provider, reason_for_recommendation: reason });
+        const created = await base44.entities.RiskProducts.create({ proposal_id: proposalId, ...productData });
         productId = created.id;
       } else {
-        await base44.entities.RiskProducts.update(riskProductId, { provider, reason_for_recommendation: reason });
+        await base44.entities.RiskProducts.update(riskProductId, productData);
       }
 
-      // Delete existing covers before re-saving to avoid duplicates
+      // Delete existing covers before re-saving
       if (riskProductId) {
         for (const old of existingCovers) {
           await base44.entities.RiskCovers.delete(old.id);
         }
       }
 
-      // Save each selected benefit as a RiskCover record
       for (const key of selectedBenefits) {
         const benefit = BENEFITS.find(b => b.key === key);
         const d = benefitData[key] || {};
@@ -294,6 +303,17 @@ export default function AddEditRiskProduct() {
         });
       }
 
+      // Mark PDF as outdated
+      const allProposals = await base44.entities.Proposal.list();
+      const proposal = allProposals.find(p => p.id === proposalId);
+      if (proposal) {
+        const sentStatuses = ['Sent', 'Awaiting Client Signature', 'Signed'];
+        await base44.entities.Proposal.update(proposalId, {
+          pdf_status: 'Outdated',
+          ...(sentStatuses.includes(proposal.status) ? { status: 'Outdated' } : {}),
+        });
+      }
+
       return productId;
     },
     onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
@@ -303,6 +323,10 @@ export default function AddEditRiskProduct() {
     e.preventDefault();
     if (!provider) { alert('Please select a provider'); return; }
     if (selectedBenefits.length === 0) { alert('Please select at least one benefit'); return; }
+    if (!selectedRiskReasons || selectedRiskReasons.length === 0) {
+      alert('Please select at least one reason for the risk recommendation.');
+      return;
+    }
     setIsSubmitting(true);
     await saveMutation.mutate();
     setIsSubmitting(false);
@@ -318,10 +342,10 @@ export default function AddEditRiskProduct() {
       </div>
 
       <div className="max-w-7xl mx-auto p-2">
-         <h1 className="text-base font-bold text-navy mb-0.5">{riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}</h1>
-         <p className="text-[11px] text-muted-foreground mb-2">{riskProductId ? 'Update risk product and benefits' : 'Create a new risk product with benefits'}</p>
+        <h1 className="text-base font-bold text-navy mb-0.5">{riskProductId ? 'Edit Risk Product' : 'Add Risk Product'}</h1>
+        <p className="text-[11px] text-muted-foreground mb-2">{riskProductId ? 'Update risk product and benefits' : 'Create a new risk product with benefits'}</p>
 
-         <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-2">
           {/* Provider */}
           <div className="bg-card border border-border rounded-lg p-2">
             <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1.5">Risk Provider</h2>
@@ -339,8 +363,6 @@ export default function AddEditRiskProduct() {
           {/* Benefits */}
           <div className="bg-card border border-border rounded-lg p-2">
             <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1.5">Benefits</h2>
-
-            {/* Benefit toggles */}
             <div className="grid grid-cols-4 gap-1.5 mb-2">
               {BENEFITS.map(b => {
                 const selected = selectedBenefits.includes(b.key);
@@ -359,8 +381,6 @@ export default function AddEditRiskProduct() {
                 );
               })}
             </div>
-
-            {/* Selected benefit details */}
             <div className="space-y-1.5">
               {selectedBenefits.map(key => {
                 const benefit = BENEFITS.find(b => b.key === key);
@@ -378,27 +398,15 @@ export default function AddEditRiskProduct() {
             </div>
           </div>
 
-          {/* Reason for Recommendation */}
-          <div className="bg-card border border-border rounded-lg p-2">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider">Reason for Recommendation</h2>
-              <LibraryButton onOpen={() => setLibraryOpen(true)} />
-            </div>
-            <Textarea
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-              placeholder="Why is this risk product recommended for this client..."
-              className="rounded-sm min-h-[48px] text-xs"
+          {/* Reason for Recommendation — structured checklist */}
+          <div className="bg-card border border-border rounded-lg p-3">
+            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Reason for Risk Recommendation <span className="text-destructive">*</span></h2>
+            <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that apply to this risk product recommendation.</p>
+            <ReasonChecklist
+              reasons={riskReasons}
+              selectedIds={selectedRiskReasons}
+              onChange={setSelectedRiskReasons}
             />
-            {libraryOpen && (
-              <PhraseLibrary
-                onSelect={(phrase) => {
-                  const separator = reason && !reason.trim().endsWith('.') ? '. ' : reason ? ' ' : '';
-                  setReason(prev => prev + separator + phrase);
-                }}
-                onClose={() => setLibraryOpen(false)}
-              />
-            )}
           </div>
 
           {/* Total Premium */}

@@ -1,65 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { debounce } from 'lodash';
-import { Plus, Pencil, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
-
-function ReasonField({ entityId, entityType, initialValue }) {
-  const [value, setValue] = useState(initialValue || '');
-  const [open, setOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  const qc = useQueryClient();
-  const save = useCallback(
-    debounce(async (v) => {
-      if (entityType === 'investment') {
-        await base44.entities.Investments.update(entityId, { reason_for_recommendation: v });
-        qc.invalidateQueries({ queryKey: ['investments'] });
-      } else {
-        await base44.entities.RiskProducts.update(entityId, { reason_for_recommendation: v });
-        qc.invalidateQueries({ queryKey: ['riskProducts'] });
-      }
-    }, 1000),
-    [entityId, entityType]
-  );
-
-  const handlePhraseSelect = (phrase) => {
-    const separator = value && !value.trim().endsWith('.') ? '. ' : value ? ' ' : '';
-    const newVal = value + separator + phrase;
-    setValue(newVal);
-    save(newVal);
-  };
-
-  return (
-    <div className="border-t border-border mt-1.5 pt-1">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setOpen(o => !o)}
-          className="flex items-center gap-1 text-[9px] font-semibold tracking-wider text-muted-foreground uppercase text-left"
-        >
-          <ChevronDown className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-          Reason {value ? '✓' : ''}
-        </button>
-        <LibraryButton onOpen={() => { setOpen(true); setLibraryOpen(true); }} />
-      </div>
-      {open && (
-        <textarea
-          className="border border-border bg-muted text-[10px] text-foreground w-full outline-none p-1.5 resize-none min-h-[48px] leading-relaxed focus:border-ocean transition-colors placeholder:text-muted-foreground/50 placeholder:italic rounded-sm mt-1"
-          value={value}
-          onChange={e => { setValue(e.target.value); save(e.target.value); }}
-          placeholder="Why is this product recommended for this client..."
-        />
-      )}
-      {libraryOpen && (
-        <PhraseLibrary
-          onSelect={handlePhraseSelect}
-          onClose={() => setLibraryOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
+import ReasonChecklist from '@/components/engine/ReasonChecklist';
+import { Textarea } from '@/components/ui/textarea';
 
 const updateProductTypes = async (invList, proposalId) => {
   const selectedTypes = new Set();
@@ -84,17 +29,41 @@ const updateProductTypes = async (invList, proposalId) => {
   const include_annexure_B = typesArray.includes('Unit Trust / CIS') || typesArray.includes('Offshore Investment Platform');
   const include_annexure_C = typesArray.includes('Alternative Investment') || typesArray.includes('Direct Securities');
 
-  await base44.entities.Proposal.update(proposalId, {
-    selected_product_types: typesArray,
-    include_annexure_A,
-    include_annexure_B,
-    include_annexure_C,
-  });
+  const allProposals = await base44.entities.Proposal.list();
+  const proposal = allProposals.find(p => p.id === proposalId);
+  if (proposal) {
+    await base44.entities.Proposal.update(proposalId, {
+      selected_product_types: typesArray,
+      include_annexure_A,
+      include_annexure_B,
+      include_annexure_C,
+    });
+  }
 };
 
-export default function Step02Recommendations({ proposalId, investments, riskProducts, onNext }) {
+export default function Step02Recommendations({ proposalId, investments, riskProducts, proposal, onProposalFieldChange, onNext }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  const [allReasons, setAllReasons] = useState([]);
+  const [investmentReasons, setInvestmentReasons] = useState([]);
+  const [incomeReasons, setIncomeReasons] = useState([]);
+  const [riskReasons, setRiskReasons] = useState([]);
+  const [personalisedReasons, setPersonalisedReasons] = useState([]);
+
+  useEffect(() => {
+    base44.entities.RecommendationReasons.list().then(all => {
+      setAllReasons(all);
+      const active = all.filter(r => r.is_active !== false);
+      setInvestmentReasons(active.filter(r => r.section_context === 'Investment Product Recommendation'));
+      setIncomeReasons(active.filter(r => r.section_context === 'Investment Income Drawdown'));
+      setRiskReasons(active.filter(r => r.section_context === 'Risk Product Recommendation'));
+      setPersonalisedReasons(active.filter(r => r.section_context === 'Personalised Client Message'));
+    });
+  }, []);
+
+  const resolveTexts = (ids) =>
+    (ids || []).map(id => allReasons.find(r => r.id === id)).filter(Boolean);
 
   const handleDeleteInvestment = async (invId) => {
     if (!window.confirm('Delete this investment?')) return;
@@ -110,10 +79,27 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
     qc.invalidateQueries({ queryKey: ['allRiskCovers', proposalId] });
   };
 
-  // Run auto-detection on Step 02 load with all current investments
   useEffect(() => {
     updateProductTypes(investments, proposalId);
   }, [investments, proposalId]);
+
+  const handlePersonalisedReasonsChange = async (ids) => {
+    onProposalFieldChange('personalised_message_reasons', ids);
+    const allProposals = await base44.entities.Proposal.list();
+    const p = allProposals.find(x => x.id === proposalId);
+    if (p) {
+      const sentStatuses = ['Sent', 'Awaiting Client Signature', 'Signed'];
+      await base44.entities.Proposal.update(proposalId, {
+        personalised_message_reasons: ids,
+        pdf_status: 'Outdated',
+        ...(sentStatuses.includes(p.status) ? { status: 'Outdated' } : {}),
+      });
+    }
+  };
+
+  const handlePersonalisedMessageChange = async (text) => {
+    onProposalFieldChange('personalised_client_message', text);
+  };
 
   return (
     <div className="space-y-3">
@@ -168,12 +154,9 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                         <>
                           {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{fmt(inv.management_fee_percent)}</span></div>}
                           {inv.structuring_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Structuring fee</span><span className="font-medium text-navy">{fmt(inv.structuring_fee_percent)}</span></div>}
-                          {inv.raising_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Raising fee</span><span className="font-medium text-navy">{fmt(inv.raising_fee_percent)}</span></div>}
                           {inv.carry_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry fee</span><span className="font-medium text-navy">{fmt(inv.carry_fee_percent)}</span></div>}
-                          {inv.carry_hurdle_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry hurdle</span><span className="font-medium text-navy">{fmt(inv.carry_hurdle_percent)}</span></div>}
                         </>
                       );
-                      // No mandate OR Annexure A
                       return (
                         <>
                           {inv.initial_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{fmt(inv.initial_fee_percent)}</span></div>}
@@ -186,6 +169,8 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                       <div className="flex justify-between"><span className="text-muted-foreground">Funds</span><span className="font-medium text-navy text-right max-w-[60%]">{inv.underlying_funds.join(', ')}</span></div>
                     )}
                   </div>
+
+                  {/* Income requirement summary */}
                   {inv.income_required === 'Yes' ? (
                     <div className="border-t border-border mt-1.5 pt-1.5 space-y-px text-[9px]">
                       <div className="text-[9px] font-semibold text-ocean uppercase tracking-wide mb-0.5">Income Requirement</div>
@@ -198,12 +183,39 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                         <div className="flex justify-between"><span className="text-muted-foreground">Income amount</span><span className="font-medium text-navy">{inv.currency || 'R'} {Number(inv.income_amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span></div>
                       )}
                       {inv.income_frequency && <div className="flex justify-between"><span className="text-muted-foreground">Frequency</span><span className="font-medium text-navy">{inv.income_frequency}</span></div>}
-                      {inv.income_notes && <div className="text-muted-foreground mt-0.5 italic leading-snug">{inv.income_notes}</div>}
                     </div>
                   ) : (
-                    <div className="border-t border-border mt-1.5 pt-1 text-[9px] text-muted-foreground italic">No income drawdown required from this investment.</div>
+                    <div className="border-t border-border mt-1.5 pt-1 text-[9px] text-muted-foreground italic">No income drawdown required.</div>
                   )}
-                  <ReasonField entityId={inv.id} entityType="investment" initialValue={inv.reason_for_recommendation} />
+
+                  {/* Investment Recommendation Rationale */}
+                  {(inv.investment_recommendation_reasons || []).length > 0 && (
+                    <div className="border-t border-border mt-1.5 pt-1.5">
+                      <p className="text-[9px] font-semibold text-ocean uppercase tracking-wide mb-1">Investment Rationale</p>
+                      <ul className="space-y-0.5">
+                        {resolveTexts(inv.investment_recommendation_reasons).map((r, i) => (
+                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
+                            <span className="text-ocean shrink-0 mt-0.5">–</span> {r.text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Income Drawdown Rationale */}
+                  {inv.income_required === 'Yes' && (inv.income_drawdown_reasons || []).length > 0 && (
+                    <div className="border-t border-border mt-1.5 pt-1.5">
+                      <p className="text-[9px] font-semibold text-teal uppercase tracking-wide mb-1">Income Drawdown Rationale</p>
+                      <ul className="space-y-0.5">
+                        {resolveTexts(inv.income_drawdown_reasons).map((r, i) => (
+                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
+                            <span className="text-teal shrink-0 mt-0.5">–</span> {r.text}
+                          </li>
+                        ))}
+                      </ul>
+                      {inv.income_notes && <p className="text-[9px] text-muted-foreground italic mt-1">{inv.income_notes}</p>}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -259,11 +271,43 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                       <span>R {Number(rp.total_premium).toLocaleString('en-ZA')}</span>
                     </div>
                   )}
-                  <ReasonField entityId={rp.id} entityType="risk" initialValue={rp.reason_for_recommendation} />
+
+                  {/* Risk Recommendation Rationale */}
+                  {(rp.risk_recommendation_reasons || []).length > 0 && (
+                    <div className="border-t border-border mt-1.5 pt-1.5">
+                      <p className="text-[9px] font-semibold text-teal uppercase tracking-wide mb-1">Risk Rationale</p>
+                      <ul className="space-y-0.5">
+                        {resolveTexts(rp.risk_recommendation_reasons).map((r, i) => (
+                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
+                            <span className="text-teal shrink-0 mt-0.5">–</span> {r.text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Personalised Client Message */}
+      <div className="bg-card border border-border rounded-lg p-3">
+        <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">Personalised Message to Client</h2>
+        <p className="text-[10px] text-muted-foreground mb-3">Select relevant message statements and/or type a personalised message.</p>
+        <ReasonChecklist
+          reasons={personalisedReasons}
+          selectedIds={proposal?.personalised_message_reasons}
+          onChange={handlePersonalisedReasonsChange}
+        />
+        <div className="mt-3">
+          <Textarea
+            placeholder="Or type a personalised message..."
+            value={proposal?.personalised_client_message || ''}
+            onChange={e => handlePersonalisedMessageChange(e.target.value)}
+            className="rounded-sm min-h-[64px] text-xs"
+          />
         </div>
       </div>
 

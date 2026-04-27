@@ -50,9 +50,19 @@
       "type": "string",
       "description": "Custom fund description or additional notes"
     },
-    "reason_for_recommendation": {
-      "type": "string",
-      "description": "Advisor's reason for recommending this product"
+    "investment_recommendation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Investment Product Recommendation"
+    },
+    "income_drawdown_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Investment Income Drawdown"
     },
     "contribution_type": {
       "type": "string",
@@ -83,52 +93,52 @@
     "initial_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Initial fee percentage (Annexure A / no mandate)"
+      "description": "Initial fee percentage"
     },
     "annual_advice_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Annual advice fee percentage (Annexure A / no mandate)"
+      "description": "Annual advice fee percentage"
     },
     "platform_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Platform fee percentage (Annexure A / no mandate)"
+      "description": "Platform fee percentage"
     },
     "management_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Annual management fee % of NAV (Annexure B & C)"
+      "description": "Annual management fee % of NAV"
     },
     "performance_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Performance fee % of NAV increase (Annexure B)"
+      "description": "Performance fee % of NAV increase"
     },
     "hurdle_rate_percent": {
       "type": "number",
       "default": 0,
-      "description": "Performance hurdle rate % (Annexure B)"
+      "description": "Performance hurdle rate %"
     },
     "structuring_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Initial structuring fee % (Annexure C)"
+      "description": "Initial structuring fee %"
     },
     "raising_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Annual raising fee % (Annexure C)"
+      "description": "Annual raising fee %"
     },
     "carry_fee_percent": {
       "type": "number",
       "default": 0,
-      "description": "Performance / carry fee % (Annexure C)"
+      "description": "Performance / carry fee %"
     },
     "carry_hurdle_percent": {
       "type": "number",
       "default": 0,
-      "description": "Carry hurdle rate % (Annexure C)"
+      "description": "Carry hurdle rate %"
     },
     "income_required": {
       "type": "string",
@@ -150,7 +160,7 @@
     "income_percentage": {
       "type": "number",
       "default": 0,
-      "description": "Income drawdown as a percentage of investment value"
+      "description": "Income drawdown as a percentage"
     },
     "income_amount": {
       "type": "number",
@@ -186,7 +196,7 @@
         "B",
         "C"
       ],
-      "description": "Which annexure this investment belongs to (only if investment_mandate = Yes)"
+      "description": "Which annexure this investment belongs to"
     }
   },
   "required": [
