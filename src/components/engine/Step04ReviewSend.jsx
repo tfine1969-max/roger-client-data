@@ -111,36 +111,75 @@ export default function Step04ReviewSend({
   };
 
   const handleCopyLink = async () => {
-    if (!pdfCurrent) { toast.error('Regenerate the PDF before sending.'); return; }
+    if (!pdfCurrent) { alert('Please generate the PDF before sending to the client.'); return; }
     setSending(true);
-    const result = await prepareToken();
-    if (!result) { setSending(false); return; }
-    await navigator.clipboard.writeText(result.url);
-    setSending(false);
-    toast.success('Signing link copied to clipboard');
+    try {
+      const token = crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const signingUrl = `${window.location.origin}/sign-proposal/${token}`;
+      await navigator.clipboard.writeText(signingUrl);
+      await base44.entities.Proposal.update(proposalId, {
+        signing_token: token,
+        status: 'Sent',
+        sent_at: new Date().toISOString(),
+        reminder_sent: false,
+      });
+      onFieldChange('signing_token', token);
+      onFieldChange('status', 'Sent');
+      onFieldChange('sent_at', new Date().toISOString());
+      onFieldChange('reminder_sent', false);
+      setSending(false);
+      alert('Signing link copied to clipboard.');
+    } catch (err) {
+      console.error('Copy link error:', err);
+      setSending(false);
+      alert('Could not copy link. Please try again.');
+    }
   };
 
   const handleEmailClient = async () => {
-    if (!pdfCurrent) { toast.error('Regenerate the PDF before sending.'); return; }
-    if (!data.client_email) { toast.error('No client email address found'); return; }
+    if (!pdfCurrent) { alert('Please generate the PDF before sending to the client.'); return; }
+    if (!data.client_email) { alert('No email address found for this client. Please update the client profile first.'); return; }
     setSending(true);
-    const result = await prepareToken();
-    if (!result) { setSending(false); return; }
-    const firstName = (data.client_name || '').split(' ')[0] || 'Client';
-    await base44.integrations.Core.SendEmail({
-      from_name: 'Wealthworks',
-      to: data.client_email,
-      subject: 'Your Financial Strategy Report — Action Required',
-      body: `Dear ${firstName},\n\nPlease find your Financial Strategy & Recommendation Report prepared by Wealthworks.\n\nTo review and sign your document, please click the link below:\n\n${result.url}\n\nThis link is unique to you. Please do not share it.\n\nIf you have any questions, please contact your advisor directly.\n\nKind regards,\nThe Wealthworks Team`,
-    });
-    await base44.integrations.Core.SendEmail({
-      from_name: 'Wealthworks',
-      to: 'tfine1969@gmail.com',
-      subject: `[CC] Signing link sent to ${data.client_name || ''} — ${data.reference || ''}`,
-      body: `A signing link has been sent to ${data.client_email}.\n\nClient: ${data.client_name}\nReference: ${data.reference}\nSigning URL: ${result.url}`,
-    });
-    setSending(false);
-    toast.success(`Email sent to ${data.client_email}`);
+    try {
+      const token = crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const signingUrl = `${window.location.origin}/sign-proposal/${token}`;
+      const firstName = (data.client_name || '').split(' ')[0] || 'Client';
+      
+      await base44.integrations.Core.SendEmail({
+        from_name: 'Wealthworks',
+        to: data.client_email,
+        subject: 'Your Financial Strategy Report — Action Required',
+        body: `Dear ${firstName},\n\nPlease find your Financial Strategy & Recommendation Report prepared by Wealthworks.\n\nTo review and sign your document, please click the link below:\n\n${signingUrl}\n\nThis link is unique to you. Please do not share it.\n\nIf you have any questions, please contact your advisor directly.\n\nKind regards,\nThe Wealthworks Team`,
+      });
+
+      await base44.integrations.Core.SendEmail({
+        from_name: 'Wealthworks',
+        to: 'tfine1969@gmail.com',
+        subject: `Proposal Sent — ${data.client_name || 'Client'} — ${data.reference || ''}`,
+        body: `The proposal for ${data.client_name || 'Client'} (${data.reference || ''}) has been emailed to ${data.client_email}.\n\nSigning link: ${signingUrl}`,
+      });
+
+      await base44.entities.Proposal.update(proposalId, {
+        signing_token: token,
+        status: 'Sent',
+        sent_at: new Date().toISOString(),
+        reminder_sent: false,
+      });
+      onFieldChange('signing_token', token);
+      onFieldChange('status', 'Sent');
+      onFieldChange('sent_at', new Date().toISOString());
+      onFieldChange('reminder_sent', false);
+      setSending(false);
+      alert(`Email sent successfully to ${data.client_email}`);
+    } catch (err) {
+      console.error('Email send error:', err);
+      setSending(false);
+      alert('There was an error sending the email. Please try again.');
+    }
   };
 
   return (
@@ -274,30 +313,55 @@ export default function Step04ReviewSend({
         </div>
 
         {/* Action buttons - always visible, but disabled until PDF is current */}
-        <div className="mb-5 space-y-2">
+        <div style={{ marginBottom: '20px' }}>
           <button
             onClick={handleCopyLink}
             disabled={!pdfCurrent || sending}
-            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors flex items-center justify-center gap-2 ${
-              pdfCurrent
-                ? 'bg-navy text-white hover:bg-sky-900'
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-            }`}
+            style={{
+              background: pdfCurrent ? '#1e3a5f' : '#cbd5e1',
+              color: pdfCurrent ? '#ffffff' : '#78716c',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '14px 24px',
+              fontSize: '13px',
+              fontWeight: '700',
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
+              width: '100%',
+              cursor: pdfCurrent ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              opacity: pdfCurrent || !sending ? 1 : 0.6,
+            }}
           >
-            <Copy className="w-4 h-4" />
-            Copy Signing Link
+            📋 Copy Signing Link
           </button>
           <button
             onClick={handleEmailClient}
             disabled={!pdfCurrent || sending}
-            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors flex items-center justify-center gap-2 ${
-              pdfCurrent
-                ? 'bg-teal-700 text-white hover:bg-teal-800'
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-            }`}
+            style={{
+              background: pdfCurrent ? '#0d9488' : '#cbd5e1',
+              color: pdfCurrent ? '#ffffff' : '#78716c',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '14px 24px',
+              fontSize: '13px',
+              fontWeight: '700',
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
+              width: '100%',
+              cursor: pdfCurrent ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '10px',
+              opacity: pdfCurrent || !sending ? 1 : 0.6,
+            }}
           >
-            <Mail className="w-4 h-4" />
-            Email to Client
+            ✉ Email to Client
           </button>
         </div>
 
