@@ -48,7 +48,8 @@
         "Sent",
         "Awaiting Client Signature",
         "Signed",
-        "Outdated"
+        "Outdated",
+        "PDF Ready"
       ],
       "default": "In Progress",
       "description": "Proposal status \u2014 managed automatically"
@@ -270,6 +271,19 @@
     },
     "advisor_key": {
       "type": "string"
+    },
+    "pdf_generated_at": {
+      "type": "string",
+      "description": "ISO timestamp set every time REGENERATE PDF completes successfully"
+    },
+    "sent_at": {
+      "type": "string",
+      "description": "ISO timestamp set when Copy Link or Email to Client is triggered"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "True after 48-hour reminder has been sent \u2014 reset to false on each new send"
     }
   },
   "required": [

@@ -6,22 +6,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, ChevronRight } from 'lucide-react';
 
 const statusBadge = {
-  // New PascalCase statuses
-  'In Progress':                 { bg: 'bg-blue-50',   text: 'text-blue-800',   label: 'In Progress' },
-  'Sent':                        { bg: 'bg-amber-50',  text: 'text-amber-900',  label: 'Sent' },
-  'Awaiting Client Signature':   { bg: 'bg-orange-50', text: 'text-orange-800', label: 'Awaiting Signature' },
-  'Signed':                      { bg: 'bg-green-100', text: 'text-green-900',  label: 'Signed' },
-  'Outdated':                    { bg: 'bg-red-50',    text: 'text-red-700',    label: 'Outdated' },
+  'In Progress':                 { bg: 'bg-slate-100',  text: 'text-slate-700',  label: 'In Progress' },
+  'PDF Ready':                   { bg: 'bg-teal-100',   text: 'text-teal-800',   label: 'PDF Ready' },
+  'Sent':                        { bg: 'bg-blue-100',   text: 'text-blue-800',   label: 'Sent' },
+  'Awaiting Client Signature':   { bg: 'bg-amber-100',  text: 'text-amber-800',  label: 'Awaiting Signature' },
+  'Signed':                      { bg: 'bg-green-100',  text: 'text-green-900',  label: 'Signed' },
+  'Outdated':                    { bg: 'bg-red-100',    text: 'text-red-700',    label: 'Outdated' },
   // Legacy lowercase fallbacks
-  'new':         { bg: 'bg-blue-50',   text: 'text-blue-800',  label: 'In Progress' },
-  'in_progress': { bg: 'bg-blue-50',   text: 'text-blue-800',  label: 'In Progress' },
-  'sent':        { bg: 'bg-amber-50',  text: 'text-amber-900', label: 'Sent' },
+  'new':         { bg: 'bg-slate-100', text: 'text-slate-700', label: 'In Progress' },
+  'in_progress': { bg: 'bg-slate-100', text: 'text-slate-700', label: 'In Progress' },
+  'sent':        { bg: 'bg-blue-100',  text: 'text-blue-800',  label: 'Sent' },
   'signed':      { bg: 'bg-green-100', text: 'text-green-900', label: 'Signed' },
 };
 
 const STATUS_GROUPS = {
   new: ['new', 'In Progress', 'in_progress', null, undefined],
-  in_progress: ['Awaiting Client Signature', 'Sent', 'sent', 'Outdated'],
+  in_progress: ['Awaiting Client Signature', 'Sent', 'sent', 'Outdated', 'PDF Ready'],
   sent: ['Signed', 'signed', 'client_signed'],
 };
 
@@ -103,6 +103,18 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
               </span>
             </div>
             <div className="flex justify-end items-center gap-2">
+              {p.status === 'Signed' && p.signed_pdf_url && (
+                <a
+                  href={p.signed_pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  title="View Signed PDF"
+                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-green-700 border border-green-300 bg-green-50 hover:bg-green-100 transition-colors rounded-sm"
+                >
+                  ↓ Signed PDF
+                </a>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); navigate(`/proposal/${p.id}/engine`); }}
                 className="flex items-center gap-1 px-2.5 py-1 bg-navy text-white text-[10px] font-semibold uppercase tracking-wide hover:bg-ocean transition-colors"

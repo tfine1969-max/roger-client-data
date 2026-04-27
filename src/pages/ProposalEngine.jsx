@@ -179,6 +179,7 @@ export default function ProposalEngine() {
   const handleGeneratePdf = async () => {
     if (!localData) return;
     const { appendAttachmentsToPdf } = await import('@/lib/appendAttachmentsToPdf');
+    // Note: pdf_generated_at and status='PDF Ready' are set inside Step04ReviewSend after this resolves
 
     const doc = await generateProposalPdf(localData, investments, riskProducts);
 

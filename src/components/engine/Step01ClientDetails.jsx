@@ -19,7 +19,7 @@ function Field({ label, value }) {
   );
 }
 
-export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
+export default function Step01ClientDetails({ data, onFieldChange, onNext, proposal }) {
   const isEntity = data.client_type === 'trust' || data.client_type === 'company'
     || data.client_type === 'Trust' || data.client_type === 'Company';
 
@@ -90,26 +90,15 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-      {/* Signed document link — only shown when proposal is fully signed */}
-      {data.status === 'Signed' && data.signed_pdf_url && (
-        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-green-800">✓ Document Signed{data.signed_at ? ` — ${fmtDate(data.signed_at)}` : ''}</p>
-          </div>
-          <a
-            href={data.signed_pdf_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-bold text-green-700 underline hover:text-green-900"
-          >
-            View / Download Signed Document
-          </a>
-        </div>
-      )}
-
       {/* Next button */}
       <button
-        onClick={onNext}
+        onClick={() => {
+          if (data.status === 'Outdated') {
+            alert('The PDF is outdated due to recent changes. Please regenerate the PDF before proceeding.');
+            return;
+          }
+          onNext();
+        }}
         className="w-full bg-navy text-white py-3.5 text-[11px] font-semibold tracking-[.1em] uppercase hover:bg-ocean transition-colors flex items-center justify-center gap-2"
       >
         Next: Add Recommendations →

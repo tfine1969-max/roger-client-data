@@ -8,6 +8,37 @@ import NewProposalModal from '@/components/inbox/NewProposalModal';
 import { Plus, LogOut } from 'lucide-react';
 import { ADVISORS } from '@/lib/constants';
 
+async function checkAndSendReminders(proposals) {
+  const awaiting = proposals.filter(
+    p => p.status === 'Awaiting Client Signature' && p.sent_at && !p.reminder_sent
+  );
+  for (const proposal of awaiting) {
+    const hoursSinceSent = (Date.now() - new Date(proposal.sent_at).getTime()) / (1000 * 60 * 60);
+    if (hoursSinceSent < 48) continue;
+
+    const signingUrl = proposal.signing_token
+      ? `${window.location.origin}/sign-proposal/${proposal.signing_token}`
+      : '';
+    const firstName = (proposal.client_name || '').split(' ')[0] || 'Client';
+
+    await base44.integrations.Core.SendEmail({
+      from_name: 'Wealthworks',
+      to: proposal.client_email || '',
+      subject: 'Reminder — Document Awaiting Your Signature',
+      body: `Dear ${firstName},\n\nThis is a reminder that your Financial Strategy & Recommendation Report is still awaiting your signature.\n\nPlease use the link below to review and sign your document:\n\n${signingUrl}\n\nKind regards,\nThe Wealthworks Team`,
+    });
+
+    await base44.integrations.Core.SendEmail({
+      from_name: 'Wealthworks',
+      to: 'tfine1969@gmail.com',
+      subject: `Reminder — ${proposal.client_name || ''} Has Not Yet Signed`,
+      body: `This is a reminder that ${proposal.client_name || ''} (${proposal.reference || ''}) has not yet signed their proposal.\n\nSent: ${proposal.sent_at}\nStatus: Awaiting Client Signature\n\nPlease follow up with the client.`,
+    });
+
+    await base44.entities.Proposal.update(proposal.id, { reminder_sent: true });
+  }
+}
+
 export default function Inbox() {
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -21,6 +52,13 @@ export default function Inbox() {
     queryKey: ['proposals'],
     queryFn: () => base44.entities.Proposal.list('-created_date', 50),
   });
+
+  // Run 48-hour reminder check whenever proposals load
+  useEffect(() => {
+    if (proposals.length > 0) {
+      checkAndSendReminders(proposals).catch(() => {});
+    }
+  }, [proposals]);
 
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
