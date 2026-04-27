@@ -156,28 +156,29 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                     {(() => {
                       const ann = inv.applicable_annexure;
                       const mandate = inv.investment_mandate === 'Yes';
+                      const fmt = (v) => `${Number(v).toFixed(2)}%`;
                       if (mandate && ann === 'B') return (
                         <>
-                          {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{inv.management_fee_percent}%</span></div>}
-                          {inv.performance_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Perf fee</span><span className="font-medium text-navy">{inv.performance_fee_percent}%</span></div>}
-                          {inv.hurdle_rate_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Hurdle</span><span className="font-medium text-navy">{inv.hurdle_rate_percent}%</span></div>}
+                          {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{fmt(inv.management_fee_percent)}</span></div>}
+                          {inv.performance_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Perf fee</span><span className="font-medium text-navy">{fmt(inv.performance_fee_percent)}</span></div>}
+                          {inv.hurdle_rate_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Hurdle</span><span className="font-medium text-navy">{fmt(inv.hurdle_rate_percent)}</span></div>}
                         </>
                       );
                       if (mandate && ann === 'C') return (
                         <>
-                          {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{inv.management_fee_percent}%</span></div>}
-                          {inv.structuring_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Structuring fee</span><span className="font-medium text-navy">{inv.structuring_fee_percent}%</span></div>}
-                          {inv.raising_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Raising fee</span><span className="font-medium text-navy">{inv.raising_fee_percent}%</span></div>}
-                          {inv.carry_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry fee</span><span className="font-medium text-navy">{inv.carry_fee_percent}%</span></div>}
-                          {inv.carry_hurdle_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry hurdle</span><span className="font-medium text-navy">{inv.carry_hurdle_percent}%</span></div>}
+                          {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{fmt(inv.management_fee_percent)}</span></div>}
+                          {inv.structuring_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Structuring fee</span><span className="font-medium text-navy">{fmt(inv.structuring_fee_percent)}</span></div>}
+                          {inv.raising_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Raising fee</span><span className="font-medium text-navy">{fmt(inv.raising_fee_percent)}</span></div>}
+                          {inv.carry_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry fee</span><span className="font-medium text-navy">{fmt(inv.carry_fee_percent)}</span></div>}
+                          {inv.carry_hurdle_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry hurdle</span><span className="font-medium text-navy">{fmt(inv.carry_hurdle_percent)}</span></div>}
                         </>
                       );
                       // No mandate OR Annexure A
                       return (
                         <>
-                          {inv.initial_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
-                          {inv.annual_advice_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Annual fee</span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
-                          {inv.platform_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Platform fee</span><span className="font-medium text-navy">{inv.platform_fee_percent}%</span></div>}
+                          {inv.initial_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{fmt(inv.initial_fee_percent)}</span></div>}
+                          {inv.annual_advice_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Annual fee</span><span className="font-medium text-navy">{fmt(inv.annual_advice_fee_percent)}</span></div>}
+                          {inv.platform_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Platform fee</span><span className="font-medium text-navy">{fmt(inv.platform_fee_percent)}</span></div>}
                         </>
                       );
                     })()}

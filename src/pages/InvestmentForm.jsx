@@ -484,11 +484,7 @@ export default function InvestmentForm() {
                   <FeeInput label="Performance Fee % of NAV increase" field="performance_fee_percent"/>
                   <FeeInput label="Performance Hurdle Rate" field="hurdle_rate_percent"/>
                 </div>
-                <div className="bg-muted/40 rounded-sm p-3 space-y-1 text-[10px] text-muted-foreground">
-                  <p><strong className="text-navy">2.1.</strong> Management Fee of <strong className="text-navy">{form.management_fee_percent||'___'}%</strong> per annum of NAV.</p>
-                  <p><strong className="text-navy">2.2.</strong> Determined monthly in arrears, payable within 2 business days of invoice.</p>
-                  <p><strong className="text-navy">2.3.</strong> Performance Fee of <strong className="text-navy">{form.performance_fee_percent||'___'}%</strong> above hurdle rate of <strong className="text-navy">{form.hurdle_rate_percent||'___'}%</strong>.</p>
-                </div>
+
               </div>
             )}
             {form.investment_mandate==='Yes'&&ann==='C'&&(
