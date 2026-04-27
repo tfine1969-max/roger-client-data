@@ -243,6 +243,12 @@ export default function ProposalEngine() {
   const advisorKey = localData.advisor_key || 'trevor';
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
 
+  // Get the full client object for ClientDocumentRepository
+  const clientObj = allClients.find(c => c.id === localData.client_id || 
+    (c.first_name && c.last_name && 
+      `${c.first_name} ${c.last_name}`.trim().toLowerCase() === 
+      (localData.client_name || '').toLowerCase()));
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-30 flex flex-col shadow-sm">
@@ -269,6 +275,8 @@ export default function ProposalEngine() {
             data={localData}
             onFieldChange={handleFieldChange}
             onNext={() => setActiveStep('recommendations')}
+            client={clientObj}
+            onClientStatusUpdate={() => queryClient.invalidateQueries({ queryKey: ['clients'] })}
           />
         )}
 

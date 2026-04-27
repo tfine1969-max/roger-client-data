@@ -1,6 +1,7 @@
 import React from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ClientDocumentRepository from '@/components/ClientDocumentRepository';
 
 const fmtDate = (iso) => {
   if (!iso) return '';
@@ -19,7 +20,7 @@ function Field({ label, value }) {
   );
 }
 
-export default function Step01ClientDetails({ data, onFieldChange, onNext, proposal }) {
+export default function Step01ClientDetails({ data, onFieldChange, onNext, proposal, client, onClientStatusUpdate }) {
   const isEntity = data.client_type === 'trust' || data.client_type === 'company'
     || data.client_type === 'Trust' || data.client_type === 'Company';
 
@@ -89,6 +90,9 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext, propo
           </div>
         </div>
       </div>
+
+      {/* FICA Document Repository */}
+      {client && <ClientDocumentRepository client={client} onStatusUpdate={onClientStatusUpdate} />}
 
       {/* Next button */}
       <button
