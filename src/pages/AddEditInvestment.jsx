@@ -96,7 +96,7 @@ const emptyRow = () => ({ fund: '', allocation: '', customFund: '' });
 export default function AddEditInvestment() {
   const { id: proposalId, investmentId } = useParams();
   const navigate = useNavigate();
-  const isLoadingRef = useRef(true); // prevents auto-detect from firing during load
+  const isLoadingRef = useRef(true);
 
   const [form, setForm] = useState({
     investment_mandate: 'No', applicable_annexure: '',
@@ -123,10 +123,9 @@ export default function AddEditInvestment() {
     enabled: !!investmentId,
   });
 
-  // Load saved investment data — runs once when inv is fetched
   useEffect(() => {
     if (!inv) return;
-    isLoadingRef.current = true; // block auto-detect during load
+    isLoadingRef.current = true;
 
     const isRec  = inv.contribution_type === 'Recurring' || inv.contribution_type === 'Both';
     const isLump = inv.contribution_type === 'Lump Sum'  || inv.contribution_type === 'Both';
@@ -168,11 +167,9 @@ export default function AddEditInvestment() {
     if (inv.amount)           setAmtDisplay(Number(inv.amount).toLocaleString('en-ZA'));
     if (inv.recurring_amount) setRecDisplay(Number(inv.recurring_amount).toLocaleString('en-ZA'));
 
-    // Allow auto-detect to run after load is complete
-    setTimeout(() => { isLoadingRef.current = false; }, 100);
+    setTimeout(() => { isLoadingRef.current = false; }, 150);
   }, [inv]);
 
-  // Auto-detect annexure — only when user changes fields, not during load
   useEffect(() => {
     if (isLoadingRef.current) return;
     if (form.investment_mandate === 'Yes' && form.product_type) {
@@ -193,13 +190,13 @@ export default function AddEditInvestment() {
       }
       await new Promise(resolve => setTimeout(resolve, 500));
       const allInvestments = await base44.entities.Investments.list();
-      const proposalInvs  = allInvestments.filter(inv => inv.proposal_id === proposalId);
-      const mandateInvs   = proposalInvs.filter(inv => inv.investment_mandate === 'Yes');
+      const proposalInvs   = allInvestments.filter(i => i.proposal_id === proposalId);
+      const mandateInvs    = proposalInvs.filter(i => i.investment_mandate === 'Yes');
       await base44.entities.Proposal.update(proposalId, {
         mandate_included:   mandateInvs.length > 0 ? 'Yes' : 'No',
-        include_annexure_A: mandateInvs.some(inv => inv.applicable_annexure === 'A'),
-        include_annexure_B: mandateInvs.some(inv => inv.applicable_annexure === 'B'),
-        include_annexure_C: mandateInvs.some(inv => inv.applicable_annexure === 'C'),
+        include_annexure_A: mandateInvs.some(i => i.applicable_annexure === 'A'),
+        include_annexure_B: mandateInvs.some(i => i.applicable_annexure === 'B'),
+        include_annexure_C: mandateInvs.some(i => i.applicable_annexure === 'C'),
       });
     },
     onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
@@ -217,7 +214,8 @@ export default function AddEditInvestment() {
       setAllocError(`Allocations must total 100%. Current: ${total.toFixed(1)}%`);
       return false;
     }
-    setAllocError(''); return true;
+    setAllocError('');
+    return true;
   };
 
   const addRow    = () => setForm(p => ({ ...p, fund_rows: [...p.fund_rows, emptyRow()] }));
@@ -231,14 +229,12 @@ export default function AddEditInvestment() {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-
-    const contrib    = form.lump_sum && form.recurring ? 'Both' : form.lump_sum ? 'Lump Sum' : 'Recurring';
-    const activeAnn  = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
+    const contrib   = form.lump_sum && form.recurring ? 'Both' : form.lump_sum ? 'Lump Sum' : 'Recurring';
+    const activeAnn = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
     const underlying_funds = form.fund_rows.filter(r => r.fund).map(r => {
       const name = r.fund === '__custom__' ? (r.customFund || 'Custom Fund') : r.fund;
       return multiRow && r.allocation ? `${name} (${r.allocation}%)` : name;
     });
-
     saveMutation.mutate({
       investment_mandate:        form.investment_mandate,
       applicable_annexure:       form.investment_mandate === 'Yes' ? activeAnn : null,
@@ -268,7 +264,6 @@ export default function AddEditInvestment() {
     setSubmitting(false);
   };
 
-  // User-initiated changes only (cascade resets)
   const handleJurisdiction = (val) => {
     isLoadingRef.current = false;
     setForm(p => ({ ...p, jurisdiction: val, currency: val === 'Local' ? 'ZAR' : 'USD', provider: '', product_type: '', fund_rows: [emptyRow()] }));
@@ -283,13 +278,12 @@ export default function AddEditInvestment() {
     isLoadingRef.current = false;
     setForm(p => ({ ...p, product_type: val, fund_rows: [emptyRow()] }));
   };
-
   const setF = (field, val) => setForm(p => ({ ...p, [field]: val }));
 
-  const providers  = Object.keys(PROVIDER_MAP[form.jurisdiction] || {});
-  const products   = form.provider ? (PROVIDER_MAP[form.jurisdiction]?.[form.provider]?.products || []) : [];
-  const funds      = form.jurisdiction === 'Offshore' ? OFFSHORE_FUNDS : LOCAL_FUNDS;
-  const activeAnn  = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
+  const providers = Object.keys(PROVIDER_MAP[form.jurisdiction] || {});
+  const products  = form.provider ? (PROVIDER_MAP[form.jurisdiction]?.[form.provider]?.products || []) : [];
+  const funds     = form.jurisdiction === 'Offshore' ? OFFSHORE_FUNDS : LOCAL_FUNDS;
+  const activeAnn = form.applicable_annexure || detectAnnexure(form.product_type, form.jurisdiction);
 
   const feeInput = (label, field) => (
     <div>
@@ -323,7 +317,7 @@ export default function AddEditInvestment() {
 
         <form onSubmit={handleSubmit} className="space-y-3">
 
-          {/* MANDATE */}
+          {/* ── MANDATE ── */}
           <div className="bg-card border border-border rounded-lg p-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Discretionary Mandate</h3>
             <div className="flex items-start gap-6">
@@ -345,7 +339,8 @@ export default function AddEditInvestment() {
                     Applicable Annexure
                     {activeAnn && <span className="ml-2 text-[9px] text-green-600 font-normal normal-case">Auto-detected: {ANNEXURE_LABELS[activeAnn]}</span>}
                   </Label>
-                  <Select value={form.applicable_annexure || activeAnn} onValueChange={v => { isLoadingRef.current = false; setF('applicable_annexure', v); }}>
+                  <Select value={form.applicable_annexure || activeAnn}
+                    onValueChange={v => { isLoadingRef.current = false; setF('applicable_annexure', v); }}>
                     <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select annexure" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="A">Annexure A — Model / Discretionary Portfolios</SelectItem>
@@ -358,9 +353,10 @@ export default function AddEditInvestment() {
             </div>
           </div>
 
-          {/* INVESTMENT DETAILS */}
+          {/* ── INVESTMENT DETAILS ── */}
           <div className="bg-card border border-border rounded-lg p-3 space-y-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Investment Details</h3>
+
             <div className="grid grid-cols-4 gap-3">
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Jurisdiction</Label>
@@ -388,7 +384,12 @@ export default function AddEditInvestment() {
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
                 <Select value={form.provider} onValueChange={handleProvider}>
                   <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
-                  <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {form.provider && !providers.includes(form.provider) && (
+                      <SelectItem value={form.provider}>{form.provider}</SelectItem>
+                    )}
+                    {providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
               <div>
@@ -397,12 +398,17 @@ export default function AddEditInvestment() {
                   <SelectTrigger className="h-8 text-xs rounded-sm">
                     <SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} />
                   </SelectTrigger>
-                  <SelectContent>{products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {form.product_type && !products.includes(form.product_type) && (
+                      <SelectItem value={form.product_type}>{form.product_type}</SelectItem>
+                    )}
+                    {products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* FUND ROWS */}
+            {/* ── FUND ROWS ── */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Underlying Funds & Allocation</Label>
@@ -417,9 +423,15 @@ export default function AddEditInvestment() {
                   <div key={i} className="flex gap-2 items-start">
                     <div className="flex-1 space-y-1">
                       <Select value={row.fund} onValueChange={v => updateRow(i, 'fund', v)}>
-                        <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select fund" /></SelectTrigger>
+                        <SelectTrigger className="h-8 text-xs rounded-sm">
+                          <SelectValue placeholder="Select fund" />
+                        </SelectTrigger>
                         <SelectContent className="max-h-64">
-                          {funds.filter(f => f === row.fund || !form.fund_rows.some((r, idx) => idx !== i && r.fund === f))
+                          {row.fund && row.fund !== '__custom__' && !funds.includes(row.fund) && (
+                            <SelectItem value={row.fund}>{row.fund}</SelectItem>
+                          )}
+                          {funds
+                            .filter(f => f === row.fund || !form.fund_rows.some((r, idx) => idx !== i && r.fund === f))
                             .map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                           <SelectItem value="__custom__">+ Custom / Other fund</SelectItem>
                         </SelectContent>
@@ -511,9 +523,10 @@ export default function AddEditInvestment() {
             </div>
           </div>
 
-          {/* FEES */}
+          {/* ── FEES ── */}
           <div className="bg-card border border-border rounded-lg p-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Fee Structure</h3>
+
             {(form.investment_mandate === 'No' || activeAnn === 'A') && (
               <div className="grid grid-cols-3 gap-3">
                 {feeInput('Initial Fee','initial_fee_percent')}
@@ -521,6 +534,7 @@ export default function AddEditInvestment() {
                 {feeInput('Platform Fee','platform_fee_percent')}
               </div>
             )}
+
             {form.investment_mandate === 'Yes' && activeAnn === 'B' && (
               <div className="space-y-3">
                 <p className="text-[10px] text-muted-foreground">Per Annexure B — Collective Investments & Offshore Platforms</p>
@@ -536,6 +550,7 @@ export default function AddEditInvestment() {
                 </div>
               </div>
             )}
+
             {form.investment_mandate === 'Yes' && activeAnn === 'C' && (
               <div className="space-y-3">
                 <p className="text-[10px] text-muted-foreground">Per Annexure C — Alternative Investments & Direct Securities</p>
@@ -558,7 +573,7 @@ export default function AddEditInvestment() {
             )}
           </div>
 
-          {/* REASON */}
+          {/* ── REASON ── */}
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-1">
               <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider">Reason for Recommendation</Label>
@@ -580,7 +595,7 @@ export default function AddEditInvestment() {
             )}
           </div>
 
-          {/* ACTIONS */}
+          {/* ── ACTIONS ── */}
           <div className="flex gap-3">
             <Button type="button"
               onClick={() => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } })}
@@ -593,6 +608,7 @@ export default function AddEditInvestment() {
               {submitting ? 'Saving...' : investmentId ? 'Update Investment' : 'Add Investment'}
             </Button>
           </div>
+
         </form>
       </div>
     </div>
