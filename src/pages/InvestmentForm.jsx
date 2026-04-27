@@ -164,6 +164,32 @@ export default function InvestmentForm() {
       const n = r.fund==='__custom__'?(r.customFund||'Custom'):r.fund;
       return multiRow&&r.allocation?`${n} (${r.allocation}%)`:n;
     });
+
+    // Build fee payload — only save fields relevant to the active annexure,
+    // zero out all others to prevent stale values persisting across annexure changes
+    const feePayload = {
+      initial_fee_percent:0, annual_advice_fee_percent:0, platform_fee_percent:0,
+      management_fee_percent:0, performance_fee_percent:0, hurdle_rate_percent:0,
+      structuring_fee_percent:0, raising_fee_percent:0, carry_fee_percent:0, carry_hurdle_percent:0,
+    };
+    if (form.investment_mandate !== 'Yes' || ann === 'A') {
+      feePayload.initial_fee_percent       = parseFloat(form.initial_fee_percent)       || 0;
+      feePayload.annual_advice_fee_percent = parseFloat(form.annual_advice_fee_percent) || 0;
+      feePayload.platform_fee_percent      = parseFloat(form.platform_fee_percent)      || 0;
+    } else if (ann === 'B') {
+      feePayload.management_fee_percent    = parseFloat(form.management_fee_percent)    || 0;
+      feePayload.performance_fee_percent   = parseFloat(form.performance_fee_percent)   || 0;
+      feePayload.hurdle_rate_percent       = parseFloat(form.hurdle_rate_percent)       || 0;
+    } else if (ann === 'C') {
+      feePayload.management_fee_percent    = parseFloat(form.management_fee_percent)    || 0;
+      feePayload.structuring_fee_percent   = parseFloat(form.structuring_fee_percent)   || 0;
+      feePayload.raising_fee_percent       = parseFloat(form.raising_fee_percent)       || 0;
+      feePayload.carry_fee_percent         = parseFloat(form.carry_fee_percent)         || 0;
+      feePayload.carry_hurdle_percent      = parseFloat(form.carry_hurdle_percent)      || 0;
+    }
+
+    console.log('[InvestmentForm] saving:', { annexure: ann, mandate: form.investment_mandate, ...feePayload });
+
     saveMutation.mutate({
       investment_mandate:form.investment_mandate,
       applicable_annexure:form.investment_mandate==='Yes'?ann:null,
@@ -175,17 +201,8 @@ export default function InvestmentForm() {
       amount:parseFloat(String(form.lump_sum_amount).replace(/[\s,]/g,''))||0,
       recurring_amount:parseFloat(String(form.recurring_amount).replace(/[\s,]/g,''))||0,
       frequency:form.frequency,
-      initial_fee_percent:parseFloat(form.initial_fee_percent)||0,
-      annual_advice_fee_percent:parseFloat(form.annual_advice_fee_percent)||0,
-      platform_fee_percent:parseFloat(form.platform_fee_percent)||0,
-      management_fee_percent:parseFloat(form.management_fee_percent)||0,
-      performance_fee_percent:parseFloat(form.performance_fee_percent)||0,
-      hurdle_rate_percent:parseFloat(form.hurdle_rate_percent)||0,
-      structuring_fee_percent:parseFloat(form.structuring_fee_percent)||0,
-      raising_fee_percent:parseFloat(form.raising_fee_percent)||0,
-      carry_fee_percent:parseFloat(form.carry_fee_percent)||0,
-      carry_hurdle_percent:parseFloat(form.carry_hurdle_percent)||0,
       reason_for_recommendation:form.reason_for_recommendation,
+      ...feePayload,
     });
     setSubmitting(false);
   };
