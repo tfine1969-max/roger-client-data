@@ -39,9 +39,16 @@
       },
       "description": "Multi-select underlying funds"
     },
+    "fund_allocations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Fund rows with fund, allocation, and customFund fields"
+    },
     "custom_fund": {
       "type": "string",
-      "description": "Custom fund description"
+      "description": "Custom fund description or additional notes"
     },
     "reason_for_recommendation": {
       "type": "string",
@@ -75,19 +82,53 @@
     },
     "initial_fee_percent": {
       "type": "number",
-      "description": "Initial fee percentage"
+      "default": 0,
+      "description": "Initial fee percentage (Annexure A / no mandate)"
     },
     "annual_advice_fee_percent": {
       "type": "number",
-      "description": "Annual advice fee percentage"
+      "default": 0,
+      "description": "Annual advice fee percentage (Annexure A / no mandate)"
     },
     "platform_fee_percent": {
       "type": "number",
-      "description": "Platform fee percentage"
+      "default": 0,
+      "description": "Platform fee percentage (Annexure A / no mandate)"
     },
-    "fund_ter_percent": {
+    "management_fee_percent": {
       "type": "number",
-      "description": "Fund TER percentage"
+      "default": 0,
+      "description": "Annual management fee % of NAV (Annexure B & C)"
+    },
+    "performance_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance fee % of NAV increase (Annexure B)"
+    },
+    "hurdle_rate_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance hurdle rate % (Annexure B)"
+    },
+    "structuring_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Initial structuring fee % (Annexure C)"
+    },
+    "raising_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual raising fee % (Annexure C)"
+    },
+    "carry_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance / carry fee % (Annexure C)"
+    },
+    "carry_hurdle_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Carry hurdle rate % (Annexure C)"
     },
     "investment_mandate": {
       "type": "string",
