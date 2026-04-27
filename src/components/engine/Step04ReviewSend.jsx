@@ -248,7 +248,7 @@ export default function Step04ReviewSend({
       </div>
 
       {/* STEP 4 — SEND TO CLIENT */}
-      <div className={`bg-white border border-slate-200 rounded-lg p-7 shadow-sm ${stepLocked.sendClient ? 'opacity-45 pointer-events-none' : ''}`}>
+      <div className="bg-white border border-slate-200 rounded-lg p-7 shadow-sm">
         <h2 className="text-[11px] font-bold text-navy uppercase tracking-widest mb-4 pb-3 border-b border-slate-200">Step 4 — Send to Client</h2>
 
         {stepLocked.sendClient && (
