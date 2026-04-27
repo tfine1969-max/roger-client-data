@@ -191,26 +191,6 @@ export default function Step04ReviewSend({
           <span>Sign to confirm this recommendation is appropriate under FAIS.</span>
         </p>
 
-        <div className="grid grid-cols-[1fr_1fr] gap-4 mb-5">
-          <div>
-            <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block mb-1">Signing Advisor</label>
-            <div className="h-9 bg-slate-100 border border-slate-300 rounded-md px-3 flex items-center text-[11px] font-medium text-navy">
-              {data.advisor_name || '—'}
-            </div>
-          </div>
-          <div>
-            <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block mb-1">Date</label>
-            <input type="date"
-              value={data.sign_date || ''}
-              onChange={e => onFieldChange('sign_date', e.target.value)}
-              className="w-full h-9 border border-slate-300 rounded-md px-3 text-[11px]"
-            />
-            {data.sign_date && (
-              <p className="text-[9px] text-slate-600 mt-1">{formatDate(data.sign_date)}</p>
-            )}
-          </div>
-        </div>
-
         <SignaturePad
           advisorKey={data.advisor_key || 'trevor'}
           signDate={data.sign_date}
