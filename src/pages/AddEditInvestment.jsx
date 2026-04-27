@@ -195,11 +195,9 @@ export default function AddEditInvestment() {
   useEffect(() => {
     if (isLoadingRef.current) return;
     if (form.investment_mandate === 'Yes' && form.product_type) {
+      if (form.applicable_annexure) return; // don't override a saved value
       const detected = detectAnnexure(form.product_type, form.jurisdiction);
-      setForm(p => {
-        if (p.applicable_annexure === detected) return p;
-        return { ...p, applicable_annexure: detected };
-      });
+      setForm(p => ({ ...p, applicable_annexure: detected }));
     }
   }, [form.product_type, form.jurisdiction, form.investment_mandate]);
 
