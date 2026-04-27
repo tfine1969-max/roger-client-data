@@ -163,13 +163,16 @@ export default function AddEditInvestment() {
     mutationFn: async (data) => {
       if (investmentId) await base44.entities.Investments.update(investmentId, data);
       else await base44.entities.Investments.create({ ...data, proposal_id: proposalId });
-      const all = await base44.entities.Investments.filter({ proposal_id: proposalId });
-      const mi = all.filter(i => i.investment_mandate === 'Yes');
+      // Wait briefly then fetch all investments for this proposal
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const allInvestments = await base44.entities.Investments.list();
+      const proposalInvs = allInvestments.filter(inv => inv.proposal_id === proposalId);
+      const mandateInvs = proposalInvs.filter(inv => inv.investment_mandate === 'Yes');
       await base44.entities.Proposal.update(proposalId, {
-        mandate_included: mi.length > 0 ? 'Yes' : 'No',
-        include_annexure_A: mi.some(i => i.applicable_annexure === 'A'),
-        include_annexure_B: mi.some(i => i.applicable_annexure === 'B'),
-        include_annexure_C: mi.some(i => i.applicable_annexure === 'C'),
+        mandate_included:   mandateInvs.length > 0 ? 'Yes' : 'No',
+        include_annexure_A: mandateInvs.some(inv => inv.applicable_annexure === 'A'),
+        include_annexure_B: mandateInvs.some(inv => inv.applicable_annexure === 'B'),
+        include_annexure_C: mandateInvs.some(inv => inv.applicable_annexure === 'C'),
       });
     },
     onSuccess: () => navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } }),
