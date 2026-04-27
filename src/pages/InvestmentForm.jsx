@@ -42,7 +42,7 @@ const detectAnnexure = (pt, jur) => {
 };
 
 const emptyRow = () => ({ fund:'', allocation:'', customFund:'' });
-const fmtFee = v => (v == null || v === '') ? '' : String(v);
+const fmtFee = v => { if (v == null || v === '') return ''; const n = parseFloat(v); return isNaN(n) ? '' : n.toFixed(2); };
 
 export default function InvestmentForm() {
   const { id: proposalId, investmentId } = useParams();
