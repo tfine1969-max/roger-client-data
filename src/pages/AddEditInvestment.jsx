@@ -114,6 +114,7 @@ export default function AddEditInvestment() {
   const [submitting, setSubmitting] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [allocError, setAllocError] = useState('');
+  const [loaded, setLoaded] = useState(false);
 
   const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
@@ -167,7 +168,7 @@ export default function AddEditInvestment() {
     if (inv.amount)           setAmtDisplay(Number(inv.amount).toLocaleString('en-ZA'));
     if (inv.recurring_amount) setRecDisplay(Number(inv.recurring_amount).toLocaleString('en-ZA'));
 
-    setTimeout(() => { isLoadingRef.current = false; }, 150);
+    setTimeout(() => { isLoadingRef.current = false; setLoaded(true); }, 150);
   }, [inv]);
 
   useEffect(() => {
@@ -394,17 +395,23 @@ export default function AddEditInvestment() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
-                <Select value={form.product_type} onValueChange={handleProduct} disabled={!form.provider}>
-                  <SelectTrigger className="h-8 text-xs rounded-sm">
-                    <SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {form.product_type && !products.includes(form.product_type) && (
-                      <SelectItem value={form.product_type}>{form.product_type}</SelectItem>
-                    )}
-                    {products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                {investmentId && !loaded ? (
+                  <div className="h-8 text-xs rounded-sm border border-border bg-muted px-3 flex items-center text-navy">
+                    {form.product_type || 'Loading...'}
+                  </div>
+                ) : (
+                  <Select value={form.product_type} onValueChange={(v) => { if (v === form.product_type) return; handleProduct(v); }} disabled={!form.provider}>
+                    <SelectTrigger className="h-8 text-xs rounded-sm">
+                      <SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {form.product_type && !products.includes(form.product_type) && (
+                        <SelectItem value={form.product_type}>{form.product_type}</SelectItem>
+                      )}
+                      {products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 
@@ -422,20 +429,26 @@ export default function AddEditInvestment() {
                 {form.fund_rows.map((row, i) => (
                   <div key={i} className="flex gap-2 items-start">
                     <div className="flex-1 space-y-1">
-                      <Select value={row.fund} onValueChange={v => updateRow(i, 'fund', v)}>
-                        <SelectTrigger className="h-8 text-xs rounded-sm">
-                          <SelectValue placeholder="Select fund" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {row.fund && row.fund !== '__custom__' && !funds.includes(row.fund) && (
-                            <SelectItem value={row.fund}>{row.fund}</SelectItem>
-                          )}
-                          {funds
-                            .filter(f => f === row.fund || !form.fund_rows.some((r, idx) => idx !== i && r.fund === f))
-                            .map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                          <SelectItem value="__custom__">+ Custom / Other fund</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {investmentId && !loaded ? (
+                        <div className="h-8 text-xs rounded-sm border border-border bg-muted px-3 flex items-center text-navy">
+                          {row.fund || 'Loading...'}
+                        </div>
+                      ) : (
+                        <Select value={row.fund} onValueChange={v => updateRow(i, 'fund', v)}>
+                          <SelectTrigger className="h-8 text-xs rounded-sm">
+                            <SelectValue placeholder="Select fund" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {row.fund && row.fund !== '__custom__' && !funds.includes(row.fund) && (
+                              <SelectItem value={row.fund}>{row.fund}</SelectItem>
+                            )}
+                            {funds
+                              .filter(f => f === row.fund || !form.fund_rows.some((r, idx) => idx !== i && r.fund === f))
+                              .map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                            <SelectItem value="__custom__">+ Custom / Other fund</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                       {row.fund === '__custom__' && (
                         <Input className="h-8 text-xs rounded-sm" placeholder="Enter fund name"
                           value={row.customFund || ''} onChange={e => updateRow(i, 'customFund', e.target.value)} />
