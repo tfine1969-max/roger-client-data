@@ -1,7 +1,14 @@
 import React from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import StatusBadge from '@/components/engine/StatusBadge';
+
+const fmtDate = (iso) => {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return [String(d.getDate()).padStart(2,'0'), String(d.getMonth()+1).padStart(2,'0'), d.getFullYear()].join('-');
+  } catch { return iso; }
+};
 
 function Field({ label, value }) {
   return (
@@ -64,7 +71,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
         </div>
       </div>
 
-      {/* Advisor / Status */}
+      {/* Advisor */}
       <div className="bg-card border border-border rounded-lg p-4">
         <div className="grid grid-cols-2 gap-4 items-end">
           <div>
@@ -80,12 +87,25 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-2">Status</label>
-            <StatusBadge status={data.status || 'In Progress'} />
-          </div>
         </div>
       </div>
+
+      {/* Signed document link — only shown when proposal is fully signed */}
+      {data.status === 'Signed' && data.signed_pdf_url && (
+        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-green-800">✓ Document Signed{data.signed_at ? ` — ${fmtDate(data.signed_at)}` : ''}</p>
+          </div>
+          <a
+            href={data.signed_pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold text-green-700 underline hover:text-green-900"
+          >
+            View / Download Signed Document
+          </a>
+        </div>
+      )}
 
       {/* Next button */}
       <button

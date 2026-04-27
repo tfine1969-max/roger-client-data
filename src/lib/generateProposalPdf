@@ -33,7 +33,7 @@ const fmtPct = (val) => {
   return n.toFixed(2) + '%';
 };
 
-export default function generateProposalPdf(proposal, investments = [], riskProducts = []) {
+export default function generateProposalPdf(proposal, investments = [], riskProducts = [], signatureData = null) {
   const doc = new jsPDF('p', 'mm', 'a4');
   const W = 210, H = 297, M = 20, CW = W - M * 2;
   let y = 0, pageNum = 0;
@@ -95,7 +95,25 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
     doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, fy);
     doc.text(String(pn), W/2, fy, {align:'center'});
-    doc.text('Initials: ___________', W-M, fy, {align:'right'});
+    if (signatureData?.clientInitials) {
+      doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+      doc.text(`Initials: ${signatureData.clientInitials}`, W-M, fy, {align:'right'});
+    } else {
+      doc.text('Initials: ___________', W-M, fy, {align:'right'});
+    }
+  };
+
+  // Helper: draw client signature block (image + date) or blank sign line
+  const clientSignatureBlock = (label) => {
+    if (signatureData?.clientSignature) {
+      pb(28);
+      doc.addImage(signatureData.clientSignature, 'PNG', M, y, 70, 22);
+      y += 24;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+      doc.text(`${label}  ·  Date: ${fmtDate(signatureData.signedAt)}`, M, y); y += 8;
+    } else {
+      signLine(`${label}  ·  Date: _______________`, 100);
+    }
   };
 
   const newPage = () => {
@@ -225,7 +243,12 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
   doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624',M,cfy);
   doc.text('1',W/2,cfy,{align:'center'});
-  doc.text('Initials: ___________',W-M,cfy,{align:'right'});
+  if (signatureData?.clientInitials) {
+    doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+    doc.text(`Initials: ${signatureData.clientInitials}`, W-M, cfy, {align:'right'});
+  } else {
+    doc.text('Initials: ___________', W-M, cfy, {align:'right'});
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   // PAGE 2 — EXECUTIVE SUMMARY
@@ -492,8 +515,15 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     signLine(`Authorised Representative  ·  Date: ${signDate}`, 100);
     spacer(6);
     body('Client Signature:'); spacer(4);
-    signLine(`${clientName}  ·  Date: _______________`, 100);
-    signLine('Client Initials (each page): _______', 60);
+    clientSignatureBlock(clientName);
+    if (signatureData?.clientInitials) {
+      pb(10); doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+      doc.text(`Client Initials (each page): `, M, y);
+      doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+      doc.text(signatureData.clientInitials, M + 50, y); y += 8;
+    } else {
+      signLine('Client Initials (each page): _______', 60);
+    }
     addFooter(pageNum);
 
     // ── ANNEXURE A ────────────────────────────────────────────────────────────
@@ -531,7 +561,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(6); h3('SIGNATURES'); spacer(6);
       body('Client Signature:'); spacer(4);
-      signLine(`${clientName}  ·  Date: _______________`, 100);
+      clientSignatureBlock(clientName);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
       signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
@@ -577,7 +607,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(6); h3('SIGNATURES'); spacer(6);
       body('Client Signature:'); spacer(4);
-      signLine(`${clientName}  ·  Date: _______________`, 100);
+      clientSignatureBlock(clientName);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
       signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
@@ -628,7 +658,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(6); h3('SIGNATURES'); spacer(6);
       body('Client Signature:'); spacer(4);
-      signLine(`${clientName}  ·  Date: _______________`, 100);
+      clientSignatureBlock(clientName);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
       signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
@@ -694,7 +724,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     pb(20); doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(...muted);
     doc.splitTextToSize(`"${proposal.personal_message}"`,CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=5;}); spacer(6);
   }
-  signLine('Client Signature  ·  Date: _______________',90);
+  clientSignatureBlock('Client Signature');
   addFooter(pageNum);
 
   return doc;

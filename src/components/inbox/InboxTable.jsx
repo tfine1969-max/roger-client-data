@@ -6,18 +6,23 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Trash2, ChevronRight } from 'lucide-react';
 
 const statusBadge = {
-  new: { bg: 'bg-amber-50', text: 'text-amber-900', label: 'New' },
-  in_progress: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'In progress' },
-  signed: { bg: 'bg-blue-50', text: 'text-blue-800', label: 'Signed' },
-  sent: { bg: 'bg-green-50', text: 'text-green-900', label: 'Sent' },
-  client_signed: { bg: 'bg-green-100', text: 'text-green-900', label: 'Client signed' },
-  'Pending Review': { bg: 'bg-amber-50', text: 'text-amber-900', label: 'Pending Review' },
+  // New PascalCase statuses
+  'In Progress':                 { bg: 'bg-blue-50',   text: 'text-blue-800',   label: 'In Progress' },
+  'Sent':                        { bg: 'bg-amber-50',  text: 'text-amber-900',  label: 'Sent' },
+  'Awaiting Client Signature':   { bg: 'bg-orange-50', text: 'text-orange-800', label: 'Awaiting Signature' },
+  'Signed':                      { bg: 'bg-green-100', text: 'text-green-900',  label: 'Signed' },
+  'Outdated':                    { bg: 'bg-red-50',    text: 'text-red-700',    label: 'Outdated' },
+  // Legacy lowercase fallbacks
+  'new':         { bg: 'bg-blue-50',   text: 'text-blue-800',  label: 'In Progress' },
+  'in_progress': { bg: 'bg-blue-50',   text: 'text-blue-800',  label: 'In Progress' },
+  'sent':        { bg: 'bg-amber-50',  text: 'text-amber-900', label: 'Sent' },
+  'signed':      { bg: 'bg-green-100', text: 'text-green-900', label: 'Signed' },
 };
 
 const STATUS_GROUPS = {
-  new: ['new', 'Pending Review'],
-  in_progress: ['in_progress', 'signed'],
-  sent: ['sent', 'client_signed'],
+  new: ['new', 'In Progress', 'in_progress', null, undefined],
+  in_progress: ['Awaiting Client Signature', 'Sent', 'sent', 'Outdated'],
+  sent: ['Signed', 'signed', 'client_signed'],
 };
 
 export default function InboxTable({ proposals, clientMap = {}, statusFilter = null }) {
@@ -57,7 +62,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
       )}
 
       {filtered.map(p => {
-        const badge = statusBadge[p.status] || statusBadge.new;
+        const badge = statusBadge[p.status] || statusBadge['In Progress'];
         const client = clientMap[p.client_id] || clientMap[p.client] || null;
 
         const clientName = client

@@ -102,31 +102,43 @@ export default function SignProposal() {
   const handleSubmit = async () => {
     setError('');
     if (!sigPadRef.current || sigPadRef.current.isEmpty()) {
-      setError('Please provide your signature.'); return;
+      setError('Please draw your signature before submitting.'); return;
     }
-    if (!initials.trim()) { setError('Please enter your initials.'); return; }
+    if (!initials.trim()) { setError('Please enter your initials before submitting.'); return; }
     if (!confirmed) { setError('Please confirm you have read and understood the document.'); return; }
 
     setState('submitting');
-    const signatureData = sigPadRef.current.toDataURL('image/png');
+    const signatureBase64 = sigPadRef.current.toDataURL('image/png');
+    const initialsValue = initials.trim();
     const signedAt = new Date().toISOString();
 
+    console.log('signature length:', signatureBase64.length);
+    console.log('initials:', initialsValue);
+    console.log('signedAt:', signedAt);
+
     await base44.entities.Proposal.update(proposal.id, {
-      client_signature: signatureData,
-      client_initials: initials.trim(),
+      client_signature: signatureBase64,
+      client_initials: initialsValue,
       signed_at: signedAt,
       status: 'Signed',
     });
 
-    // Generate signed PDF and upload
+    // Build signatureData object for PDF embedding
+    const signatureData = {
+      clientSignature: signatureBase64,
+      clientInitials: initialsValue,
+      signedAt: signedAt,
+    };
+
+    // Generate signed PDF with embedded signature on every sign line and footer
     const signedProposal = {
       ...proposal,
-      client_signature: signatureData,
-      client_initials: initials.trim(),
+      client_signature: signatureBase64,
+      client_initials: initialsValue,
       signed_at: signedAt,
       status: 'Signed',
     };
-    const doc = await generateProposalPdf(signedProposal, investments, riskProducts);
+    const doc = await generateProposalPdf(signedProposal, investments, riskProducts, signatureData);
 
     // Append attachments with client initials on every page
     const { appendAttachmentsToPdf } = await import('@/lib/appendAttachmentsToPdf');
@@ -146,7 +158,7 @@ export default function SignProposal() {
       }
     }
     const pageNum = doc.internal.getNumberOfPages();
-    await appendAttachmentsToPdf(doc, orderedAttachments, initials.trim(), pageNum);
+    await appendAttachmentsToPdf(doc, orderedAttachments, initialsValue, pageNum);
 
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${proposal.reference || 'signed'}-signed.pdf`, { type: 'application/pdf' });
