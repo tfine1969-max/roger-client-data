@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,6 +47,7 @@ const fmtFee = v => (v == null || v === '') ? '' : String(v);
 export default function InvestmentForm() {
   const { id: proposalId, investmentId } = useParams();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [loaded, setLoaded] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [allocError, setAllocError] = useState('');
@@ -135,7 +136,10 @@ export default function InvestmentForm() {
         include_annexure_C: mi.some(i=>i.applicable_annexure==='C'),
       });
     },
-    onSuccess: ()=>navigate(`/proposal/${proposalId}/engine`,{state:{step:'recommendations'}}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['investments', proposalId] });
+      navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } });
+    },
   });
 
   const totalAlloc = form.fund_rows.reduce((s,r)=>s+(parseFloat(r.allocation)||0),0);
