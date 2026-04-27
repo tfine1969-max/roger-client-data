@@ -189,34 +189,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                     <div className="border-t border-border mt-1.5 pt-1 text-[9px] text-muted-foreground italic">No income drawdown required.</div>
                   )}
 
-                  {/* Investment Recommendation Rationale */}
-                  {(inv.investment_recommendation_reasons || []).length > 0 && (
-                    <div className="border-t border-border mt-1.5 pt-1.5">
-                      <p className="text-[9px] font-semibold text-ocean uppercase tracking-wide mb-1">Investment Rationale</p>
-                      <ul className="space-y-0.5">
-                        {resolveTexts(inv.investment_recommendation_reasons).map((r, i) => (
-                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
-                            <span className="text-ocean shrink-0 mt-0.5">–</span> {r.text}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
 
-                  {/* Income Drawdown Rationale */}
-                  {inv.income_required === 'Yes' && (inv.income_drawdown_reasons || []).length > 0 && (
-                    <div className="border-t border-border mt-1.5 pt-1.5">
-                      <p className="text-[9px] font-semibold text-teal uppercase tracking-wide mb-1">Income Drawdown Rationale</p>
-                      <ul className="space-y-0.5">
-                        {resolveTexts(inv.income_drawdown_reasons).map((r, i) => (
-                          <li key={i} className="text-[9px] text-foreground flex items-start gap-1">
-                            <span className="text-teal shrink-0 mt-0.5">–</span> {r.text}
-                          </li>
-                        ))}
-                      </ul>
-                      {inv.income_notes && <p className="text-[9px] text-muted-foreground italic mt-1">{inv.income_notes}</p>}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
