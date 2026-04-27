@@ -328,14 +328,14 @@ export default function AddEditInvestment() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Provider</Label>
-                <Select value={form.provider} onValueChange={handleProvider}>
+                <Select value={form.provider} onValueChange={(v) => { if (v === form.provider) return; handleProvider(v); }}>
                   <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder="Select provider" /></SelectTrigger>
                   <SelectContent>{providers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Product Type</Label>
-                <Select value={form.product_type} onValueChange={handleProduct} disabled={!form.provider}>
+                <Select value={form.product_type} onValueChange={(v) => { if (v === form.product_type) return; handleProduct(v); }} disabled={!form.provider}>
                   <SelectTrigger className="h-8 text-xs rounded-sm"><SelectValue placeholder={form.provider ? 'Select type' : 'Select provider first'} /></SelectTrigger>
                   <SelectContent>{products.map(pt => <SelectItem key={pt} value={pt}>{pt}</SelectItem>)}</SelectContent>
                 </Select>
