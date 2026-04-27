@@ -444,170 +444,189 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // MANDATE + ANNEXURES (only if mandate_included = 'Yes')
+  // MANDATE + ANNEXURES (only if any investment has investment_mandate = 'Yes')
   // ══════════════════════════════════════════════════════════════════════════
-  if (mandateIncluded) {
+  const hasMandateInvestments = investments.some(i => i.investment_mandate === 'Yes');
+  const annexureAInvs = investments.filter(i => i.investment_mandate === 'Yes' && i.applicable_annexure === 'A');
+  const annexureBInvs = investments.filter(i => i.investment_mandate === 'Yes' && i.applicable_annexure === 'B');
+  const annexureCInvs = investments.filter(i => i.investment_mandate === 'Yes' && i.applicable_annexure === 'C');
 
-    // ── CORE MANDATE ─────────────────────────────────────────────────────────
+  const fmtInvName = (inv) => [inv.provider, inv.product_type].filter(Boolean).join(' — ') || 'Investment';
+
+  if (hasMandateInvestments) {
+    // ── MAIN MANDATE BODY ────────────────────────────────────────────────────
     doc.addPage(); pageNum+=1; addHeader(); y=34;
-    h1('Consolidated Discretionary Mandate'); thinRule(); spacer(4);
-    body(`Between WEALTHWORKS INVESTMENTS (PTY) LTD, Registration Number 2012/215566/07 ("The FSP") and:`);
-    spacer(4);
-    table([['Investor',clientName],['ID / Registration',proposal.client_id_number||'—']]);
-    spacer(6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
+    doc.text('WEALTHWORKS INVESTMENTS (PTY) LTD',W/2,y,{align:'center'}); y+=6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.text('FSP No. 45624',W/2,y,{align:'center'}); y+=7;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+    doc.text('(Version 2.2 – FAIS Aligned with Addendum Integration)',W/2,y,{align:'center'}); y+=10;
+    thinRule();
 
-    [['Background',`This Investment Mandate authorises The FSP to make investment decisions on behalf of ${clientName} within strictly defined and managed parameters. This Mandate is required under The FSP's Category II FSP registration with the FSCA.`],
-     ['Scope of Authority','The FSP is authorised to render discretionary intermediary services and shall exercise its discretion in managing investments on behalf of the Investor. This includes listed and unlisted securities, unit trusts, collective investment schemes, bonds, derivatives, and other instruments.'],
-     ['Investment Objectives',`Risk Level: ${riskProfile}\nObjectives: ${advisoryNeeds.length>0?advisoryNeeds.join(', '):'—'}`],
-     ['Reporting','The FSP shall provide the Investor with relevant portfolio information on a regular basis, with a minimum of quarterly updates.'],
-     ['Termination','Either party may terminate this Mandate on 60 calendar days\' written notice.'],
-     ['Risk Disclosure','The Investor acknowledges that investment values may fluctuate and that past performance is not indicative of future results. The FSP will manage investments within the agreed risk parameters.'],
-     ['Legislation','This Mandate is subject to FICA (Act 38 of 2001), POCA (2001), and the Policyholder Protection Rules. The Investor confirms all investment funds are legitimate as defined under FICA and POCA.'],
-     ['Confidentiality','The FSP will not disclose Confidential Information to any third party without prior written authority from the Investor, unless compelled by law.'],
-    ].forEach(([heading,text])=>{ pb(20); h3(heading); spacer(2); body(text); spacer(4); });
+    const mandateSections = [
+      ['1. PARTIES', `This Mandate is entered into between:\n\nWealthworks Investments (Pty) Ltd, FSP No. 45624 ("the FSP" / "the Advisor")\n\nand\n\n${clientName} ("the Client")`],
+      ['2. PURPOSE', 'The purpose of this Mandate is to appoint the FSP as discretionary investment manager, authorise the FSP to implement and manage investments, and give effect to the Record of Advice ("ROA"). This Mandate must be read together with the ROA, which forms an integral part of this agreement.'],
+      ['3. APPOINTMENT AND DISCRETIONARY AUTHORITY', 'The Client appoints the FSP to manage investments on a discretionary basis. The Client authorises the FSP to: select, acquire, and dispose of investments; switch between funds, portfolios, and providers; rebalance portfolios; implement tactical and strategic allocation decisions; and appoint and utilise third-party product providers.\n\nThe Client acknowledges that the FSP is not required to obtain prior approval for individual transactions and that all decisions are made in good faith and within the agreed mandate. All actions must remain aligned with the Client\'s risk profile, investment objectives, and the agreed investment strategy.'],
+      ['4. SCOPE OF INVESTMENT AUTHORITY AND ADDENDUM STRUCTURE', 'The discretionary authority granted under this Mandate extends across multiple investment structures and product types. The specific terms applicable to each investment type are set out in the Annexures attached to this Mandate, which form an integral part of this Mandate and apply only where the relevant investment types are utilised.\n\nThe Annexures are: Annexure A: Model Portfolio Discretionary Management; Annexure B: Collective Investment Schemes and Platform-Based Investments; Annexure C: Alternative Investments and Other Instruments.'],
+      ['5. CLIENT PROFILE AND SUITABILITY', 'The Client confirms that all relevant financial information has been disclosed, a risk profile has been completed, and objectives and needs have been communicated accurately. The FSP confirms that all recommendations are appropriate and the investment strategy aligns with the Client\'s financial circumstances.'],
+      ['6. FEES AND REMUNERATION', 'All fees are disclosed in the Record of Advice and may include initial fees, ongoing advice fees, platform and administration fees, and fund management fees. The Client acknowledges that all fees are transparent and disclosed, aligned to the services provided, and may be deducted from the investment.'],
+      ['7. REPORTING AND COMMUNICATION', 'The FSP will provide periodic portfolio reports, performance updates, and valuation statements. The Client agrees to review reports provided and notify the FSP of any material changes in financial circumstances.'],
+      ['8. RISK DISCLOSURE', 'The Client acknowledges that investments are subject to market and economic risk, capital loss may occur, returns are not guaranteed, and past performance is not indicative of future performance.'],
+      ['9. THIRD-PARTY PRODUCT PROVIDERS', 'The Client acknowledges that investments are executed via third-party product providers and that the FSP does not control the operational or financial performance of such providers. The FSP does not guarantee the performance of underlying investments or the solvency or operational stability of third-party providers.'],
+      ['10. LIMITATION OF LIABILITY', 'The FSP shall not be liable for any loss arising from market movements, investment performance, or actions or failures of third-party providers, provided that the FSP has acted within the scope of this Mandate, in accordance with applicable legislation, and in good faith and with due care.'],
+      ['11. CLIENT RESPONSIBILITIES', 'The Client agrees to provide accurate and complete information, inform the FSP of any changes in circumstances, and review documentation and reports. Failure to do so may impact the suitability of advice.'],
+      ['12. TERM AND TERMINATION', 'This Mandate remains in force until terminated and may be terminated by either party on 60 (sixty) days written notice. Upon termination, discretionary authority ceases immediately and no further transactions will be executed.'],
+      ['13. REGULATORY COMPLIANCE', 'The FSP operates under the Financial Advisory and Intermediary Services Act (FAIS) and applicable Financial Sector Conduct Authority (FSCA) requirements. All actions must comply with applicable legislation.'],
+      ['14. RECORD OF ADVICE', 'The Client confirms that the Record of Advice has been received and explained, all risks, costs, and implications have been disclosed, and the recommendations are understood.'],
+      ['15. GENERAL', 'This Mandate constitutes the full agreement between the parties, must be read together with the Annexures, and is governed by the laws of the Republic of South Africa.'],
+    ];
+    mandateSections.forEach(([heading, text]) => { pb(20); h3(heading); spacer(2); body(text); spacer(4); });
 
-    spacer(6); h3('Signatures'); spacer(6);
-    body('Signature of Investor:'); spacer(4);
-    signLine(`${clientName}  ·  Date: _______________`,100);
-    spacer(4);
-    body('For and on behalf of The FSP (Wealthworks Investments (Pty) Ltd):'); spacer(4);
+    spacer(6); h3('16. SIGNATURES'); spacer(6);
+    body('For and on behalf of Wealthworks Investments (Pty) Ltd:'); spacer(4);
     advisorSignatureBlock();
-    signLine(`${advisorName}  ·  Date: ${signDate}`,100);
+    signLine(`Authorised Representative  ·  Date: ${signDate}`, 100);
+    spacer(6);
+    body('Client Signature:'); spacer(4);
+    signLine(`${clientName}  ·  Date: _______________`, 100);
+    signLine('Client Initials (each page): _______', 60);
     addFooter(pageNum);
 
-    // ── ANNEXURE A — MODEL PORTFOLIOS ─────────────────────────────────────────
-    if (inclA) {
+    // ── ANNEXURE A ────────────────────────────────────────────────────────────
+    if (proposal.include_annexure_A === true && annexureAInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      h1('Annexure A — Model Portfolios'); thinRule(); spacer(4);
-      body('This Annexure forms part of the Consolidated Discretionary Mandate and sets out the model portfolio parameters applicable to the Investor\'s mandate.');
-      spacer(6);
-      h3('Portfolio Parameters');spacer(2);
-      table([
-        ['Risk Tolerance',riskProfile],
-        ['Investment Objectives',advisoryNeeds.length>0?advisoryNeeds.join(', '):'—'],
-        ['Time Horizon',timeHorizon],
-      ]);
-      spacer(8);
-      h3('Model Portfolio Guidelines'); spacer(2);
-      ['The FSP will manage the portfolio in accordance with the agreed risk profile',
-       'Asset allocation will be rebalanced periodically to maintain target exposures',
-       'The Investor will be notified of any material changes to the portfolio strategy',
-       'Performance reporting will be provided on a quarterly basis',
-       'The FSP may substitute underlying funds where a suitable alternative exists',
-      ].forEach(b=>bullet(b));
-      spacer(10);
-      h3('Applicable Investments'); spacer(2);
-      const modelInvs=investments.filter(inv=>String(inv.product_type||'').toLowerCase().includes('model'));
-      if(modelInvs.length>0){
-        modelInvs.forEach(inv=>{
-          table([['Provider',inv.provider||'—'],['Product',inv.product_type||'—'],
-            ...(inv.amount>0?[['Amount',`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`]]:[]),
-          ]); spacer(4);
-        });
-      } else {
-        body('Model portfolio details as agreed between the FSP and the Investor.');
-      }
-      spacer(10); h3('Signatures'); spacer(6);
-      body('Investor acknowledges and agrees to the model portfolio parameters set out in this Annexure.');
-      spacer(4); signLine(`${clientName}  ·  Date: _______________`,100);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
+      doc.text('ANNEXURE A',W/2,y,{align:'center'}); y+=6;
+      doc.text('MODEL PORTFOLIO DISCRETIONARY MANAGEMENT',W/2,y,{align:'center'}); y+=6;
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      thinRule();
+      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      spacer(4);
+      [['APPLICABILITY','This Annexure applies where the Client\'s investments are managed through model portfolios, discretionary portfolios, or similar managed investment solutions where the FSP exercises full discretionary authority over the selection and management of underlying investments.'],
+       ['1. SCOPE OF DISCRETIONARY MANAGEMENT','The FSP is authorised to manage the Client\'s investment portfolio on a discretionary basis within a model portfolio structure.'],
+       ['2. DISCRETIONARY AUTHORITY','The Client authorises the FSP, without the need to obtain prior consent for each transaction, to: select and appoint underlying funds, portfolios, or investment instruments; switch between underlying investments; rebalance portfolios on a periodic or ad hoc basis; adjust asset allocation in response to market conditions; and implement tactical and strategic investment decisions.'],
+       ['3. INVESTMENT OBJECTIVE','The objective of the model portfolio is to achieve long-term capital growth and/or income, provide diversification across asset classes and markets, and align with the Client\'s risk profile and investment horizon.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(4); h3('4. PORTFOLIO MANAGEMENT FEE'); spacer(4);
+      annexureAInvs.forEach(inv => {
+        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=6;
+        table([
+          ['Portfolio Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
+          ['Annual Advice Fee (% per annum)', fmtPct(inv.annual_advice_fee_percent||0)],
+          ['Platform / Administration Fee (% per annum)', fmtPct(inv.platform_fee_percent||0)],
+        ]); spacer(4);
+      });
+      [['5. REMUNERATION AND DISCLOSURE','The FSP confirms that all fees are disclosed in the Record of Advice and that no undisclosed commissions or incentives are received.'],
+       ['6. RISK DISCLOSURE','The Client acknowledges that portfolio values may fluctuate due to market conditions, capital loss may occur, returns are not guaranteed, and past performance is not indicative of future performance.'],
+       ['7. LIMITATION OF LIABILITY','The FSP shall not be liable for losses arising from market conditions or investment performance and does not guarantee the performance of underlying investments.'],
+       ['8. TERMINATION','This Annexure will terminate automatically when the Client exits the model portfolio, the underlying investment is withdrawn or transferred, or the Mandate is terminated. Upon termination, discretionary authority under this Annexure ceases immediately.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(6); h3('SIGNATURES'); spacer(6);
+      body('Client Signature:'); spacer(4);
+      signLine(`${clientName}  ·  Date: _______________`, 100);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
-      signLine(`${advisorName}  ·  Date: ${signDate}`,100);
+      signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
+      pb(8); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+      doc.text('END OF ANNEXURE A', M, y); y+=8;
       addFooter(pageNum);
     }
 
-    // ── ANNEXURE B — COLLECTIVE INVESTMENTS / OFFSHORE ────────────────────────
-    if (inclB) {
+    // ── ANNEXURE B ────────────────────────────────────────────────────────────
+    if (proposal.include_annexure_B === true && annexureBInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      h1('Annexure B — Collective Investment Schemes & Offshore Platforms'); thinRule(); spacer(4);
-      body('This Annexure forms part of the Consolidated Discretionary Mandate and governs the FSP\'s authority to invest in collective investment schemes and offshore investment platforms on behalf of the Investor.');
-      spacer(6);
-      h3('Scope'); spacer(2);
-      ['Participatory interests in Collective Investment Schemes (unit trusts)',
-       'Offshore investment platforms and bonds',
-       'Foreign currency denominated investments',
-       'Multi-asset and specialist funds',
-      ].forEach(b=>bullet(b));
-      spacer(8);
-      h3('Applicable Investments'); spacer(2);
-      const cisInvs=investments.filter(inv=>{
-        const pt=String(inv.product_type||'').toLowerCase();
-        const jur=String(inv.jurisdiction||'').toLowerCase();
-        return pt.includes('unit trust')||pt.includes('cis')||pt.includes('collective')||
-               jur.includes('off')||(inv.currency&&inv.currency!=='ZAR'&&inv.currency!=='R');
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
+      doc.text('ANNEXURE B',W/2,y,{align:'center'}); y+=6;
+      doc.text('COLLECTIVE INVESTMENT SCHEMES AND PLATFORM-BASED INVESTMENTS',W/2,y,{align:'center'}); y+=6;
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      thinRule();
+      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      spacer(4);
+      [['APPLICABILITY','This Annexure applies where the Client invests in Collective Investment Schemes (Unit Trusts), Linked Investment Service Provider (LISP) platforms, Endowment policies, or Retirement products (including Retirement Annuities, Preservation Funds, and Living Annuities).'],
+       ['1. SCOPE OF DISCRETIONARY MANAGEMENT','The FSP is authorised to manage the Client\'s investments within collective investment and platform-based structures on a discretionary basis, including investments held via unit trust portfolios, platform-based investment accounts, and wrapper products such as endowments and retirement vehicles.'],
+       ['2. DISCRETIONARY AUTHORITY','The Client authorises the FSP, without requiring prior approval for each transaction, to: select and recommend underlying funds; switch between funds; adjust asset allocation; and implement portfolio changes within the selected investment structure.'],
+       ['3. INVESTMENT OBJECTIVE','The objective of these investments is to achieve long-term capital growth and/or income, provide diversification across asset classes and fund managers, and align with the Client\'s risk profile and investment horizon.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(4); h3('4. FEES AND COST STRUCTURE'); spacer(4);
+      annexureBInvs.forEach(inv => {
+        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=6;
+        table([
+          ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
+          ['Performance Fee (%)', fmtPct(inv.performance_fee_percent||0)],
+          ['Hurdle Rate (%)', fmtPct(inv.hurdle_rate_percent||0)],
+          ['Platform / Administration Fee (% per annum)', fmtPct(inv.platform_fee_percent||0)],
+        ]); spacer(4);
       });
-      if(cisInvs.length>0){
-        cisInvs.forEach(inv=>{
-          table([
-            ['Provider',inv.provider||'—'],['Product',inv.product_type||'—'],
-            ['Currency',inv.currency||'ZAR'],
-            ...(inv.amount>0?[['Amount',`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`]]:[]),
-            ...(Array.isArray(inv.underlying_funds)&&inv.underlying_funds.length>0?[['Funds',inv.underlying_funds.join(', ')]]:[]),
-          ]); spacer(4);
-        });
-      } else {
-        body('Collective investment and offshore platform details as agreed between the FSP and the Investor.');
-      }
-      spacer(8);
-      h3('Risk Acknowledgement'); spacer(2);
-      ['Collective investment schemes are subject to market risk and are not guaranteed',
-       'Offshore investments are subject to exchange rate and political risk',
-       'Past performance of funds is not indicative of future results',
-       'The FSP will select funds appropriate to the agreed risk profile',
-      ].forEach(b=>bullet(b));
-      spacer(10); h3('Signatures'); spacer(6);
-      body('Investor acknowledges and agrees to the collective investment and offshore platform parameters set out in this Annexure.');
-      spacer(4); signLine(`${clientName}  ·  Date: _______________`,100);
+      [['5. COST DISCLOSURE','The Client acknowledges that fees may be charged at multiple levels, total investment costs may vary depending on fund selection, and detailed cost disclosures are provided in product documentation.'],
+       ['6. TAX CONSIDERATIONS','The Client acknowledges that switching between funds may trigger tax events, tax treatment depends on the investment structure, and the FSP does not provide tax advice unless explicitly agreed.'],
+       ['7. RISK DISCLOSURE','The Client acknowledges that investments are subject to market risk, capital loss may occur, fund-specific risks apply, and performance may vary across funds and managers.'],
+       ['8. LIMITATION OF LIABILITY','The FSP shall not be liable for losses arising from fund performance, actions of underlying fund managers, or operational failures of product providers, provided that the FSP acts within the scope of this Mandate and applicable legislation.'],
+       ['9. TERMINATION','This Annexure will terminate automatically when the investment is withdrawn, the portfolio is transferred, or the Mandate is terminated. Upon termination, discretionary authority under this Annexure ceases immediately.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(6); h3('SIGNATURES'); spacer(6);
+      body('Client Signature:'); spacer(4);
+      signLine(`${clientName}  ·  Date: _______________`, 100);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
-      signLine(`${advisorName}  ·  Date: ${signDate}`,100);
+      signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
+      pb(8); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+      doc.text('END OF ANNEXURE B', M, y); y+=8;
       addFooter(pageNum);
     }
 
-    // ── ANNEXURE C — ALTERNATIVE INVESTMENTS / DIRECT SECURITIES ─────────────
-    if (inclC) {
+    // ── ANNEXURE C ────────────────────────────────────────────────────────────
+    if (proposal.include_annexure_C === true && annexureCInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      h1('Annexure C — Alternative Investments & Direct Securities'); thinRule(); spacer(4);
-      body('This Annexure forms part of the Consolidated Discretionary Mandate and governs the FSP\'s authority to invest in alternative investments and direct securities on behalf of the Investor.');
-      spacer(6);
-      h3('Scope'); spacer(2);
-      ['Listed and unlisted equity securities',
-       'Exchange Traded Funds (ETFs)',
-       'Private equity and real estate investments',
-       'Alternative investment structures',
-       'Unlisted instruments where applicable',
-      ].forEach(b=>bullet(b));
-      spacer(8);
-      h3('Risk Acknowledgement'); spacer(2);
-      ['Alternative investments carry higher risk and may have limited liquidity',
-       'Private equity investments may be illiquid for extended periods',
-       'Direct securities are subject to market and company-specific risk',
-       'These investments are suitable only for investors with appropriate risk tolerance',
-       'The FSP will only invest in alternatives consistent with the agreed mandate parameters',
-      ].forEach(b=>bullet(b));
-      spacer(8);
-      h3('Applicable Investments'); spacer(2);
-      const altInvs=investments.filter(inv=>{
-        const pt=String(inv.product_type||'').toLowerCase();
-        return pt.includes('private equity')||pt.includes('real estate')||pt.includes('unlisted')||
-               pt.includes('alternative')||pt.includes('share')||pt.includes('etf')||pt.includes('direct');
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
+      doc.text('ANNEXURE C',W/2,y,{align:'center'}); y+=6;
+      doc.text('ALTERNATIVE INVESTMENTS AND OTHER INSTRUMENTS',W/2,y,{align:'center'}); y+=6;
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      thinRule();
+      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      spacer(4);
+      [['APPLICABILITY','This Annexure applies where the Client invests in alternative, non-traditional, or illiquid investment structures, including but not limited to: private equity investments, real estate funds or property syndications, hedge funds, structured products, unlisted securities, and offshore or specialist investment vehicles.'],
+       ['1. NATURE OF INVESTMENTS','The Client acknowledges that investments under this Annexure are typically long-term in nature, may not be readily realisable, may not have an active or liquid secondary market, and may be subject to complex structures and underlying agreements.'],
+       ['2. DISCRETIONARY AUTHORITY','The Client authorises the FSP, without requiring prior approval for each transaction, to: select and recommend alternative investment opportunities; execute investment agreements and subscription documents; allocate capital across alternative investments; and manage and adjust exposure within the overall portfolio.'],
+       ['3. INVESTMENT OBJECTIVE','The objective of these investments is to achieve long-term capital growth, access alternative sources of return, and enhance diversification within the overall portfolio.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(4); h3('4. FEES AND COST STRUCTURE'); spacer(4);
+      annexureCInvs.forEach(inv => {
+        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=6;
+        table([
+          ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
+          ['Performance Fee (% of returns above hurdle)', fmtPct(inv.performance_fee_percent||0)],
+          ['Hurdle Rate (%)', fmtPct(inv.hurdle_rate_percent||0)],
+          ['Structuring Fee (%)', fmtPct(inv.structuring_fee_percent||0)],
+          ['Raising Fee (%)', fmtPct(inv.raising_fee_percent||0)],
+          ['Carry (%)', fmtPct(inv.carry_fee_percent||0)],
+          ['Carry Hurdle Rate (%)', fmtPct(inv.carry_hurdle_percent||0)],
+        ]); spacer(4);
       });
-      if(altInvs.length>0){
-        altInvs.forEach(inv=>{
-          table([
-            ['Provider',inv.provider||'—'],['Product',inv.product_type||'—'],
-            ...(inv.amount>0?[['Amount',`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`]]:[]),
-          ]); spacer(4);
-        });
-      } else {
-        body('Alternative investment and direct securities details as agreed between the FSP and the Investor.');
-      }
-      spacer(10); h3('Signatures'); spacer(6);
-      body('Investor acknowledges and agrees to the alternative investment parameters set out in this Annexure.');
-      spacer(4); signLine(`${clientName}  ·  Date: _______________`,100);
+      [['5. LIQUIDITY AND INVESTMENT TERM','The Client acknowledges that investments may be subject to lock-in periods, early redemption may not be possible, and exit opportunities may be limited or conditional.'],
+       ['6. VALUATION','The Client acknowledges that valuations may not be frequent, pricing may be based on estimates or periodic reporting, and market values may not be readily available.'],
+       ['7. RISK DISCLOSURE','The Client acknowledges that these investments carry a higher risk profile than traditional investments, potential for partial or total capital loss, liquidity constraints, and operational and structural risks.'],
+       ['8. ADDITIONAL AGREEMENTS','The Client acknowledges that separate investment agreements, subscription documents, or offering memoranda may apply and that such documents will govern the specific terms of each investment.'],
+       ['9. LIMITATION OF LIABILITY','The FSP shall not be liable for investment losses, performance outcomes, or structural or operational risks associated with alternative investments, provided that the FSP acts within the scope of this Mandate, in accordance with applicable legislation, and in good faith and with due care.'],
+       ['10. CLIENT ACKNOWLEDGEMENT','The Client confirms that the nature, risks, and limitations of alternative investments have been explained, the illiquid nature of these investments is understood, and the potential for capital loss has been accepted.'],
+       ['11. TERMINATION','This Annexure will remain in force for the duration of the underlying investment. Discretionary authority ceases when the investment is exited (where possible) or the Mandate is terminated.'],
+      ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
+      spacer(6); h3('SIGNATURES'); spacer(6);
+      body('Client Signature:'); spacer(4);
+      signLine(`${clientName}  ·  Date: _______________`, 100);
       spacer(4); body('For and on behalf of The FSP:'); spacer(4);
       advisorSignatureBlock();
-      signLine(`${advisorName}  ·  Date: ${signDate}`,100);
+      signLine(`${advisorName}  ·  Date: ${signDate}`, 100);
+      pb(8); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+      doc.text('END OF ANNEXURE C', M, y); y+=8;
       addFooter(pageNum);
     }
   }

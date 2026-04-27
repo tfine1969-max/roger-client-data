@@ -135,12 +135,14 @@ export default function InvestmentForm() {
       else await base44.entities.Investments.create({...data, proposal_id:proposalId});
       await new Promise(r=>setTimeout(r,500));
       const all = await base44.entities.Investments.list();
-      const mi = all.filter(i=>i.proposal_id===proposalId&&i.investment_mandate==='Yes');
+      const proposalInvestments = all.filter(i=>i.proposal_id===proposalId);
+      const mi = proposalInvestments.filter(i=>i.investment_mandate==='Yes');
       await base44.entities.Proposal.update(proposalId,{
         mandate_included: mi.length>0?'Yes':'No',
         include_annexure_A: mi.some(i=>i.applicable_annexure==='A'),
         include_annexure_B: mi.some(i=>i.applicable_annexure==='B'),
         include_annexure_C: mi.some(i=>i.applicable_annexure==='C'),
+        pdf_status: 'Outdated',
       });
     },
     onSuccess: () => {
@@ -187,6 +189,7 @@ export default function InvestmentForm() {
       feePayload.management_fee_percent    = parseFloat(form.management_fee_percent)    || 0;
       feePayload.performance_fee_percent   = parseFloat(form.performance_fee_percent)   || 0;
       feePayload.hurdle_rate_percent       = parseFloat(form.hurdle_rate_percent)       || 0;
+      feePayload.platform_fee_percent      = parseFloat(form.platform_fee_percent)      || 0;
     } else if (ann === 'C') {
       feePayload.management_fee_percent    = parseFloat(form.management_fee_percent)    || 0;
       feePayload.structuring_fee_percent   = parseFloat(form.structuring_fee_percent)   || 0;
@@ -475,34 +478,37 @@ export default function InvestmentForm() {
           {/* FEES */}
           <div className="bg-card border border-border rounded-lg p-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Fee Structure</h3>
-            {(form.investment_mandate==='No'||ann==='A')&&(
+            {form.investment_mandate==='No'&&(
               <div className="grid grid-cols-3 gap-3">
                 <FeeInput label="Initial Fee" field="initial_fee_percent"/>
                 <FeeInput label="Annual Advice Fee" field="annual_advice_fee_percent"/>
                 <FeeInput label="Platform Fee" field="platform_fee_percent"/>
               </div>
             )}
+            {form.investment_mandate==='Yes'&&ann==='A'&&(
+              <div className="grid grid-cols-3 gap-3">
+                <FeeInput label="Portfolio Management Fee (% per annum)" field="management_fee_percent"/>
+                <FeeInput label="Annual Advice Fee (% per annum)" field="annual_advice_fee_percent"/>
+                <FeeInput label="Platform / Administration Fee (% per annum)" field="platform_fee_percent"/>
+              </div>
+            )}
             {form.investment_mandate==='Yes'&&ann==='B'&&(
-              <div className="space-y-3">
-                <p className="text-[10px] text-muted-foreground">Per Annexure B — Collective Investments & Offshore Platforms</p>
-                <div className="grid grid-cols-3 gap-3">
-                  <FeeInput label="Management Fee % p.a. of NAV" field="management_fee_percent"/>
-                  <FeeInput label="Performance Fee % of NAV increase" field="performance_fee_percent"/>
-                  <FeeInput label="Performance Hurdle Rate" field="hurdle_rate_percent"/>
-                </div>
-
+              <div className="grid grid-cols-2 gap-3">
+                <FeeInput label="Management Fee (% per annum)" field="management_fee_percent"/>
+                <FeeInput label="Performance Fee (% if applicable)" field="performance_fee_percent"/>
+                <FeeInput label="Hurdle Rate (%)" field="hurdle_rate_percent"/>
+                <FeeInput label="Platform / Administration Fee (% per annum)" field="platform_fee_percent"/>
               </div>
             )}
             {form.investment_mandate==='Yes'&&ann==='C'&&(
-              <div className="space-y-3">
-                <p className="text-[10px] text-muted-foreground">Per Annexure C — Alternative Investments & Direct Securities</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <FeeInput label="Annual Management Fee % of NAV" field="management_fee_percent"/>
-                  <FeeInput label="Initial Structuring Fee %" field="structuring_fee_percent"/>
-                  <FeeInput label="Annual Raising Fee %" field="raising_fee_percent"/>
-                  <FeeInput label="Performance / Carry Fee %" field="carry_fee_percent"/>
-                  <FeeInput label="Carry Hurdle Rate %" field="carry_hurdle_percent"/>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <FeeInput label="Management Fee (% per annum)" field="management_fee_percent"/>
+                <FeeInput label="Performance Fee (% of returns above hurdle)" field="performance_fee_percent"/>
+                <FeeInput label="Hurdle Rate (%)" field="hurdle_rate_percent"/>
+                <FeeInput label="Structuring Fee (%)" field="structuring_fee_percent"/>
+                <FeeInput label="Raising Fee (%)" field="raising_fee_percent"/>
+                <FeeInput label="Carry (%)" field="carry_fee_percent"/>
+                <FeeInput label="Carry Hurdle Rate (%)" field="carry_hurdle_percent"/>
               </div>
             )}
           </div>
