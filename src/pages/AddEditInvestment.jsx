@@ -123,9 +123,11 @@ export default function AddEditInvestment() {
 
   const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
-    queryFn: () => investmentId
-      ? base44.entities.Investments.filter({ id: investmentId }).then(d => d[0])
-      : null,
+    queryFn: async () => {
+      if (!investmentId) return null;
+      const all = await base44.entities.Investments.list();
+      return all.find(i => i.id === investmentId) || null;
+    },
     enabled: !!investmentId,
   });
 
