@@ -255,7 +255,7 @@ export default function Step04ReviewSend({
           <p className="text-[10px] text-slate-600 mb-4">Generate a current PDF in Step 3 to send to the client.</p>
         )}
 
-        {/* Signature status */}
+        {/* Signature status - always visible */}
         <div className="space-y-2 mb-5">
           <div className="flex items-center justify-between px-4 py-2 bg-slate-100 rounded-md border border-slate-300">
             <span className="text-[10px] font-medium text-slate-700">Advisor signature</span>
@@ -273,8 +273,8 @@ export default function Step04ReviewSend({
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="space-y-2 mb-5 flex flex-col">
+        {/* Action buttons - always visible, but disabled until PDF is current */}
+        <div className="space-y-2 mb-5">
           <button
             onClick={handleCopyLink}
             disabled={!pdfCurrent || sending}
