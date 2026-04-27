@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ADVISORS } from '@/lib/constants';
@@ -13,7 +13,6 @@ import generateProposalPdf from '@/lib/generateProposalPdf';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
-import { useLocation } from 'react-router-dom';
 
 export default function ProposalEngine() {
   const { id } = useParams();
@@ -80,7 +79,7 @@ export default function ProposalEngine() {
   const riskProducts = riskProductsRaw.map(rp => {
     const covers = allRiskCovers.filter(c => c.risk_product_id === rp.id);
     const total_premium = covers.reduce((s, c) => s + (parseFloat(c.premium) || 0), 0);
-    return { ...rp, _covers: covers, total_premium };
+    return { ...rp, covers, _covers: covers, total_premium };
   });
 
   // ── Seed localData from proposal + client ─────────────────────────────────
@@ -117,13 +116,19 @@ export default function ProposalEngine() {
       client_mobile: client.mobile_number || '',
       client_tax_residency: client.tax_residency || '',
       risk_profile: proposal.risk_profile || client.risk_profile || '',
-      time_horizon: client.time_horizon || '',
+      time_horizon: client.time_horizon || proposal.time_horizon || '',
       needs_array: proposal.needs_array?.length > 0 ? proposal.needs_array : needsArray,
       advisory_needs: advisoryNeeds,
+      // ── Financial profile fields pulled from client ──────────────────────
+      annual_income_band: proposal.annual_income_band || client.annual_income_band || client.gross_annual_income_band || '',
+      net_worth_band: proposal.net_worth_band || client.net_worth_band || '',
+      liquidity_requirement: proposal.liquidity_requirement || client.liquidity_requirement || client.liquidity_needs || '',
+      tax_residency: proposal.tax_residency || client.tax_residency || '',
+      source_of_funds: proposal.source_of_funds?.length > 0 ? proposal.source_of_funds : (client.source_of_funds || []),
     });
   }, [proposal, allClients]);
 
-  // ── Step change invalidations ─────────────────────────────────────────────
+  // ── Step change invalidations ──────────────────────────────────────────────
   useEffect(() => {
     if (activeStep === 'client_details') {
       queryClient.invalidateQueries({ queryKey: ['proposal', id] });
@@ -137,7 +142,7 @@ export default function ProposalEngine() {
     }
   }, [activeStep]);
 
-  // ── Mutations ─────────────────────────────────────────────────────────────
+  // ── Mutations ──────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.Proposal.update(id, data),
     onSuccess: () => {
@@ -177,7 +182,10 @@ export default function ProposalEngine() {
   };
 
   const handleSend = async () => {
-    if (!localData?.advisor_signature_data) { toast.error('Please sign in Step 03 before sending'); return; }
+    if (!localData?.advisor_signature_data) {
+      toast.error('Please sign in Step 03 before sending');
+      return;
+    }
     setIsSending(true);
     const doc = await generateProposalPdf(localData, investments, riskProducts);
     const pdfBlob = doc.output('blob');
@@ -201,13 +209,13 @@ export default function ProposalEngine() {
     toast.success(`${type} uploaded`);
   };
 
-  // ── Completed steps heuristic ─────────────────────────────────────────────
+  // ── Completed steps heuristic ──────────────────────────────────────────────
   const completedSteps = [];
   if (localData?.client_name && activeStep !== 'client_details') completedSteps.push('client_details');
   if ((investments.length > 0 || riskProducts.length > 0) && (activeStep === 'suitability' || activeStep === 'review')) completedSteps.push('recommendations');
   if (localData?.advisor_signature_data && activeStep === 'review') completedSteps.push('suitability');
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading || !localData) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -224,11 +232,8 @@ export default function ProposalEngine() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Sticky header */}
       <div className="sticky top-0 z-30 flex flex-col shadow-sm">
         <TopBar advisorName={advisor.name} clientName={localData.client_name} />
-
-        {/* Step navbar (includes progress bar) */}
         <StepNavBar
           activeStep={activeStep}
           completedSteps={completedSteps}
@@ -236,9 +241,7 @@ export default function ProposalEngine() {
         />
       </div>
 
-      {/* Page content */}
       <div className="flex-1 p-4 md:p-6">
-        {/* Back to inbox link */}
         <div className="flex justify-end mb-4">
           <button
             onClick={() => navigate('/proposals')}
