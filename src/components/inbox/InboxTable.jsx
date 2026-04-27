@@ -93,8 +93,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
             <div className="text-xs text-muted-foreground">
               {p.created_date ? (() => {
                 const d = new Date(p.created_date);
-                const sast = new Date(d.getTime() + 2 * 60 * 60 * 1000);
-                return format(sast, 'dd MMM yyyy HH:mm');
+                return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
               })() : '—'}
             </div>
             <div>
