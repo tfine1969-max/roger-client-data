@@ -274,13 +274,13 @@ export default function Step04ReviewSend({
         </div>
 
         {/* Action buttons - always visible, but disabled until PDF is current */}
-        <div className="space-y-2 mb-5">
+        <div className="mb-5 space-y-2">
           <button
             onClick={handleCopyLink}
             disabled={!pdfCurrent || sending}
-            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-md transition-colors ${
+            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors flex items-center justify-center gap-2 ${
               pdfCurrent
-                ? 'bg-navy hover:bg-sky-900 text-white'
+                ? 'bg-navy text-white hover:bg-sky-900'
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
@@ -290,9 +290,9 @@ export default function Step04ReviewSend({
           <button
             onClick={handleEmailClient}
             disabled={!pdfCurrent || sending}
-            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-md transition-colors ${
+            className={`w-full py-3 text-[11px] font-bold uppercase tracking-wider rounded-md transition-colors flex items-center justify-center gap-2 ${
               pdfCurrent
-                ? 'bg-teal-700 hover:bg-teal-800 text-white'
+                ? 'bg-teal-700 text-white hover:bg-teal-800'
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
