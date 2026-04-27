@@ -153,8 +153,23 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
                   <div className="space-y-px text-[9px]">
                     {inv.amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Lump sum</span><span className="font-medium text-navy">{inv.currency} {Number(inv.amount).toLocaleString('en-ZA')}</span></div>}
                     {inv.recurring_amount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Recurring</span><span className="font-medium text-navy">{inv.currency} {Number(inv.recurring_amount).toLocaleString('en-ZA')}</span></div>}
-                    {inv.initial_fee_percent > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
-                    {inv.annual_advice_fee_percent > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Annual fee</span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
+                    {inv.investment_mandate === 'Yes' && inv.applicable_annexure === 'B' ? (
+                      <>
+                        {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{inv.management_fee_percent}%</span></div>}
+                        {inv.performance_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Perf fee</span><span className="font-medium text-navy">{inv.performance_fee_percent}%</span></div>}
+                        {inv.hurdle_rate_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Hurdle</span><span className="font-medium text-navy">{inv.hurdle_rate_percent}%</span></div>}
+                      </>
+                    ) : inv.investment_mandate === 'Yes' && inv.applicable_annexure === 'C' ? (
+                      <>
+                        {inv.management_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Mgmt fee</span><span className="font-medium text-navy">{inv.management_fee_percent}%</span></div>}
+                        {inv.carry_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Carry fee</span><span className="font-medium text-navy">{inv.carry_fee_percent}%</span></div>}
+                      </>
+                    ) : (
+                      <>
+                        {inv.initial_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Initial fee</span><span className="font-medium text-navy">{inv.initial_fee_percent}%</span></div>}
+                        {inv.annual_advice_fee_percent != null && <div className="flex justify-between"><span className="text-muted-foreground">Annual fee</span><span className="font-medium text-navy">{inv.annual_advice_fee_percent}%</span></div>}
+                      </>
+                    )}
                     {Array.isArray(inv.underlying_funds) && inv.underlying_funds.length > 0 && (
                       <div className="flex justify-between"><span className="text-muted-foreground">Funds</span><span className="font-medium text-navy text-right max-w-[60%]">{inv.underlying_funds.join(', ')}</span></div>
                     )}
