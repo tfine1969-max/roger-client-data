@@ -4,216 +4,20 @@
   "properties": {
     "client_id": {
       "type": "string",
-      "description": "ID of the linked Clients record"
+      "description": "Link to Clients"
     },
-    "client_type": {
+    "advisor_name": {
       "type": "string",
       "enum": [
-        "natural_person",
-        "company",
-        "trust"
+        "Trevor Fine",
+        "Roger Eskinazi",
+        "Malcolm Munsamy"
       ],
-      "description": "Type of client: natural person, company, or trust"
-    },
-    "client_name": {
-      "type": "string",
-      "description": "Client full name (for natural persons) or entity name (for company/trust)"
-    },
-    "identification_type": {
-      "type": "string",
-      "enum": [
-        "sa_id",
-        "passport",
-        "registration"
-      ],
-      "description": "ID type for natural person (SA ID or Passport) or registration for entity"
-    },
-    "client_id_number": {
-      "type": "string",
-      "description": "SA ID, Passport, Company Reg, or Trust Reg number"
-    },
-    "client_dob": {
-      "type": "string",
-      "format": "date",
-      "description": "Client date of birth (for natural persons)"
-    },
-    "client_email": {
-      "type": "string",
-      "description": "Client email address"
-    },
-    "client_mobile": {
-      "type": "string",
-      "description": "Client mobile number"
-    },
-    "client_tax_residency": {
-      "type": "string",
-      "description": "Client tax residency country"
-    },
-    "client_liquidity_needs": {
-      "type": "string",
-      "description": "Client liquidity needs"
-    },
-    "company_registration_number": {
-      "type": "string",
-      "description": "Company CIPC registration number"
-    },
-    "company_trading_name": {
-      "type": "string",
-      "description": "Company trading name if different from registered name"
-    },
-    "company_incorporation_country": {
-      "type": "string",
-      "description": "Country where company is incorporated"
-    },
-    "company_incorporation_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date of company incorporation"
-    },
-    "company_vat_number": {
-      "type": "string",
-      "description": "Company VAT number"
-    },
-    "company_industry": {
-      "type": "string",
-      "description": "Company industry/nature of business"
-    },
-    "trust_name": {
-      "type": "string",
-      "description": "Trust name"
-    },
-    "trust_registration_number": {
-      "type": "string",
-      "description": "Trust master's reference or registration number"
-    },
-    "trust_formation_country": {
-      "type": "string",
-      "description": "Country where trust was formed"
-    },
-    "trust_creation_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date trust was created"
-    },
-    "trust_purpose": {
-      "type": "string",
-      "description": "Nature/purpose of the trust"
+      "description": "Advisor name"
     },
     "reference": {
       "type": "string",
       "description": "Unique proposal reference e.g. WW-P-2026-3821"
-    },
-    "needs_identified": {
-      "type": "string",
-      "description": "Text summary of needs e.g. Investment, Risk Cover"
-    },
-    "needs_array": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Array of need IDs: investment, risk_cover"
-    },
-    "advisory_needs": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Advisory needs selected during onboarding"
-    },
-    "risk_cover_types": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Selected risk cover types"
-    },
-    "risk_cover_amounts": {
-      "type": "object",
-      "description": "Per-type sum assured amounts for special cover types"
-    },
-    "notes": {
-      "type": "string",
-      "description": "Additional context"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "new",
-        "in_progress",
-        "signed",
-        "sent",
-        "client_signed"
-      ],
-      "default": "new"
-    },
-    "phase": {
-      "type": "string",
-      "enum": [
-        "client_details",
-        "recommendations"
-      ],
-      "default": "client_details"
-    },
-    "advisor_key": {
-      "type": "string"
-    },
-    "advisor_name": {
-      "type": "string"
-    },
-    "investment_type": {
-      "type": "string",
-      "enum": [
-        "local",
-        "offshore"
-      ]
-    },
-    "investment_currency": {
-      "type": "string"
-    },
-    "investment_provider": {
-      "type": "string"
-    },
-    "investment_amount": {
-      "type": "string"
-    },
-    "investment_fee": {
-      "type": "string"
-    },
-    "investment_wwfee": {
-      "type": "string"
-    },
-    "investment_rationale": {
-      "type": "string"
-    },
-    "show_investment2": {
-      "type": "boolean",
-      "description": "Whether second investment card is shown"
-    },
-    "investment2_type": {
-      "type": "string",
-      "enum": [
-        "local",
-        "offshore"
-      ]
-    },
-    "investment2_currency": {
-      "type": "string"
-    },
-    "investment2_provider": {
-      "type": "string"
-    },
-    "investment2_amount": {
-      "type": "string"
-    },
-    "investment2_fee": {
-      "type": "string"
-    },
-    "investment2_wwfee": {
-      "type": "string"
-    },
-    "investment2_rationale": {
-      "type": "string"
     },
     "risk_profile": {
       "type": "string",
@@ -223,17 +27,8 @@
         "Moderate",
         "Growth",
         "Aggressive"
-      ]
-    },
-    "monthly_budget": {
-      "type": "string",
-      "enum": [
-        "Below R2,000",
-        "R2,001\u2013R5,000",
-        "R5,001\u2013R10,000",
-        "R10,001\u2013R20,000",
-        "Above R20,000"
-      ]
+      ],
+      "description": "Client risk profile"
     },
     "time_horizon": {
       "type": "string",
@@ -243,59 +38,40 @@
         "5\u201310 years",
         "10\u201320 years",
         "20+ years"
-      ]
+      ],
+      "description": "Investment time horizon"
     },
-    "risk_cover_provider": {
-      "type": "string"
-    },
-    "risk_cover_amount": {
-      "type": "string"
-    },
-    "risk_cover_premium": {
-      "type": "string"
-    },
-    "risk_cover_premium_increase": {
-      "type": "string"
-    },
-    "risk_cover_cover_increase": {
-      "type": "string"
-    },
-    "risk_cover_rationale": {
-      "type": "string"
-    },
-    "personal_message": {
-      "type": "string"
-    },
-    "advisor_signature_data": {
-      "type": "string"
-    },
-    "advisor_signature_type": {
+    "status": {
       "type": "string",
       "enum": [
-        "draw",
-        "type"
-      ]
+        "In Progress",
+        "Sent",
+        "Awaiting Client Signature",
+        "Signed",
+        "Outdated"
+      ],
+      "default": "In Progress",
+      "description": "Proposal status \u2014 managed automatically, never manually"
     },
-    "sign_date": {
+    "signing_token": {
       "type": "string",
-      "format": "date"
+      "description": "Unique token for client signing URL"
     },
-    "quote_file_url": {
-      "type": "string"
-    },
-    "proposal_pdf_url": {
-      "type": "string"
-    },
-    "client_signature_data": {
-      "type": "string"
-    },
-    "client_signed_date": {
+    "signed_at": {
       "type": "string",
-      "format": "date"
+      "description": "ISO timestamp when client signed"
     },
-    "onboarding_import_data": {
-      "type": "object",
-      "description": "Full onboarding data imported from external portal"
+    "client_signature": {
+      "type": "string",
+      "description": "Base64 PNG of client signature"
+    },
+    "client_initials": {
+      "type": "string",
+      "description": "Client initials string"
+    },
+    "signed_pdf_url": {
+      "type": "string",
+      "description": "URL of the signed PDF after client signs"
     },
     "mandate_included": {
       "type": "string",
@@ -313,39 +89,68 @@
       ],
       "description": "Output document template"
     },
-    "selected_product_types": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "Model Portfolio",
-          "Unit Trust / CIS",
-          "Offshore Investment Platform",
-          "Alternative Investment",
-          "Direct Securities"
-        ]
-      },
-      "description": "Auto-detected product types from investments"
+    "pdf_status": {
+      "type": "string",
+      "enum": [
+        "No PDF",
+        "Current",
+        "Outdated"
+      ],
+      "default": "No PDF",
+      "description": "PDF generation status"
+    },
+    "proposal_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Modified",
+        "PDF Generated",
+        "Sent",
+        "Completed"
+      ],
+      "default": "Draft",
+      "description": "Legacy proposal status"
+    },
+    "advisor_signature_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "client_signature_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "client_initials_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "document_version": {
+      "type": "number",
+      "default": 1
+    },
+    "notes": {
+      "type": "string"
     },
     "include_annexure_A": {
       "type": "boolean",
-      "default": false,
-      "description": "Include Annexure A (Model Portfolio)"
+      "default": false
     },
     "include_annexure_B": {
       "type": "boolean",
-      "default": false,
-      "description": "Include Annexure B (Unit Trust / CIS, Offshore)"
+      "default": false
     },
     "include_annexure_C": {
       "type": "boolean",
-      "default": false,
-      "description": "Include Annexure C (Alternative, Direct Securities)"
+      "default": false
+    },
+    "selected_product_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "is_replacement": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether this advice involves product replacement"
+      "default": false
     },
     "replacement_products": {
       "type": "array",
@@ -371,13 +176,94 @@
             "type": "boolean"
           }
         }
-      },
-      "description": "Array of replacement product details"
+      }
+    },
+    "personal_message": {
+      "type": "string"
+    },
+    "advisor_signature_data": {
+      "type": "string"
+    },
+    "advisor_signature_type": {
+      "type": "string",
+      "enum": [
+        "draw",
+        "type"
+      ]
+    },
+    "sign_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "proposal_pdf_url": {
+      "type": "string"
+    },
+    "overall_suitability_rationale": {
+      "type": "string"
+    },
+    "annual_income_band": {
+      "type": "string"
+    },
+    "net_worth_band": {
+      "type": "string"
+    },
+    "liquidity_requirement": {
+      "type": "string"
+    },
+    "tax_residency": {
+      "type": "string"
+    },
+    "source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "advisory_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "needs_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "client_type": {
+      "type": "string"
+    },
+    "client_id_number": {
+      "type": "string"
+    },
+    "client_dob": {
+      "type": "string",
+      "format": "date"
+    },
+    "client_email": {
+      "type": "string"
+    },
+    "client_mobile": {
+      "type": "string"
+    },
+    "client_tax_residency": {
+      "type": "string"
+    },
+    "identification_type": {
+      "type": "string"
+    },
+    "advisor_key": {
+      "type": "string"
     }
   },
   "required": [
-    "client_name",
-    "reference"
+    "client_id",
+    "reference",
+    "advisor_name"
   ],
   "rls": {
     "create": {

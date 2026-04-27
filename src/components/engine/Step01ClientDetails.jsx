@@ -1,8 +1,7 @@
 import React from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const STATUS_OPTIONS = ['Pending Review', 'In Progress', 'Awaiting Client Signature', 'Signed', 'Sent'];
+import StatusBadge from '@/components/engine/StatusBadge';
 
 function Field({ label, value }) {
   return (
@@ -22,20 +21,6 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
     : data.client_type === 'company' || data.client_type === 'Company'
     ? 'Company Reg No.'
     : 'ID Number';
-
-  const displayStatus = data.proposal_status || (data.status === 'new' ? 'Pending Review' : data.status) || '';
-
-  const handleStatusChange = (value) => {
-    const statusMap = {
-      'Pending Review': 'new',
-      'In Progress': 'in_progress',
-      'Awaiting Client Signature': 'in_progress',
-      'Signed': 'signed',
-      'Sent': 'sent',
-    };
-    onFieldChange('proposal_status', value);
-    onFieldChange('status', statusMap[value] || 'new');
-  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
@@ -81,7 +66,7 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
 
       {/* Advisor / Status */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 items-end">
           <div>
             <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Advisor</label>
             <Select value={data.advisor_name || ''} onValueChange={v => onFieldChange('advisor_name', v)}>
@@ -96,15 +81,8 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext }) {
             </Select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Status</label>
-            <Select value={displayStatus} onValueChange={handleStatusChange}>
-              <SelectTrigger className="h-8 text-xs rounded-sm">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-2">Status</label>
+            <StatusBadge status={data.status || 'In Progress'} />
           </div>
         </div>
       </div>

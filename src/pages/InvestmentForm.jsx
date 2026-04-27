@@ -134,15 +134,21 @@ export default function InvestmentForm() {
       if (investmentId) await base44.entities.Investments.update(investmentId, data);
       else await base44.entities.Investments.create({...data, proposal_id:proposalId});
       await new Promise(r=>setTimeout(r,500));
-      const all = await base44.entities.Investments.list();
-      const proposalInvestments = all.filter(i=>i.proposal_id===proposalId);
+      const allInv = await base44.entities.Investments.list();
+      const proposalInvestments = allInv.filter(i=>i.proposal_id===proposalId);
       const mi = proposalInvestments.filter(i=>i.investment_mandate==='Yes');
+      // Fetch current proposal to check status
+      const allProposals = await base44.entities.Proposal.list();
+      const currentProposal = allProposals.find(p=>p.id===proposalId);
+      const sentStatuses = ['Sent','Awaiting Client Signature','Signed'];
+      const shouldMarkOutdated = currentProposal && sentStatuses.includes(currentProposal.status);
       await base44.entities.Proposal.update(proposalId,{
         mandate_included: mi.length>0?'Yes':'No',
         include_annexure_A: mi.some(i=>i.applicable_annexure==='A'),
         include_annexure_B: mi.some(i=>i.applicable_annexure==='B'),
         include_annexure_C: mi.some(i=>i.applicable_annexure==='C'),
         pdf_status: 'Outdated',
+        ...(shouldMarkOutdated ? { status: 'Outdated' } : {}),
       });
     },
     onSuccess: () => {

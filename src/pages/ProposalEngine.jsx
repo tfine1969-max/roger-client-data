@@ -21,7 +21,7 @@ export default function ProposalEngine() {
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState(null);
   const [activeStep, setActiveStep] = useState(location.state?.step || 'client_details');
-  const [isSending, setIsSending] = useState(false);
+
 
   // ── Data fetching ──────────────────────────────────────────────────────────
   const { data: proposal, isLoading } = useQuery({
@@ -174,30 +174,19 @@ export default function ProposalEngine() {
     debouncedSave(updated);
   };
 
+
+
   const handleGeneratePdf = async () => {
     if (!localData) return;
     const doc = await generateProposalPdf(localData, investments, riskProducts);
-    doc.save(`${localData.reference || 'proposal'}.pdf`);
-    toast.success('PDF downloaded');
-  };
-
-  const handleSend = async () => {
-    if (!localData?.advisor_signature_data) {
-      toast.error('Please sign in Step 03 before sending');
-      return;
-    }
-    setIsSending(true);
-    const doc = await generateProposalPdf(localData, investments, riskProducts);
     const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `${localData.reference}.pdf`, { type: 'application/pdf' });
+    const pdfFile = new File([pdfBlob], `${localData.reference || 'proposal'}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-    const { id: _id, created_date, updated_date, created_by, ...cleanData } = localData;
-    await base44.entities.Proposal.update(id, { ...cleanData, proposal_pdf_url: file_url, status: 'sent' });
-    setLocalData(prev => ({ ...prev, status: 'sent', proposal_pdf_url: file_url }));
+    await base44.entities.Proposal.update(id, { proposal_pdf_url: file_url });
+    setLocalData(prev => ({ ...prev, proposal_pdf_url: file_url }));
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
-    queryClient.invalidateQueries({ queryKey: ['proposals'] });
-    setIsSending(false);
-    toast.success('Proposal ready — share the signing link with your client');
+    doc.save(`${localData.reference || 'proposal'}.pdf`);
+    toast.success('PDF generated and saved');
   };
 
   const handleAttachmentUpload = async (e, type) => {
@@ -285,10 +274,8 @@ export default function ProposalEngine() {
             riskProducts={riskProducts}
             attachments={attachments}
             onGeneratePdf={handleGeneratePdf}
-            onSend={handleSend}
             onAttachmentUpload={handleAttachmentUpload}
             onFieldChange={handleFieldChange}
-            isSending={isSending}
             proposalId={id}
           />
         )}
