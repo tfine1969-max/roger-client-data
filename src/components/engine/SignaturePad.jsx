@@ -137,17 +137,18 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
           <div className="space-y-0.5">
             <label className="text-[8px] font-semibold tracking-[.06em] uppercase text-navy">Date</label>
             <input
-              type="date"
-              value={signDate || todayISO()}
-              onChange={e => onSignDateChange(e.target.value)}
+              type="text"
+              value={(() => { const d = new Date(signDate || todayISO()); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; })()}
+              onChange={e => {
+                const parts = e.target.value.split('-');
+                if (parts.length === 3) {
+                  const [d, m, y] = parts;
+                  onSignDateChange(`${y}-${m}-${d}`);
+                }
+              }}
+              placeholder="DD-MM-YYYY"
               className="w-full border border-border bg-card px-2 py-1 text-[10px] text-foreground font-raleway outline-none focus:border-ocean transition-colors"
-              style={{ colorScheme: 'light' }}
             />
-            {(signDate || todayISO()) && (
-              <p className="text-[8px] text-muted-foreground">
-                {(() => { const d = new Date(signDate || todayISO()); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; })()}
-              </p>
-            )}
           </div>
         </div>
 
