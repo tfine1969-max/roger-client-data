@@ -210,8 +210,7 @@ export default function ProposalEngine() {
     await base44.entities.Proposal.update(id, { proposal_pdf_url: file_url });
     setLocalData(prev => ({ ...prev, proposal_pdf_url: file_url }));
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
-    doc.save(`${localData.reference || 'proposal'}.pdf`);
-    toast.success('PDF generated and saved');
+    toast.success('PDF generated');
   };
 
   const handleAttachmentUpload = async (e, type) => {
