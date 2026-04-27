@@ -133,6 +133,7 @@ export default function AddEditInvestment() {
 
   useEffect(() => {
     if (!inv) return;
+    console.log('[AddEditInvestment] inv loaded:', JSON.stringify(inv, null, 2));
     isLoadingRef.current = true;
     setLoaded(false);
 
