@@ -195,7 +195,7 @@ export default function Step04ReviewSend({
           <div>
             <label className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block mb-1">Signing Advisor</label>
             <div className="h-9 bg-slate-100 border border-slate-300 rounded-md px-3 flex items-center text-[11px] font-medium text-navy">
-              {data.advisor_key === 'trevor' ? 'Trevor Fine' : data.advisor_key === 'malcolm' ? 'Malcolm Munsamy' : 'Roger Eskinazi'}
+              {data.advisor_name || '—'}
             </div>
           </div>
           <div>
