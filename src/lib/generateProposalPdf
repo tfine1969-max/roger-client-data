@@ -456,14 +456,15 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   if (hasMandateInvestments) {
     // ── MAIN MANDATE BODY ────────────────────────────────────────────────────
     doc.addPage(); pageNum+=1; addHeader(); y=34;
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
-    doc.text('WEALTHWORKS INVESTMENTS (PTY) LTD',W/2,y,{align:'center'}); y+=6;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.text('FSP No. 45624',W/2,y,{align:'center'}); y+=7;
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text('INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=6;
+    spacer(6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(...navy);
+    doc.text('WEALTHWORKS INVESTMENTS (PTY) LTD',W/2,y,{align:'center'}); y+=8;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text('FSP No. 45624',W/2,y,{align:'center'}); y+=10;
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...navy);
+    doc.text('INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=7;
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-    doc.text('(Version 2.2 – FAIS Aligned with Addendum Integration)',W/2,y,{align:'center'}); y+=10;
+    doc.text('(Version 2.2 – FAIS Aligned with Addendum Integration)',W/2,y,{align:'center'}); y+=12;
     thinRule();
 
     const mandateSections = [
@@ -496,13 +497,15 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     addFooter(pageNum);
 
     // ── ANNEXURE A ────────────────────────────────────────────────────────────
-    if (proposal.include_annexure_A === true && annexureAInvs.length > 0) {
+    if (annexureAInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
-      doc.text('ANNEXURE A',W/2,y,{align:'center'}); y+=6;
-      doc.text('MODEL PORTFOLIO DISCRETIONARY MANAGEMENT',W/2,y,{align:'center'}); y+=6;
+      spacer(6);
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text('ANNEXURE A',W/2,y,{align:'center'}); y+=8;
+      doc.setFontSize(11);
+      doc.text('MODEL PORTFOLIO DISCRETIONARY MANAGEMENT',W/2,y,{align:'center'}); y+=7;
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
       body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
       spacer(4);
@@ -538,13 +541,15 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     }
 
     // ── ANNEXURE B ────────────────────────────────────────────────────────────
-    if (proposal.include_annexure_B === true && annexureBInvs.length > 0) {
+    if (annexureBInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
-      doc.text('ANNEXURE B',W/2,y,{align:'center'}); y+=6;
-      doc.text('COLLECTIVE INVESTMENT SCHEMES AND PLATFORM-BASED INVESTMENTS',W/2,y,{align:'center'}); y+=6;
+      spacer(6);
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text('ANNEXURE B',W/2,y,{align:'center'}); y+=8;
+      doc.setFontSize(10);
+      doc.text('COLLECTIVE INVESTMENT SCHEMES AND PLATFORM-BASED INVESTMENTS',W/2,y,{align:'center'}); y+=7;
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
       body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
       spacer(4);
@@ -582,13 +587,15 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     }
 
     // ── ANNEXURE C ────────────────────────────────────────────────────────────
-    if (proposal.include_annexure_C === true && annexureCInvs.length > 0) {
+    if (annexureCInvs.length > 0) {
       doc.addPage(); pageNum+=1; addHeader(); y=34;
-      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
-      doc.text('ANNEXURE C',W/2,y,{align:'center'}); y+=6;
-      doc.text('ALTERNATIVE INVESTMENTS AND OTHER INSTRUMENTS',W/2,y,{align:'center'}); y+=6;
+      spacer(6);
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text('ANNEXURE C',W/2,y,{align:'center'}); y+=8;
+      doc.setFontSize(11);
+      doc.text('ALTERNATIVE INVESTMENTS AND OTHER INSTRUMENTS',W/2,y,{align:'center'}); y+=7;
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=10;
+      doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
       body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
       spacer(4);
