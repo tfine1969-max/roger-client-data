@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Download, FileText, Upload, AlertTriangle, Copy, Mail, Lock, Clock, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Download, FileText, Upload, AlertTriangle, RefreshCw, Clock } from 'lucide-react';
 import SignaturePad from '@/components/engine/SignaturePad';
+import SendForSignature from '@/components/SendForSignature';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -84,103 +85,7 @@ export default function Step04ReviewSend({
     toast.success('PDF generated successfully');
   };
 
-  const generateToken = () =>
-    typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2) + Date.now().toString(36);
 
-  const prepareToken = async () => {
-    if (!pdfCurrent) {
-      toast.error('Please regenerate the PDF before sending.');
-      return null;
-    }
-    const token = generateToken();
-    const now = new Date().toISOString();
-    await base44.entities.Proposal.update(proposalId, {
-      signing_token: token,
-      status: 'Sent',
-      sent_at: now,
-      reminder_sent: false,
-    });
-    onFieldChange('signing_token', token);
-    onFieldChange('status', 'Sent');
-    onFieldChange('sent_at', now);
-    onFieldChange('reminder_sent', false);
-    const url = `${window.location.origin}/sign-proposal/${token}`;
-    return { token, url };
-  };
-
-  const handleCopyLink = async () => {
-    if (!pdfCurrent) { alert('Please generate the PDF before sending to the client.'); return; }
-    setSending(true);
-    try {
-      const token = crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2) + Date.now().toString(36);
-      const signingUrl = `${window.location.origin}/sign-proposal/${token}`;
-      await navigator.clipboard.writeText(signingUrl);
-      await base44.entities.Proposal.update(proposalId, {
-        signing_token: token,
-        status: 'Sent',
-        sent_at: new Date().toISOString(),
-        reminder_sent: false,
-      });
-      onFieldChange('signing_token', token);
-      onFieldChange('status', 'Sent');
-      onFieldChange('sent_at', new Date().toISOString());
-      onFieldChange('reminder_sent', false);
-      setSending(false);
-      alert('Signing link copied to clipboard.');
-    } catch (err) {
-      console.error('Copy link error:', err);
-      setSending(false);
-      alert('Could not copy link. Please try again.');
-    }
-  };
-
-  const handleEmailClient = async () => {
-    if (!pdfCurrent) { alert('Please generate the PDF before sending to the client.'); return; }
-    if (!data.client_email) { alert('No email address found for this client. Please update the client profile first.'); return; }
-    setSending(true);
-    try {
-      const token = crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2) + Date.now().toString(36);
-      const signingUrl = `${window.location.origin}/sign-proposal/${token}`;
-      const firstName = (data.client_name || '').split(' ')[0] || 'Client';
-      
-      await base44.integrations.Core.SendEmail({
-        from_name: 'Wealthworks',
-        to: data.client_email,
-        subject: 'Your Financial Strategy Report — Action Required',
-        body: `Dear ${firstName},\n\nPlease find your Financial Strategy & Recommendation Report prepared by Wealthworks.\n\nTo review and sign your document, please click the link below:\n\n${signingUrl}\n\nThis link is unique to you. Please do not share it.\n\nIf you have any questions, please contact your advisor directly.\n\nKind regards,\nThe Wealthworks Team`,
-      });
-
-      await base44.integrations.Core.SendEmail({
-        from_name: 'Wealthworks',
-        to: 'tfine1969@gmail.com',
-        subject: `Proposal Sent — ${data.client_name || 'Client'} — ${data.reference || ''}`,
-        body: `The proposal for ${data.client_name || 'Client'} (${data.reference || ''}) has been emailed to ${data.client_email}.\n\nSigning link: ${signingUrl}`,
-      });
-
-      await base44.entities.Proposal.update(proposalId, {
-        signing_token: token,
-        status: 'Sent',
-        sent_at: new Date().toISOString(),
-        reminder_sent: false,
-      });
-      onFieldChange('signing_token', token);
-      onFieldChange('status', 'Sent');
-      onFieldChange('sent_at', new Date().toISOString());
-      onFieldChange('reminder_sent', false);
-      setSending(false);
-      alert(`Email sent successfully to ${data.client_email}`);
-    } catch (err) {
-      console.error('Email send error:', err);
-      setSending(false);
-      alert('There was an error sending the email. Please try again.');
-    }
-  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
@@ -289,95 +194,12 @@ export default function Step04ReviewSend({
       {/* STEP 4 — SEND TO CLIENT */}
       <div className="bg-white border border-slate-200 rounded-lg p-7 shadow-sm">
         <h2 className="text-[11px] font-bold text-navy uppercase tracking-widest mb-4 pb-3 border-b border-slate-200">Step 4 — Send to Client</h2>
-
-        {stepLocked.sendClient && (
-          <p className="text-[10px] text-slate-600 mb-4">Generate a current PDF in Step 3 to send to the client.</p>
-        )}
-
-        {/* Signature status - always visible */}
-        <div className="space-y-2 mb-5">
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-100 rounded-md border border-slate-300">
-            <span className="text-[10px] font-medium text-slate-700">Advisor signature</span>
-            {advisorSigned
-              ? <span className="text-[10px] font-bold text-green-700">✓ Signed</span>
-              : <span className="text-[10px] font-bold text-amber-700">○ Pending</span>
-            }
-          </div>
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-100 rounded-md border border-slate-300">
-            <span className="text-[10px] font-medium text-slate-700">Client signature</span>
-            {clientSigned
-              ? <span className="text-[10px] font-bold text-green-700">✓ Signed</span>
-              : <span className="text-[10px] font-bold text-amber-700">○ Pending</span>
-            }
-          </div>
-        </div>
-
-        {/* Action buttons - always visible, but disabled until PDF is current */}
-        <div style={{ marginBottom: '20px' }}>
-          <button
-            onClick={handleCopyLink}
-            disabled={!pdfCurrent || sending}
-            style={{
-              background: pdfCurrent ? '#1e3a5f' : '#cbd5e1',
-              color: pdfCurrent ? '#ffffff' : '#78716c',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '14px 24px',
-              fontSize: '13px',
-              fontWeight: '700',
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
-              width: '100%',
-              cursor: pdfCurrent ? 'pointer' : 'not-allowed',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              opacity: pdfCurrent || !sending ? 1 : 0.6,
-            }}
-          >
-            📋 Copy Signing Link
-          </button>
-          <button
-            onClick={handleEmailClient}
-            disabled={!pdfCurrent || sending}
-            style={{
-              background: pdfCurrent ? '#0d9488' : '#cbd5e1',
-              color: pdfCurrent ? '#ffffff' : '#78716c',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '14px 24px',
-              fontSize: '13px',
-              fontWeight: '700',
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
-              width: '100%',
-              cursor: pdfCurrent ? 'pointer' : 'not-allowed',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '10px',
-              opacity: pdfCurrent || !sending ? 1 : 0.6,
-            }}
-          >
-            ✉ Email to Client
-          </button>
-        </div>
-
-        {/* Status displays */}
-        {data.status === 'Sent' && data.sent_at && (
-          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-md px-4 py-3">
-            <span className="text-[10px] font-medium text-blue-800">Sent on: {formatDateTime(data.sent_at)}</span>
-          </div>
-        )}
-
-        {data.status === 'Awaiting Client Signature' && (
-          <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-md px-4 py-3">
-            <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-[10px] font-medium text-amber-800">⏳ Awaiting client signature</span>
-          </div>
-        )}
+        <SendForSignature
+          proposal={data}
+          onStatusUpdate={() => {
+            onFieldChange('_refresh', true);
+          }}
+        />
       </div>
 
       {/* STEP 5 — DOCUMENTS */}
