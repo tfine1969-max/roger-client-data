@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import ReasonChecklist from '@/components/engine/ReasonChecklist';
+import LibraryPickerModal from '@/components/LibraryPickerModal';
 
 const PROVIDER_MAP = {
   Local: {
@@ -63,6 +63,8 @@ export default function InvestmentForm() {
   const [submitting, setSubmitting] = useState(false);
   const [amtDisplay, setAmtDisplay] = useState('');
   const [recDisplay, setRecDisplay] = useState('');
+  const [investmentReasonsModalOpen, setInvestmentReasonsModalOpen] = useState(false);
+  const [incomeDrawdownReasonsModalOpen, setIncomeDrawdownReasonsModalOpen] = useState(false);
 
   const [form, setForm] = useState({
     investment_mandate:'No', applicable_annexure:'',
@@ -618,28 +620,128 @@ export default function InvestmentForm() {
 
           {/* SECTION A — Product Recommendation Reasons */}
           <div className="bg-card border border-border rounded-lg p-3">
-            <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">
-              Reason for Investment Recommendation <span className="text-destructive">*</span>
-            </h3>
-            <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that apply to this investment recommendation.</p>
-            <ReasonChecklist
-              reasons={investmentReasons}
-              selectedIds={form.investment_recommendation_reasons}
-              onChange={ids => setF('investment_recommendation_reasons', ids)}
+            <label style={{
+              display: 'block', fontSize: 11, fontWeight: 700,
+              letterSpacing: '1px', textTransform: 'uppercase',
+              color: '#1e3a5f', marginBottom: 8
+            }}>
+              Reason for Investment Recommendation <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+
+            {/* Selected chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10, minHeight: 28 }}>
+              {(form.investment_recommendation_reasons || []).length === 0 ? (
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>No reasons selected</span>
+              ) : (
+                investmentReasons
+                  .filter(r => (form.investment_recommendation_reasons || []).includes(r.id))
+                  .map(r => (
+                    <span key={r.id} style={{
+                      background: '#eff6ff', color: '#1e40af',
+                      border: '1px solid #bfdbfe',
+                      borderRadius: '20px', padding: '3px 10px',
+                      fontSize: 12, display: 'flex', alignItems: 'center', gap: 6
+                    }}>
+                      {r.text}
+                      <button
+                        type="button"
+                        onClick={() => setF('investment_recommendation_reasons',
+                          form.investment_recommendation_reasons.filter(x => x !== r.id)
+                        )}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer',
+                          color: '#93c5fd', fontSize: 14, lineHeight: 1, padding: 0 }}
+                      >×</button>
+                    </span>
+                  ))
+              )}
+            </div>
+
+            {/* Library button */}
+            <button
+              type="button"
+              onClick={() => setInvestmentReasonsModalOpen(true)}
+              style={{
+                background: 'none', border: '1px dashed #94a3b8',
+                borderRadius: '8px', padding: '8px 16px',
+                fontSize: 12, color: '#64748b', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6
+              }}
+            >
+              + SELECT FROM LIBRARY
+            </button>
+
+            {/* Modal */}
+            <LibraryPickerModal
+              isOpen={investmentReasonsModalOpen}
+              onClose={() => setInvestmentReasonsModalOpen(false)}
+              title="Select Investment Recommendation Reasons"
+              options={investmentReasons}
+              selected={form.investment_recommendation_reasons || []}
+              onConfirm={(newSelected) => setF('investment_recommendation_reasons', newSelected)}
             />
           </div>
 
           {/* SECTION B — Income Drawdown Rationale (only if income_required = Yes) */}
           {form.income_required === 'Yes' && (
             <div className="bg-card border border-border rounded-lg p-3">
-              <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">
-                Reason for Income Drawdown <span className="text-destructive">*</span>
-              </h3>
-              <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that explain the income drawdown requirement.</p>
-              <ReasonChecklist
-                reasons={incomeDrawdownReasons}
-                selectedIds={form.income_drawdown_reasons}
-                onChange={ids => setF('income_drawdown_reasons', ids)}
+              <label style={{
+                display: 'block', fontSize: 11, fontWeight: 700,
+                letterSpacing: '1px', textTransform: 'uppercase',
+                color: '#1e3a5f', marginBottom: 8
+              }}>
+                Reason for Income Drawdown <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+
+              {/* Selected chips */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10, minHeight: 28 }}>
+                {(form.income_drawdown_reasons || []).length === 0 ? (
+                  <span style={{ fontSize: 12, color: '#94a3b8' }}>No reasons selected</span>
+                ) : (
+                  incomeDrawdownReasons
+                    .filter(r => (form.income_drawdown_reasons || []).includes(r.id))
+                    .map(r => (
+                      <span key={r.id} style={{
+                        background: '#fffbeb', color: '#92400e',
+                        border: '1px solid #fde68a',
+                        borderRadius: '20px', padding: '3px 10px',
+                        fontSize: 12, display: 'flex', alignItems: 'center', gap: 6
+                      }}>
+                        {r.text}
+                        <button
+                          type="button"
+                          onClick={() => setF('income_drawdown_reasons',
+                            form.income_drawdown_reasons.filter(x => x !== r.id)
+                          )}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer',
+                            color: '#fcd34d', fontSize: 14, lineHeight: 1, padding: 0 }}
+                        >×</button>
+                      </span>
+                    ))
+                )}
+              </div>
+
+              {/* Library button */}
+              <button
+                type="button"
+                onClick={() => setIncomeDrawdownReasonsModalOpen(true)}
+                style={{
+                  background: 'none', border: '1px dashed #94a3b8',
+                  borderRadius: '8px', padding: '8px 16px',
+                  fontSize: 12, color: '#64748b', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6
+                }}
+              >
+                + SELECT FROM LIBRARY
+              </button>
+
+              {/* Modal */}
+              <LibraryPickerModal
+                isOpen={incomeDrawdownReasonsModalOpen}
+                onClose={() => setIncomeDrawdownReasonsModalOpen(false)}
+                title="Select Income Drawdown Reasons"
+                options={incomeDrawdownReasons}
+                selected={form.income_drawdown_reasons || []}
+                onConfirm={(newSelected) => setF('income_drawdown_reasons', newSelected)}
               />
               <div className="mt-4">
                 <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">

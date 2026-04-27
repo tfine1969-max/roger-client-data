@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import ReasonChecklist from '@/components/engine/ReasonChecklist';
 import { Textarea } from '@/components/ui/textarea';
+import LibraryPickerModal from '@/components/LibraryPickerModal';
 
 const updateProductTypes = async (invList, proposalId) => {
   const selectedTypes = new Set();
@@ -50,6 +50,7 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
   const [incomeReasons, setIncomeReasons] = useState([]);
   const [riskReasons, setRiskReasons] = useState([]);
   const [personalisedReasons, setPersonalisedReasons] = useState([]);
+  const [personalisedReasonsModalOpen, setPersonalisedReasonsModalOpen] = useState(false);
 
   useEffect(() => {
     base44.entities.RecommendationReasons.list().then(all => {
@@ -294,13 +295,67 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
 
       {/* Personalised Client Message */}
       <div className="bg-card border border-border rounded-lg p-3">
-        <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-1">Personalised Message to Client</h2>
-        <p className="text-[10px] text-muted-foreground mb-3">Select relevant message statements and/or type a personalised message.</p>
-        <ReasonChecklist
-          reasons={personalisedReasons}
-          selectedIds={proposal?.personalised_message_reasons}
-          onChange={handlePersonalisedReasonsChange}
+        <label style={{
+          display: 'block', fontSize: 11, fontWeight: 700,
+          letterSpacing: '1px', textTransform: 'uppercase',
+          color: '#1e3a5f', marginBottom: 8
+        }}>
+          Personalised Message to Client
+        </label>
+
+        {/* Selected chips */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10, minHeight: 28 }}>
+          {(proposal?.personalised_message_reasons || []).length === 0 ? (
+            <span style={{ fontSize: 12, color: '#94a3b8' }}>No statements selected</span>
+          ) : (
+            personalisedReasons
+              .filter(r => (proposal?.personalised_message_reasons || []).includes(r.id))
+              .map(r => (
+                <span key={r.id} style={{
+                  background: '#f0fdf4', color: '#166534',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '20px', padding: '3px 10px',
+                  fontSize: 12, display: 'flex', alignItems: 'center', gap: 6
+                }}>
+                  {r.text}
+                  <button
+                    type="button"
+                    onClick={() => handlePersonalisedReasonsChange(
+                      (proposal?.personalised_message_reasons || []).filter(x => x !== r.id)
+                    )}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#86efac', fontSize: 14, lineHeight: 1, padding: 0 }}
+                  >×</button>
+                </span>
+              ))
+          )}
+        </div>
+
+        {/* Library button */}
+        <button
+          type="button"
+          onClick={() => setPersonalisedReasonsModalOpen(true)}
+          style={{
+            background: 'none', border: '1px dashed #94a3b8',
+            borderRadius: '8px', padding: '8px 16px',
+            fontSize: 12, color: '#64748b', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+            marginBottom: 12
+          }}
+        >
+          + SELECT FROM LIBRARY
+        </button>
+
+        {/* Modal */}
+        <LibraryPickerModal
+          isOpen={personalisedReasonsModalOpen}
+          onClose={() => setPersonalisedReasonsModalOpen(false)}
+          title="Select Personalised Message Statements"
+          options={personalisedReasons}
+          selected={proposal?.personalised_message_reasons || []}
+          onConfirm={(newSelected) => handlePersonalisedReasonsChange(newSelected)}
         />
+
         <div className="mt-3">
           <Textarea
             placeholder="Or type a personalised message..."

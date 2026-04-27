@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ReasonChecklist from '@/components/engine/ReasonChecklist';
+import LibraryPickerModal from '@/components/LibraryPickerModal';
 
 const RISK_PROVIDERS = ['PPS', 'Momentum', 'Discovery', 'Hollard', 'Brightrock'];
 
@@ -188,6 +188,7 @@ export default function AddEditRiskProduct() {
   const [selectedBenefits, setSelectedBenefits] = useState([]);
   const [benefitData, setBenefitData] = useState({ ...defaultBenefitData });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [riskReasonsModalOpen, setRiskReasonsModalOpen] = useState(false);
 
   // Load risk recommendation reasons from library
   useEffect(() => {
@@ -398,14 +399,64 @@ export default function AddEditRiskProduct() {
             </div>
           </div>
 
-          {/* Reason for Recommendation — structured checklist */}
+          {/* Reason for Recommendation */}
           <div className="bg-card border border-border rounded-lg p-3">
-            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Reason for Risk Recommendation <span className="text-destructive">*</span></h2>
-            <p className="text-[10px] text-muted-foreground mb-3">Select all reasons that apply to this risk product recommendation.</p>
-            <ReasonChecklist
-              reasons={riskReasons}
-              selectedIds={selectedRiskReasons}
-              onChange={setSelectedRiskReasons}
+            <label style={{
+              display: 'block', fontSize: 11, fontWeight: 700,
+              letterSpacing: '1px', textTransform: 'uppercase',
+              color: '#1e3a5f', marginBottom: 8
+            }}>
+              Reason for Risk Recommendation <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+
+            {/* Selected chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10, minHeight: 28 }}>
+              {(selectedRiskReasons || []).length === 0 ? (
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>No reasons selected</span>
+              ) : (
+                riskReasons
+                  .filter(r => (selectedRiskReasons || []).includes(r.id))
+                  .map(r => (
+                    <span key={r.id} style={{
+                      background: '#fff1f2', color: '#9f1239',
+                      border: '1px solid #fecdd3',
+                      borderRadius: '20px', padding: '3px 10px',
+                      fontSize: 12, display: 'flex', alignItems: 'center', gap: 6
+                    }}>
+                      {r.text}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRiskReasons(selectedRiskReasons.filter(x => x !== r.id))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer',
+                          color: '#fca5c0', fontSize: 14, lineHeight: 1, padding: 0 }}
+                      >×</button>
+                    </span>
+                  ))
+              )}
+            </div>
+
+            {/* Library button */}
+            <button
+              type="button"
+              onClick={() => setRiskReasonsModalOpen(true)}
+              style={{
+                background: 'none', border: '1px dashed #94a3b8',
+                borderRadius: '8px', padding: '8px 16px',
+                fontSize: 12, color: '#64748b', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6
+              }}
+            >
+              + SELECT FROM LIBRARY
+            </button>
+
+            {/* Modal */}
+            <LibraryPickerModal
+              isOpen={riskReasonsModalOpen}
+              onClose={() => setRiskReasonsModalOpen(false)}
+              title="Select Risk Recommendation Reasons"
+              options={riskReasons}
+              selected={selectedRiskReasons || []}
+              onConfirm={(newSelected) => setSelectedRiskReasons(newSelected)}
             />
           </div>
 
