@@ -42,7 +42,7 @@ const detectAnnexure = (pt, jur) => {
 };
 
 const emptyRow = () => ({ fund:'', allocation:'', customFund:'' });
-const fmtFee = v => (v===null||v===undefined||v==='') ? '' : String(v);
+const fmtFee = v => (v == null || v === '') ? '' : String(v);
 
 export default function InvestmentForm() {
   const { id: proposalId, investmentId } = useParams();
@@ -67,7 +67,13 @@ export default function InvestmentForm() {
 
   const { data: inv } = useQuery({
     queryKey: ['investment', investmentId],
-    queryFn: () => investmentId ? base44.entities.Investments.filter({id:investmentId}).then(d=>d[0]) : null,
+    queryFn: async () => {
+      if (!investmentId) return null;
+      const all = await base44.entities.Investments.list();
+      const found = all.find(i => i.id === investmentId) || null;
+      console.log('[InvestmentForm] loaded investment:', JSON.stringify(found, null, 2));
+      return found;
+    },
     enabled: !!investmentId,
   });
 
