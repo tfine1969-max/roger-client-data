@@ -9,7 +9,7 @@ import Step01ClientDetails from '@/components/engine/Step01ClientDetails';
 import Step02Recommendations from '@/components/engine/Step02Recommendations';
 import Step03Suitability from '@/components/engine/Step03Suitability';
 import Step04ReviewSend from '@/components/engine/Step04ReviewSend';
-import generateProposalPdf from '@/lib/generateProposalPdf.jsx';
+import generateProposalPdf from '@/lib/generateProposalPdf';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
