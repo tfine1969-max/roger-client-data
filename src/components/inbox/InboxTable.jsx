@@ -131,18 +131,6 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
               </span>
             </div>
             <div className="flex justify-end items-center gap-2">
-              {p.status === 'Signed' && p.signed_pdf_url && (
-                <a
-                  href={p.signed_pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  title="View Signed PDF"
-                  className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-green-700 border border-green-300 bg-green-50 hover:bg-green-100 transition-colors rounded-sm"
-                >
-                  ↓ Signed PDF
-                </a>
-              )}
               <button
                 onClick={(e) => { e.stopPropagation(); navigate(`/proposal/${p.id}/engine`); }}
                 className="flex items-center gap-1 px-2.5 py-1 bg-navy text-white text-[10px] font-semibold uppercase tracking-wide hover:bg-ocean transition-colors"
