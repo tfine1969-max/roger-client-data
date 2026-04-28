@@ -167,6 +167,9 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
       padding: '28px 32px',
       marginTop: 24,
       boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+      width: '100%',
+      boxSizing: 'border-box',
+      overflowX: 'auto',
     }}>
 
       {/* Header */}
@@ -238,25 +241,32 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
       )}
 
       {/* Document index table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700, tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: 40 }} />
+          <col />
+          <col style={{ width: 90 }} />
+          <col style={{ width: 120 }} />
+          <col style={{ width: 170 }} />
+        </colgroup>
         <thead>
-          <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-            <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-              fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-              color: '#94a3b8', width: 40 }}>#</th>
-            <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-              fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-              color: '#94a3b8' }}>Document</th>
-            <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-              fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-              color: '#94a3b8', width: 80 }}>Required</th>
-            <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-              fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-              color: '#94a3b8', width: 110, whiteSpace: 'nowrap' }}>Status</th>
-            <th style={{ textAlign: 'right', padding: '8px 12px', fontSize: 10,
-              fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-              color: '#94a3b8', width: 160, whiteSpace: 'nowrap' }}>Action</th>
-          </tr>
+        <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
+            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+            color: '#94a3b8' }}>#</th>
+          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
+            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+            color: '#94a3b8' }}>Document</th>
+          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
+            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+            color: '#94a3b8' }}>Required</th>
+          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
+            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+            color: '#94a3b8' }}>Status</th>
+          <th style={{ textAlign: 'right', padding: '8px 12px', fontSize: 10,
+            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+            color: '#94a3b8' }}>Action</th>
+        </tr>
         </thead>
         <tbody>
           {/* FICA rows */}
