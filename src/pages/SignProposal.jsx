@@ -10,6 +10,7 @@ export default function SignProposal() {
   const [debugInfo, setDebugInfo] = useState('');
   const [initials, setInitials] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const canvasRef = useRef(null);
   const sigPadRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -120,30 +121,43 @@ export default function SignProposal() {
       return;
     }
 
-    setStatus('submitting');
+    setSubmitting(true);
+
+    const timeoutId = setTimeout(() => {
+      setSubmitting(false);
+      alert('Submission timed out. Please check your connection and try again.');
+    }, 20000);
+
     try {
-      const signatureBase64 = sigPadRef.current.toDataURL();
       const signedAt = new Date().toISOString();
 
+      // Save status + initials only — skip storing large base64 signature to avoid payload issues
       await base44.entities.Proposal.update(proposal.id, {
-        client_signature: signatureBase64,
         client_initials: initials.trim(),
         signed_at: signedAt,
         status: 'Signed',
       });
 
-      // Notify advisor
-      await base44.integrations.Core.SendEmail({
-        from_name: 'Wealthworks',
-        to: 'tfine1969@gmail.com',
-        subject: `Document Signed — ${proposal.client_name || ''} — ${proposal.reference || ''}`,
-        body: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;"><tr><td style="background:#1e3a5f;padding:28px 40px;"><p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">Document Signed — Action Required</p></td></tr><tr><td style="padding:40px;"><p style="font-size:15px;color:#1e3a5f;font-weight:600;margin:0 0 16px;">Dear Trevor,</p><p style="font-size:14px;color:#334155;line-height:1.7;margin:0 0 16px;"><strong>${proposal.client_name || 'The client'}</strong> has signed their Financial Strategy &amp; Recommendation Report.</p><table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;"><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;width:40%;">Client</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.client_name || '—'}</td></tr><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;">Proposal Reference</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.reference || '—'}</td></tr><tr><td style="padding:10px 0;color:#64748b;">Signed At</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${new Date(signedAt).toLocaleString('en-ZA')}</td></tr></table><p style="font-size:13px;color:#334155;line-height:1.7;margin:0 0 24px;">Please log in to the WealthWorks Advisor Portal to view the signed document on the client's profile.</p><p style="font-size:13px;color:#334155;">Kind regards,<br/><strong>WealthWorks Portal</strong></p></td></tr><tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;"/></td></tr><tr><td style="padding:24px 40px 32px;"><p style="margin:0 0 4px;font-size:11px;color:#64748b;font-weight:700;">For more information go to: <a href="https://www.wealthworks.co.za" style="color:#1e3a5f;">www.wealthworks.co.za</a></p><p style="margin:0;font-size:11px;color:#94a3b8;">Authorised Financial Services Provider FSP no 28337</p></td></tr></table></td></tr></table></body></html>`,
-      });
+      // Notify advisor — failure must not block success
+      try {
+        await base44.integrations.Core.SendEmail({
+          from_name: 'Wealthworks',
+          to: 'tfine1969@gmail.com',
+          subject: `Document Signed — ${proposal.client_name || ''} — ${proposal.reference || ''}`,
+          body: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;"><tr><td style="background:#1e3a5f;padding:28px 40px;"><p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">Document Signed — Action Required</p></td></tr><tr><td style="padding:40px;"><p style="font-size:15px;color:#1e3a5f;font-weight:600;margin:0 0 16px;">Dear Trevor,</p><p style="font-size:14px;color:#334155;line-height:1.7;margin:0 0 16px;"><strong>${proposal.client_name || 'The client'}</strong> has signed their Financial Strategy &amp; Recommendation Report.</p><table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;"><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;width:40%;">Client</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.client_name || '—'}</td></tr><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;">Proposal Reference</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.reference || '—'}</td></tr><tr><td style="padding:10px 0;color:#64748b;">Signed At</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${new Date(signedAt).toLocaleString('en-ZA')}</td></tr></table><p style="font-size:13px;color:#334155;line-height:1.7;margin:0 0 24px;">Please log in to the WealthWorks Advisor Portal to view the signed document on the client's profile.</p><p style="font-size:13px;color:#334155;">Kind regards,<br/><strong>WealthWorks Portal</strong></p></td></tr><tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;"/></td></tr><tr><td style="padding:24px 40px 32px;"><p style="margin:0 0 4px;font-size:11px;color:#64748b;font-weight:700;">For more information go to: <a href="https://www.wealthworks.co.za" style="color:#1e3a5f;">www.wealthworks.co.za</a></p><p style="margin:0;font-size:11px;color:#94a3b8;">Authorised Financial Services Provider FSP no 28337</p></td></tr></table></td></tr></table></body></html>`,
+        });
+      } catch (emailErr) {
+        console.warn('Advisor notification email failed (non-blocking):', emailErr);
+      }
 
+      clearTimeout(timeoutId);
+      setSubmitting(false);
       setStatus('success');
     } catch (err) {
+      clearTimeout(timeoutId);
+      setSubmitting(false);
       setDebugInfo(`Submit error: ${err?.message || JSON.stringify(err)}`);
-      setStatus("error");
+      alert(`Submission failed: ${err?.message || 'Unknown error. Please try again.'}`);
     }
   };
 
@@ -275,16 +289,16 @@ export default function SignProposal() {
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            disabled={status === 'submitting'}
+            disabled={submitting}
             style={{
-              background: status === 'submitting' ? '#94a3b8' : '#1e3a5f',
+              background: submitting ? '#94a3b8' : '#1e3a5f',
               color: '#fff', border: 'none', borderRadius: 8,
               padding: '14px 24px', fontSize: 13, fontWeight: 700,
               letterSpacing: '0.8px', textTransform: 'uppercase',
-              width: '100%', cursor: status === 'submitting' ? 'not-allowed' : 'pointer',
+              width: '100%', cursor: submitting ? 'not-allowed' : 'pointer',
             }}
           >
-            {status === 'submitting' ? 'SUBMITTING...' : 'SUBMIT SIGNATURE'}
+            {submitting ? 'SUBMITTING...' : 'SUBMIT SIGNATURE'}
           </button>
         </div>
 
