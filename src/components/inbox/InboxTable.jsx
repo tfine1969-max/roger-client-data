@@ -55,8 +55,10 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
         <button
           onClick={onClearFilter}
           style={{
-            background: 'none', border: 'none', color: '#26547C',
-            cursor: 'pointer', marginBottom: 12, fontSize: 13, padding: 0,
+            background: '#1e3a5f', border: 'none', color: '#ffffff',
+            cursor: 'pointer', marginBottom: 12, fontSize: 12, padding: '7px 16px',
+            borderRadius: 6, fontWeight: 700, letterSpacing: '0.5px',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
           }}
         >
           ← View all clients
