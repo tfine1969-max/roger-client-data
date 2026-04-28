@@ -110,7 +110,7 @@ export default function Inbox() {
             <div className="w-6 h-6 border-2 border-border border-t-navy rounded-full animate-spin" />
           </div>
         ) : (
-          <InboxTable proposals={proposals} clientMap={clientMap} statusFilter={statusFilter} />
+          <InboxTable proposals={proposals} clientMap={clientMap} statusFilter={statusFilter} onClearFilter={() => setStatusFilter(null)} />
         )}
       </div>
 
