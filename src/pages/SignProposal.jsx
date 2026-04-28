@@ -59,6 +59,8 @@ export default function SignProposal() {
   useEffect(() => {
     const load = async () => {
       const all = await base44.entities.Proposal.list();
+      console.log('Looking for token:', token);
+      console.log('All proposal tokens:', all.map(p => ({ id: p.id, token: p.signing_token })));
       const found = all.find(p => p.signing_token === token);
       if (!found) { setState('invalid'); return; }
       if (found.status === 'Signed') { setProposal(found); setState('already_signed'); return; }

@@ -14,17 +14,20 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
   const getSigningUrl = (token) =>
     `${window.location.origin}/sign-proposal/${token}`;
 
-  const prepareAndUpdate = async () => {
-    const token = generateToken();
-    const signingUrl = getSigningUrl(token);
+  const saveTokenToProposal = async (token) => {
     await base44.entities.Proposal.update(proposal.id, {
       signing_token: token,
       status: 'Sent',
       sent_at: new Date().toISOString(),
       reminder_sent: false,
     });
+    // Verify it saved
+    const allProposals = await base44.entities.Proposal.list();
+    const saved = allProposals.find(p => p.id === proposal.id);
+    if (!saved || saved.signing_token !== token) {
+      throw new Error('Token verification failed — token was not saved to the database.');
+    }
     if (onStatusUpdate) onStatusUpdate();
-    return { token, signingUrl };
   };
 
   const handleCopyLink = async () => {
@@ -33,13 +36,17 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
       return;
     }
     setCopying(true);
+    setMessage('');
     try {
-      const { signingUrl } = await prepareAndUpdate();
+      const token = generateToken();
+      const signingUrl = getSigningUrl(token);
+      // Save FIRST, then copy
+      await saveTokenToProposal(token);
       await navigator.clipboard.writeText(signingUrl);
       setMessage('✓ Signing link copied to clipboard.');
     } catch (err) {
-      console.error(err);
-      setMessage('✗ Could not copy link. Please try again.');
+      console.error('Copy link error:', err);
+      setMessage(`✗ Error: ${err?.message || 'Could not copy link.'}`);
     }
     setCopying(false);
   };
@@ -52,24 +59,30 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
     setEmailing(true);
     setMessage('');
     try {
+      // STEP 1 — Generate token
+      const token = generateToken();
+      const signingUrl = getSigningUrl(token);
+
+      // STEP 2 — Save token FIRST and verify
+      await saveTokenToProposal(token);
+
+      // STEP 3 — Load client details
       const allClients = await base44.entities.Clients.list();
       const client = allClients.find(c => c.id === proposal.client_id);
       const clientName = client?.first_name || client?.full_name || 'Client';
 
-      const { signingUrl } = await prepareAndUpdate();
-
-      // TEST MODE — all emails go to tfine1969@gmail.com
+      // STEP 4 — Send email (HTML formatted)
       await base44.integrations.Core.SendEmail({
         from_name: 'Wealthworks',
         to: 'tfine1969@gmail.com',
-        subject: `WealthWorks — Document Ready for Signature — ${client?.full_name || 'Client'}`,
-        body: `Dear ${clientName},\n\nYour Financial Strategy & Recommendation Report is ready for review and signature.\n\nSigning link:\n${signingUrl}\n\nKind regards,\nThe Wealthworks Team`,
+        subject: `Your Financial Strategy Report — Action Required — ${client?.full_name || ''}`,
+        body: `<p>Dear ${clientName},</p><p>Your Financial Strategy &amp; Recommendation Report has been prepared by Wealthworks and is ready for your review and signature.</p><p>Please click the link below to review and sign your document:</p><p><a href="${signingUrl}" style="color:#1e3a5f; font-weight:bold;">${signingUrl}</a></p><p>This link is unique to you. Please do not share it.</p><p>If you have any questions, please contact your advisor directly.</p><br/><p>Kind regards,<br/>The Wealthworks Team</p>`,
       });
 
-      setMessage(`✓ Email sent to tfine1969@gmail.com (test mode)`);
+      setMessage(`✓ Email sent. Signing link saved and active.`);
     } catch (err) {
-      console.error('Email error full details:', err);
-      setMessage(`✗ Error: ${err?.message || JSON.stringify(err)}`);
+      console.error('Send error full details:', err);
+      setMessage(`✗ Error: ${err?.message || 'Failed to send. Please try again.'}`);
     }
     setEmailing(false);
   };
