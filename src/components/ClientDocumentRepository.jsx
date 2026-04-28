@@ -76,7 +76,7 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
       proposalRows.push({
         index: String(baseIndex).padStart(2, '0'),
         label: `Proposal — ${proposal.reference || 'Draft'}`,
-        description: `Financial Strategy & Recommendation Report · Generated ${formatDate(proposal.pdf_generated_at)}`,
+        description: `Financial Strategy & Recommendation Report · Generated: ${formatDateTime(proposal.pdf_generated_at)}`,
         fileUrl: proposal.proposal_pdf_url || null,
         statusOverride: proposal.proposal_pdf_url ? 'uploaded' : 'missing',
         tag: 'PROPOSAL PDF',
@@ -86,8 +86,8 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
     if (proposal.signed_pdf_url || proposal.status === 'Signed') {
       proposalRows.push({
         index: String(baseIndex + 1).padStart(2, '0'),
-        label: `Signed Document — ${proposal.reference || 'Draft'}`,
-        description: `Signed by client on ${formatDate(proposal.signed_at)}`,
+        label: `Signed — ${proposal.reference || 'Draft'}`,
+        description: `Signed by client on: ${formatDateTime(proposal.signed_at)}`,
         fileUrl: proposal.signed_pdf_url || null,
         statusOverride: proposal.signed_pdf_url ? 'uploaded' : 'missing',
         tag: 'SIGNED',
@@ -291,7 +291,7 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
               </td>
               <td style={{ padding: '14px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13 }}>
+                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13, whiteSpace: 'nowrap' }}>
                     {doc.label}
                   </p>
                   <span style={{
