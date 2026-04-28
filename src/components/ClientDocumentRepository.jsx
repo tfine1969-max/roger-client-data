@@ -394,10 +394,11 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                     </td>
                     <td style={{ padding: '14px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                        <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13 }}>{doc.label}</p>
+                        <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13, whiteSpace: 'nowrap' }}>{doc.label}</p>
                         <span style={{
                           fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
                           textTransform: 'uppercase', padding: '2px 7px', borderRadius: 10,
+                          whiteSpace: 'nowrap', flexShrink: 0,
                           background: doc.tagBg, color: doc.tagColor, border: `1px solid ${doc.tagBorder}`,
                         }}>{doc.tag}</span>
                       </div>
