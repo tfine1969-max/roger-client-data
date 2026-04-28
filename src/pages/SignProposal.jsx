@@ -1,373 +1,309 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import generateProposalPdf from '@/lib/generateProposalPdf';
-
-const fmtDate = (iso) => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return [String(d.getDate()).padStart(2,'0'), String(d.getMonth()+1).padStart(2,'0'), d.getFullYear()].join('-')
-      + ' ' + [String(d.getHours()).padStart(2,'0'), String(d.getMinutes()).padStart(2,'0')].join(':');
-  } catch { return iso; }
-};
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 
 export default function SignProposal() {
   const { proposalId } = useParams();
+  const [status, setStatus] = useState("loading");
+  // status: loading | invalid | already_signed | ready | submitting | success | error
+  const [proposal, setProposal] = useState(null);
+  const [debugInfo, setDebugInfo] = useState('');
+  const [initials, setInitials] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const canvasRef = useRef(null);
   const sigPadRef = useRef(null);
-
-  const [proposal, setProposal] = useState(null);
-  const [investments, setInvestments] = useState([]);
-  const [riskProducts, setRiskProducts] = useState([]);
-  const [attachments, setAttachments] = useState([]);
-  const [state, setState] = useState('loading'); // loading | invalid | already_signed | ready | submitting | success
-  const [initials, setInitials] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
-  const [error, setError] = useState('');
   const [isDrawing, setIsDrawing] = useState(false);
 
-  // Load signature_pad from CDN
   useEffect(() => {
-    if (window.SignaturePad) return;
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.7/signature_pad.umd.min.js';
-    script.onload = () => { if (canvasRef.current) initPad(); };
-    document.head.appendChild(script);
-  }, []);
-
-  const initPad = () => {
-    if (!canvasRef.current || !window.SignaturePad) return;
-    if (sigPadRef.current) return;
-    sigPadRef.current = new window.SignaturePad(canvasRef.current, {
-      backgroundColor: 'rgb(255,255,255)',
-      penColor: 'rgb(14,65,102)',
-    });
-    resizeCanvas();
-  };
-
-  const resizeCanvas = () => {
-    if (!canvasRef.current || !sigPadRef.current) return;
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const canvas = canvasRef.current;
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext('2d').scale(ratio, ratio);
-    sigPadRef.current.clear();
-  };
-
-  useEffect(() => {
-    const load = async () => {
-      const all = await base44.entities.Proposal.list();
-      const found = all.find(p => p.id === proposalId);
-      if (!found) { setState('invalid'); return; }
-      if (found.status === 'Signed') { setProposal(found); setState('already_signed'); return; }
-
-      // Load investments & risk products
-      const allInv = await base44.entities.Investments.list();
-      const propInv = allInv.filter(i => i.proposal_id === found.id);
-      const allRp = await base44.entities.RiskProducts.list();
-      const propRp = allRp.filter(r => r.proposal_id === found.id);
-      const coversArr = await Promise.all(propRp.map(rp => base44.entities.RiskCovers.filter({ risk_product_id: rp.id })));
-      const rpWithCovers = propRp.map((rp, i) => ({
-        ...rp,
-        _covers: coversArr[i] || [],
-        covers: coversArr[i] || [],
-        total_premium: (coversArr[i] || []).reduce((s, c) => s + (parseFloat(c.premium) || 0), 0),
-      }));
-
-      // Load attachments
-      const propAtts = await base44.entities.Attachments.filter({ proposal_id: found.id });
-
-      setProposal(found);
-      setInvestments(propInv);
-      setRiskProducts(rpWithCovers);
-      setAttachments(propAtts || []);
-
-      // Update status to Awaiting Client Signature
-      await base44.entities.Proposal.update(found.id, { status: 'Awaiting Client Signature' });
-      setProposal(prev => ({ ...prev, status: 'Awaiting Client Signature' }));
-      setState('ready');
-    };
-    load().catch(() => setState('invalid'));
+    loadProposal();
   }, [proposalId]);
 
-  // Init pad once canvas is visible
+  // Init signature pad once canvas is visible
   useEffect(() => {
-    if (state === 'ready') setTimeout(initPad, 100);
-  }, [state]);
-
-  const clearPad = () => sigPadRef.current?.clear();
-
-  const handleSubmit = async () => {
-    setError('');
-    if (!sigPadRef.current || sigPadRef.current.isEmpty()) {
-      setError('Please draw your signature before submitting.'); return;
+    if (status === 'ready') {
+      setTimeout(initPad, 100);
     }
-    if (!initials.trim()) { setError('Please enter your initials before submitting.'); return; }
-    if (!confirmed) { setError('Please confirm you have read and understood the document.'); return; }
+  }, [status]);
 
-    setState('submitting');
-    const signatureBase64 = sigPadRef.current.toDataURL('image/png');
-    const initialsValue = initials.trim();
-    const signedAt = new Date().toISOString();
+  const initPad = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    ctx.strokeStyle = '#1e3a5f';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    console.log('signature length:', signatureBase64.length);
-    console.log('initials:', initialsValue);
-    console.log('signedAt:', signedAt);
+    let drawing = false;
+    let points = [];
+    const empty = { current: true };
+    sigPadRef.current = { isEmpty: () => empty.current, clear: () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      empty.current = true;
+      setIsDrawing(false);
+    }, toDataURL: () => canvas.toDataURL('image/png') };
 
-    await base44.entities.Proposal.update(proposal.id, {
-      client_signature: signatureBase64,
-      client_initials: initialsValue,
-      signed_at: signedAt,
-      status: 'Signed',
-    });
-
-    // Build signatureData object for PDF embedding
-    const signatureData = {
-      clientSignature: signatureBase64,
-      clientInitials: initialsValue,
-      signedAt: signedAt,
+    const pos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      return { x: src.clientX - r.left, y: src.clientY - r.top };
     };
+    const start = (e) => { e.preventDefault(); drawing = true; empty.current = false; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); setIsDrawing(true); };
+    const move = (e) => { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    const end = (e) => { e.preventDefault(); drawing = false; };
 
-    // Generate signed PDF with embedded signature on every sign line and footer
-    const signedProposal = {
-      ...proposal,
-      client_signature: signatureBase64,
-      client_initials: initialsValue,
-      signed_at: signedAt,
-      status: 'Signed',
-    };
-    const doc = await generateProposalPdf(signedProposal, investments, riskProducts, signatureData);
-
-    // Append attachments with client initials on every page
-    const { appendAttachmentsToPdf } = await import('@/lib/appendAttachmentsToPdf');
-    const allProducts = [
-      ...investments.map(i => ({ id: i.id, label: `${i.provider}${i.product_type ? ` — ${i.product_type}` : ''}` })),
-      ...riskProducts.map(r => ({ id: r.id, label: `${r.provider}${(r._covers || []).length ? ` — ${r._covers.map(c => c.cover_type).join(', ')}` : ''}` })),
-    ];
-    const orderedAttachments = [];
-    for (const product of allProducts) {
-      for (const [key, docType] of [
-        [`Quote::${product.id}`, 'Quote PDF'],
-        [`Application Form::${product.id}`, 'App Form'],
-        [`Supporting Doc::${product.id}`, 'Supporting Document'],
-      ]) {
-        const att = attachments.find(a => a.attachment_type === key);
-        if (att?.file_url) orderedAttachments.push({ label: product.label, docType, file_url: att.file_url });
-      }
-    }
-    const pageNum = doc.internal.getNumberOfPages();
-    await appendAttachmentsToPdf(doc, orderedAttachments, initialsValue, pageNum);
-
-    const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `${proposal.reference || 'signed'}-signed.pdf`, { type: 'application/pdf' });
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-    await base44.entities.Proposal.update(proposal.id, { signed_pdf_url: file_url });
-
-    // Notify advisor
-    const signedAtFmt = fmtDate(signedAt);
-    await base44.integrations.Core.SendEmail({
-      from_name: 'Wealthworks',
-      to: 'tfine1969@gmail.com',
-      subject: `Document Signed — ${proposal.client_name || ''} — ${proposal.reference || ''}`,
-      body: `${proposal.client_name || 'The client'} has signed their Financial Strategy & Recommendation Report.\n\nProposal Reference: ${proposal.reference || '—'}\nSigned at: ${signedAtFmt}\n\nPlease log in to the WealthWorks portal to view the signed document on the client's profile.`,
-    });
-
-    setState('success');
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
   };
 
-  if (state === 'loading') return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-8 h-8 border-4 border-border border-t-navy rounded-full animate-spin" />
+  const loadProposal = async () => {
+    try {
+      setDebugInfo(`Looking for proposal ID: ${proposalId}`);
+
+      if (!proposalId) {
+        setDebugInfo('No proposalId in URL params');
+        setStatus("invalid");
+        return;
+      }
+
+      const allProposals = await base44.entities.Proposal.list();
+      setDebugInfo(`Loaded ${allProposals.length} proposals. Looking for ID: ${proposalId}`);
+
+      const found = allProposals.find(p => p.id === proposalId);
+
+      if (!found) {
+        setDebugInfo(`Not found. Available IDs: ${allProposals.map(p => p.id).join(', ')}`);
+        setStatus("invalid");
+        return;
+      }
+
+      setDebugInfo(`Found proposal: ${found.id} — Status: ${found.status}`);
+
+      if (found.status === 'Signed') {
+        setProposal(found);
+        setStatus("already_signed");
+        return;
+      }
+
+      await base44.entities.Proposal.update(found.id, {
+        status: 'Awaiting Client Signature',
+      });
+
+      setProposal({ ...found, status: 'Awaiting Client Signature' });
+      setStatus("ready");
+
+    } catch (err) {
+      setDebugInfo(`Error: ${err?.message || JSON.stringify(err)}`);
+      setStatus("error");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!sigPadRef.current || sigPadRef.current.isEmpty()) {
+      alert('Please draw your signature before submitting.');
+      return;
+    }
+    if (!initials.trim()) {
+      alert('Please enter your initials.');
+      return;
+    }
+    if (!agreed) {
+      alert('Please confirm that you have read and accept this document.');
+      return;
+    }
+
+    setStatus('submitting');
+    try {
+      const signatureBase64 = sigPadRef.current.toDataURL();
+      const signedAt = new Date().toISOString();
+
+      await base44.entities.Proposal.update(proposal.id, {
+        client_signature: signatureBase64,
+        client_initials: initials.trim(),
+        signed_at: signedAt,
+        status: 'Signed',
+      });
+
+      // Notify advisor
+      await base44.integrations.Core.SendEmail({
+        from_name: 'Wealthworks',
+        to: 'tfine1969@gmail.com',
+        subject: `Document Signed — ${proposal.client_name || ''} — ${proposal.reference || ''}`,
+        body: `<p>${proposal.client_name || 'The client'} has signed their Financial Strategy &amp; Recommendation Report.</p><p>Proposal Reference: ${proposal.reference || '—'}<br/>Signed at: ${new Date(signedAt).toLocaleString('en-ZA')}</p><p>Please log in to the WealthWorks portal to view the signed document.</p>`,
+      });
+
+      setStatus('success');
+    } catch (err) {
+      setDebugInfo(`Submit error: ${err?.message || JSON.stringify(err)}`);
+      setStatus("error");
+    }
+  };
+
+  // ── States ──────────────────────────────────────────────────────────────────
+
+  if (status === "loading") return (
+    <div style={pageStyle}>
+      <div style={{ width: 32, height: 32, border: '4px solid #e2e8f0', borderTopColor: '#1e3a5f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
+      <p style={{ color: '#64748b', fontSize: 14 }}>Loading your document...</p>
+      <p style={{ color: '#94a3b8', fontSize: 11, marginTop: 8 }}>{debugInfo}</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
-  if (state === 'invalid') return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <div className="text-5xl mb-4">🔒</div>
-        <h1 className="text-xl font-bold text-navy mb-2">Link Invalid or Expired</h1>
-        <p className="text-sm text-muted-foreground">This signing link is invalid or has expired. Please contact your advisor.</p>
-      </div>
+  if (status === "error") return (
+    <div style={pageStyle}>
+      <p style={{ fontSize: 20, fontWeight: 700, color: '#1e3a5f', marginBottom: 8 }}>Something went wrong</p>
+      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>Please contact your advisor.</p>
+      <p style={{ color: '#94a3b8', fontSize: 11, fontFamily: 'monospace', background: '#f8fafc', padding: '8px 12px', borderRadius: 6, maxWidth: 500, wordBreak: 'break-all' }}>{debugInfo}</p>
     </div>
   );
 
-  if (state === 'already_signed') return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <div className="text-5xl mb-4">✅</div>
-        <h1 className="text-xl font-bold text-navy mb-2">Already Signed</h1>
-        <p className="text-sm text-muted-foreground">This document has already been signed. Thank you, {proposal?.client_name}.</p>
-      </div>
+  if (status === "invalid") return (
+    <div style={pageStyle}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+      <p style={{ fontSize: 20, fontWeight: 700, color: '#1e3a5f', marginBottom: 8 }}>Link Invalid or Expired</p>
+      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>This signing link is invalid or has expired. Please contact your advisor.</p>
+      <p style={{ color: '#94a3b8', fontSize: 10, fontFamily: 'monospace', background: '#f8fafc', padding: '8px 12px', borderRadius: 6, maxWidth: 500, wordBreak: 'break-all', textAlign: 'left' }}>
+        Debug: {debugInfo}
+      </p>
     </div>
   );
 
-  if (state === 'success') return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <div className="text-5xl mb-4">🎉</div>
-        <h1 className="text-xl font-bold text-navy mb-2">Document Signed Successfully</h1>
-        <p className="text-sm text-muted-foreground">Thank you, {proposal?.client_name}. Your document has been signed successfully. Your advisor will be in touch.</p>
-      </div>
+  if (status === "already_signed") return (
+    <div style={pageStyle}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+      <p style={{ fontSize: 20, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Document Already Signed</p>
+      <p style={{ color: '#64748b', fontSize: 13 }}>This document has already been signed. Thank you, {proposal?.client_name}.</p>
     </div>
   );
 
-  const firstName = (proposal?.client_name || '').split(' ')[0];
+  if (status === "success") return (
+    <div style={pageStyle}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+      <p style={{ fontSize: 20, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Document Signed Successfully</p>
+      <p style={{ color: '#64748b', fontSize: 13 }}>Thank you, {proposal?.client_name}. Your signed document has been submitted to your advisor.</p>
+    </div>
+  );
 
+  // ── Ready — signing UI ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-navy text-white px-6 py-4 flex items-center justify-between">
-        <div>
-          <div className="font-bold text-lg tracking-tight">wealthworks</div>
-          <div className="text-[10px] text-white/60 uppercase tracking-widest">Financial Strategy Report</div>
-        </div>
-        <div className="text-right">
-          <div className="text-xs text-white/70">Prepared for</div>
-          <div className="font-semibold text-sm">{proposal?.client_name}</div>
-        </div>
-      </div>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '40px 20px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto' }}>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <div style={{ background: '#1e3a5f', color: '#fff', borderRadius: '12px 12px 0 0', padding: '24px 32px', marginBottom: 2 }}>
+          <p style={{ margin: 0, fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>
+            Wealthworks Investments (Pty) Ltd · FSP 45624
+          </p>
+          <p style={{ margin: '6px 0 0', fontSize: 18, fontWeight: 700 }}>Financial Strategy &amp; Recommendation Report</p>
+          <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.7 }}>Ref: {proposal?.reference || proposal?.id}</p>
+        </div>
 
         {/* Intro */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <p className="text-sm text-navy leading-relaxed">
-            Dear <strong>{firstName}</strong>,<br /><br />
-            Please review your Financial Strategy &amp; Recommendation Report below. Once you have read it, please sign and initial at the bottom to confirm your acceptance.
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderTop: 'none', padding: '28px 32px', marginBottom: 2 }}>
+          <p style={{ color: '#334155', fontSize: 13, lineHeight: 1.7, margin: 0 }}>
+            Dear <strong>{(proposal?.client_name || '').split(' ')[0] || 'Client'}</strong>,<br /><br />
+            Please review your Financial Strategy &amp; Recommendation Report. Once you have read it, please sign and initial below to confirm your acceptance.
           </p>
         </div>
 
-        {/* Proposal summary info */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Proposal Summary</h2>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            {[
-              ['Reference', proposal?.reference],
-              ['Client', proposal?.client_name],
-              ['Advisor', proposal?.advisor_name],
-              ['Risk Profile', proposal?.risk_profile],
-              ['Time Horizon', proposal?.time_horizon],
-              ['Investments', investments.length],
-            ].map(([l, v]) => (
-              <div key={l}>
-                <span className="text-muted-foreground uppercase text-[9px] tracking-wide font-semibold">{l}</span>
-                <div className="text-navy font-medium mt-0.5">{v || '—'}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* PDF download link */}
+        {/* PDF link */}
         {proposal?.proposal_pdf_url && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderTop: 'none', padding: '16px 32px', marginBottom: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p className="text-sm font-semibold text-blue-900">Your Recommendation Report</p>
-              <p className="text-xs text-blue-700 mt-0.5">Click to open and read your full report before signing.</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1e40af' }}>Your Recommendation Report</p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#3b82f6' }}>Click to open and read your full report before signing</p>
             </div>
             <a href={proposal.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
-              className="px-4 py-2 bg-navy text-white text-xs font-semibold rounded-sm hover:bg-ocean transition-colors">
+              style={{ background: '#1e3a5f', color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
               Open PDF
             </a>
           </div>
         )}
 
-        {/* Attachment documents */}
-        {attachments.length > 0 && (
-          <div className="bg-card border border-border rounded-lg p-5">
-            <h2 className="text-[10px] font-bold text-navy uppercase tracking-wider mb-3">Supporting Documents</h2>
-            <p className="text-xs text-muted-foreground mb-3">Please review all attached documents below before signing. Your signature and initials will apply to the entire document including all attachments.</p>
-            <div className="space-y-2">
-              {attachments.map((att, i) => {
-                const [docType, productId] = att.attachment_type.split('::');
-                const inv = investments.find(inv => inv.id === productId);
-                const rp = riskProducts.find(rp => rp.id === productId);
-                const productLabel = inv
-                  ? `${inv.provider}${inv.product_type ? ` — ${inv.product_type}` : ''}`
-                  : rp
-                  ? `${rp.provider}`
-                  : 'Product';
-                return (
-                  <div key={i} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-sm border border-border">
-                    <div>
-                      <p className="text-xs font-semibold text-navy">{productLabel}</p>
-                      <p className="text-[10px] text-muted-foreground">{docType}</p>
-                    </div>
-                    <a href={att.file_url} target="_blank" rel="noopener noreferrer"
-                      className="px-3 py-1 bg-navy text-white text-[10px] font-semibold rounded-sm hover:bg-ocean transition-colors">
-                      Open
-                    </a>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* Signing panel */}
+        <div style={{ background: '#fff', border: '2px solid #1e3a5f', borderRadius: '0 0 12px 12px', padding: '32px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#1e3a5f', marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid #e2e8f0' }}>
+            Sign Document
+          </p>
 
-        {/* SIGNING PANEL */}
-        <div className="bg-card border-2 border-navy rounded-lg p-6 space-y-6">
-          <h2 className="text-sm font-bold text-navy uppercase tracking-wider">Sign Your Document</h2>
-
-          {/* Signature pad */}
-          <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-2">Signature</label>
-            <div className="border-2 border-border rounded-sm bg-white relative" style={{ height: 140 }}>
-              <canvas ref={canvasRef} className="w-full h-full rounded-sm"
-                onPointerDown={() => setIsDrawing(true)}
-                onPointerUp={() => setIsDrawing(false)} />
-              {!isDrawing && sigPadRef.current?.isEmpty() && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-xs text-muted-foreground italic">Draw your signature here</span>
+          {/* Signature canvas */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Your Signature</label>
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', background: '#fff', position: 'relative', height: 140 }}>
+              <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none', cursor: 'crosshair' }} />
+              {!isDrawing && (!sigPadRef.current || sigPadRef.current.isEmpty()) && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                  <span style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>Draw your signature here</span>
                 </div>
               )}
             </div>
-            <button type="button" onClick={clearPad}
-              className="mt-1.5 text-[10px] text-ocean hover:text-navy font-medium">
+            <button onClick={() => sigPadRef.current?.clear()}
+              style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', marginTop: 4, padding: 0 }}>
               Clear signature
             </button>
           </div>
 
           {/* Initials */}
-          <div>
-            <label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-2">Initials</label>
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Initials</label>
             <input
               type="text"
               value={initials}
               onChange={e => setInitials(e.target.value.toUpperCase())}
-              placeholder="e.g. J.S."
-              maxLength={10}
-              className="w-40 h-9 border border-border rounded-sm text-sm text-navy font-bold text-center px-2 bg-white focus:outline-none focus:ring-1 focus:ring-navy"
+              placeholder="e.g. JP"
+              maxLength={6}
+              style={{ width: 120, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 16, fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase', textAlign: 'center' }}
             />
-            <p className="text-[9px] text-muted-foreground mt-1">Your initials will be applied to each page of the document.</p>
           </div>
 
           {/* Confirmation checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-navy shrink-0" />
-            <span className="text-xs text-navy leading-relaxed">
-              I confirm that I have read and understood this document and accept the recommendations contained herein.
-            </span>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#334155', marginBottom: 24, cursor: 'pointer' }}>
+            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
+              style={{ marginTop: 2, accentColor: '#1e3a5f', flexShrink: 0, width: 16, height: 16 }} />
+            I confirm that I have read and understood this document and accept the recommendations and terms contained herein.
           </label>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-sm text-xs text-red-700">{error}</div>
-          )}
-
+          {/* Submit */}
           <button
             onClick={handleSubmit}
-            disabled={state === 'submitting'}
-            className="w-full py-3 bg-navy text-white font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-ocean transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={status === 'submitting'}
+            style={{
+              background: status === 'submitting' ? '#94a3b8' : '#1e3a5f',
+              color: '#fff', border: 'none', borderRadius: 8,
+              padding: '14px 24px', fontSize: 13, fontWeight: 700,
+              letterSpacing: '0.8px', textTransform: 'uppercase',
+              width: '100%', cursor: status === 'submitting' ? 'not-allowed' : 'pointer',
+            }}
           >
-            {state === 'submitting' ? 'Submitting...' : 'Submit Signature'}
+            {status === 'submitting' ? 'SUBMITTING...' : 'SUBMIT SIGNATURE'}
           </button>
         </div>
 
-        <p className="text-center text-[10px] text-muted-foreground pb-8">
+        <p style={{ textAlign: 'center', fontSize: 10, color: '#94a3b8', marginTop: 24 }}>
           Wealth Works (Pty) Ltd FSP 28337 · Wealthworks Investments (Pty) Ltd FSP 45624
         </p>
       </div>
     </div>
   );
 }
+
+const pageStyle = {
+  minHeight: '100vh', display: 'flex', flexDirection: 'column',
+  alignItems: 'center', justifyContent: 'center',
+  background: '#f8fafc', textAlign: 'center', padding: 40,
+};
+
+const labelStyle = {
+  display: 'block', fontSize: 11, fontWeight: 700,
+  letterSpacing: '1px', textTransform: 'uppercase',
+  color: '#64748b', marginBottom: 8,
+};
