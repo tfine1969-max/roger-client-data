@@ -23,11 +23,24 @@ function Field({ label, value }) {
 
 export default function Step01ClientDetails({ data, onFieldChange, onNext, proposal, client, onClientStatusUpdate }) {
   const [clientProposals, setClientProposals] = useState([]);
+  const [clientAttachments, setClientAttachments] = useState([]);
+  const [clientInvestments, setClientInvestments] = useState([]);
 
   useEffect(() => {
     if (!client?.id) return;
     base44.entities.Proposal.list().then(all => {
-      setClientProposals(all.filter(p => p.client_id === client.id));
+      const myProposals = all.filter(p => p.client_id === client.id);
+      setClientProposals(myProposals);
+      const proposalIds = myProposals.map(p => p.id);
+      if (proposalIds.length > 0) {
+        Promise.all([
+          base44.entities.Attachments.list().catch(() => []),
+          base44.entities.Investments.list().catch(() => []),
+        ]).then(([atts, invs]) => {
+          setClientAttachments(atts.filter(a => proposalIds.some(pid => a.proposal_id === pid)));
+          setClientInvestments(invs.filter(i => proposalIds.some(pid => i.proposal_id === pid)));
+        });
+      }
     });
   }, [client?.id]);
 
@@ -106,6 +119,8 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext, propo
         <ClientDocumentRepository
           client={client}
           proposals={clientProposals}
+          attachments={clientAttachments}
+          investments={clientInvestments}
           onStatusUpdate={onClientStatusUpdate}
         />
       )}

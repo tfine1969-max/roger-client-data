@@ -68,7 +68,7 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
   };
 
   const advisorSigned = !!proposal.advisor_signature_data;
-  const clientSigned = proposal.status === 'Signed';
+  const clientSigned = proposal.status === 'Signed' || !!proposal.client_signature || !!proposal.signed_at;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

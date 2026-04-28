@@ -110,7 +110,7 @@ export default function ClientOnboarding() {
     source_of_funds: [],
     sa_tax_number: '',
     tax_residency: '',
-    us_person_fatca: '',
+    us_person_fatca: 'No',
     pep_status: 'No',
     pep_explanation: '',
     // Step 3 - Financial Profile
@@ -932,7 +932,14 @@ export default function ClientOnboarding() {
                       </div>
                       <div>
                         {idx === 0 && <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">APPROX VALUE (R)</Label>}
-                        <Input className="h-8 text-xs" placeholder="0" type="number" value={product.value} onChange={e => updateProduct(idx, 'value', e.target.value)} />
+                        <Input
+                          className="h-8 text-xs"
+                          placeholder="0"
+                          type="text"
+                          value={product.value ? Number(String(product.value).replace(/,/g,'')).toLocaleString('en-ZA') : ''}
+                          onChange={e => updateProduct(idx, 'value', e.target.value.replace(/,/g, ''))}
+                          onFocus={e => updateProduct(idx, 'value', String(product.value).replace(/,/g, ''))}
+                        />
                       </div>
                       <button type="button" onClick={() => removeProduct(idx)} className={`text-muted-foreground hover:text-danger transition-colors ${idx === 0 ? 'mt-5' : ''}`}>
                         <Trash2 className="w-3.5 h-3.5" />

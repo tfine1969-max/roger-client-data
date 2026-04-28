@@ -289,21 +289,45 @@ export default function InvestmentForm() {
   const btnClass = (active) => `flex-1 h-8 text-xs font-medium border rounded-sm transition-all ${active?'bg-navy text-white border-navy':'bg-card text-navy border-border hover:border-navy'}`;
   const tog = (active) => `flex items-center gap-2 px-3 py-2 border rounded-sm cursor-pointer transition-colors flex-1 text-xs font-medium ${active?'border-teal bg-teal/5 text-teal':'border-border text-navy hover:border-teal/50'}`;
 
-  const FeeInput = ({label,field}) => (
-    <div>
-      <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
-      <div className="relative">
-        <Input
-          type="number" step="0.01"
-          value={form[field]}
-          onChange={e=>setF(field,e.target.value)}
-          onBlur={e=>{ const n=parseFloat(e.target.value); setF(field, isNaN(n) ? '0.00' : n.toFixed(2)); }}
-          placeholder="0.00" className="h-8 text-xs rounded-sm pr-6"
-        />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+  const FEE_PRESETS = ['0.00', '0.25', '0.50', '0.75', '1.00'];
+  const isCustomFee = (val) => {
+    const n = parseFloat(val);
+    if (isNaN(n)) return false;
+    return !FEE_PRESETS.includes(n.toFixed(2));
+  };
+
+  const FeeInput = ({label, field}) => {
+    const [showCustom, setShowCustom] = useState(() => isCustomFee(form[field]));
+    const selectVal = showCustom ? 'Custom' : (parseFloat(form[field]||0).toFixed(2));
+    return (
+      <div>
+        <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
+        <select
+          value={selectVal}
+          onChange={e => {
+            if (e.target.value === 'Custom') { setShowCustom(true); setF(field, ''); }
+            else { setShowCustom(false); setF(field, e.target.value); }
+          }}
+          className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2 mb-1"
+        >
+          {FEE_PRESETS.map(o => <option key={o} value={o}>{o}%</option>)}
+          <option value="Custom">Custom</option>
+        </select>
+        {showCustom && (
+          <div className="relative">
+            <Input
+              type="number" step="0.01" min="0"
+              value={form[field]}
+              onChange={e => setF(field, e.target.value)}
+              onBlur={e => { const n = parseFloat(e.target.value); setF(field, isNaN(n) ? '0.00' : n.toFixed(2)); }}
+              placeholder="Enter %" className="h-8 text-xs rounded-sm pr-6"
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const Sel = ({label,value,onChange,options,placeholder,disabled}) => (
     <div>

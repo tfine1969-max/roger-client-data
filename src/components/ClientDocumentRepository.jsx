@@ -51,7 +51,7 @@ const DOCUMENT_INDEX = [
   },
 ];
 
-export default function ClientDocumentRepository({ client, proposals = [], onStatusUpdate }) {
+export default function ClientDocumentRepository({ client, proposals = [], attachments = [], investments = [], onStatusUpdate }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   // FICA is complete when the three required docs (01, 02, 03) are uploaded — doc 04 is optional
@@ -348,6 +348,74 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
               </td>
             </tr>
           ))}
+
+          {/* Investment / Attachment Documents section */}
+          {(() => {
+            const invDocs = [];
+            const attachmentTypes = [
+              { suffix: 'Quote', tag: 'QUOTE PDF', tagBg: '#eff6ff', tagColor: '#1e40af', tagBorder: '#bfdbfe' },
+              { suffix: 'Application Form', tag: 'APP FORM', tagBg: '#fdf4ff', tagColor: '#7e22ce', tagBorder: '#e9d5ff' },
+              { suffix: 'Supporting Doc', tag: 'SUPPORT DOC', tagBg: '#fffbeb', tagColor: '#92400e', tagBorder: '#fde68a' },
+            ];
+            investments.forEach(inv => {
+              const invLabel = [inv.provider, inv.product_type].filter(Boolean).join(' — ') || 'Investment';
+              attachmentTypes.forEach(({ suffix, tag, tagBg, tagColor, tagBorder }) => {
+                const key = `${suffix}::${inv.id}`;
+                const att = attachments.find(a => a.attachment_type === key);
+                if (att?.file_url) {
+                  invDocs.push({ label: invLabel, tag, tagBg, tagColor, tagBorder, url: att.file_url });
+                }
+              });
+            });
+            if (invDocs.length === 0) return null;
+            return (
+              <>
+                <tr>
+                  <td colSpan={5} style={{
+                    padding: '10px 12px 6px',
+                    fontSize: 10, fontWeight: 700,
+                    letterSpacing: '1.2px', textTransform: 'uppercase',
+                    color: '#94a3b8', background: '#f8fafc',
+                    borderTop: '2px solid #e2e8f0',
+                    borderBottom: '1px solid #e2e8f0',
+                  }}>
+                    Investment Documents
+                  </td>
+                </tr>
+                {invDocs.map((doc, i) => (
+                  <tr key={`invdoc-${i}`} style={{
+                    borderBottom: '1px solid #f1f5f9',
+                    background: i % 2 === 0 ? '#ffffff' : '#fafafa',
+                  }}>
+                    <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </td>
+                    <td style={{ padding: '14px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                        <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13 }}>{doc.label}</p>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
+                          textTransform: 'uppercase', padding: '2px 7px', borderRadius: 10,
+                          background: doc.tagBg, color: doc.tagColor, border: `1px solid ${doc.tagBorder}`,
+                        }}>{doc.tag}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 12px' }}>
+                      <span style={{ fontSize: 11, color: '#64748b' }}>Optional</span>
+                    </td>
+                    <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
+                      <span style={badgeUploaded}>✓ Uploaded</span>
+                    </td>
+                    <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <button onClick={() => window.open(doc.url, '_blank')} style={btnDownload}>
+                        ↓ View / Download
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </>
+            );
+          })()}
         </tbody>
       </table>
 
