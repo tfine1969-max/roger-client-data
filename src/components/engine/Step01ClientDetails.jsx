@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ClientDocumentRepository from '@/components/ClientDocumentRepository';
+import { base44 } from '@/api/base44Client';
 
 const fmtDate = (iso) => {
   if (!iso) return '';
@@ -21,6 +22,15 @@ function Field({ label, value }) {
 }
 
 export default function Step01ClientDetails({ data, onFieldChange, onNext, proposal, client, onClientStatusUpdate }) {
+  const [clientProposals, setClientProposals] = useState([]);
+
+  useEffect(() => {
+    if (!client?.id) return;
+    base44.entities.Proposal.list().then(all => {
+      setClientProposals(all.filter(p => p.client_id === client.id));
+    });
+  }, [client?.id]);
+
   const isEntity = data.client_type === 'trust' || data.client_type === 'company'
     || data.client_type === 'Trust' || data.client_type === 'Company';
 
@@ -92,7 +102,13 @@ export default function Step01ClientDetails({ data, onFieldChange, onNext, propo
       </div>
 
       {/* FICA Document Repository */}
-      {client && <ClientDocumentRepository client={client} onStatusUpdate={onClientStatusUpdate} />}
+      {client && (
+        <ClientDocumentRepository
+          client={client}
+          proposals={clientProposals}
+          onStatusUpdate={onClientStatusUpdate}
+        />
+      )}
 
       {/* Next button */}
       <button
