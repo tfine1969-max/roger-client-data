@@ -58,7 +58,7 @@ export default function ClientDashboard() {
     sessionStorage.removeItem('pending_client_id');
     sessionStorage.removeItem('pending_client_email');
     sessionStorage.removeItem('pending_entity_type');
-    window.location.href = 'https://www.wealthworks.co.za';
+    window.location.href = window.location.origin + '/';
   };
 
   if (isLoading) {
