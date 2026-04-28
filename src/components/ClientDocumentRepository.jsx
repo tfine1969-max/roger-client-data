@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 const formatDateTime = (iso) => {
@@ -54,7 +54,27 @@ const DOCUMENT_INDEX = [
 export default function ClientDocumentRepository({ client, proposals = [], onStatusUpdate }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const statusStyle = STATUS_COLOURS[client?.doc_status] || STATUS_COLOURS.Pending;
+  // FICA is complete when the three required docs (01, 02, 03) are uploaded — doc 04 is optional
+  const ficaComplete = !!(client?.doc_identity && client?.doc_proof_of_address && client?.doc_source_of_funds);
+  const computedFicaStatus = ficaComplete ? 'Complete' : 'Incomplete';
+
+  // Status for badge/dropdown: prefer computed when complete, otherwise fall back to stored doc_status
+  const displayStatus = ficaComplete ? 'Complete' : (client?.doc_status || 'Pending');
+  const STATUS_COLOURS_EXT = {
+    ...STATUS_COLOURS,
+    Complete: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+  };
+  const statusStyle = STATUS_COLOURS_EXT[displayStatus] || STATUS_COLOURS.Pending;
+
+  // Auto-save Complete to Client entity when all required docs are present
+  useEffect(() => {
+    if (!client?.id) return;
+    if (ficaComplete && client.doc_status !== 'Complete') {
+      base44.entities.Clients.update(client.id, { doc_status: 'Complete' })
+        .then(() => { if (onStatusUpdate) onStatusUpdate(); })
+        .catch(() => {});
+    }
+  }, [ficaComplete, client?.id, client?.doc_status]);
 
   const handleStatusChange = async (newStatus) => {
     setUpdatingStatus(true);
@@ -158,11 +178,11 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
             fontSize: 11, fontWeight: 700, letterSpacing: '0.5px',
             textTransform: 'uppercase', whiteSpace: 'nowrap',
           }}>
-            {client?.doc_status || 'Pending'}
+            {displayStatus}
           </span>
 
           <select
-            value={client?.doc_status || 'Pending'}
+            value={displayStatus}
             onChange={e => handleStatusChange(e.target.value)}
             disabled={updatingStatus}
             style={{
@@ -171,6 +191,7 @@ export default function ClientDocumentRepository({ client, proposals = [], onSta
               background: '#f8fafc', cursor: 'pointer',
             }}
           >
+            <option value="Complete">Complete</option>
             <option value="Pending">Pending</option>
             <option value="Submitted">Submitted</option>
             <option value="Verified">Verified</option>

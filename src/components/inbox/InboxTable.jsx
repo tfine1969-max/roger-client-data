@@ -92,7 +92,10 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
               </div>
               {(() => {
                 // FICA complete = only the three mandatory docs uploaded (doc 04 is optional, never blocks)
-                const ficaComplete = client && client.doc_identity && client.doc_proof_of_address && client.doc_source_of_funds;
+                const ficaComplete = client && (
+                  client.doc_status === 'Complete' ||
+                  (client.doc_identity && client.doc_proof_of_address && client.doc_source_of_funds)
+                );
                 if (!client) return null;
                 if (ficaComplete) return (
                   <span style={{
