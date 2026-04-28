@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import generateProposalPdf from "@/lib/generateProposalPdf";
 
 export default function SignProposal() {
   const { proposalId } = useParams();
@@ -126,25 +127,59 @@ export default function SignProposal() {
     const timeoutId = setTimeout(() => {
       setSubmitting(false);
       alert('Submission timed out. Please check your connection and try again.');
-    }, 20000);
+    }, 60000);
 
     try {
+      const signatureBase64 = sigPadRef.current.toDataURL();
+      const initialsValue = initials.trim().toUpperCase();
       const signedAt = new Date().toISOString();
 
-      // Save status + initials only — skip storing large base64 signature to avoid payload issues
+      const signatureData = {
+        clientSignature: signatureBase64,
+        clientInitials: initialsValue,
+        signedAt,
+      };
+
+      // STEP 1 — Save signature fields to Proposal
       await base44.entities.Proposal.update(proposal.id, {
-        client_initials: initials.trim(),
+        client_initials: initialsValue,
         signed_at: signedAt,
         status: 'Signed',
       });
 
-      // Notify advisor — failure must not block success
+      // STEP 2 — Fetch investments + risk products, regenerate PDF with signatures embedded
+      try {
+        const [allInvestments, allRiskProducts, allRiskCovers] = await Promise.all([
+          base44.entities.Investments.list(),
+          base44.entities.RiskProducts.list(),
+          base44.entities.RiskCovers.list(),
+        ]);
+
+        const investments = allInvestments.filter(i => i.proposal_id === proposal.id);
+        const riskProductsRaw = allRiskProducts.filter(rp => rp.proposal_id === proposal.id);
+        const riskProducts = riskProductsRaw.map(rp => ({
+          ...rp,
+          covers: allRiskCovers.filter(c => c.risk_product_id === rp.id),
+          _covers: allRiskCovers.filter(c => c.risk_product_id === rp.id),
+        }));
+
+        const doc = await generateProposalPdf(proposal, investments, riskProducts, signatureData);
+        const pdfBlob = doc.output('blob');
+        const pdfFile = new File([pdfBlob], `${proposal.reference || proposal.id}-signed.pdf`, { type: 'application/pdf' });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+
+        await base44.entities.Proposal.update(proposal.id, { signed_pdf_url: file_url });
+      } catch (pdfErr) {
+        console.warn('PDF generation failed (non-blocking):', pdfErr);
+      }
+
+      // STEP 3 — Notify advisor — failure must not block success
       try {
         await base44.integrations.Core.SendEmail({
           from_name: 'Wealthworks',
           to: 'tfine1969@gmail.com',
           subject: `Document Signed — ${proposal.client_name || ''} — ${proposal.reference || ''}`,
-          body: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;"><tr><td style="background:#1e3a5f;padding:28px 40px;"><p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">Document Signed — Action Required</p></td></tr><tr><td style="padding:40px;"><p style="font-size:15px;color:#1e3a5f;font-weight:600;margin:0 0 16px;">Dear Trevor,</p><p style="font-size:14px;color:#334155;line-height:1.7;margin:0 0 16px;"><strong>${proposal.client_name || 'The client'}</strong> has signed their Financial Strategy &amp; Recommendation Report.</p><table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;"><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;width:40%;">Client</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.client_name || '—'}</td></tr><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;">Proposal Reference</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.reference || '—'}</td></tr><tr><td style="padding:10px 0;color:#64748b;">Signed At</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${new Date(signedAt).toLocaleString('en-ZA')}</td></tr></table><p style="font-size:13px;color:#334155;line-height:1.7;margin:0 0 24px;">Please log in to the WealthWorks Advisor Portal to view the signed document on the client's profile.</p><p style="font-size:13px;color:#334155;">Kind regards,<br/><strong>WealthWorks Portal</strong></p></td></tr><tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;"/></td></tr><tr><td style="padding:24px 40px 32px;"><p style="margin:0 0 4px;font-size:11px;color:#64748b;font-weight:700;">For more information go to: <a href="https://www.wealthworks.co.za" style="color:#1e3a5f;">www.wealthworks.co.za</a></p><p style="margin:0;font-size:11px;color:#94a3b8;">Authorised Financial Services Provider FSP no 28337</p></td></tr></table></td></tr></table></body></html>`,
+          body: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;"><tr><td style="background:#1e3a5f;padding:28px 40px;"><p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">Document Signed — Action Required</p></td></tr><tr><td style="padding:40px;"><p style="font-size:15px;color:#1e3a5f;font-weight:600;margin:0 0 16px;">Dear Trevor,</p><p style="font-size:14px;color:#334155;line-height:1.7;margin:0 0 16px;"><strong>${proposal.client_name || 'The client'}</strong> has signed their Financial Strategy &amp; Recommendation Report.</p><table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:13px;"><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;width:40%;">Client</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.client_name || '—'}</td></tr><tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:10px 0;color:#64748b;">Proposal Reference</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${proposal.reference || '—'}</td></tr><tr><td style="padding:10px 0;color:#64748b;">Signed At</td><td style="padding:10px 0;color:#1e3a5f;font-weight:600;">${new Date(signedAt).toLocaleString('en-ZA')}</td></tr></table><p style="font-size:13px;color:#334155;line-height:1.7;margin:0 0 24px;">Please log in to the WealthWorks Advisor Portal to view the signed document in the client's Document Repository.</p><p style="font-size:13px;color:#334155;">Kind regards,<br/><strong>WealthWorks Portal</strong></p></td></tr><tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;"/></td></tr><tr><td style="padding:24px 40px 32px;"><p style="margin:0 0 4px;font-size:11px;color:#64748b;font-weight:700;">For more information go to: <a href="https://www.wealthworks.co.za" style="color:#1e3a5f;">www.wealthworks.co.za</a></p><p style="margin:0;font-size:11px;color:#94a3b8;">Authorised Financial Services Provider FSP no 28337</p></td></tr></table></td></tr></table></body></html>`,
         });
       } catch (emailErr) {
         console.warn('Advisor notification email failed (non-blocking):', emailErr);
