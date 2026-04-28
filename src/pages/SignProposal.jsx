@@ -13,7 +13,7 @@ const fmtDate = (iso) => {
 };
 
 export default function SignProposal() {
-  const { token } = useParams();
+  const { proposalId } = useParams();
   const canvasRef = useRef(null);
   const sigPadRef = useRef(null);
 
@@ -59,9 +59,7 @@ export default function SignProposal() {
   useEffect(() => {
     const load = async () => {
       const all = await base44.entities.Proposal.list();
-      console.log('Looking for token:', token);
-      console.log('All proposal tokens:', all.map(p => ({ id: p.id, token: p.signing_token })));
-      const found = all.find(p => p.signing_token === token);
+      const found = all.find(p => p.id === proposalId);
       if (!found) { setState('invalid'); return; }
       if (found.status === 'Signed') { setProposal(found); setState('already_signed'); return; }
 
@@ -92,7 +90,7 @@ export default function SignProposal() {
       setState('ready');
     };
     load().catch(() => setState('invalid'));
-  }, [token]);
+  }, [proposalId]);
 
   // Init pad once canvas is visible
   useEffect(() => {

@@ -6,27 +6,15 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
   const [emailing, setEmailing] = useState(false);
   const [message, setMessage] = useState('');
 
-  const generateToken = () =>
-    crypto.randomUUID
-      ? crypto.randomUUID()
-      : Math.random().toString(36).substring(2) + Date.now().toString(36);
+  const getSigningUrl = () =>
+    `${window.location.origin}/sign-proposal/${proposal.id}`;
 
-  const getSigningUrl = (token) =>
-    `${window.location.origin}/sign-proposal/${token}`;
-
-  const saveTokenToProposal = async (token) => {
+  const markAsSent = async () => {
     await base44.entities.Proposal.update(proposal.id, {
-      signing_token: token,
       status: 'Sent',
       sent_at: new Date().toISOString(),
       reminder_sent: false,
     });
-    // Verify it saved
-    const allProposals = await base44.entities.Proposal.list();
-    const saved = allProposals.find(p => p.id === proposal.id);
-    if (!saved || saved.signing_token !== token) {
-      throw new Error('Token verification failed — token was not saved to the database.');
-    }
     if (onStatusUpdate) onStatusUpdate();
   };
 
@@ -38,14 +26,12 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
     setCopying(true);
     setMessage('');
     try {
-      const token = generateToken();
-      const signingUrl = getSigningUrl(token);
-      // Save FIRST, then copy
-      await saveTokenToProposal(token);
+      const signingUrl = getSigningUrl();
       await navigator.clipboard.writeText(signingUrl);
+      await markAsSent();
       setMessage('✓ Signing link copied to clipboard.');
     } catch (err) {
-      console.error('Copy link error:', err);
+      console.error('Copy error:', err);
       setMessage(`✗ Error: ${err?.message || 'Could not copy link.'}`);
     }
     setCopying(false);
@@ -59,29 +45,23 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
     setEmailing(true);
     setMessage('');
     try {
-      // STEP 1 — Generate token
-      const token = generateToken();
-      const signingUrl = getSigningUrl(token);
+      const signingUrl = getSigningUrl();
 
-      // STEP 2 — Save token FIRST and verify
-      await saveTokenToProposal(token);
-
-      // STEP 3 — Load client details
       const allClients = await base44.entities.Clients.list();
       const client = allClients.find(c => c.id === proposal.client_id);
       const clientName = client?.first_name || client?.full_name || 'Client';
 
-      // STEP 4 — Send email (HTML formatted)
       await base44.integrations.Core.SendEmail({
         from_name: 'Wealthworks',
         to: 'tfine1969@gmail.com',
-        subject: `Your Financial Strategy Report — Action Required — ${client?.full_name || ''}`,
-        body: `<p>Dear ${clientName},</p><p>Your Financial Strategy &amp; Recommendation Report has been prepared by Wealthworks and is ready for your review and signature.</p><p>Please click the link below to review and sign your document:</p><p><a href="${signingUrl}" style="color:#1e3a5f; font-weight:bold;">${signingUrl}</a></p><p>This link is unique to you. Please do not share it.</p><p>If you have any questions, please contact your advisor directly.</p><br/><p>Kind regards,<br/>The Wealthworks Team</p>`,
+        subject: `Your Financial Strategy Report — Action Required`,
+        body: `<p>Dear ${clientName},</p><p>Your Financial Strategy &amp; Recommendation Report has been prepared by Wealthworks and is ready for your review and signature.</p><p>Please click the link below to review and sign your document:</p><p><a href="${signingUrl}" style="color:#1e3a5f; font-weight:bold;">${signingUrl}</a></p><p>This link is unique to you. Please do not share it.</p><p>If you have any questions, please contact your advisor directly.</p><p>Kind regards,<br/>The Wealthworks Team</p>`,
       });
 
-      setMessage(`✓ Email sent. Signing link saved and active.`);
+      await markAsSent();
+      setMessage('✓ Email sent successfully.');
     } catch (err) {
-      console.error('Send error full details:', err);
+      console.error('Send error:', err);
       setMessage(`✗ Error: ${err?.message || 'Failed to send. Please try again.'}`);
     }
     setEmailing(false);

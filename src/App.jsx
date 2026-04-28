@@ -102,7 +102,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/advisor-login" element={<AdvisorLogin />} />
       <Route path="/sign" element={<ClientSign />} />
-      <Route path="/sign-proposal/:token" element={<SignProposal />} />
+      <Route path="/sign-proposal/:proposalId" element={<SignProposal />} />
 
       <Route path="/client-registration" element={<ClientRegistration />} />
       <Route path="/client-login" element={<ClientLogin />} />
