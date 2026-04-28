@@ -1,6 +1,9 @@
 import jsPDF from 'jspdf';
 import { base44 } from '@/api/base44Client';
 
+const LOGO_URL = 'https://media.base44.com/images/public/69e88c566cc0939ea06624c2/fbfed108e_logo.png';
+const LEAF_URL = 'https://media.base44.com/images/public/69e88c566cc0939ea06624c2/170e8c98f_WWleaves.png';
+
 const fmtDate = (val) => {
   if (!val) return '—';
   if (/^\d{2}-\d{2}-\d{4}$/.test(val)) return val;
@@ -43,16 +46,21 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   const resolveReasons = (ids) =>
     (ids || []).map(id => allReasons.find(r => r.id === id)?.text).filter(Boolean);
+
   const doc = new jsPDF('p', 'mm', 'a4');
   const W = 210, H = 297, M = 20, CW = W - M * 2;
   let y = 0, pageNum = 0;
 
-  const navy  = [14, 65, 102];
-  const ocean = [26, 100, 148];
+  // V3 colour palette
+  const navy  = [17, 59, 92];
+  const blue  = [38, 84, 124];
   const teal  = [74, 155, 175];
-  const muted = [138, 154, 170];
-  const border= [216, 228, 236];
+  const muted = [119, 119, 114];
+  const border= [220, 230, 238];
+  const light = [247, 249, 251];
   const black = [30, 30, 30];
+  // keep ocean alias for helpers that still use it
+  const ocean = blue;
 
   const clientName       = proposal.client_name   || '—';
   const advisorName      = proposal.advisor_name  || 'Trevor Fine';
@@ -87,15 +95,16 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   // ── PAGE UTILITIES ─────────────────────────────────────────────────────────
   const addHeader = () => {
-    doc.setFillColor(...navy); doc.rect(0,0,W,8,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy);
-    doc.text('wealthworks', M, 16);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text('FSP 28337  |  FSP 45624', M, 21);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
-    doc.text('Financial Strategy & Recommendation Report', W-M, 16, {align:'right'});
-    doc.text(clientName, W-M, 21, {align:'right'});
-    doc.setDrawColor(...border); doc.line(M, 26, W-M, 26);
+    // Logo image top-left
+    try { doc.addImage(LOGO_URL, 'PNG', M, 6, 32, 10); } catch(_) {
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy);
+      doc.text('wealthworks', M, 14);
+    }
+    // FSP top-right
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...muted);
+    doc.text('FSP 28337  |  FSP 45624', W-M, 14, {align:'right'});
+    // Thin rule
+    doc.setDrawColor(...border); doc.line(M, 22, W-M, 22);
   };
 
   const addFooter = (pn) => {
@@ -183,16 +192,20 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   };
 
   const feesTable = (rows) => {
-    pb(14); const c1=M,c2=M+80,c3=M+130;
-    doc.setFillColor(235,241,246); doc.rect(M-2,y-4,CW+4,8,'F');
+    pb(14);
+    const c1=M, c2=M+55, c3=M+100;
+    // Header row with light background
+    doc.setFillColor(...light); doc.rect(M-2, y-4, CW+4, 9, 'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
-    doc.text('Provider',c1,y); doc.text('Initial Fee',c2,y); doc.text('Ongoing Fee p.a.',c3,y); y+=7;
-    rows.forEach(([provider,init,ongoing])=>{
-      pb(7); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
-      doc.text(String(provider),c1,y);
-      doc.setFont('helvetica','bold');
-      doc.text(String(init),c2,y); doc.text(String(ongoing),c3,y);
-      doc.setFont('helvetica','normal'); y+=6;
+    doc.text('Fee type', c1, y); doc.text('Basis', c2, y); doc.text('Disclosure', c3, y); y+=8;
+    rows.forEach(([feeType, basis, disclosure]) => {
+      pb(7);
+      doc.setDrawColor(...border); doc.line(M-2, y-3, W-M+2, y-3);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+      doc.text(String(feeType), c1, y);
+      doc.setFont('helvetica','bold'); doc.text(String(basis), c2, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(...muted);
+      doc.text(String(disclosure), c3, y); y+=7;
     });
   };
 
@@ -212,106 +225,250 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   };
 
   // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER
+  // PAGE 1 — COVER (V3 white, logo, leaf watermark)
   // ══════════════════════════════════════════════════════════════════════════
   pageNum=1; y=0;
-  doc.setFillColor(...navy); doc.rect(0,0,W,10,'F');
-  doc.setFillColor(...navy); doc.rect(0,0,5,H,'F');
-  doc.setFillColor(...teal);  doc.rect(5,0,3,H,'F');
 
-  y=30;
-  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(...navy);
-  doc.text('wealthworks',W/2,y,{align:'center'}); y+=8;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...teal);
-  doc.text('WEALTH MANAGEMENT',W/2,y,{align:'center'}); y+=5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...muted);
-  doc.text('FSP 28337  |  FSP 45624',W/2,y,{align:'center'}); y+=20;
-
-  doc.setDrawColor(...teal); doc.line(W/2-35,y,W/2+35,y); y+=10;
-  doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...navy);
-  doc.text('Financial Strategy &',W/2,y,{align:'center'}); y+=11;
-  doc.text('Recommendation Report',W/2,y,{align:'center'}); y+=8;
-  doc.setDrawColor(...teal); doc.line(W/2-35,y,W/2+35,y); y+=14;
-
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...muted);
-  doc.text('Prepared for',W/2,y,{align:'center'}); y+=7;
-  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(...navy);
-  doc.text(clientName,W/2,y,{align:'center'}); y+=16;
-
-  [['Prepared by',advisorName],['Date',today],['Reference',reference],
-   ['Risk Profile',riskProfile],['Time Horizon',timeHorizon]
-  ].forEach(([label,value])=>{
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...muted);
-    doc.text(label,W/2-5,y,{align:'right'});
-    doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
-    doc.text(String(value),W/2+5,y); y+=8;
-  });
-
-  const cfy=H-10;
-  doc.setDrawColor(...border); doc.line(M,cfy-4,W-M,cfy-4);
-  doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624',M,cfy);
-  doc.text('1',W/2,cfy,{align:'center'});
-  if (signatureData?.clientInitials) {
-    doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
-    doc.text(`Initials: ${signatureData.clientInitials}`, W-M, cfy, {align:'right'});
-  } else {
-    doc.text('Initials: ___________', W-M, cfy, {align:'right'});
+  // Logo top-left
+  try { doc.addImage(LOGO_URL, 'PNG', M, 14, 44, 14); } catch(_) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...navy);
+    doc.text('wealthworks', M, 22);
   }
 
+  // Leaf watermark bottom-right (low opacity)
+  try {
+    doc.saveGraphicsState();
+    doc.setGState(new doc.GState({opacity: 0.08}));
+    doc.addImage(LEAF_URL, 'PNG', W-80, H-90, 70, 70);
+    doc.restoreGraphicsState();
+  } catch(_) {}
+
+  // Thin teal accent line under logo
+  doc.setDrawColor(...teal); doc.setLineWidth(1.5);
+  doc.line(M, 34, M+20, 34); doc.setLineWidth(0.2);
+
+  y = 58;
+  // Title
+  doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(...navy);
+  doc.text('Financial Strategy', M, y); y+=13;
+  doc.text('& Recommendation Report', M, y); y+=12;
+
+  // Prepared for
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...muted);
+  doc.text('Prepared for', M, y); y+=9;
+  doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...navy);
+  doc.text(clientName, M, y); y+=18;
+
+  // Metadata card
+  const metaRows=[
+    ['PREPARED BY', advisorName],
+    ['DATE', (() => { const d=new Date(); return d.toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}); })()],
+    ['REFERENCE', reference],
+    ['RISK PROFILE', riskProfile],
+    ['TIME HORIZON', timeHorizon],
+  ];
+  const cardX=M, cardW=95, cardPad=6;
+  const cardH = metaRows.length * 11 + cardPad * 2 + 4;
+  const cardY = y;
+  doc.setDrawColor(...border); doc.setFillColor(...light);
+  doc.roundedRect(cardX, cardY, cardW, cardH, 3, 3, 'FD');
+  let cy = cardY + cardPad + 5;
+  metaRows.forEach(([label, value]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text(label, cardX+cardPad, cy);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text(String(value), cardX+cardW-cardPad, cy, {align:'right'});
+    cy += 11;
+  });
+  y = cardY + cardH + 6;
+
+  // Cover footer
+  const cfy = H-10;
+  doc.setDrawColor(...border); doc.line(M, cfy-4, W-M, cfy-4);
+  doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, cfy);
+  doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+  doc.text('CONFIDENTIAL CLIENT REPORT', W-M, cfy, {align:'right'});
+
   // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 2 — EXECUTIVE SUMMARY
+  // PAGE 2 — EXECUTIVE SUMMARY (V3 two-column)
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum=2; addHeader(); y=34;
-  h1('Executive Summary'); thinRule(); spacer(4);
-  body(`This report has been prepared for ${clientName} and sets out ${scopeText} aligned to the client's financial objectives, risk profile, and investment horizon. All recommendations are based on information provided by the client and reflect the client's current financial position and goals.`);
-  spacer(4);
-  body(`The client's risk profile has been assessed as ${riskProfile} with a time horizon of ${timeHorizon}. The recommended strategy is designed to support the client's long-term financial objectives within these parameters.`);
-  spacer(6);
-  h3('The strategy focuses on'); spacer(2);
-  ['Long-term financial objective alignment',
-   'Appropriate risk-adjusted positioning',
-   'Diversification across asset classes and geographies where applicable',
-   'Structured product selection from accredited providers',
-   'Transparency of fees and ongoing advice relationship',
-  ].forEach(b=>bullet(b));
-  if (advisoryNeeds.length>0) { spacer(8); h3('Advisory needs identified'); spacer(2); advisoryNeeds.forEach(n=>bullet(String(n))); }
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+  doc.text('EXECUTIVE SUMMARY', M, y); y+=3;
+  doc.setDrawColor(...blue); doc.line(M, y, M+50, y); y+=8;
+
+  // Left column width and right column start
+  const lw = 95, rw = 70, rx = W-M-rw;
+
+  // Left: intro paragraph
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+  const summaryText = `This report sets out ${scopeText} aligned to the client's stated financial objectives, assessed risk profile and investment horizon. The recommended strategy is designed to balance growth, liquidity and risk management within a clear advice framework.`;
+  const summaryLines = doc.splitTextToSize(summaryText, lw-4);
+  let ly = y;
+  summaryLines.forEach(l => { doc.text(l, M, ly); ly+=4.5; });
+
+  // Right column: Client Snapshot cards
+  let ry = y;
+  const snapItems = [
+    ['RISK PROFILE', riskProfile],
+    ['TIME HORIZON', timeHorizon],
+    ['PRIMARY OBJECTIVE', advisoryNeeds.length>0 ? advisoryNeeds[0] : 'Growth + Income']
+  ];
+  snapItems.forEach(([label, value]) => {
+    const snapH = 22;
+    doc.setDrawColor(...border); doc.setFillColor(...light);
+    doc.roundedRect(rx, ry, rw, snapH, 2, 2, 'FD');
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text(label, rx+5, ry+7);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy);
+    doc.text(String(value), rx+5, ry+17);
+    ry += snapH + 4;
+  });
+
+  y = Math.max(ly, ry) + 10;
+
+  // Strategy focus heading
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...blue);
+  doc.text('Strategy focus', M, y); y+=8;
+
+  // 2x2 grid of numbered strategy cards
+  const strategyItems = [
+    ['01','Risk-aligned positioning','Structured to support the client objectives and advice record.'],
+    ['02','Liquidity management','Structured to support the client objectives and advice record.'],
+    ['03','Diversified portfolio design','Structured to support the client objectives and advice record.'],
+    ['04','Transparent advice and fees','Structured to support the client objectives and advice record.'],
+  ];
+  const gcw = (CW-6)/2, gch = 28;
+  strategyItems.forEach((item, i) => {
+    const gx = M + (i%2) * (gcw+6);
+    const gy = y + Math.floor(i/2) * (gch+4);
+    doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+    doc.roundedRect(gx, gy, gcw, gch, 2, 2, 'FD');
+    // Number badge
+    doc.setFillColor(...light); doc.setDrawColor(...border);
+    doc.roundedRect(gx+4, gy+4, 10, 10, 1, 1, 'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+    doc.text(item[0], gx+9, gy+11, {align:'center'});
+    // Title
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text(item[1], gx+18, gy+11);
+    // Description
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+    const dlines = doc.splitTextToSize(item[2], gcw-22);
+    dlines.forEach((dl,di) => doc.text(dl, gx+18, gy+17+(di*4)));
+  });
+  y += 2*(gch+4)+4;
+
+  if (advisoryNeeds.length>0) {
+    y+=4;
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);
+    doc.text('ADVISORY NEEDS IDENTIFIED', M, y); y+=5;
+    advisoryNeeds.forEach(n => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+      doc.text(`- ${n}`, M, y); y+=5;
+    });
+  }
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 3 — CLIENT OVERVIEW
+  // PAGE 3 — CLIENT OVERVIEW (V3 two-column card layout)
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum=3; addHeader(); y=34;
-  h1('Client Overview'); thinRule(); spacer(4);
-  const overviewRows=[
-    ['Client Name',clientName],['Client Type',clientTypeDisplay],
-    ['ID / Registration',proposal.client_id_number||'—'],
-    ['Email',proposal.client_email||'—'],['Mobile',proposal.client_mobile||'—'],
-    ['Risk Profile',riskProfile],['Investment Horizon',timeHorizon],
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+  doc.text('CLIENT OVERVIEW', M, y); y+=3;
+  doc.setDrawColor(...blue); doc.line(M, y, M+45, y); y+=8;
+
+  const colW2 = (CW-8)/2, col2x = M+colW2+8;
+
+  // Left card — Client Details
+  const ldRows = [
+    ['CLIENT NAME', clientName],
+    ['CLIENT TYPE', clientTypeDisplay],
+    ['ID / REGISTRATION', proposal.client_id_number||'—'],
+    ['EMAIL', proposal.client_email||'—'],
+    ['MOBILE', proposal.client_mobile||'—'],
   ];
   if (proposal.annual_income_band||proposal.gross_annual_income_band)
-    overviewRows.push(['Annual Income Band',proposal.annual_income_band||proposal.gross_annual_income_band]);
-  if (proposal.net_worth_band) overviewRows.push(['Net Worth Band',proposal.net_worth_band]);
-  if (proposal.liquidity_requirement||proposal.client_liquidity_needs)
-    overviewRows.push(['Liquidity Requirement',proposal.liquidity_requirement||proposal.client_liquidity_needs]);
-  if (proposal.tax_residency) overviewRows.push(['Tax Residency',proposal.tax_residency]);
-  table(overviewRows); spacer(10);
-  h3('Risk Profile Assessment'); spacer(2);
-  body(`The client's ${riskProfile} risk profile reflects the following assessed characteristics:`);
+    ldRows.push(['INCOME BAND', proposal.annual_income_band||proposal.gross_annual_income_band]);
+  if (proposal.net_worth_band) ldRows.push(['NET WORTH BAND', proposal.net_worth_band]);
+  if (proposal.tax_residency) ldRows.push(['TAX RESIDENCY', proposal.tax_residency]);
+
+  const leftCardH = ldRows.length * 12 + 16;
+  doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+  doc.roundedRect(M, y, colW2, leftCardH, 3, 3, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+  doc.text('CLIENT DETAILS', M+5, y+8);
+  doc.setDrawColor(...border); doc.line(M+5, y+10, M+colW2-5, y+10);
+  let lcy = y+18;
+  ldRows.forEach(([label, value]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text(label, M+5, lcy);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+    const vlines = doc.splitTextToSize(String(value), colW2-10);
+    doc.text(vlines[0]||'—', M+colW2-5, lcy, {align:'right'});
+    lcy+=12;
+  });
+
+  // Right side — Risk Profile card + FICA card
+  let rcy = y;
+  // Risk card
+  const riskCardH = 52;
+  doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+  doc.roundedRect(col2x, rcy, colW2, riskCardH, 3, 3, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+  doc.text('RISK PROFILE ASSESSMENT', col2x+5, rcy+8);
+  doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
+  // Risk badge
+  doc.setFillColor(...blue); doc.roundedRect(col2x+5, rcy+14, 30, 9, 2, 2, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(255,255,255);
+  doc.text(riskProfile.toUpperCase(), col2x+20, rcy+20, {align:'center'});
+  // Description
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...black);
+  const riskDesc = `Balanced exposure to growth assets with controlled volatility. The client accepts moderate market fluctuations in pursuit of the stated objectives.`;
+  const rdlines = doc.splitTextToSize(riskDesc, colW2-10);
+  rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+28+(i*4)));
+  rcy += riskCardH + 6;
+
+  // FICA card
+  const ficaItems = ['Identity verified','Proof of address verified','Source of funds confirmed','Beneficial ownership checked'];
+  const ficaCardH = ficaItems.length*10+16;
+  doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+  doc.roundedRect(col2x, rcy, colW2, ficaCardH, 3, 3, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+  doc.text('FICA VERIFICATION', col2x+5, rcy+8);
+  doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
+  let fcy = rcy+18;
+  ficaItems.forEach(item => {
+    doc.setFillColor(...teal); doc.circle(col2x+8, fcy-1.5, 2, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+    doc.text(item, col2x+13, fcy); fcy+=10;
+  });
+
+  y = Math.max(y+leftCardH, rcy+ficaCardH) + 8;
+
+  // Risk profile characteristics below
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);
+  doc.text('RISK PROFILE CHARACTERISTICS', M, y); y+=5;
   ['Tolerance for investment volatility','Investment time horizon and objectives',
    'Liquidity requirements','Reaction to market downturns','Investment knowledge and experience',
-  ].forEach(b=>bullet(b));
-  spacer(10); h3('FICA Verification Status'); spacer(4);
-  ['Identity Verified','Proof of Address Verified',
-   'Source of Funds Confirmed','Beneficial Ownership Verified (if applicable)',
-  ].forEach(item=>statusItem(item));
+  ].forEach(b => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+    doc.text(`- ${b}`, M+3, y); y+=5;
+  });
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
   // PAGE 4 — STRATEGY OVERVIEW
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum=4; addHeader(); y=34;
-  h1('Strategy Overview'); thinRule(); spacer(4);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+  doc.text('STRATEGY OVERVIEW', M, y); y+=3;
+  doc.setDrawColor(...blue); doc.line(M, y, M+48, y); y+=10;
+
   body(`The recommended financial strategy for ${clientName} is designed to address the client's stated objectives within the parameters of their ${riskProfile} risk profile and ${timeHorizon} investment horizon. The strategy incorporates ${scopeText} structured to provide an appropriate balance between growth, protection, and accessibility.`);
   spacer(6);
   if (hasInvestments) { h3('Role of Investments'); spacer(2); body('The investment component is designed to build and preserve long-term wealth. Product selection has been guided by the client\'s risk tolerance, time horizon, currency preferences, and diversification requirements.'); spacer(4); }
@@ -327,69 +484,137 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 5 — RECOMMENDATIONS (combined investments + risk cover)
+  // PAGE 5 — RECOMMENDATIONS (V3 card-based layout)
   // ══════════════════════════════════════════════════════════════════════════
   if (hasInvestments||hasRisk) {
     doc.addPage(); pageNum+=1; addHeader(); y=34;
 
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+    doc.text('RECOMMENDATIONS', M, y); y+=3;
+    doc.setDrawColor(...blue); doc.line(M, y, M+38, y); y+=10;
+
     if (hasInvestments) {
-      h1('Investment Recommendations'); thinRule(); spacer(4);
-      investments.forEach((inv,i)=>{
-        pb(50);
-        const isOffshore=String(inv.jurisdiction||'').toLowerCase().includes('off')||(inv.currency&&inv.currency!=='ZAR'&&inv.currency!=='R');
-        h2(isOffshore?'Offshore Investment':'Local Investment',ocean);
-        table([
-          ['Provider',inv.provider||'—'],['Product Type',inv.product_type||'—'],['Currency',inv.currency||'ZAR'],
-          ...(inv.amount>0?[['Investment Amount',`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`]]:[]),
-          ...(inv.recurring_amount>0?[['Recurring Amount',`${inv.currency||'R'} ${Number(inv.recurring_amount).toLocaleString('en-ZA')}`]]:[]),
-          ...(Array.isArray(inv.underlying_funds)&&inv.underlying_funds.length>0?[['Portfolio / Fund',inv.underlying_funds.join(', ')]]:[]),
-        ]);
-        const invReasonTexts = resolveReasons(inv.investment_recommendation_reasons);
-        if (invReasonTexts.length > 0) {
-          spacer(2); h3('Investment Recommendation Rationale'); spacer(2);
-          invReasonTexts.forEach(r => bullet(r));
+      investments.forEach((inv, i) => {
+        pb(80);
+        const isOffshore = String(inv.jurisdiction||'').toLowerCase().includes('off')||(inv.currency&&inv.currency!=='ZAR'&&inv.currency!=='R');
+
+        // Investment Recommendation header bar
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+        doc.text('INVESTMENT RECOMMENDATION', M+4, y+6);
+        doc.setDrawColor(...border); doc.line(M, y+8, W-M, y+8);
+        y+=12;
+
+        // Investment title
+        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...navy);
+        doc.text(isOffshore?'Offshore Investment':'Local Investment', M+4, y); y+=5;
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
+        const invSubtitle = [inv.provider, inv.currency, inv.amount>0?`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`:null].filter(Boolean).join(' | ');
+        doc.text(invSubtitle, M+4, y); y+=8;
+
+        // Three mini-cards: Currency | Amount | Income (side by side)
+        const miniW = (CW-8)/3, miniH = 20;
+        const miniItems = [
+          ['CURRENCY', inv.currency||'ZAR'],
+          ['AMOUNT', inv.amount>0?`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`:'—'],
+        ];
+        if (inv.income_required==='Yes') {
+          const incStr = inv.income_type==='Percentage'
+            ? `${Number(inv.income_percentage||0).toFixed(1)}%`
+            : `${inv.currency||'R'} ${Number(inv.income_amount||0).toLocaleString('en-ZA')} pm`;
+          miniItems.push(['INCOME', incStr]);
         }
-        // Income Drawdown section
-        spacer(4); h3('Income Drawdown'); spacer(2);
-        if (inv.income_required === 'Yes') {
-          const incomeAmountStr = inv.income_type === 'Percentage'
+        miniItems.forEach((mi, mi_i) => {
+          const mx = M + mi_i*(miniW+4);
+          doc.setDrawColor(...border); doc.setFillColor(...light);
+          doc.roundedRect(mx, y, miniW, miniH, 2, 2, 'FD');
+          doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+          doc.text(mi[0], mx+4, y+6);
+          doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+          doc.text(String(mi[1]), mx+4, y+15);
+        });
+        y+=miniH+8;
+
+        // Portfolio allocation bars (if underlying funds)
+        if (Array.isArray(inv.underlying_funds)&&inv.underlying_funds.length>0) {
+          doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);
+          doc.text('Portfolio allocation', M+4, y); y+=6;
+          const funds = inv.underlying_funds;
+          const pct = Math.round(100/funds.length);
+          funds.forEach(fund => {
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...black);
+            doc.text(fund, M+4, y); y+=4;
+            // Bar background
+            doc.setFillColor(...light); doc.rect(M+4, y, CW-8, 5, 'F');
+            // Bar fill
+            doc.setFillColor(...navy); doc.rect(M+4, y, (CW-8)*(pct/100)*0.7, 5, 'F');
+            // Teal accent
+            doc.setFillColor(...teal); doc.rect(M+4+(CW-8)*(pct/100)*0.7, y, (CW-8)*(pct/100)*0.1, 5, 'F');
+            // Percentage label
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...navy);
+            doc.text(`${pct}%`, W-M-4, y+4, {align:'right'}); y+=9;
+          });
+          y+=4;
+        }
+
+        // Investment rationale
+        const invReasonTexts = resolveReasons(inv.investment_recommendation_reasons);
+        if (invReasonTexts.length>0) {
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+          doc.text('INVESTMENT RATIONALE', M+4, y); y+=5;
+          invReasonTexts.forEach(r => {
+            doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+            const rlines = doc.splitTextToSize(`- ${r}`, CW-8);
+            rlines.forEach(l => { doc.text(l, M+4, y); y+=4.5; });
+          });
+          y+=3;
+        }
+
+        // Income drawdown
+        if (inv.income_required==='Yes') {
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+          doc.text('INCOME DRAWDOWN', M+4, y); y+=5;
+          const incomeAmountStr = inv.income_type==='Percentage'
             ? `${Number(inv.income_percentage||0).toFixed(2)}%`
-            : `${inv.currency || 'R'} ${Number(inv.income_amount||0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
-          table([
-            ['Income Required','Yes'],
-            ['Income Basis', inv.income_type||'—'],
-            ['Income Amount', incomeAmountStr],
-            ['Frequency', inv.income_frequency||'—'],
-          ]);
-          // Income drawdown rationale from library
+            : `${inv.currency||'R'} ${Number(inv.income_amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}`;
+          [['Income Basis', inv.income_type||'—'],['Income Amount',incomeAmountStr],['Frequency',inv.income_frequency||'—']].forEach(([l,v])=>{
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+            doc.text(l, M+4, y);
+            doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
+            doc.text(String(v), W-M-4, y, {align:'right'}); y+=5;
+          });
+          if (inv.income_notes) {
+            doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...muted);
+            doc.splitTextToSize(inv.income_notes, CW-8).forEach(l=>{doc.text(l,M+4,y);y+=4.5;});
+          }
+          y+=3;
+          doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(180,60,60);
+          doc.splitTextToSize('The income level should be reviewed regularly to assess ongoing sustainability and avoid material capital erosion.',CW-8).forEach(l=>{doc.text(l,M+4,y);y+=4;}); y+=4;
+        }
+
+        // Income drawdown rationale
+        if (inv.income_required==='Yes') {
           const incomeReasonTexts = resolveReasons(inv.income_drawdown_reasons);
           if (incomeReasonTexts.length > 0) {
-            spacer(2); h3('Income Drawdown Rationale'); spacer(2);
-            incomeReasonTexts.forEach(r => bullet(r));
+            doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
+            doc.text('INCOME RATIONALE', M+4, y); y+=5;
+            incomeReasonTexts.forEach(r => {
+              doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
+              doc.splitTextToSize(`- ${r}`, CW-8).forEach(l=>{doc.text(l,M+4,y);y+=4.5;});
+            });
+            y+=3;
           }
-          if (inv.income_notes) {
-            spacer(2); pb(8); doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...muted);
-            doc.splitTextToSize(inv.income_notes, CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
-            doc.setTextColor(...black);
-          }
-          spacer(2);
-          pb(10); doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(180,60,60);
-          doc.splitTextToSize('Regular withdrawals may reduce the capital value of the investment, particularly where withdrawals exceed investment growth. The income level should be reviewed regularly to assess ongoing sustainability.',CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=4.5;}); y+=2;
-          doc.setTextColor(...black);
-        } else {
-          pb(6); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-          doc.text('No income drawdown required from this investment.',M,y); y+=6;
-          doc.setTextColor(...black);
         }
-        if (i<investments.length-1){spacer(6);thinRule();spacer(2);}
+
+        if (i<investments.length-1){y+=4;doc.setDrawColor(...border);doc.line(M,y,W-M,y);y+=8;}
       });
     }
 
-    if (hasInvestments&&hasRisk){spacer(8);thinRule();spacer(4);}
+    if (hasInvestments&&hasRisk){y+=6;doc.setDrawColor(...border);doc.line(M,y,W-M,y);y+=8;}
 
     if (hasRisk) {
-      h1('Risk Cover Recommendations');
-      if (!hasInvestments){thinRule();spacer(4);}
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+      doc.text('RISK COVER RECOMMENDATIONS', M, y); y+=3;
+      doc.setDrawColor(...blue); doc.line(M, y, M+60, y); y+=10;
       normRiskProducts.forEach((rp,i)=>{
         pb(50); h2(rp.provider||'Risk Cover',teal);
         rp.covers.forEach(cover=>{
@@ -404,9 +629,9 @@ export default async function generateProposalPdf(proposal, investments = [], ri
           doc.text('Total Monthly Premium',M,y); doc.text(fmtR(rp.total_premium)+' pm',W-M,y,{align:'right'}); y+=8;
         }
         const riskReasonTexts = resolveReasons(rp.risk_recommendation_reasons);
-        if (riskReasonTexts.length > 0) {
+        if (riskReasonTexts.length>0) {
           spacer(2); h3('Risk Recommendation Rationale'); spacer(2);
-          riskReasonTexts.forEach(r => bullet(r));
+          riskReasonTexts.forEach(r=>bullet(r));
         }
         if (i<normRiskProducts.length-1){spacer(6);thinRule();spacer(2);}
       });
@@ -415,20 +640,57 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // FEES
+  // RISK & FEE OVERVIEW (was: Fees and Charges)
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum+=1; addHeader(); y=34;
-  h1('Fees and Charges'); thinRule(); spacer(4);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+  doc.text('RISK & FEE OVERVIEW', M, y); y+=3;
+  doc.setDrawColor(...blue); doc.line(M, y, M+42, y); y+=10;
+
   body('All fees applicable to the recommended products are disclosed below. Fees are expressed as a percentage of the investment amount unless otherwise stated.');
-  spacer(6);
-  const feeRows=[];
-  investments.forEach(inv=>{
-    const init=inv.initial_fee_percent>0?fmtPct(inv.initial_fee_percent):'—';
-    const ong=inv.annual_advice_fee_percent>0?fmtPct(inv.annual_advice_fee_percent)+' p.a.':'—';
-    if(inv.initial_fee_percent>0||inv.annual_advice_fee_percent>0) feeRows.push([inv.provider||'—',init,ong]);
+  spacer(4);
+
+  // Risk dashboard cards (2x2 grid)
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...blue);
+  doc.text('RISK DASHBOARD', M, y); y+=3;
+  doc.setDrawColor(...border); doc.line(M, y, M+35, y); y+=8;
+  const riskCards = [
+    ['Market risk','Investment values may fluctuate.'],
+    ['Liquidity risk','Access may be restricted by product terms.'],
+    ['Currency risk','Offshore exposure may be affected by exchange rates.'],
+    ['Inflation risk','Returns may not always exceed inflation.'],
+  ];
+  const rcw=(CW-6)/2, rch=26;
+  riskCards.forEach((rc,i)=>{
+    const rcx=M+(i%2)*(rcw+6), rcy2=y+Math.floor(i/2)*(rch+4);
+    doc.setDrawColor(...border); doc.setFillColor(255,255,255);
+    doc.roundedRect(rcx, rcy2, rcw, rch, 2, 2, 'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.text(rc[0], rcx+5, rcy2+9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+    const rclines=doc.splitTextToSize(rc[1],rcw-10);
+    rclines.forEach((l,li)=>doc.text(l,rcx+5,rcy2+15+(li*4)));
   });
-  if(feeRows.length>0) feesTable(feeRows);
+  y+=2*(rch+4)+10;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...blue);
+  doc.text('FEES AND CHARGES', M, y); y+=3;
+  doc.setDrawColor(...border); doc.line(M, y, M+38, y); y+=8;
+
+  const feeRows2 = [];
+  investments.forEach(inv => {
+    const provLabel = `${inv.provider||'—'} - ${inv.product_type||'—'}`;
+    if (inv.management_fee_percent>0) feeRows2.push(['Management fee', fmtPct(inv.management_fee_percent)+' p.a.', provLabel]);
+    if (inv.performance_fee_percent>0) feeRows2.push(['Performance fee', fmtPct(inv.performance_fee_percent), 'Subject to hurdle rate']);
+    if (inv.hurdle_rate_percent>0) feeRows2.push(['Hurdle rate', fmtPct(inv.hurdle_rate_percent), 'Applied per product documentation']);
+    if (inv.platform_fee_percent>0) feeRows2.push(['Platform / admin fee', fmtPct(inv.platform_fee_percent)+' p.a.', 'Charged by product provider']);
+    if (inv.initial_fee_percent>0) feeRows2.push(['Initial advice fee', fmtPct(inv.initial_fee_percent), provLabel]);
+    if (inv.annual_advice_fee_percent>0) feeRows2.push(['Annual advice fee', fmtPct(inv.annual_advice_fee_percent)+' p.a.', provLabel]);
+  });
+  if (feeRows2.length>0) feesTable(feeRows2);
   else body('Fee details are contained in the relevant product documentation provided separately.');
+
   spacer(8); h3('Fee Disclosure Notes'); spacer(2);
   ['Initial fees are deducted from the invested amount at inception',
    'Ongoing advice fees are deducted periodically from the investment value',
@@ -438,7 +700,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // KEY RISKS
+  // KEY RISKS AND CONSIDERATIONS
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum+=1; addHeader(); y=34;
   h1('Key Risks and Considerations'); thinRule(); spacer(4);
@@ -713,10 +975,15 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   addFooter(pageNum);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // DECLARATIONS & ACCEPTANCE
+  // DECLARATIONS & ACCEPTANCE (V3 side-by-side signature layout)
   // ══════════════════════════════════════════════════════════════════════════
   doc.addPage(); pageNum+=1; addHeader(); y=34;
-  h1('Declarations & Acceptance'); thinRule(); spacer(6);
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...blue);
+  doc.text('DECLARATIONS & ACCEPTANCE', M, y); y+=3;
+  doc.setDrawColor(...blue); doc.line(M, y, M+62, y); y+=10;
+
+  spacer(6);
   h2('Advisor Declaration',navy); spacer(2);
   ['The advice provided is appropriate and suitable to the client\'s needs and circumstances',
    'All disclosures required under the FAIS Act have been made',
@@ -734,23 +1001,66 @@ export default async function generateProposalPdf(proposal, investments = [], ri
    'I have had the opportunity to ask questions and received satisfactory answers',
    'I accept the recommendations as set out in this report',
   ].forEach(b=>bullet(b));
-  spacer(6); table([['Client Name',clientName]]); spacer(6);
-  // Personalised client message — use new field, fall back to legacy personal_message
+
+  spacer(6);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...black);
+  doc.text('Client Name', M, y);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+  doc.text(clientName, M+50, y); y+=8;
+
+  // Personalised client message
   const personalisedMsg = proposal.personalised_client_message || proposal.personal_message || '';
   const personalisedReasonTexts = resolveReasons(proposal.personalised_message_reasons);
   if (personalisedReasonTexts.length > 0 || personalisedMsg) {
     pb(16); h3('Personalised Message to Client'); spacer(2);
-    if (personalisedReasonTexts.length > 0) {
-      personalisedReasonTexts.forEach(r => bullet(r));
-      spacer(2);
-    }
+    if (personalisedReasonTexts.length > 0) { personalisedReasonTexts.forEach(r => bullet(r)); spacer(2); }
     if (personalisedMsg) {
       pb(10); doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(...muted);
       doc.splitTextToSize(`"${personalisedMsg}"`,CW).forEach(l=>{pb(5);doc.text(l,M,y);y+=5;}); spacer(6);
       doc.setTextColor(...black);
     }
   }
-  clientSignatureBlock('Client Signature');
+
+  // Signatures heading
+  spacer(6);
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...blue);
+  doc.text('Signatures', M, y); y+=8;
+
+  // Side-by-side: Advisor left, Client right
+  const sigColW = (CW-10)/2, sigRx = M+sigColW+10;
+
+  // Column labels
+  doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...muted);
+  doc.text('ADVISOR SIGNATURE', M, y);
+  doc.text('CLIENT SIGNATURE', sigRx, y); y+=4;
+
+  // Lines
+  doc.setDrawColor(...navy); doc.line(M, y, M+sigColW, y);
+  doc.line(sigRx, y, sigRx+sigColW, y); y+=4;
+
+  // Names
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+  doc.text(advisorName, M, y);
+  doc.text(clientName, sigRx, y); y+=6;
+
+  // Dates + client signature image
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
+  doc.text(`Date: ${signDate}`, M, y);
+
+  if (signatureData?.clientSignature) {
+    doc.addImage(signatureData.clientSignature, 'PNG', sigRx, y-10, 50, 16);
+    doc.text(`Date: ${fmtDate(signatureData.signedAt)}`, sigRx, y);
+  } else {
+    doc.text('Date: _______________', sigRx, y);
+  }
+  y+=10;
+
+  // Footer note
+  spacer(8);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+  const footerNote = 'This document forms part of the client Record of Advice and must be read together with the mandate, annexures and product disclosures.';
+  doc.splitTextToSize(footerNote, CW).forEach(l=>{doc.text(l,M,y);y+=4;});
+
   addFooter(pageNum);
 
   return doc;
