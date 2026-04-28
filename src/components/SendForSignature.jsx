@@ -50,38 +50,26 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
       return;
     }
     setEmailing(true);
+    setMessage('');
     try {
       const allClients = await base44.entities.Clients.list();
       const client = allClients.find(c => c.id === proposal.client_id);
-      const clientEmail = client?.email;
       const clientName = client?.first_name || client?.full_name || 'Client';
-
-      if (!clientEmail) {
-        setMessage('⚠ No email address found for this client. Update the client profile first.');
-        setEmailing(false);
-        return;
-      }
 
       const { signingUrl } = await prepareAndUpdate();
 
-      await base44.integrations.Core.SendEmail({
-        from_name: 'Wealthworks',
-        to: clientEmail,
-        subject: 'Your Financial Strategy Report — Action Required',
-        body: `Dear ${clientName},\n\nYour Financial Strategy & Recommendation Report has been prepared by Wealthworks and is ready for your review and signature.\n\nPlease click the link below to review and sign your document:\n\n${signingUrl}\n\nThis link is unique to you. Please do not share it.\n\nIf you have any questions, please contact your advisor directly.\n\nKind regards,\nThe Wealthworks Team`,
-      });
-
+      // TEST MODE — all emails go to tfine1969@gmail.com
       await base44.integrations.Core.SendEmail({
         from_name: 'Wealthworks',
         to: 'tfine1969@gmail.com',
-        subject: `Proposal Sent — ${client?.full_name || 'Client'} — ${proposal.reference || ''}`,
-        body: `The proposal for ${client?.full_name || 'Client'} (Ref: ${proposal.reference || 'N/A'}) has been emailed to ${clientEmail}.\n\nSigning link:\n${signingUrl}`,
+        subject: `WealthWorks — Document Ready for Signature — ${client?.full_name || 'Client'}`,
+        body: `Dear ${clientName},\n\nYour Financial Strategy & Recommendation Report is ready for review and signature.\n\nSigning link:\n${signingUrl}\n\nKind regards,\nThe Wealthworks Team`,
       });
 
-      setMessage(`✓ Email sent successfully to ${clientEmail}`);
+      setMessage(`✓ Email sent to tfine1969@gmail.com (test mode)`);
     } catch (err) {
-      console.error(err);
-      setMessage('✗ Failed to send email. Please try again.');
+      console.error('Email error full details:', err);
+      setMessage(`✗ Error: ${err?.message || JSON.stringify(err)}`);
     }
     setEmailing(false);
   };
