@@ -70,27 +70,22 @@ export default function Landing() {
           </div>
 
           {/* Right side nav */}
-          <div className="flex items-center gap-4">
-            <a
-              href="https://www.wealthworks.co.za"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: 'rgba(255,255,255,0.85)', fontSize: 13, textDecoration: 'none',
-                display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.querySelector('.arrow').style.transform = 'translateX(3px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.querySelector('.arrow').style.transform = 'translateX(0)'; }}
-            >
-              Visit wealthworks.co.za <span className="arrow" style={{ display: 'inline-block', transition: 'transform 0.15s' }}>→</span>
-            </a>
-            <button
-              onClick={() => navigate('/client-registration')}
-              className="px-4 py-1.5 text-sm font-medium text-white border border-white/40 hover:bg-white/10 transition-colors rounded"
-            >
-              Client Onboarding
-            </button>
-          </div>
+          <a
+            href="https://www.wealthworks.co.za"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#ffffff', fontSize: 13, textDecoration: 'none', letterSpacing: '0.04em',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 18px', borderRadius: 4,
+              border: '1.5px solid rgba(255,255,255,0.7)',
+              background: 'transparent', transition: 'background 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#4BBFBF'; e.currentTarget.style.borderColor = '#4BBFBF'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)'; }}
+          >
+            Visit wealthworks.co.za →
+          </a>
         </div>
       </nav>
 
