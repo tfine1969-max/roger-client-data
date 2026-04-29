@@ -57,12 +57,40 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="px-6 py-3" style={{ backgroundColor: 'rgb(38, 84, 124)' }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="text-white text-xl font-light tracking-widest lowercase">wealthworks</span>
-          <img
-            src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/b93b73a45_WWleaves.png"
-            alt=""
-            style={{ height: '50px', mixBlendMode: 'multiply' }}
-          />
+          {/* Logo unit */}
+          <div className="flex items-center gap-2">
+            <img
+              src="https://media.base44.com/images/public/69e88c566cc0939ea06624c2/b93b73a45_WWleaves.png"
+              alt=""
+              style={{ height: '36px' }}
+            />
+            <span className="text-xl font-light tracking-widest lowercase">
+              <span style={{ color: '#ffffff' }}>wealth</span><span style={{ color: '#4A9BAF' }}>works</span>
+            </span>
+          </div>
+
+          {/* Right side nav */}
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.wealthworks.co.za"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: 'rgba(255,255,255,0.85)', fontSize: 13, textDecoration: 'none',
+                display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.querySelector('.arrow').style.transform = 'translateX(3px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.querySelector('.arrow').style.transform = 'translateX(0)'; }}
+            >
+              Visit wealthworks.co.za <span className="arrow" style={{ display: 'inline-block', transition: 'transform 0.15s' }}>→</span>
+            </a>
+            <button
+              onClick={() => navigate('/client-registration')}
+              className="px-4 py-1.5 text-sm font-medium text-white border border-white/40 hover:bg-white/10 transition-colors rounded"
+            >
+              Client Onboarding
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -132,27 +160,17 @@ export default function Landing() {
       </div>
 
       {/* Footer */}
-      <div className="bg-[#1B3A5C]/10 border-t border-navy/10 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>Wealth Works (Pty) Ltd | FSP 28337 | Wealthworks Investments (Pty) Ltd | FSP 45624</p>
-          <a
-            href="https://www.wealthworks.co.za"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-navy font-medium hover:underline"
+      <div className="px-6 py-4 text-center text-xs text-muted-foreground">
+        <p>Wealth Works (Pty) Ltd | FSP 28337 | Wealthworks Investments (Pty) Ltd | FSP 45624</p>
+        {isDev && (
+          <button
+            onClick={createTestData}
+            disabled={isCreatingTestData}
+            className="mt-2 px-3 py-1 text-xs bg-warn/20 text-warn border border-warn/30 rounded hover:bg-warn/30 disabled:opacity-50"
           >
-            Visit wealthworks.co.za →
-          </a>
-          {isDev && (
-            <button
-              onClick={createTestData}
-              disabled={isCreatingTestData}
-              className="px-3 py-1 text-xs bg-warn/20 text-warn border border-warn/30 rounded hover:bg-warn/30 disabled:opacity-50"
-            >
-              {isCreatingTestData ? 'Creating...' : 'Dev: Seed Test Data'}
-            </button>
-          )}
-        </div>
+            {isCreatingTestData ? 'Creating...' : 'Dev: Seed Test Data'}
+          </button>
+        )}
       </div>
     </div>
   );
