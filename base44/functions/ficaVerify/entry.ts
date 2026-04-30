@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const BASE_URL = 'https://api.verifynow.co.za/v1';
+const BASE_URL = 'https://verifynow.co.za/api/v1';
 const ENDPOINTS = {
   verifyId: '/identity/verify',
   screenAml: '/aml/screen',
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'x-api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
