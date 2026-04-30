@@ -1699,9 +1699,9 @@ export default function ClientOnboarding() {
               )}
               </div>
               {currentStep < 7 && (
-              <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                You can save and submit at any point. You can return to complete remaining sections later.
-              </p>
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                  You can save and submit at any point. You can return to complete remaining sections later.
+                </p>
               )}
               </div>
               </div>
