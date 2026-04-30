@@ -313,7 +313,7 @@ export default function ClientOnboarding() {
     try {
       setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: 'running' } }));
       const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: formData.sa_id_number, first_name: formData.first_name, last_name: formData.last_name, date_of_birth: formData.date_of_birth } });
-      const idPass = idResult?.data?.results?.said_verification?.Status === 'Success';
+      const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
       const verifiedName = idResult?.data?.results?.said_verification?.realTimeResults?.result?.[0]?.[0]?.Name + ' ' + 
                            idResult?.data?.results?.said_verification?.realTimeResults?.result?.[0]?.[0]?.Surname;
       setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: idPass ? 'pass' : 'fail' } }));
