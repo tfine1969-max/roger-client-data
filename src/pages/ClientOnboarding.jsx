@@ -1613,11 +1613,12 @@ export default function ClientOnboarding() {
                   {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
                 </Button>
               )}
-            </div>
-            {currentStep < 7 && (
-              <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                You can save and submit at any point. You can return to complete remaining sections later.
-              </p>
-            )}
-            </div>
-            </div>
+              </div>
+              {currentStep < 7 && (
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                  You can save and submit at any point. You can return to complete remaining sections later.
+                </p>
+              )}
+              </div>
+              );
+              }
