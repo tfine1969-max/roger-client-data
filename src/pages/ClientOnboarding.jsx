@@ -37,11 +37,11 @@ const ADVISORY_NEEDS = [
 
 const STEPS = [
   { number: 1, label: 'Personal details' },
-  { number: 2, label: 'FICA / KYC' },
-  { number: 3, label: 'Financial profile' },
-  { number: 4, label: 'Risk & objectives' },
-  { number: 5, label: 'Documents' },
-  { number: 6, label: 'Submit' },
+  { number: 2, label: 'Document upload' },
+  { number: 3, label: 'FICA verification' },
+  { number: 4, label: 'Financial profile' },
+  { number: 5, label: 'Risk & objectives' },
+  { number: 6, label: 'Review & submit' },
 ];
 
 // Risk score calculator
@@ -404,6 +404,13 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
+       stepData = {
+         identity_document_uploaded: formData.identity_document_uploaded,
+         proof_of_address_uploaded: formData.proof_of_address_uploaded,
+         income_proof_uploaded: formData.income_proof_uploaded,
+         existing_policies_uploaded: formData.existing_policies_uploaded,
+       };
+     } else if (currentStep === 3) {
        if (!formData.employment_status || !formData.occupation) {
          toast.error('Please fill in employment details');
          return;
@@ -428,40 +435,33 @@ export default function ClientOnboarding() {
          home_affairs_verified: ficaResult?.fica_status === 'Approved',
          aml_pep_clear: ficaResult?.fica_status !== 'Referred',
        };
-    } else if (currentStep === 3) {
-      stepData = {
-        gross_annual_income_band: formData.gross_annual_income_band,
-        monthly_investable_surplus: formData.monthly_investable_surplus,
-        net_worth_band: formData.net_worth_band,
-        total_liabilities: formData.total_liabilities,
-        existing_financial_products: productsList,
-        products_list: productsList,
-        loa_uploaded: formData.loa_uploaded,
-        loa_authorised: formData.loa_authorised,
-        will_in_place: formData.will_in_place,
-        dependants: formData.dependants,
-      };
-    } else if (currentStep === 4) {
-      if (!formData.risk_profile) {
-        toast.error('Please select a risk profile');
-        return;
-      }
-      stepData = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: formData.time_horizon,
-        liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile,
-        advisory_needs: formData.advisory_needs,
-      };
-    } else if (currentStep === 5) {
-      stepData = {
-        identity_document_uploaded: formData.identity_document_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        income_proof_uploaded: formData.income_proof_uploaded,
-        existing_policies_uploaded: formData.existing_policies_uploaded,
-      };
-    }
+     } else if (currentStep === 4) {
+       stepData = {
+         gross_annual_income_band: formData.gross_annual_income_band,
+         monthly_investable_surplus: formData.monthly_investable_surplus,
+         net_worth_band: formData.net_worth_band,
+         total_liabilities: formData.total_liabilities,
+         existing_financial_products: productsList,
+         products_list: productsList,
+         loa_uploaded: formData.loa_uploaded,
+         loa_authorised: formData.loa_authorised,
+         will_in_place: formData.will_in_place,
+         dependants: formData.dependants,
+       };
+     } else if (currentStep === 5) {
+       if (!formData.risk_profile) {
+         toast.error('Please select a risk profile');
+         return;
+       }
+       stepData = {
+         portfolio_drop_response: formData.portfolio_drop_response,
+         primary_investment_objective: formData.primary_investment_objective,
+         time_horizon: formData.time_horizon,
+         liquidity_requirement: formData.liquidity_requirement,
+         risk_profile: formData.risk_profile,
+         advisory_needs: formData.advisory_needs,
+       };
+     }
 
     const saved = await saveStep(stepData);
     if (saved) setCurrentStep(prev => prev + 1);
@@ -492,13 +492,20 @@ export default function ClientOnboarding() {
       };
     } else if (currentStep === 2) {
       stepData = {
+        identity_document_uploaded: formData.identity_document_uploaded,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded,
+        income_proof_uploaded: formData.income_proof_uploaded,
+        existing_policies_uploaded: formData.existing_policies_uploaded,
+      };
+    } else if (currentStep === 3) {
+      stepData = {
         employment_status: formData.employment_status, occupation: formData.occupation,
         employer: formData.employer, industry: formData.industry,
         source_of_funds: formData.source_of_funds, sa_tax_number: formData.sa_tax_number,
         tax_residency: formData.tax_residency, us_person_fatca: formData.us_person_fatca,
         pep_status: formData.pep_status, pep_explanation: formData.pep_explanation,
       };
-    } else if (currentStep === 3) {
+    } else if (currentStep === 4) {
       stepData = {
         gross_annual_income_band: formData.gross_annual_income_band,
         monthly_investable_surplus: formData.monthly_investable_surplus,
@@ -507,19 +514,12 @@ export default function ClientOnboarding() {
         loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
         will_in_place: formData.will_in_place, dependants: formData.dependants,
       };
-    } else if (currentStep === 4) {
+    } else if (currentStep === 5) {
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
-      };
-    } else if (currentStep === 5) {
-      stepData = {
-        identity_document_uploaded: formData.identity_document_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        income_proof_uploaded: formData.income_proof_uploaded,
-        existing_policies_uploaded: formData.existing_policies_uploaded,
       };
     }
     return await saveStep(stepData);
@@ -703,18 +703,18 @@ export default function ClientOnboarding() {
             </p>
             <h1 className="text-2xl font-bold text-navy mb-1">
               {currentStep === 1 && 'Personal information'}
-              {currentStep === 2 && 'Know your client'}
-              {currentStep === 3 && 'Financial profile'}
-              {currentStep === 4 && 'Risk profile & objectives'}
-              {currentStep === 5 && 'Document upload'}
-              {currentStep === 6 && 'Submission complete'}
+              {currentStep === 2 && 'Document upload'}
+              {currentStep === 3 && 'FICA verification'}
+              {currentStep === 4 && 'Financial profile'}
+              {currentStep === 5 && 'Risk profile & objectives'}
+              {currentStep === 6 && 'Review & submit'}
             </h1>
             <p className="text-muted-foreground text-xs max-w-xl">
               {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
-              {currentStep === 2 && 'Required under FICA (Act 38 of 2001) to verify identity, source of funds and assess ML/TF risk.'}
-              {currentStep === 3 && 'Required for the financial needs analysis under FAIS GCC Section 8.'}
-              {currentStep === 4 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
-              {currentStep === 5 && 'Upload certified copies of required documents. Stored encrypted under FICA and POPIA obligations.'}
+              {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}
+              {currentStep === 3 && 'FICA verification using Home Affairs, AML/PEP screening, and document authentication.'}
+              {currentStep === 4 && 'Required for the financial needs analysis under FAIS GCC Section 8.'}
+              {currentStep === 5 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
               {currentStep === 6 && 'Your onboarding is complete. Your WealthWorks advisor has been notified.'}
             </p>
           </div>
@@ -843,8 +843,48 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 2: FICA / KYC ── */}
+          {/* ── STEP 2: Document Upload ── */}
           {currentStep === 2 && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible' },
+                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
+                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
+                  { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
+                ].map(doc => (
+                  <div key={doc.key} className="border border-border rounded p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
+                      <span className={`text-[10px] font-semibold ${doc.badge.includes('OPTIONAL') ? 'text-muted-foreground' : 'text-ocean'}`}>{doc.badge}</span>
+                    </div>
+                    {formData[doc.key] ? (
+                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
+                        <Check className="w-4 h-4 text-teal" />
+                        <span className="text-xs text-teal font-medium">Uploaded</span>
+                      </div>
+                    ) : (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
+                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
+                          <p className="text-[10px] text-ocean mt-2">Click to upload</p>
+                        </div>
+                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 bg-secondary/50 border border-border rounded text-xs text-muted-foreground">
+                <p className="font-semibold text-navy mb-0.5">Note</p>
+                Documents are required before you can proceed to FICA verification in the next step.
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 3: FICA / KYC ── */}
+          {currentStep === 3 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">EMPLOYMENT & OCCUPATION</h3>
@@ -1030,8 +1070,8 @@ export default function ClientOnboarding() {
                 </div>
                 )}
 
-          {/* ── STEP 3: Financial Profile ── */}
-          {currentStep === 3 && (
+          {/* ── STEP 4: Financial Profile ── */}
+          {currentStep === 4 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">INCOME & ASSETS</h3>
@@ -1154,8 +1194,8 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 4: Risk Profile & Objectives ── */}
-          {currentStep === 4 && (
+          {/* ── STEP 5: Risk Profile & Objectives ── */}
+          {currentStep === 5 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE QUESTIONNAIRE</h3>
@@ -1256,47 +1296,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 5: Document Upload ── */}
-          {currentStep === 5 && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible' },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
-                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
-                  { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
-                ].map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
-                      <span className={`text-[10px] font-semibold ${doc.badge.includes('OPTIONAL') ? 'text-muted-foreground' : 'text-ocean'}`}>{doc.badge}</span>
-                    </div>
-                    {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" />
-                        <span className="text-xs text-teal font-medium">Uploaded</span>
-                      </div>
-                    ) : (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
-                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
-                          <p className="text-[10px] text-ocean mt-2">Click to upload</p>
-                        </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                      </label>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="p-3 bg-secondary/50 border border-border rounded text-xs text-muted-foreground">
-                <p className="font-semibold text-navy mb-0.5">Certification requirement</p>
-                All copies must be certified by a Commissioner of Oaths, attorney, bank official or notary.
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 6: Submit ── */}
+          {/* ── STEP 6: Review & Submit ── */}
           {currentStep === 6 && (
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
