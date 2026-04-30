@@ -1203,7 +1203,6 @@ export default function ClientOnboarding() {
                   </div>
                 )}
                 </div>
-                </div>
                 )}
 
                 {/* ── STEP 4: FICA Verification ── */}
@@ -1318,12 +1317,10 @@ export default function ClientOnboarding() {
                 </div>
                 </div>
                 )}
-                </div>
-                )}
 
                 {/* ── STEP 5: Financial Profile ── */}
                 {currentStep === 5 && (
-            <div className="space-y-3">
+                <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">INCOME & ASSETS</h3>
                 <div className="grid grid-cols-2 gap-3">
