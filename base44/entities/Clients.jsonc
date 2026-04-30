@@ -353,6 +353,28 @@
     "fica_checks_json": {
       "type": "string",
       "description": "Full JSON audit record of all individual FICA check results"
+    },
+    "rmcp_risk_score": {
+      "type": "number",
+      "description": "RMCP weighted risk score (0-100+)"
+    },
+    "rmcp_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Prohibited"
+      ],
+      "description": "RMCP risk band: Low (0-30), Medium (31-60), High (61-80), Prohibited (81+)"
+    },
+    "rmcp_scored_at": {
+      "type": "string",
+      "description": "ISO datetime when RMCP score was calculated"
+    },
+    "rmcp_score_breakdown": {
+      "type": "string",
+      "description": "JSON string containing factor scores: client_factor, geography_factor, product_factor, transaction_factor, behaviour_factor"
     }
   },
   "required": [

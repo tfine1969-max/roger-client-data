@@ -70,6 +70,75 @@ const scoreToProfile = (score) => {
   return 'Aggressive';
 };
 
+// RMCP-aligned weighted risk scoring
+const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuthPassed, faceMatchPassed) => {
+  const breakdown = {
+    client_factor: 0,
+    geography_factor: 0,
+    product_factor: 0,
+    transaction_factor: 0,
+    behaviour_factor: 0,
+  };
+
+  // Client factor (30% weight, max 30 points)
+  if (formData.pep_status === 'Yes') breakdown.client_factor = 30;
+  else if (formData.pep_status === 'Related to PEP') breakdown.client_factor = 20;
+  else if (amlMatch) breakdown.client_factor = 25;
+  else if (formData.us_person_fatca === 'Yes') breakdown.client_factor = 10;
+  else breakdown.client_factor = 0;
+
+  // Geography factor (25% weight, max 25 points)
+  if (formData.advisory_needs?.includes('Local and offshore investments') || formData.advisory_needs?.includes('Offshore investment')) {
+    breakdown.geography_factor = 25;
+  } else if (formData.tax_residency === 'Other country only') {
+    breakdown.geography_factor = 20;
+  } else if (formData.tax_residency === 'South Africa + Other') {
+    breakdown.geography_factor = 10;
+  } else {
+    breakdown.geography_factor = 0;
+  }
+
+  // Product factor (20% weight, max 20 points)
+  if (formData.advisory_needs?.includes('Tax planning')) {
+    breakdown.product_factor = 20;
+  } else if (formData.advisory_needs?.includes('Estate planning')) {
+    breakdown.product_factor = 10;
+  } else if (formData.advisory_needs?.includes('Local and offshore investments')) {
+    breakdown.product_factor = 15;
+  } else {
+    breakdown.product_factor = 5;
+  }
+
+  // Transaction factor (15% weight, max 15 points)
+  if (formData.monthly_investable_surplus === 'Over R50,000') {
+    breakdown.transaction_factor = 15;
+  } else if (formData.monthly_investable_surplus === 'R15,000 – R50,000') {
+    breakdown.transaction_factor = 10;
+  } else if (formData.monthly_investable_surplus === 'R5,000 – R15,000') {
+    breakdown.transaction_factor = 5;
+  } else {
+    breakdown.transaction_factor = 0;
+  }
+
+  // Behaviour factor (10% weight, max 10 points)
+  if (!homeAffairsVerified) breakdown.behaviour_factor = 10;
+  else if (!docAuthPassed) breakdown.behaviour_factor = 5;
+  else if (!faceMatchPassed) breakdown.behaviour_factor = 3;
+  else breakdown.behaviour_factor = 0;
+
+  // Calculate weighted total
+  const totalScore = breakdown.client_factor + breakdown.geography_factor + breakdown.product_factor + breakdown.transaction_factor + breakdown.behaviour_factor;
+
+  // Determine band
+  let rmcpBand = 'Low';
+  if (totalScore >= 81) rmcpBand = 'Prohibited';
+  else if (totalScore >= 61) rmcpBand = 'High';
+  else if (totalScore >= 31) rmcpBand = 'Medium';
+  else rmcpBand = 'Low';
+
+  return { totalScore, rmcpBand, breakdown };
+};
+
 export default function ClientOnboarding() {
   const navigate = useNavigate();
   const [clientId, setClientId] = useState(null);
@@ -302,6 +371,7 @@ export default function ClientOnboarding() {
     if (!formData.source_of_funds || formData.source_of_funds.length === 0) { toast.error('Please select at least one source of funds'); return; }
     setFicaRunning(true);
     setFicaResult(null);
+    let faceResult = null;
     setFicaChecks({
       home_affairs_id: { status: 'pending', label: 'Home Affairs ID' },
       aml_pep_screen:  { status: 'pending', label: 'AML / PEP screen' },
@@ -352,11 +422,78 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: riskBand + ' risk' } }));
       const ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      
+      // Calculate RMCP weighted risk score
+      const { totalScore, rmcpBand, breakdown } = calculateRmcpRiskScore(
+        formData,
+        true, // homeAffairsVerified = true (passed earlier check)
+        amlMatch,
+        !docIsForgery, // docAuthPassed
+        selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false // faceMatchPassed
+      );
+      
       const finalResult = { fica_status: ficaStatus, risk_band: riskBand, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
       setFicaResult(finalResult);
-      await base44.entities.Clients.update(clientId, { fica_status: ficaStatus, fica_reference: ficaRef, fica_risk_band: riskBand, fica_verified_at: finalResult.verified_at, home_affairs_verified: true, aml_pep_clear: !amlMatch, fica_checks_json: JSON.stringify(ficaChecks) });
-      if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'FICA ' + ficaStatus + ' — ' + formData.first_name + ' ' + formData.last_name, body: 'FICA verification for ' + formData.first_name + ' ' + formData.last_name + ' returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nID: ' + (formData.sa_id_number || 'N/A') + '\nRisk: ' + riskBand + '\nPEP: ' + formData.pep_status + '\nFATCA: ' + formData.us_person_fatca + '\n\nLog in to the WealthWorks Advisor Portal to apply Enhanced Due Diligence.' });
+      
+      // Prepare update payload
+      const updateData = {
+        fica_status: ficaStatus,
+        fica_reference: ficaRef,
+        fica_risk_band: riskBand,
+        fica_verified_at: finalResult.verified_at,
+        home_affairs_verified: true,
+        aml_pep_clear: !amlMatch,
+        fica_checks_json: JSON.stringify(ficaChecks),
+        rmcp_risk_score: totalScore,
+        rmcp_risk_band: rmcpBand,
+        rmcp_scored_at: new Date().toISOString(),
+        rmcp_score_breakdown: JSON.stringify(breakdown),
+      };
+      
+      await base44.entities.Clients.update(clientId, updateData);
+      // Send advisor notification for High/Prohibited RMCP risk or FICA declined/referred
+      if (rmcpBand === 'High' || rmcpBand === 'Prohibited' || ficaStatus !== 'Approved') {
+        const scoreSummary = `
+Client Factor (PEP/AML): ${breakdown.client_factor} points
+Geography Factor (Tax/Residency): ${breakdown.geography_factor} points
+Product Factor (Needs): ${breakdown.product_factor} points
+Transaction Factor (Surplus): ${breakdown.transaction_factor} points
+Behaviour Factor (Checks): ${breakdown.behaviour_factor} points
+─────────────────────────
+RMCP Total Score: ${totalScore} points → ${rmcpBand} risk
+        `.trim();
+
+        const emailSubject = rmcpBand === 'Prohibited' ? `PROHIBITED RISK — ${formData.first_name} ${formData.last_name}` : 
+                            rmcpBand === 'High' ? `HIGH RISK — EDD Required — ${formData.first_name} ${formData.last_name}` :
+                            `FICA ${ficaStatus} — ${formData.first_name} ${formData.last_name}`;
+
+        const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}
+
+FICA Status: ${ficaStatus}
+FICA Reference: ${ficaRef}
+RMCP Risk Band: ${rmcpBand}
+
+RISK SCORE BREAKDOWN:
+${scoreSummary}
+
+CLIENT DETAILS:
+ID: ${formData.sa_id_number || 'N/A'}
+PEP Status: ${formData.pep_status}
+FATCA US Person: ${formData.us_person_fatca}
+Tax Residency: ${formData.tax_residency}
+Monthly Investable: ${formData.monthly_investable_surplus}
+Advisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}
+
+${rmcpBand === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpBand === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}
+
+Log in to the WealthWorks Advisor Portal to manage this client.`;
+
+        await base44.integrations.Core.SendEmail({
+          from_name: 'WealthWorks FICA',
+          to: 'tfine1969@gmail.com',
+          subject: emailSubject,
+          body: emailBody,
+        });
       }
       if (ficaStatus === 'Approved') toast.success('FICA Approved — Reference: ' + ficaRef);
       else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Your advisor has been notified.');
