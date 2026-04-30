@@ -1620,6 +1620,5 @@ export default function ClientOnboarding() {
             </div>
             </div>
             </div>
-            </div>
             );
             }
