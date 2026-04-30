@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const BASE_URL = 'https://verifynow.co.za/api/v1';
+const BASE_URL = 'https://www.verifynow.co.za/api/external';
 const ENDPOINTS = {
   verifyId: '/identity/verify',
   screenAml: '/aml/screen',
