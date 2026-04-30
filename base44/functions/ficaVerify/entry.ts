@@ -1,13 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const BASE_URL = 'https://www.verifynow.co.za/api/external';
-const ENDPOINTS = {
-  verifyId: '/identity/verify',
-  screenAml: '/aml/screen',
-  authenticateDoc: '/document/authenticate',
-  faceMatch: '/biometric/face-match',
-  verifyAvs: '/banking/avs',
-};
+const BASE_URL = 'https://www.verifynow.co.za/api/external/';
 
 Deno.serve(async (req) => {
   try {
@@ -29,35 +22,75 @@ Deno.serve(async (req) => {
       throw new Error(errMsg);
     }
 
-    // TEST ACTION: ping — returns API key prefix and base URL without calling external API
+    // PING ACTION: return metadata without calling external API
     if (action === 'ping') {
-      const keyPrefix = apiKey.substring(0, 6);
+      const keyPrefix = apiKey.substring(0, 10);
       console.log(`[ficaVerify] Ping test: key prefix = ${keyPrefix}, BASE_URL = ${BASE_URL}`);
       return Response.json({
-        data: { apiKeyPrefix: keyPrefix, baseUrl: BASE_URL, timestamp: new Date().toISOString() },
+        data: { pong: true, key_prefix: keyPrefix, url: BASE_URL },
         error: null,
       });
     }
 
-    const endpoint = ENDPOINTS[action];
-    if (!endpoint) {
+    // Build request body based on action type
+    let requestBody;
+
+    if (action === 'verifyId') {
+      requestBody = {
+        reportType: 'said_verification',
+        idNumber: payload.id_number,
+        mode: 'sandbox',
+      };
+    } else if (action === 'homeAffairsPhoto') {
+      requestBody = {
+        reportType: 'home_affairs_id_photo',
+        idNumber: payload.id_number,
+        mode: 'sandbox',
+      };
+    } else if (action === 'screenAml') {
+      requestBody = {
+        reportType: 'aml_screening',
+        idNumber: payload.id_number,
+        mode: 'sandbox',
+      };
+    } else if (action === 'authenticateDoc') {
+      requestBody = {
+        reportType: 'document_verification',
+        idNumber: payload.id_number,
+        mode: 'sandbox',
+      };
+    } else if (action === 'faceMatch') {
+      requestBody = {
+        reportType: 'face_match',
+        idNumber: payload.id_number,
+        selfieImage: payload.selfie_image,
+        mode: 'sandbox',
+      };
+    } else if (action === 'verifyAvs') {
+      requestBody = {
+        reportType: 'bank_verification',
+        idNumber: payload.id_number,
+        accountNumber: payload.account_number,
+        mode: 'sandbox',
+      };
+    } else {
       const errMsg = `Unknown action: ${action}`;
       console.error(`[ficaVerify] ${errMsg}`);
       return Response.json({ data: null, error: errMsg }, { status: 400 });
     }
 
-    const url = `${BASE_URL}${endpoint}`;
-    console.log(`[ficaVerify] Fetching ${url} with action=${action}`);
+    console.log(`[ficaVerify] Calling ${BASE_URL} with action=${action}`, { requestBody });
 
     let response;
     try {
-      response = await fetch(url, {
+      response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
           'x-api-key': apiKey,
           'Content-Type': 'application/json',
+          'Idempotency-Key': `unique-request-id-${Date.now()}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestBody),
       });
       console.log(`[ficaVerify] Fetch succeeded: status=${response.status}`);
     } catch (fetchErr) {
@@ -71,7 +104,6 @@ Deno.serve(async (req) => {
       responseBody = await response.json();
       console.log(`[ficaVerify] Response JSON parsed successfully`, { data: responseBody });
     } catch (parseErr) {
-      // If JSON parse fails, try to read as text
       try {
         const textBody = await response.text();
         console.error(`[ficaVerify] Failed to parse JSON, response as text: ${textBody}`);
