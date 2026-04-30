@@ -315,6 +315,44 @@
       ],
       "default": "Pending",
       "description": "Document verification status"
+    },
+    "fica_status": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Referred",
+        "Declined"
+      ],
+      "description": "FICA outcome: Approved, Referred, or Declined"
+    },
+    "fica_reference": {
+      "type": "string",
+      "description": "Unique FICA reference number e.g. FICA-2026-84721-ZA"
+    },
+    "fica_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "description": "Risk classification: Low, Medium, or High"
+    },
+    "fica_verified_at": {
+      "type": "string",
+      "description": "ISO datetime of when verification was completed"
+    },
+    "home_affairs_verified": {
+      "type": "boolean",
+      "description": "Whether identity was confirmed against Home Affairs HANIS"
+    },
+    "aml_pep_clear": {
+      "type": "boolean",
+      "description": "Whether client passed AML and PEP screening with no matches"
+    },
+    "fica_checks_json": {
+      "type": "string",
+      "description": "Full JSON audit record of all individual FICA check results"
     }
   },
   "required": [
