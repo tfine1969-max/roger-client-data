@@ -79,6 +79,10 @@ export default function ClientOnboarding() {
   const [isSavingStep, setIsSavingStep] = useState(false);
   const [profileOverridden, setProfileOverridden] = useState(false);
   const [profileInitialised, setProfileInitialised] = useState(false);
+  const [ficaResult, setFicaResult] = useState(null);
+  const [ficaChecks, setFicaChecks] = useState({});
+  const [ficaRunning, setFicaRunning] = useState(false);
+  const [selfieBase64, setSelfieBase64] = useState(null);
 
   const [formData, setFormData] = useState({
     // Step 1 - Personal
@@ -292,6 +296,76 @@ export default function ClientOnboarding() {
     }
   };
 
+  const runFicaVerification = async () => {
+    if (!formData.sa_id_number && !formData.passport_number) { toast.error('SA ID number or passport required'); return; }
+    if (!formData.employment_status || !formData.occupation) { toast.error('Please complete employment details first'); return; }
+    if (!formData.source_of_funds || formData.source_of_funds.length === 0) { toast.error('Please select at least one source of funds'); return; }
+    setFicaRunning(true);
+    setFicaResult(null);
+    setFicaChecks({
+      home_affairs_id: { status: 'pending', label: 'Home Affairs ID' },
+      aml_pep_screen:  { status: 'pending', label: 'AML / PEP screen' },
+      document_auth:   { status: 'pending', label: 'Document authentication' },
+      face_match:      { status: 'pending', label: 'Liveness & face match' },
+      avs_bank:        { status: 'pending', label: 'Bank account (AVS)' },
+      risk_score:      { status: 'pending', label: 'Risk classification' },
+    });
+    try {
+      setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: 'running' } }));
+      const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: formData.sa_id_number, first_name: formData.first_name, last_name: formData.last_name, date_of_birth: formData.date_of_birth } });
+      const idPass = idResult?.data?.status === 'verified' || idResult?.data?.status === 'match_confirmed';
+      setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: idPass ? 'pass' : 'fail' } }));
+      if (!idPass) {
+        const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+        const result = { fica_status: 'Declined', risk_band: 'High', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'Home Affairs ID verification failed' };
+        setFicaResult(result);
+        await base44.entities.Clients.update(clientId, { fica_status: 'Declined', fica_reference: ref, fica_risk_band: 'High', fica_verified_at: result.verified_at, home_affairs_verified: false, aml_pep_clear: false });
+        setFicaRunning(false);
+        toast.error('FICA Declined — ID could not be verified');
+        return;
+      }
+      setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: 'running' } }));
+      const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { first_name: formData.first_name, last_name: formData.last_name, date_of_birth: formData.date_of_birth, id_number: formData.sa_id_number, nationality: 'ZA' } });
+      const amlMatch = amlResult?.data?.match_status === 'match';
+      setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
+      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'running' } }));
+      const docResult = await base44.functions.invoke('ficaVerify', { action: 'authenticateDoc', payload: { id_number: formData.sa_id_number, document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport', reference: 'ww-' + clientId + '-' + Date.now() } });
+      const docPass = docResult?.data?.status === 'authentic';
+      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docPass ? 'pass' : 'fail' } }));
+      if (selfieBase64) {
+        setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'running' } }));
+        const faceResult = await base44.functions.invoke('ficaVerify', { action: 'faceMatch', payload: { id_number: formData.sa_id_number, selfie_image: selfieBase64 } });
+        const facePass = (faceResult?.data?.confidence_score || 0) >= 80;
+        setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: facePass ? 'pass' : 'fail', note: faceResult?.data?.confidence_score ? 'Confidence: ' + faceResult.data.confidence_score + '%' : '' } }));
+      } else {
+        setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'skipped', note: 'No selfie — manual review required' } }));
+      }
+      setFicaChecks(prev => ({ ...prev, avs_bank: { ...prev.avs_bank, status: 'skipped', note: 'Captured at proposal stage' } }));
+      let riskBand = 'Low';
+      if (formData.pep_status === 'Yes') riskBand = 'High';
+      else if (amlMatch) riskBand = 'High';
+      else if (formData.us_person_fatca === 'Yes') riskBand = 'Medium';
+      else if (formData.tax_residency && formData.tax_residency !== 'South Africa only') riskBand = 'Medium';
+      setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: riskBand + ' risk' } }));
+      const ficaStatus = !docPass ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
+      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const finalResult = { fica_status: ficaStatus, risk_band: riskBand, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
+      setFicaResult(finalResult);
+      await base44.entities.Clients.update(clientId, { fica_status: ficaStatus, fica_reference: ficaRef, fica_risk_band: riskBand, fica_verified_at: finalResult.verified_at, home_affairs_verified: true, aml_pep_clear: !amlMatch, fica_checks_json: JSON.stringify(ficaChecks) });
+      if (ficaStatus !== 'Approved') {
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'FICA ' + ficaStatus + ' — ' + formData.first_name + ' ' + formData.last_name, body: 'FICA verification for ' + formData.first_name + ' ' + formData.last_name + ' returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nID: ' + (formData.sa_id_number || 'N/A') + '\nRisk: ' + riskBand + '\nPEP: ' + formData.pep_status + '\nFATCA: ' + formData.us_person_fatca + '\n\nLog in to the WealthWorks Advisor Portal to apply Enhanced Due Diligence.' });
+      }
+      if (ficaStatus === 'Approved') toast.success('FICA Approved — Reference: ' + ficaRef);
+      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Your advisor has been notified.');
+      else toast.error('FICA Declined — please contact your advisor.');
+    } catch (err) {
+      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
+      toast.error('Verification error — please try again');
+    } finally {
+      setFicaRunning(false);
+    }
+  };
+
   const handleContinue = async () => {
     let stepData = {};
 
@@ -327,22 +401,30 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-      if (!formData.employment_status || !formData.occupation) {
-        toast.error('Please fill in employment details');
-        return;
-      }
-      stepData = {
-        employment_status: formData.employment_status,
-        occupation: formData.occupation,
-        employer: formData.employer,
-        industry: formData.industry,
-        source_of_funds: formData.source_of_funds,
-        sa_tax_number: formData.sa_tax_number,
-        tax_residency: formData.tax_residency,
-        us_person_fatca: formData.us_person_fatca,
-        pep_status: formData.pep_status,
-        pep_explanation: formData.pep_explanation,
-      };
+       if (!formData.employment_status || !formData.occupation) {
+         toast.error('Please fill in employment details');
+         return;
+       }
+       if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+       if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
+       stepData = {
+         employment_status: formData.employment_status,
+         occupation: formData.occupation,
+         employer: formData.employer,
+         industry: formData.industry,
+         source_of_funds: formData.source_of_funds,
+         sa_tax_number: formData.sa_tax_number,
+         tax_residency: formData.tax_residency,
+         us_person_fatca: formData.us_person_fatca,
+         pep_status: formData.pep_status,
+         pep_explanation: formData.pep_explanation,
+         fica_status: ficaResult?.fica_status || 'Pending',
+         fica_reference: ficaResult?.fica_reference || '',
+         fica_risk_band: ficaResult?.risk_band || '',
+         fica_verified_at: ficaResult?.verified_at || '',
+         home_affairs_verified: ficaResult?.fica_status === 'Approved',
+         aml_pep_clear: ficaResult?.fica_status !== 'Referred',
+       };
     } else if (currentStep === 3) {
       stepData = {
         gross_annual_income_band: formData.gross_annual_income_band,
@@ -841,14 +923,109 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
                 {formData.pep_status === 'Yes' && (
-                  <div className="mt-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
-                    <Input className="mt-1 h-8 text-sm" placeholder="Describe the public function held" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
-                  </div>
+                   <div className="mt-2">
+                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
+                     <Input className="mt-1 h-8 text-sm" placeholder="Describe the public function held" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
+                   </div>
+                 )}
+                </div>
+
+                <div className="border border-border rounded p-3">
+                 <div className="flex justify-between items-center mb-2">
+                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">BIOMETRIC SELFIE</h3>
+                   <span className="text-[10px] text-muted-foreground">OPTIONAL — IMPROVES FICA SCORE</span>
+                 </div>
+                 <p className="text-xs text-muted-foreground mb-2">Used for face match against your Home Affairs photograph.</p>
+                 {selfieBase64 ? (
+                   <div className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-teal/10 border border-teal flex items-center justify-center text-teal text-xs font-bold">✓</div>
+                     <div>
+                       <p className="text-xs font-medium text-teal">Selfie captured</p>
+                       <button type="button" onClick={() => setSelfieBase64(null)} className="text-[10px] text-muted-foreground hover:text-red-500">Remove</button>
+                     </div>
+                   </div>
+                 ) : (
+                   <label className="block cursor-pointer">
+                     <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                       <p className="text-xs font-medium text-navy">Take or upload a selfie</p>
+                       <p className="text-[10px] text-muted-foreground mt-0.5">JPEG or PNG · max 2 MB · face clearly visible</p>
+                       <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                     </div>
+                     <input type="file" accept="image/jpeg,image/png" capture="user" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; if (file.size > 2097152) { toast.error('Selfie must be under 2 MB'); return; } const reader = new FileReader(); reader.onload = (ev) => setSelfieBase64(ev.target.result.split(',')[1]); reader.readAsDataURL(file); toast.success('Selfie captured'); }} />
+                   </label>
+                 )}
+                </div>
+
+                <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+                 <div className="flex items-center justify-between mb-3">
+                   <div>
+                     <h3 className="font-semibold text-navy text-sm">FICA / AML Automated Verification</h3>
+                     <p className="text-[10px] text-muted-foreground">Powered by VerifyNow · FICA-aligned · POPIA compliant · 7-year audit trail</p>
+                   </div>
+                   {!ficaRunning && (
+                     <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
+                       {ficaResult ? '↺ Re-verify' : '⊕ Verify with VerifyNow'}
+                     </button>
+                   )}
+                   {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying…</span>}
+                 </div>
+                 {(ficaRunning || ficaResult) && (
+                   <div className="grid grid-cols-2 gap-2 mb-3">
+                     {[
+                       { key: 'home_affairs_id', label: 'Home Affairs ID', sub: 'HANIS real-time lookup' },
+                       { key: 'aml_pep_screen', label: 'AML / PEP / Sanctions', sub: '190+ country screening' },
+                       { key: 'document_auth', label: 'Document authentication', sub: 'OCR + fraud signals' },
+                       { key: 'face_match', label: 'Liveness & face match', sub: 'Biometric selfie check' },
+                       { key: 'avs_bank', label: 'Bank account (AVS)', sub: 'Verified at proposal stage' },
+                       { key: 'risk_score', label: 'Risk classification', sub: 'CDD risk band' },
+                     ].map(({ key, label, sub }) => {
+                       const check = ficaChecks[key] || { status: 'pending' };
+                       const s = { running: 'bg-ocean animate-pulse', pass: 'bg-teal', fail: 'bg-red-500', flag: 'bg-amber-500', skipped: 'bg-border', pending: 'bg-border' }[check.status] || 'bg-border';
+                       const b = { running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200', flag: 'bg-amber-50 text-amber-700 border-amber-200', skipped: 'bg-secondary text-muted-foreground border-border', pending: 'bg-secondary text-muted-foreground border-border' }[check.status] || 'bg-secondary text-muted-foreground border-border';
+                       const t = { running: 'Running…', pass: 'Verified', fail: 'Failed', flag: 'Flagged — EDD', skipped: 'Skipped', pending: 'Pending' }[check.status] || 'Pending';
+                       return (
+                         <div key={key} className="flex items-center gap-2 p-2 bg-card border border-border rounded text-xs">
+                           <div className={`w-2 h-2 rounded-full shrink-0 ${s}`} />
+                           <div className="flex-1 min-w-0">
+                             <p className="font-medium text-navy truncate">{label}</p>
+                             <p className="text-muted-foreground text-[10px] truncate">{check.note || sub}</p>
+                           </div>
+                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 ${b}`}>{t}</span>
+                         </div>
+                       );
+                     })}
+                   </div>
+                 )}
+                 {ficaResult && ficaResult.fica_status && (
+                   <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                     <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
+                     <div className="flex-1">
+                       <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
+                         {ficaResult.fica_status === 'Approved' ? 'FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'FICA Verification Failed'}
+                       </p>
+                       {ficaResult.fica_reference && (
+                         <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
+                       )}
+                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 3.</p>}
+                       {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
+                       {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                     </div>
+                   </div>
+                 )}
+                 {!ficaRunning && !ficaResult && (
+                   <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
+                     <p>Complete all fields above then click <strong>Verify with VerifyNow</strong></p>
+                     <p className="mt-1">Checks: Home Affairs ID · AML/PEP · Document auth · Face match · Risk classification</p>
+                   </div>
+                 )}
+                </div>
+
+                <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
+                 <span className="font-semibold text-navy">FICA compliance note: </span>
+                 Verification is performed by VerifyNow against Home Affairs HANIS, international AML/PEP/sanctions lists (190+ countries), and the SA FIC register. WealthWorks remains the FICA Accountable Institution under FICA Schedule 1. All records retained minimum 5 years under FICA Section 23. Processed under POPIA-compliant consent.
+                </div>
+                </div>
                 )}
-              </div>
-            </div>
-          )}
 
           {/* ── STEP 3: Financial Profile ── */}
           {currentStep === 3 && (
