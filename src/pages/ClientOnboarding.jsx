@@ -375,6 +375,7 @@ export default function ClientOnboarding() {
     setFicaChecks({
       home_affairs_id: { status: 'pending', label: 'Home Affairs ID' },
       aml_pep_screen:  { status: 'pending', label: 'AML / PEP screen' },
+      consumer_trace:  { status: 'pending', label: 'Address verification' },
       document_auth:   { status: 'pending', label: 'Document authentication' },
       face_match:      { status: 'pending', label: 'Liveness & face match' },
       avs_bank:        { status: 'pending', label: 'Bank account (AVS)' },
@@ -397,9 +398,25 @@ export default function ClientOnboarding() {
         return;
       }
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: 'running' } }));
-      const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { first_name: formData.first_name, last_name: formData.last_name, date_of_birth: formData.date_of_birth, id_number: formData.sa_id_number, nationality: 'ZA' } });
-      const amlMatch = amlResult?.data?.match_status === 'match';
+      const amlResult = await base44.functions.invoke('ficaVerify', {
+        action: 'screenAml',
+        payload: {
+          name: formData.first_name + ' ' + formData.last_name,
+          entity: 0,
+          country: 'za',
+          dataset: 'all',
+        },
+      });
+      const amlMatch = amlResult?.data?.data?.totalHits > 0 || amlResult?.data?.data?.results?.length > 0 || false;
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
+
+      setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: 'running' } }));
+      const traceResult = await base44.functions.invoke('ficaVerify', {
+        action: 'consumerTrace',
+        payload: { id_number: formData.sa_id_number },
+      });
+      const addressVerified = traceResult?.data?.data?.results?.consumer_trace?.Status === 'Success';
+      setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: addressVerified ? 'pass' : 'flag', note: addressVerified ? 'Address confirmed' : 'Address could not be verified' } }));
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'running' } }));
       const docResult = await base44.functions.invoke('ficaVerify', { action: 'authenticateDoc', payload: { id_number: formData.sa_id_number, document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport', reference: 'ww-' + clientId + '-' + Date.now() } });
       const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason?.includes('Forgery') || docResult?.data?.data?.results?.document_verification?.Reason?.includes('Tampered'));
