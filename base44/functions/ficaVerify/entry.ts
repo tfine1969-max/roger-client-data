@@ -1,5 +1,5 @@
 const API_KEY = Deno.env.get('VERIFYNOW_API_KEY');
-const BASE_URL = 'https://www.verifynow.co.za/api/external/';
+const BASE_URL = 'https://www.verifynow.co.za/api/external/verify';
 
 Deno.serve(async (req) => {
   const { action, payload } = await req.json();
