@@ -332,8 +332,9 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'running' } }));
       const docResult = await base44.functions.invoke('ficaVerify', { action: 'authenticateDoc', payload: { id_number: formData.sa_id_number, document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport', reference: 'ww-' + clientId + '-' + Date.now() } });
-      const docPass = docResult?.data?.status === 'authentic';
-      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docPass ? 'pass' : 'fail' } }));
+      const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason?.includes('Forgery') || docResult?.data?.data?.results?.document_verification?.Reason?.includes('Tampered'));
+      const docPass = docIsForgery ? false : true;
+      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending — manual review' } }));
       if (selfieBase64) {
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'running' } }));
         const faceResult = await base44.functions.invoke('ficaVerify', { action: 'faceMatch', payload: { id_number: formData.sa_id_number, selfie_image: selfieBase64 } });
@@ -349,7 +350,7 @@ export default function ClientOnboarding() {
       else if (formData.us_person_fatca === 'Yes') riskBand = 'Medium';
       else if (formData.tax_residency && formData.tax_residency !== 'South Africa only') riskBand = 'Medium';
       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: riskBand + ' risk' } }));
-      const ficaStatus = !docPass ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
+      const ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
       const finalResult = { fica_status: ficaStatus, risk_band: riskBand, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
       setFicaResult(finalResult);
