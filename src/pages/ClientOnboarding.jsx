@@ -1524,8 +1524,10 @@ export default function ClientOnboarding() {
                   {profileOverridden && (
                     <p className="text-[10px] text-warn mt-1">⚠ Profile manually overridden — calculated score suggests <strong>{scoreToProfile(riskScore)}</strong></p>
                   )}
-                </div>
-              </div>
+                  </div>
+                  </div>
+                  );
+                  }
 
               <div className="border border-border rounded p-3">
                 <div className="flex justify-between items-center mb-2">
@@ -1619,5 +1621,3 @@ export default function ClientOnboarding() {
             )}
             </div>
             </div>
-            );
-            }
