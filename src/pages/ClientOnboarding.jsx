@@ -1617,9 +1617,9 @@ export default function ClientOnboarding() {
                 You can save and submit at any point. You can return to complete remaining sections later.
               </p>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+            </div>
+            </div>
+            </div>
+            </div>
+            );
+            }
