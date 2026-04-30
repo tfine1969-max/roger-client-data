@@ -284,6 +284,32 @@
       "type": "boolean",
       "default": false,
       "description": "True after 48-hour reminder has been sent \u2014 reset to false on each new send"
+    },
+    "rmcp_risk_score": {
+      "type": "number",
+      "description": "Client RMCP weighted risk score"
+    },
+    "rmcp_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Prohibited"
+      ],
+      "description": "Low, Medium, High, or Prohibited"
+    },
+    "fica_reference": {
+      "type": "string",
+      "description": "VerifyNow FICA reference number"
+    },
+    "fica_verified_at": {
+      "type": "string",
+      "description": "datetime FICA verification completed"
+    },
+    "offshore_exposure": {
+      "type": "boolean",
+      "description": "whether client has offshore advisory needs"
     }
   },
   "required": [

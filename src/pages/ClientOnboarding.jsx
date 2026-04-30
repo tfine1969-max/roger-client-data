@@ -365,6 +365,57 @@ export default function ClientOnboarding() {
     }
   };
 
+  const calculateRmcpScore = (formData, ficaChecks, amlMatch) => {
+    let clientScore = 0;
+    if (formData.pep_status === 'Yes') clientScore = 30;
+    else if (formData.pep_status === 'Related to PEP') clientScore = 20;
+    else if (amlMatch) clientScore = 25;
+    else if (formData.us_person_fatca === 'Yes') clientScore = 10;
+
+    let geoScore = 0;
+    const advisoryNeeds = formData.advisory_needs || [];
+    if (advisoryNeeds.includes('Local and offshore investments')) geoScore = 25;
+    else if (formData.tax_residency === 'Other country only') geoScore = 20;
+    else if (formData.tax_residency === 'South Africa + Other') geoScore = 10;
+
+    let productScore = 0;
+    if (advisoryNeeds.includes('Tax planning')) productScore = Math.max(productScore, 20);
+    if (advisoryNeeds.includes('Local and offshore investments')) productScore = Math.max(productScore, 15);
+    if (advisoryNeeds.includes('Estate planning')) productScore = Math.max(productScore, 10);
+    if (productScore === 0) productScore = 5;
+
+    let txScore = 0;
+    const surplus = formData.monthly_investable_surplus || '';
+    if (surplus === 'Over R50,000') txScore = 15;
+    else if (surplus === 'R15,000 – R50,000') txScore = 10;
+    else if (surplus === 'R5,000 – R15,000') txScore = 5;
+
+    let behavScore = 0;
+    if (ficaChecks?.home_affairs_id?.status !== 'pass') behavScore += 10;
+    else if (ficaChecks?.document_auth?.status === 'fail') behavScore += 5;
+    else if (ficaChecks?.face_match?.status === 'skipped') behavScore += 3;
+    behavScore = Math.min(behavScore, 10);
+
+    const totalScore = clientScore + geoScore + productScore + txScore + behavScore;
+    let band = 'Low';
+    if (totalScore >= 81) band = 'Prohibited';
+    else if (totalScore >= 61) band = 'High';
+    else if (totalScore >= 31) band = 'Medium';
+
+    return {
+      score: totalScore,
+      band,
+      breakdown: {
+        client_factor: clientScore,
+        geography_factor: geoScore,
+        product_factor: productScore,
+        transaction_factor: txScore,
+        behaviour_factor: behavScore,
+      },
+      scoredAt: new Date().toISOString(),
+    };
+  };
+
   const runFicaVerification = async () => {
     if (!formData.sa_id_number && !formData.passport_number) { toast.error('SA ID number or passport required'); return; }
     if (!formData.employment_status || !formData.occupation) { toast.error('Please complete employment details first'); return; }
@@ -431,14 +482,14 @@ export default function ClientOnboarding() {
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'skipped', note: 'No selfie — manual review required' } }));
       }
       setFicaChecks(prev => ({ ...prev, avs_bank: { ...prev.avs_bank, status: 'skipped', note: 'Captured at proposal stage' } }));
-      let riskBand = 'Low';
-      if (formData.pep_status === 'Yes') riskBand = 'High';
-      else if (amlMatch) riskBand = 'High';
-      else if (formData.us_person_fatca === 'Yes') riskBand = 'Medium';
-      else if (formData.tax_residency && formData.tax_residency !== 'South Africa only') riskBand = 'Medium';
-      setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: riskBand + ' risk' } }));
-      const ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
-      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+
+       // Calculate RMCP weighted risk score
+       const rmcpResult = calculateRmcpScore(formData, ficaChecks, amlMatch);
+       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: rmcpResult.band + ' risk (' + rmcpResult.score + ' pts)' } }));
+
+       let ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
+       if (rmcpResult.band === 'Prohibited') ficaStatus = 'Declined';
+       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
       
       // Calculate RMCP weighted risk score
       const { totalScore, rmcpBand, breakdown } = calculateRmcpRiskScore(
@@ -449,61 +500,62 @@ export default function ClientOnboarding() {
         selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false // faceMatchPassed
       );
       
-      const finalResult = { fica_status: ficaStatus, risk_band: riskBand, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
+      const finalResult = { fica_status: ficaStatus, risk_band: rmcpResult.band, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       
       // Prepare update payload
       const updateData = {
         fica_status: ficaStatus,
         fica_reference: ficaRef,
-        fica_risk_band: riskBand,
+        fica_risk_band: rmcpResult.band,
         fica_verified_at: finalResult.verified_at,
         home_affairs_verified: true,
         aml_pep_clear: !amlMatch,
         fica_checks_json: JSON.stringify(ficaChecks),
-        rmcp_risk_score: totalScore,
-        rmcp_risk_band: rmcpBand,
-        rmcp_scored_at: new Date().toISOString(),
-        rmcp_score_breakdown: JSON.stringify(breakdown),
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
+        rmcp_scored_at: rmcpResult.scoredAt,
+        rmcp_score_breakdown: JSON.stringify(rmcpResult.breakdown),
       };
       
       await base44.entities.Clients.update(clientId, updateData);
+
       // Send advisor notification for High/Prohibited RMCP risk or FICA declined/referred
-      if (rmcpBand === 'High' || rmcpBand === 'Prohibited' || ficaStatus !== 'Approved') {
+      if (rmcpResult.band === 'Prohibited' || rmcpResult.band === 'High' || ficaStatus !== 'Approved') {
         const scoreSummary = `
-Client Factor (PEP/AML): ${breakdown.client_factor} points
-Geography Factor (Tax/Residency): ${breakdown.geography_factor} points
-Product Factor (Needs): ${breakdown.product_factor} points
-Transaction Factor (Surplus): ${breakdown.transaction_factor} points
-Behaviour Factor (Checks): ${breakdown.behaviour_factor} points
-─────────────────────────
-RMCP Total Score: ${totalScore} points → ${rmcpBand} risk
+      Client Factor: ${rmcpResult.breakdown.client_factor} / 30
+      Geography Factor: ${rmcpResult.breakdown.geography_factor} / 25
+      Product Factor: ${rmcpResult.breakdown.product_factor} / 20
+      Transaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15
+      Behaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10
+      ─────────────────────────
+      TOTAL RMCP SCORE: ${rmcpResult.score} / 100 → ${rmcpResult.band} RISK
         `.trim();
 
-        const emailSubject = rmcpBand === 'Prohibited' ? `PROHIBITED RISK — ${formData.first_name} ${formData.last_name}` : 
-                            rmcpBand === 'High' ? `HIGH RISK — EDD Required — ${formData.first_name} ${formData.last_name}` :
+        const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT — Prohibited client: ${formData.first_name} ${formData.last_name}` : 
+                            rmcpResult.band === 'High' ? `EDD Required — High risk client: ${formData.first_name} ${formData.last_name}` :
                             `FICA ${ficaStatus} — ${formData.first_name} ${formData.last_name}`;
 
         const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}
 
-FICA Status: ${ficaStatus}
-FICA Reference: ${ficaRef}
-RMCP Risk Band: ${rmcpBand}
+      FICA Status: ${ficaStatus}
+      FICA Reference: ${ficaRef}
+      RMCP Risk Band: ${rmcpResult.band}
 
-RISK SCORE BREAKDOWN:
-${scoreSummary}
+      RISK SCORE BREAKDOWN:
+      ${scoreSummary}
 
-CLIENT DETAILS:
-ID: ${formData.sa_id_number || 'N/A'}
-PEP Status: ${formData.pep_status}
-FATCA US Person: ${formData.us_person_fatca}
-Tax Residency: ${formData.tax_residency}
-Monthly Investable: ${formData.monthly_investable_surplus}
-Advisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}
+      CLIENT DETAILS:
+      ID: ${formData.sa_id_number || 'N/A'}
+      PEP Status: ${formData.pep_status}
+      FATCA US Person: ${formData.us_person_fatca}
+      Tax Residency: ${formData.tax_residency}
+      Monthly Investable: ${formData.monthly_investable_surplus}
+      Advisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}
 
-${rmcpBand === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpBand === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}
+      ${rmcpResult.band === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}
 
-Log in to the WealthWorks Advisor Portal to manage this client.`;
+      Log in to the WealthWorks Advisor Portal to manage this client.`;
 
         await base44.integrations.Core.SendEmail({
           from_name: 'WealthWorks FICA',
@@ -733,6 +785,11 @@ Log in to the WealthWorks Advisor Portal to manage this client.`;
           advisory_needs: formData.advisory_needs,
           proposal_status: 'Pending Review',
           status: 'new',
+          rmcp_risk_score: ficaResult?.rmcp_score?.score || 0,
+          rmcp_risk_band: ficaResult?.rmcp_score?.band || 'Low',
+          fica_reference: ficaResult?.fica_reference || '',
+          fica_verified_at: ficaResult?.verified_at || '',
+          offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
         });
       } else {
         await base44.entities.Proposal.create({
@@ -747,6 +804,11 @@ Log in to the WealthWorks Advisor Portal to manage this client.`;
           advisor_signature_completed: false,
           client_signature_completed: false,
           document_version: 1,
+          rmcp_risk_score: ficaResult?.rmcp_score?.score || 0,
+          rmcp_risk_band: ficaResult?.rmcp_score?.band || 'Low',
+          fica_reference: ficaResult?.fica_reference || '',
+          fica_verified_at: ficaResult?.verified_at || '',
+          offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
         });
       }
 
@@ -1203,7 +1265,20 @@ Log in to the WealthWorks Advisor Portal to manage this client.`;
                        {ficaResult.fica_reference && (
                          <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
                        )}
-                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 3.</p>}
+                       {ficaResult.rmcp_score && (
+                         <div className="mt-2 p-2 bg-secondary/50 rounded border border-border text-[10px] text-muted-foreground space-y-1">
+                           <p className="font-semibold text-navy">RMCP Risk Score Breakdown:</p>
+                           <div className="grid grid-cols-2 gap-1">
+                             <p>Client risk: <strong>{ficaResult.rmcp_score.breakdown.client_factor}</strong> / {ficaResult.rmcp_score.breakdown.client_factor > 0 ? '30' : '30'} (30%)</p>
+                             <p>Geography risk: <strong>{ficaResult.rmcp_score.breakdown.geography_factor}</strong> / 25 (25%)</p>
+                             <p>Product risk: <strong>{ficaResult.rmcp_score.breakdown.product_factor}</strong> / 20 (20%)</p>
+                             <p>Transaction risk: <strong>{ficaResult.rmcp_score.breakdown.transaction_factor}</strong> / 15 (15%)</p>
+                             <p>Behaviour risk: <strong>{ficaResult.rmcp_score.breakdown.behaviour_factor}</strong> / 10 (10%)</p>
+                             <p className="font-semibold text-navy col-span-2">Total RMCP: <strong>{ficaResult.rmcp_score.score}</strong> / 100 — <strong>{ficaResult.rmcp_score.band}</strong></p>
+                           </div>
+                         </div>
+                       )}
+                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 4.</p>}
                        {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
                        {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                      </div>
