@@ -38,10 +38,11 @@ const ADVISORY_NEEDS = [
 const STEPS = [
   { number: 1, label: 'Personal details' },
   { number: 2, label: 'Document upload' },
-  { number: 3, label: 'FICA verification' },
-  { number: 4, label: 'Financial profile' },
-  { number: 5, label: 'Risk & objectives' },
-  { number: 6, label: 'Review & submit' },
+  { number: 3, label: 'KYC declaration' },
+  { number: 4, label: 'FICA verification' },
+  { number: 5, label: 'Financial profile' },
+  { number: 6, label: 'Risk & objectives' },
+  { number: 7, label: 'Review & submit' },
 ];
 
 // Risk score calculator
@@ -621,8 +622,6 @@ export default function ClientOnboarding() {
          toast.error('Please fill in employment details');
          return;
        }
-       if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-       if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
        stepData = {
          employment_status: formData.employment_status,
          occupation: formData.occupation,
@@ -634,6 +633,11 @@ export default function ClientOnboarding() {
          us_person_fatca: formData.us_person_fatca,
          pep_status: formData.pep_status,
          pep_explanation: formData.pep_explanation,
+       };
+     } else if (currentStep === 4) {
+       if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+       if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
+       stepData = {
          fica_status: ficaResult?.fica_status || 'Pending',
          fica_reference: ficaResult?.fica_reference || '',
          fica_risk_band: ficaResult?.risk_band || '',
@@ -641,7 +645,7 @@ export default function ClientOnboarding() {
          home_affairs_verified: ficaResult?.fica_status === 'Approved',
          aml_pep_clear: ficaResult?.fica_status !== 'Referred',
        };
-     } else if (currentStep === 4) {
+     } else if (currentStep === 5) {
        stepData = {
          gross_annual_income_band: formData.gross_annual_income_band,
          monthly_investable_surplus: formData.monthly_investable_surplus,
@@ -654,7 +658,7 @@ export default function ClientOnboarding() {
          will_in_place: formData.will_in_place,
          dependants: formData.dependants,
        };
-     } else if (currentStep === 5) {
+     } else if (currentStep === 6) {
        if (!formData.risk_profile) {
          toast.error('Please select a risk profile');
          return;
@@ -713,6 +717,15 @@ export default function ClientOnboarding() {
       };
     } else if (currentStep === 4) {
       stepData = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_risk_band: ficaResult?.risk_band || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
+      };
+    } else if (currentStep === 5) {
+      stepData = {
         gross_annual_income_band: formData.gross_annual_income_band,
         monthly_investable_surplus: formData.monthly_investable_surplus,
         net_worth_band: formData.net_worth_band, total_liabilities: formData.total_liabilities,
@@ -720,7 +733,7 @@ export default function ClientOnboarding() {
         loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
         will_in_place: formData.will_in_place, dependants: formData.dependants,
       };
-    } else if (currentStep === 5) {
+    } else if (currentStep === 6) {
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
@@ -879,7 +892,7 @@ export default function ClientOnboarding() {
             <ArrowLeft className="w-4 h-4" />
             WEALTHWORKS.CO.ZA
           </button>
-          <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 6</span>
+          <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 7</span>
         </div>
 
         {/* Step navigation banner */}
@@ -915,23 +928,25 @@ export default function ClientOnboarding() {
           {/* Step Header */}
           <div className="mb-4">
             <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">
-              STEP {currentStep} OF 6
+              STEP {currentStep} OF 7
             </p>
             <h1 className="text-2xl font-bold text-navy mb-1">
               {currentStep === 1 && 'Personal information'}
               {currentStep === 2 && 'Document upload'}
-              {currentStep === 3 && 'FICA verification'}
-              {currentStep === 4 && 'Financial profile'}
-              {currentStep === 5 && 'Risk profile & objectives'}
-              {currentStep === 6 && 'Review & submit'}
+              {currentStep === 3 && 'KYC declaration'}
+              {currentStep === 4 && 'FICA verification'}
+              {currentStep === 5 && 'Financial profile'}
+              {currentStep === 6 && 'Risk profile & objectives'}
+              {currentStep === 7 && 'Review & submit'}
             </h1>
             <p className="text-muted-foreground text-xs max-w-xl">
               {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
               {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}
-              {currentStep === 3 && 'FICA verification using Home Affairs, AML/PEP screening, and document authentication.'}
-              {currentStep === 4 && 'Required for the financial needs analysis under FAIS GCC Section 8.'}
-              {currentStep === 5 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
-              {currentStep === 6 && 'Your onboarding is complete. Your WealthWorks advisor has been notified.'}
+              {currentStep === 3 && 'Employment, source of funds, and tax/PEP declaration as required under FICA.'}
+              {currentStep === 4 && 'Automated identity verification via VerifyNow — Home Affairs, AML/PEP, and document authentication.'}
+              {currentStep === 5 && 'Required for the financial needs analysis under FAIS GCC Section 8.'}
+              {currentStep === 6 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
+              {currentStep === 7 && 'Your onboarding is complete. Your WealthWorks advisor has been notified.'}
             </p>
           </div>
 
@@ -1099,7 +1114,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 3: FICA / KYC ── */}
+          {/* ── STEP 3: KYC Declaration ── */}
           {currentStep === 3 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
@@ -1182,16 +1197,21 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
                 {formData.pep_status === 'Yes' && (
-                   <div className="mt-2">
-                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
-                     <Input className="mt-1 h-8 text-sm" placeholder="Describe the public function held" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
-                   </div>
-                 )}
+                  <div className="mt-2">
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
+                    <Input className="mt-1 h-8 text-sm" placeholder="Describe the public function held" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
+                  </div>
+                )}
                 </div>
+                </div>
+                )}
 
+                {/* ── STEP 4: FICA Verification ── */}
+                {currentStep === 4 && (
+                <div className="space-y-3">
                 <div className="border border-border rounded p-3">
-                 <div className="flex justify-between items-center mb-2">
-                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">BIOMETRIC SELFIE</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">BIOMETRIC SELFIE</h3>
                    <span className="text-[10px] text-muted-foreground">OPTIONAL — IMPROVES FICA SCORE</span>
                  </div>
                  <p className="text-xs text-muted-foreground mb-2">Used for face match against your Home Affairs photograph.</p>
@@ -1298,9 +1318,11 @@ export default function ClientOnboarding() {
                 </div>
                 </div>
                 )}
+                </div>
+                )}
 
-          {/* ── STEP 4: Financial Profile ── */}
-          {currentStep === 4 && (
+                {/* ── STEP 5: Financial Profile ── */}
+                {currentStep === 5 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">INCOME & ASSETS</h3>
@@ -1423,8 +1445,8 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 5: Risk Profile & Objectives ── */}
-          {currentStep === 5 && (
+          {/* ── STEP 6: Risk Profile & Objectives ── */}
+          {currentStep === 6 && (
             <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE QUESTIONNAIRE</h3>
@@ -1525,8 +1547,8 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 6: Review & Submit ── */}
-          {currentStep === 6 && (
+          {/* ── STEP 7: Review & Submit ── */}
+          {currentStep === 7 && (
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
                 <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
@@ -1557,13 +1579,13 @@ export default function ClientOnboarding() {
           {/* ── Navigation ── */}
           <div className="pt-5 border-t border-border mt-5">
             <div className="flex gap-3">
-              {currentStep > 1 && currentStep < 6 && (
+              {currentStep > 1 && currentStep < 7 && (
                 <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">
                   ← Back
                 </Button>
               )}
               <div className="flex-1" />
-              {currentStep < 6 && (
+              {currentStep < 7 && (
                 <Button
                   type="button"
                   variant="outline"
@@ -1577,23 +1599,23 @@ export default function ClientOnboarding() {
                   {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & Submit'}
                 </Button>
               )}
-              {currentStep < 5 && (
+              {currentStep < 6 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
                   {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
                 </Button>
               )}
-              {currentStep === 5 && (
+              {currentStep === 6 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
                   {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
                 </Button>
               )}
-              {currentStep === 6 && (
+              {currentStep === 7 && (
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
                   {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
                 </Button>
               )}
             </div>
-            {currentStep < 6 && (
+            {currentStep < 7 && (
               <p className="text-[10px] text-muted-foreground mt-2 text-center">
                 You can save and submit at any point. You can return to complete remaining sections later.
               </p>
