@@ -1025,43 +1025,43 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 3: KYC Declaration ── */}
           {currentStep === 3 && (
-            <div className="space-y-2">
-              <div className="border border-border rounded p-2.5">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">EMPLOYMENT & OCCUPATION</h3>
-                <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <div className="border border-border rounded p-1.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px] mb-1">EMPLOYMENT & OCCUPATION</h3>
+                <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
                     <Select value={formData.employment_status} onValueChange={v => handleChange('employment_status', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Employed', 'Self-employed', 'Retired', 'Unemployed', 'Student'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">OCCUPATION *</Label>
-                    <Input className="mt-1 h-8 text-sm" value={formData.occupation} onChange={e => handleChange('occupation', e.target.value)} />
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">OCCUPATION *</Label>
+                    <Input className="mt-0.5 h-7 text-xs" value={formData.occupation} onChange={e => handleChange('occupation', e.target.value)} />
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMPLOYER / BUSINESS</Label>
-                    <Input className="mt-1 h-8 text-sm" value={formData.employer} onChange={e => handleChange('employer', e.target.value)} />
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">EMPLOYER / BUSINESS</Label>
+                    <Input className="mt-0.5 h-7 text-xs" value={formData.employer} onChange={e => handleChange('employer', e.target.value)} />
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
                     <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 </div>
               </div>
 
-              <div className="border border-border rounded p-2.5">
-                <div className="flex justify-between items-center mb-1.5">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">SOURCE OF FUNDS</h3>
-                  <span className="text-[10px] text-muted-foreground">SELECT ALL THAT APPLY</span>
+              <div className="border border-border rounded p-1.5">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">SOURCE OF FUNDS</h3>
+                  <span className="text-[8px] text-muted-foreground">SELECT ALL</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   {['Salary / employment income', 'Business income / dividends', 'Investment returns', 'Inheritance / gift', 'Retirement / pension fund', 'Sale of property / assets'].map(item => (
-                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1 border border-border rounded hover:bg-secondary/50 text-[9px]">
                       <input type="checkbox" checked={formData.source_of_funds.includes(item)} onChange={() => toggleArrayItem('source_of_funds', item)} className="w-3.5 h-3.5 accent-ocean" />
                       {item}
                     </label>
@@ -1069,34 +1069,34 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-2.5">
-                <div className="flex justify-between items-center mb-1.5">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">TAX & PEP DECLARATION</h3>
-                  <span className="text-[10px] font-semibold text-ocean">FATCA / CRS</span>
+              <div className="border border-border rounded p-1.5">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">TAX & PEP DECLARATION</h3>
+                  <span className="text-[8px] font-semibold text-ocean">FATCA / CRS</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER</Label>
-                    <Input className="mt-1 h-8 text-sm" placeholder="10-digit SARS reference" value={formData.sa_tax_number} onChange={e => handleChange('sa_tax_number', e.target.value)} />
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER</Label>
+                    <Input className="mt-0.5 h-7 text-xs" placeholder="10-digit SARS" value={formData.sa_tax_number} onChange={e => handleChange('sa_tax_number', e.target.value)} />
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
                     <Select value={formData.tax_residency} onValueChange={v => handleChange('tax_residency', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['South Africa only', 'South Africa + Other', 'Other country only'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">US PERSON (FATCA)?</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">US PERSON (FATCA)?</Label>
                     <Select value={formData.us_person_fatca} onValueChange={v => handleChange('us_person_fatca', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP STATUS</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PEP STATUS</Label>
                     <Select value={formData.pep_status} onValueChange={v => handleChange('pep_status', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="No">No</SelectItem>
                         <SelectItem value="Yes">Yes</SelectItem>
@@ -1106,9 +1106,9 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
                 {formData.pep_status === 'Yes' && (
-                  <div className="mt-2">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
-                    <Input className="mt-1 h-8 text-sm" placeholder="Describe the public function held" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
+                  <div className="mt-1">
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PEP DETAILS</Label>
+                    <Input className="mt-0.5 h-7 text-xs" placeholder="Describe the public function" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
                   </div>
                 )}
               </div>
