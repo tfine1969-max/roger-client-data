@@ -9,6 +9,7 @@ import Step01ClientDetails from '@/components/engine/Step01ClientDetails';
 import Step02Recommendations from '@/components/engine/Step02Recommendations';
 import Step03Suitability from '@/components/engine/Step03Suitability';
 import Step04ReviewSend from '@/components/engine/Step04ReviewSend';
+import FicaComplianceSummary from '@/components/engine/FicaComplianceSummary';
 import generateProposalPdf from '@/lib/generateProposalPdf';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -271,13 +272,16 @@ export default function ProposalEngine() {
         </div>
 
         {activeStep === 'client_details' && (
-          <Step01ClientDetails
-            data={localData}
-            onFieldChange={handleFieldChange}
-            onNext={() => setActiveStep('recommendations')}
-            client={clientObj}
-            onClientStatusUpdate={() => queryClient.invalidateQueries({ queryKey: ['clients'] })}
-          />
+          <>
+            <FicaComplianceSummary proposal={localData} client={clientObj} />
+            <Step01ClientDetails
+              data={localData}
+              onFieldChange={handleFieldChange}
+              onNext={() => setActiveStep('recommendations')}
+              client={clientObj}
+              onClientStatusUpdate={() => queryClient.invalidateQueries({ queryKey: ['clients'] })}
+            />
+          </>
         )}
 
         {activeStep === 'recommendations' && (

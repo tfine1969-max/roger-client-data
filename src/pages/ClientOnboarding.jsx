@@ -705,6 +705,21 @@ export default function ClientOnboarding() {
 
       const clientName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
 
+      // Fetch latest client data to get FICA fields
+      const latestClient = await base44.entities.Clients.list().then(clients => clients.find(c => c.id === clientId));
+
+      const proposalFicaData = {
+        fica_reference: ficaResult?.fica_reference || latestClient?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || latestClient?.fica_verified_at || '',
+        fica_status: ficaResult?.fica_status || latestClient?.fica_status || '',
+        fica_risk_band: ficaResult?.risk_band || latestClient?.fica_risk_band || '',
+        rmcp_risk_score: ficaResult?.rmcp_score?.score || latestClient?.rmcp_risk_score || 0,
+        rmcp_risk_band: ficaResult?.rmcp_score?.band || latestClient?.rmcp_risk_band || 'Low',
+        aml_pep_clear: latestClient?.aml_pep_clear !== undefined ? latestClient.aml_pep_clear : true,
+        home_affairs_verified: latestClient?.home_affairs_verified !== undefined ? latestClient.home_affairs_verified : false,
+        offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
+      };
+
       if (existing) {
         await base44.entities.Proposal.update(existing.id, {
           client_id: clientId,
@@ -712,11 +727,7 @@ export default function ClientOnboarding() {
           advisory_needs: formData.advisory_needs,
           proposal_status: 'Pending Review',
           status: 'new',
-          rmcp_risk_score: ficaResult?.rmcp_score?.score || 0,
-          rmcp_risk_band: ficaResult?.rmcp_score?.band || 'Low',
-          fica_reference: ficaResult?.fica_reference || '',
-          fica_verified_at: ficaResult?.verified_at || '',
-          offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
+          ...proposalFicaData,
         });
       } else {
         await base44.entities.Proposal.create({
@@ -731,11 +742,7 @@ export default function ClientOnboarding() {
           advisor_signature_completed: false,
           client_signature_completed: false,
           document_version: 1,
-          rmcp_risk_score: ficaResult?.rmcp_score?.score || 0,
-          rmcp_risk_band: ficaResult?.rmcp_score?.band || 'Low',
-          fica_reference: ficaResult?.fica_reference || '',
-          fica_verified_at: ficaResult?.verified_at || '',
-          offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
+          ...proposalFicaData,
         });
       }
 

@@ -111,7 +111,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     const fy = H-10;
     doc.setDrawColor(...border); doc.line(M,fy-4,W-M,fy-4);
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, fy);
+    doc.text('WealthWorks (Pty) Ltd FSP 28337 | Wealthworks Investments (Pty) Ltd FSP 45624 | FICA Verified | RMCP Compliant | Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', M, fy);
     doc.text(String(pn), W/2, fy, {align:'center'});
     if (signatureData?.clientInitials) {
       doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
@@ -412,7 +412,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     lcy+=12;
   });
 
-  // Right side — Risk Profile card + FICA card
+  // Right side — Risk Profile card + FICA & AML Compliance card
   let rcy = y;
   // Risk card
   const riskCardH = 52;
@@ -432,22 +432,29 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+28+(i*4)));
   rcy += riskCardH + 6;
 
-  // FICA card
-  const ficaItems = ['Identity verified','Proof of address verified','Source of funds confirmed','Beneficial ownership checked'];
-  const ficaCardH = ficaItems.length*10+16;
+  // FICA & AML Compliance card
+  const ficaAmlRows = [
+    ['FICA STATUS', proposal.fica_status || '—'],
+    ['FICA REF', proposal.fica_reference || '—'],
+    ['RMCP SCORE', proposal.rmcp_risk_score !== undefined ? `${proposal.rmcp_risk_score} / 100` : '—'],
+    ['AML CLEAR', proposal.aml_pep_clear ? 'Yes' : 'No'],
+  ];
+  const ficaAmlCardH = ficaAmlRows.length*10+16;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
-  doc.roundedRect(col2x, rcy, colW2, ficaCardH, 3, 3, 'FD');
+  doc.roundedRect(col2x, rcy, colW2, ficaAmlCardH, 3, 3, 'FD');
   doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('FICA VERIFICATION', col2x+5, rcy+8);
+  doc.text('FICA & AML COMPLIANCE', col2x+5, rcy+8);
   doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
-  let fcy = rcy+18;
-  ficaItems.forEach(item => {
-    doc.setFillColor(...teal); doc.circle(col2x+8, fcy-1.5, 2, 'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...black);
-    doc.text(item, col2x+13, fcy); fcy+=10;
+  let facy = rcy+18;
+  ficaAmlRows.forEach(([label, value]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.text(label, col2x+5, facy);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...navy);
+    doc.text(String(value), col2x+colW2-5, facy, {align:'right'});
+    facy+=10;
   });
 
-  y = Math.max(y+leftCardH, rcy+ficaCardH) + 8;
+  y = Math.max(y+leftCardH, rcy+ficaAmlCardH) + 8;
 
   // Risk profile characteristics below
   doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);
