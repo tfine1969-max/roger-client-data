@@ -26,6 +26,7 @@ import ProposalEngine from '@/pages/ProposalEngine';
 import ClientSign from '@/pages/ClientSign';
 import ClientDashboard from '@/pages/ClientDashboard';
 import SignProposal from '@/pages/SignProposal';
+import ProjectTracker from '@/pages/ProjectTracker';
 
 // Protected route wrapper for advisor-only pages
 const ProtectedAdvisorRoute = ({ element }) => {
@@ -121,6 +122,7 @@ const AuthenticatedApp = () => {
       <Route path="/proposal/:id/add-risk-product" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/risk-product/:riskProductId" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/engine" element={<ProtectedAdvisorRoute element={<ProposalEngine />} />} />
+      <Route path="/project-tracker" element={<ProjectTracker />} />
 
       <Route path="/advisor-dashboard" element={<Navigate to="/proposals" replace />} />
 
