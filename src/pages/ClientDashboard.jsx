@@ -93,6 +93,26 @@ export default function ClientDashboard() {
 
   const personsLabel = isTrust ? 'TRUSTEES' : isCompany ? 'DIRECTORS' : '';
 
+  const getFicaStatusStyle = (status) => {
+    if (status === 'Approved') return { bg: '#f0fdf4', text: '#166534', label: 'Verified' };
+    if (status === 'Referred') return { bg: '#fef3c7', text: '#b45309', label: 'EDD Required' };
+    if (status === 'Declined') return { bg: '#fef2f2', text: '#991b1b', label: 'Not Verified' };
+    return { bg: '#f3f4f6', text: '#6b7280', label: 'Pending' };
+  };
+
+  const getRiskBandStyle = (band) => {
+    if (band === 'Low') return '#166534';
+    if (band === 'Medium') return '#b45309';
+    if (band === 'High') return '#991b1b';
+    return '#6b7280';
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -118,6 +138,60 @@ export default function ClientDashboard() {
             <StatusBadge status={client.client_status} />
           </div>
         </div>
+
+        {/* FICA Verification Card */}
+        {client.fica_status && (
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            {(client.fica_status === 'Referred' || client.fica_status === 'Declined') && (
+              <div style={{ background: '#fee2e2', borderBottom: '1px solid #fecdd3', padding: '12px 16px' }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#991b1b' }}>
+                  ⚠ Enhanced Due Diligence required — contact client before proceeding with any advice.
+                </p>
+              </div>
+            )}
+            <div className="p-4">
+              <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">FICA Verification</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">FICA Status</p>
+                  <div style={{ marginTop: 6, display: 'inline-block', padding: '4px 10px', borderRadius: 4, background: getFicaStatusStyle(client.fica_status).bg, color: getFicaStatusStyle(client.fica_status).text, fontSize: 11, fontWeight: 700 }}>
+                    {getFicaStatusStyle(client.fica_status).label}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">FICA Reference</p>
+                  <p className="text-sm font-medium text-navy mt-0.5 font-mono">{client.fica_reference || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Risk Band</p>
+                  <div style={{ marginTop: 6, display: 'inline-block', padding: '4px 10px', borderRadius: 4, background: '#f3f4f6', color: getRiskBandStyle(client.fica_risk_band), fontSize: 11, fontWeight: 700 }}>
+                    {client.fica_risk_band || '—'}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Verified On</p>
+                  <p className="text-sm font-medium text-navy mt-0.5">{formatDate(client.fica_verified_at)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">RMCP Score</p>
+                  <p className="text-sm font-medium text-navy mt-0.5">{client.rmcp_risk_score !== undefined ? `${client.rmcp_risk_score} / 100` : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Re-verification Due</p>
+                  <p className="text-sm font-medium text-navy mt-0.5">{formatDate(client.fica_next_reverification_date)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Home Affairs Verified</p>
+                  <p className="text-sm font-medium text-navy mt-0.5">{client.home_affairs_verified ? 'Yes' : 'No'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">AML Clear</p>
+                  <p className="text-sm font-medium text-navy mt-0.5">{client.aml_pep_clear ? 'Yes' : 'No'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-card border border-border rounded-lg p-4 space-y-4">
 
