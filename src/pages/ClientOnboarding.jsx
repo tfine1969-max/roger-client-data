@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
@@ -45,19 +45,14 @@ const STEPS = [
   { number: 7, label: 'Review & submit' },
 ];
 
-// Risk score calculator
 const calcRiskScore = (formData) => {
   let score = 0;
-  // Portfolio drop response (0-3)
   const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
   score += dropMap[formData.portfolio_drop_response] || 0;
-  // Time horizon (0-3)
   const horizonMap = { 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 };
   score += horizonMap[formData.time_horizon] || 0;
-  // Liquidity (0-2)
   const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 };
   score += liquidMap[formData.liquidity_requirement] || 0;
-  // Objective (0-2)
   const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
   score += objMap[formData.primary_investment_objective] || 0;
   return Math.round(Math.min(10, score));
@@ -71,7 +66,6 @@ const scoreToProfile = (score) => {
   return 'Aggressive';
 };
 
-// RMCP-aligned weighted risk scoring
 const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuthPassed, faceMatchPassed) => {
   const breakdown = {
     client_factor: 0,
@@ -80,15 +74,12 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
     transaction_factor: 0,
     behaviour_factor: 0,
   };
-
-  // Client factor (30% weight, max 30 points)
   if (formData.pep_status === 'Yes') breakdown.client_factor = 30;
   else if (formData.pep_status === 'Related to PEP') breakdown.client_factor = 20;
   else if (amlMatch) breakdown.client_factor = 25;
   else if (formData.us_person_fatca === 'Yes') breakdown.client_factor = 10;
   else breakdown.client_factor = 0;
 
-  // Geography factor (25% weight, max 25 points)
   if (formData.advisory_needs?.includes('Local and offshore investments') || formData.advisory_needs?.includes('Offshore investment')) {
     breakdown.geography_factor = 25;
   } else if (formData.tax_residency === 'Other country only') {
@@ -99,7 +90,6 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
     breakdown.geography_factor = 0;
   }
 
-  // Product factor (20% weight, max 20 points)
   if (formData.advisory_needs?.includes('Tax planning')) {
     breakdown.product_factor = 20;
   } else if (formData.advisory_needs?.includes('Estate planning')) {
@@ -110,7 +100,6 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
     breakdown.product_factor = 5;
   }
 
-  // Transaction factor (15% weight, max 15 points)
   if (formData.monthly_investable_surplus === 'Over R50,000') {
     breakdown.transaction_factor = 15;
   } else if (formData.monthly_investable_surplus === 'R15,000 – R50,000') {
@@ -121,16 +110,12 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
     breakdown.transaction_factor = 0;
   }
 
-  // Behaviour factor (10% weight, max 10 points)
   if (!homeAffairsVerified) breakdown.behaviour_factor = 10;
   else if (!docAuthPassed) breakdown.behaviour_factor = 5;
   else if (!faceMatchPassed) breakdown.behaviour_factor = 3;
   else breakdown.behaviour_factor = 0;
 
-  // Calculate weighted total
   const totalScore = breakdown.client_factor + breakdown.geography_factor + breakdown.product_factor + breakdown.transaction_factor + breakdown.behaviour_factor;
-
-  // Determine band
   let rmcpBand = 'Low';
   if (totalScore >= 81) rmcpBand = 'Prohibited';
   else if (totalScore >= 61) rmcpBand = 'High';
@@ -153,9 +138,9 @@ export default function ClientOnboarding() {
   const [ficaChecks, setFicaChecks] = useState({});
   const [ficaRunning, setFicaRunning] = useState(false);
   const [selfieBase64, setSelfieBase64] = useState(null);
+  const [productsList, setProductsList] = useState([]);
 
   const [formData, setFormData] = useState({
-    // Step 1 - Personal
     client_type: 'Natural Person',
     identity_type: 'SA ID',
     title: '',
@@ -177,7 +162,6 @@ export default function ClientOnboarding() {
     entity_name: '',
     registration_number: '',
     trust_number: '',
-    // Step 2 - FICA
     employment_status: '',
     occupation: '',
     employer: '',
@@ -187,7 +171,6 @@ export default function ClientOnboarding() {
     us_person_fatca: 'No',
     pep_status: 'No',
     pep_explanation: '',
-    // Step 3 - Financial Profile
     gross_annual_income_band: '',
     monthly_investable_surplus: '',
     net_worth_band: '',
@@ -196,25 +179,19 @@ export default function ClientOnboarding() {
     loa_uploaded: false,
     loa_authorised: false,
     will_in_place: '',
-    // Step 4 - Risk
     portfolio_drop_response: '',
     primary_investment_objective: '',
     time_horizon: '',
     liquidity_requirement: '',
     risk_profile: '',
     advisory_needs: [],
-    // Step 5 - Documents
     identity_document_uploaded: false,
     proof_of_address_uploaded: false,
     income_proof_uploaded: false,
     existing_policies_uploaded: false,
-    // Signatures (kept for data model compatibility)
     client_signature_name: '',
     client_signature_date: new Date().toISOString().split('T')[0],
   });
-
-  // existing_financial_products as structured list
-  const [productsList, setProductsList] = useState([]);
 
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
@@ -223,8 +200,6 @@ export default function ClientOnboarding() {
       navigate('/client-registration', { replace: true });
       return;
     }
-
-    // Redirect Trust/Company to their own flows — do this BEFORE any async work
     const entityType = sessionStorage.getItem('pending_entity_type');
     if (entityType === 'Trust') {
       navigate('/client-onboarding-trust', { replace: true });
@@ -234,8 +209,6 @@ export default function ClientOnboarding() {
       navigate('/client-onboarding-company', { replace: true });
       return;
     }
-
-    // Apply test seed first (if present), then overlay with any saved client data
     const seedRaw = sessionStorage.getItem('test_onboarding_seed');
     if (seedRaw) {
       try {
@@ -245,7 +218,6 @@ export default function ClientOnboarding() {
       } catch {}
       sessionStorage.removeItem('test_onboarding_seed');
     }
-
     base44.entities.Clients.list()
       .then(clients => {
         const client = clients.find(c => c.id === id);
@@ -306,24 +278,19 @@ export default function ClientOnboarding() {
       })
       .catch(() => {})
       .finally(() => {
-      setClientId(id);
-      setIsInitializing(false);
-      setProfileInitialised(true);
+        setClientId(id);
+        setIsInitializing(false);
+        setProfileInitialised(true);
       });
   }, [navigate]);
 
-  // Auto-calculate risk profile when relevant fields change
   useEffect(() => {
-    // Don't auto-calculate until fully initialised and not manually overridden
     if (!profileInitialised) return;
     if (profileOverridden) return;
-    // Only auto-calculate if the user has actually changed one of these fields
-    // (not just on load)
     const score = calcRiskScore(formData);
     if (formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) {
       const suggested = scoreToProfile(score);
       setFormData(prev => {
-        // Only update if the suggested profile differs — avoids infinite loop
         if (prev.risk_profile === suggested) return prev;
         return { ...prev, risk_profile: suggested };
       });
@@ -345,7 +312,6 @@ export default function ClientOnboarding() {
     });
   };
 
-  // Product list helpers
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
   const removeProduct = (idx) => setProductsList(prev => prev.filter((_, i) => i !== idx));
   const updateProduct = (idx, field, value) => setProductsList(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
@@ -353,7 +319,6 @@ export default function ClientOnboarding() {
   const saveStep = async (stepData) => {
     if (!clientId) { toast.error('Client record not found'); return false; }
     setIsSavingStep(true);
-    console.log('Saving step', currentStep, stepData, clientId);
     try {
       await base44.entities.Clients.update(clientId, stepData);
       toast.success(`Step ${currentStep} saved successfully`);
@@ -437,8 +402,6 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: 'running' } }));
       const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: formData.sa_id_number, first_name: formData.first_name, last_name: formData.last_name, date_of_birth: formData.date_of_birth } });
       const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
-      const verifiedName = idResult?.data?.results?.said_verification?.realTimeResults?.result?.[0]?.[0]?.Name + ' ' + 
-                           idResult?.data?.results?.said_verification?.realTimeResults?.result?.[0]?.[0]?.Surname;
       setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: idPass ? 'pass' : 'fail' } }));
       if (!idPass) {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
@@ -452,59 +415,50 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: 'running' } }));
       const amlResult = await base44.functions.invoke('ficaVerify', {
         action: 'screenAml',
-        payload: {
-          name: formData.first_name + ' ' + formData.last_name,
-          entity: 0,
-          country: 'za',
-          dataset: 'all',
-        },
+        payload: { name: formData.first_name + ' ' + formData.last_name, entity: 0, country: 'za', dataset: 'all' },
       });
       const amlMatch = amlResult?.data?.data?.totalHits > 0 || amlResult?.data?.data?.results?.length > 0 || false;
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
 
       setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: 'running' } }));
-      const traceResult = await base44.functions.invoke('ficaVerify', {
-        action: 'consumerTrace',
-        payload: { id_number: formData.sa_id_number },
-      });
+      const traceResult = await base44.functions.invoke('ficaVerify', { action: 'consumerTrace', payload: { id_number: formData.sa_id_number } });
       const addressVerified = traceResult?.data?.data?.results?.consumer_trace?.Status === 'Success';
       setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: addressVerified ? 'pass' : 'flag', note: addressVerified ? 'Address confirmed' : 'Address could not be verified' } }));
+
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'running' } }));
       const docResult = await base44.functions.invoke('ficaVerify', { action: 'authenticateDoc', payload: { id_number: formData.sa_id_number, document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport', reference: 'ww-' + clientId + '-' + Date.now() } });
       const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason?.includes('Forgery') || docResult?.data?.data?.results?.document_verification?.Reason?.includes('Tampered'));
-      const docPass = docIsForgery ? false : true;
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending — manual review' } }));
+
       if (selfieBase64) {
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'running' } }));
-        const faceResult = await base44.functions.invoke('ficaVerify', { action: 'faceMatch', payload: { id_number: formData.sa_id_number, selfie_image: selfieBase64 } });
+        faceResult = await base44.functions.invoke('ficaVerify', { action: 'faceMatch', payload: { id_number: formData.sa_id_number, selfie_image: selfieBase64 } });
         const facePass = (faceResult?.data?.confidence_score || 0) >= 80;
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: facePass ? 'pass' : 'fail', note: faceResult?.data?.confidence_score ? 'Confidence: ' + faceResult.data.confidence_score + '%' : '' } }));
       } else {
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'skipped', note: 'No selfie — manual review required' } }));
       }
+
       setFicaChecks(prev => ({ ...prev, avs_bank: { ...prev.avs_bank, status: 'skipped', note: 'Captured at proposal stage' } }));
 
-       // Calculate RMCP weighted risk score
-       const rmcpResult = calculateRmcpScore(formData, ficaChecks, amlMatch);
-       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: rmcpResult.band + ' risk (' + rmcpResult.score + ' pts)' } }));
+      const rmcpResult = calculateRmcpScore(formData, ficaChecks, amlMatch);
+      setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: rmcpResult.band + ' risk (' + rmcpResult.score + ' pts)' } }));
 
-       let ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
-       if (rmcpResult.band === 'Prohibited') ficaStatus = 'Declined';
-       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
-      
-      // Calculate RMCP weighted risk score
+      let ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
+      if (rmcpResult.band === 'Prohibited') ficaStatus = 'Declined';
+      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+
       const { totalScore, rmcpBand, breakdown } = calculateRmcpRiskScore(
         formData,
-        true, // homeAffairsVerified = true (passed earlier check)
+        true,
         amlMatch,
-        !docIsForgery, // docAuthPassed
-        selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false // faceMatchPassed
+        !docIsForgery,
+        selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false
       );
-      
+
       const finalResult = { fica_status: ficaStatus, risk_band: rmcpResult.band, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
-      
-      // Prepare update payload
+
       const updateData = {
         fica_status: ficaStatus,
         fica_reference: ficaRef,
@@ -518,53 +472,17 @@ export default function ClientOnboarding() {
         rmcp_scored_at: rmcpResult.scoredAt,
         rmcp_score_breakdown: JSON.stringify(rmcpResult.breakdown),
       };
-      
       await base44.entities.Clients.update(clientId, updateData);
 
-      // Send advisor notification for High/Prohibited RMCP risk or FICA declined/referred
       if (rmcpResult.band === 'Prohibited' || rmcpResult.band === 'High' || ficaStatus !== 'Approved') {
-        const scoreSummary = `
-      Client Factor: ${rmcpResult.breakdown.client_factor} / 30
-      Geography Factor: ${rmcpResult.breakdown.geography_factor} / 25
-      Product Factor: ${rmcpResult.breakdown.product_factor} / 20
-      Transaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15
-      Behaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10
-      ─────────────────────────
-      TOTAL RMCP SCORE: ${rmcpResult.score} / 100 → ${rmcpResult.band} RISK
-        `.trim();
-
-        const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT — Prohibited client: ${formData.first_name} ${formData.last_name}` : 
+        const scoreSummary = `Client Factor: ${rmcpResult.breakdown.client_factor} / 30\nGeography Factor: ${rmcpResult.breakdown.geography_factor} / 25\nProduct Factor: ${rmcpResult.breakdown.product_factor} / 20\nTransaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15\nBehaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10\nTOTAL RMCP SCORE: ${rmcpResult.score} / 100 → ${rmcpResult.band} RISK`;
+        const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT — Prohibited client: ${formData.first_name} ${formData.last_name}` :
                             rmcpResult.band === 'High' ? `EDD Required — High risk client: ${formData.first_name} ${formData.last_name}` :
                             `FICA ${ficaStatus} — ${formData.first_name} ${formData.last_name}`;
-
-        const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}
-
-      FICA Status: ${ficaStatus}
-      FICA Reference: ${ficaRef}
-      RMCP Risk Band: ${rmcpResult.band}
-
-      RISK SCORE BREAKDOWN:
-      ${scoreSummary}
-
-      CLIENT DETAILS:
-      ID: ${formData.sa_id_number || 'N/A'}
-      PEP Status: ${formData.pep_status}
-      FATCA US Person: ${formData.us_person_fatca}
-      Tax Residency: ${formData.tax_residency}
-      Monthly Investable: ${formData.monthly_investable_surplus}
-      Advisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}
-
-      ${rmcpResult.band === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}
-
-      Log in to the WealthWorks Advisor Portal to manage this client.`;
-
-        await base44.integrations.Core.SendEmail({
-          from_name: 'WealthWorks FICA',
-          to: 'tfine1969@gmail.com',
-          subject: emailSubject,
-          body: emailBody,
-        });
+        const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}\n\nFICA Status: ${ficaStatus}\nFICA Reference: ${ficaRef}\nRMCP Risk Band: ${rmcpResult.band}\n\nRISK SCORE BREAKDOWN:\n${scoreSummary}\n\nCLIENT DETAILS:\nID: ${formData.sa_id_number || 'N/A'}\nPEP Status: ${formData.pep_status}\nFATCA US Person: ${formData.us_person_fatca}\nTax Residency: ${formData.tax_residency}\nMonthly Investable: ${formData.monthly_investable_surplus}\nAdvisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}\n\n${rmcpResult.band === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}\n\nLog in to the WealthWorks Advisor Portal to manage this client.`;
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: emailSubject, body: emailBody });
       }
+
       if (ficaStatus === 'Approved') toast.success('FICA Approved — Reference: ' + ficaRef);
       else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Your advisor has been notified.');
       else toast.error('FICA Declined — please contact your advisor.');
@@ -578,7 +496,6 @@ export default function ClientOnboarding() {
 
   const handleContinue = async () => {
     let stepData = {};
-
     if (currentStep === 1) {
       if (!formData.first_name || !formData.last_name || !formData.email || !formData.mobile_number) {
         toast.error('Please fill in all required fields');
@@ -611,68 +528,67 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-       stepData = {
-         identity_document_uploaded: formData.identity_document_uploaded,
-         proof_of_address_uploaded: formData.proof_of_address_uploaded,
-         income_proof_uploaded: formData.income_proof_uploaded,
-         existing_policies_uploaded: formData.existing_policies_uploaded,
-       };
-     } else if (currentStep === 3) {
-       if (!formData.employment_status || !formData.occupation) {
-         toast.error('Please fill in employment details');
-         return;
-       }
-       stepData = {
-         employment_status: formData.employment_status,
-         occupation: formData.occupation,
-         employer: formData.employer,
-         industry: formData.industry,
-         source_of_funds: formData.source_of_funds,
-         sa_tax_number: formData.sa_tax_number,
-         tax_residency: formData.tax_residency,
-         us_person_fatca: formData.us_person_fatca,
-         pep_status: formData.pep_status,
-         pep_explanation: formData.pep_explanation,
-       };
-     } else if (currentStep === 4) {
-       if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-       if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
-       stepData = {
-         fica_status: ficaResult?.fica_status || 'Pending',
-         fica_reference: ficaResult?.fica_reference || '',
-         fica_risk_band: ficaResult?.risk_band || '',
-         fica_verified_at: ficaResult?.verified_at || '',
-         home_affairs_verified: ficaResult?.fica_status === 'Approved',
-         aml_pep_clear: ficaResult?.fica_status !== 'Referred',
-       };
-     } else if (currentStep === 5) {
-       stepData = {
-         gross_annual_income_band: formData.gross_annual_income_band,
-         monthly_investable_surplus: formData.monthly_investable_surplus,
-         net_worth_band: formData.net_worth_band,
-         total_liabilities: formData.total_liabilities,
-         existing_financial_products: productsList,
-         products_list: productsList,
-         loa_uploaded: formData.loa_uploaded,
-         loa_authorised: formData.loa_authorised,
-         will_in_place: formData.will_in_place,
-         dependants: formData.dependants,
-       };
-     } else if (currentStep === 6) {
-       if (!formData.risk_profile) {
-         toast.error('Please select a risk profile');
-         return;
-       }
-       stepData = {
-         portfolio_drop_response: formData.portfolio_drop_response,
-         primary_investment_objective: formData.primary_investment_objective,
-         time_horizon: formData.time_horizon,
-         liquidity_requirement: formData.liquidity_requirement,
-         risk_profile: formData.risk_profile,
-         advisory_needs: formData.advisory_needs,
-       };
-     }
-
+      stepData = {
+        identity_document_uploaded: formData.identity_document_uploaded,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded,
+        income_proof_uploaded: formData.income_proof_uploaded,
+        existing_policies_uploaded: formData.existing_policies_uploaded,
+      };
+    } else if (currentStep === 3) {
+      if (!formData.employment_status || !formData.occupation) {
+        toast.error('Please fill in employment details');
+        return;
+      }
+      stepData = {
+        employment_status: formData.employment_status,
+        occupation: formData.occupation,
+        employer: formData.employer,
+        industry: formData.industry,
+        source_of_funds: formData.source_of_funds,
+        sa_tax_number: formData.sa_tax_number,
+        tax_residency: formData.tax_residency,
+        us_person_fatca: formData.us_person_fatca,
+        pep_status: formData.pep_status,
+        pep_explanation: formData.pep_explanation,
+      };
+    } else if (currentStep === 4) {
+      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+      if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
+      stepData = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_risk_band: ficaResult?.risk_band || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
+      };
+    } else if (currentStep === 5) {
+      stepData = {
+        gross_annual_income_band: formData.gross_annual_income_band,
+        monthly_investable_surplus: formData.monthly_investable_surplus,
+        net_worth_band: formData.net_worth_band,
+        total_liabilities: formData.total_liabilities,
+        existing_financial_products: productsList,
+        products_list: productsList,
+        loa_uploaded: formData.loa_uploaded,
+        loa_authorised: formData.loa_authorised,
+        will_in_place: formData.will_in_place,
+        dependants: formData.dependants,
+      };
+    } else if (currentStep === 6) {
+      if (!formData.risk_profile) {
+        toast.error('Please select a risk profile');
+        return;
+      }
+      stepData = {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: formData.time_horizon,
+        liquidity_requirement: formData.liquidity_requirement,
+        risk_profile: formData.risk_profile,
+        advisory_needs: formData.advisory_needs,
+      };
+    }
     const saved = await saveStep(stepData);
     if (saved) setCurrentStep(prev => prev + 1);
   };
@@ -685,7 +601,6 @@ export default function ClientOnboarding() {
     }
   };
 
-  // Builds the step data for the current step without validation, then saves and submits
   const saveAndSubmitCurrent = async () => {
     let stepData = {};
     if (currentStep === 1) {
@@ -749,11 +664,6 @@ export default function ClientOnboarding() {
     if (!clientId) { toast.error('Client record not found'); return; }
     setIsSubmitting(true);
     try {
-      // Fetch current client data
-      const allClients = await base44.entities.Clients.list();
-      const currentClient = allClients.find(c => c.id === clientId);
-      
-      // Update client with document submission timestamp and status
       await base44.entities.Clients.update(clientId, {
         client_status: 'Onboarded',
         onboarding_complete: true,
@@ -765,7 +675,6 @@ export default function ClientOnboarding() {
         doc_existing_policies: formData.existing_policies_uploaded ? `policies-${clientId}-${Date.now()}` : '',
       });
 
-      // Send notification email to advisor
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
       const clientIdNumber = formData.sa_id_number || formData.passport_number || 'N/A';
       const submittedDocs = [
@@ -784,9 +693,7 @@ export default function ClientOnboarding() {
 
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p =>
-        p.client_id === clientId ||
-        p.client_id === String(clientId) ||
-        String(p.client_id) === String(clientId)
+        p.client_id === clientId || p.client_id === String(clientId) || String(p.client_id) === String(clientId)
       ) || null;
 
       const clientName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
@@ -906,11 +813,7 @@ export default function ClientOnboarding() {
                 type="button"
                 onClick={() => setCurrentStep(step.number)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
-                  isCurrent
-                    ? 'border-ocean text-ocean'
-                    : isComplete
-                    ? 'border-teal text-teal hover:border-ocean hover:text-ocean'
-                    : 'border-transparent text-muted-foreground hover:text-navy'
+                  isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal hover:border-ocean hover:text-ocean' : 'border-transparent text-muted-foreground hover:text-navy'
                 }`}
               >
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
@@ -927,9 +830,7 @@ export default function ClientOnboarding() {
         <div className="flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
           {/* Step Header */}
           <div className="mb-4">
-            <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">
-              STEP {currentStep} OF 7
-            </p>
+            <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 7</p>
             <h1 className="text-2xl font-bold text-navy mb-1">
               {currentStep === 1 && 'Personal information'}
               {currentStep === 2 && 'Document upload'}
@@ -971,7 +872,6 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              {/* Identity type toggle */}
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">IDENTITY TYPE</Label>
                 <div className="flex gap-2">
@@ -1087,7 +987,7 @@ export default function ClientOnboarding() {
                   <div key={doc.key} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
-                      <span className={`text-[10px] font-semibold ${doc.badge.includes('OPTIONAL') ? 'text-muted-foreground' : 'text-ocean'}`}>{doc.badge}</span>
+                      <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
                     </div>
                     {formData[doc.key] ? (
                       <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
@@ -1203,124 +1103,125 @@ export default function ClientOnboarding() {
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ── STEP 4: FICA Verification ── */}
-                {currentStep === 4 && (
-                <div className="space-y-3">
-                <div className="border border-border rounded p-3">
+          {/* ── STEP 4: FICA Verification ── */}
+          {currentStep === 4 && (
+            <div className="space-y-3">
+              <div className="border border-border rounded p-3">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">BIOMETRIC SELFIE</h3>
-                   <span className="text-[10px] text-muted-foreground">OPTIONAL — IMPROVES FICA SCORE</span>
-                 </div>
-                 <p className="text-xs text-muted-foreground mb-2">Used for face match against your Home Affairs photograph.</p>
-                 {selfieBase64 ? (
-                   <div className="flex items-center gap-3">
-                     <div className="w-8 h-8 rounded-full bg-teal/10 border border-teal flex items-center justify-center text-teal text-xs font-bold">✓</div>
-                     <div>
-                       <p className="text-xs font-medium text-teal">Selfie captured</p>
-                       <button type="button" onClick={() => setSelfieBase64(null)} className="text-[10px] text-muted-foreground hover:text-red-500">Remove</button>
-                     </div>
-                   </div>
-                 ) : (
-                   <label className="block cursor-pointer">
-                     <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                       <p className="text-xs font-medium text-navy">Take or upload a selfie</p>
-                       <p className="text-[10px] text-muted-foreground mt-0.5">JPEG or PNG · max 2 MB · face clearly visible</p>
-                       <p className="text-[10px] text-ocean mt-1">Click to upload</p>
-                     </div>
-                     <input type="file" accept="image/jpeg,image/png" capture="user" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; if (file.size > 2097152) { toast.error('Selfie must be under 2 MB'); return; } const reader = new FileReader(); reader.onload = (ev) => setSelfieBase64(ev.target.result.split(',')[1]); reader.readAsDataURL(file); toast.success('Selfie captured'); }} />
-                   </label>
-                 )}
+                  <span className="text-[10px] text-muted-foreground">OPTIONAL — IMPROVES FICA SCORE</span>
                 </div>
-
-                <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
-                 <div className="flex items-center justify-between mb-3">
-                   <div>
-                     <h3 className="font-semibold text-navy text-sm">FICA / AML Automated Verification</h3>
-                     <p className="text-[10px] text-muted-foreground">Powered by VerifyNow · FICA-aligned · POPIA compliant · 7-year audit trail</p>
-                   </div>
-                   {!ficaRunning && (
-                     <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
-                       {ficaResult ? '↺ Re-verify' : '⊕ Verify with VerifyNow'}
-                     </button>
-                   )}
-                   {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying…</span>}
-                 </div>
-                 {(ficaRunning || ficaResult) && (
-                   <div className="grid grid-cols-2 gap-2 mb-3">
-                     {[
-                       { key: 'home_affairs_id', label: 'Home Affairs ID', sub: 'HANIS real-time lookup' },
-                       { key: 'aml_pep_screen', label: 'AML / PEP / Sanctions', sub: '190+ country screening' },
-                       { key: 'document_auth', label: 'Document authentication', sub: 'OCR + fraud signals' },
-                       { key: 'face_match', label: 'Liveness & face match', sub: 'Biometric selfie check' },
-                       { key: 'avs_bank', label: 'Bank account (AVS)', sub: 'Verified at proposal stage' },
-                       { key: 'risk_score', label: 'Risk classification', sub: 'CDD risk band' },
-                     ].map(({ key, label, sub }) => {
-                       const check = ficaChecks[key] || { status: 'pending' };
-                       const s = { running: 'bg-ocean animate-pulse', pass: 'bg-teal', fail: 'bg-red-500', flag: 'bg-amber-500', skipped: 'bg-border', pending: 'bg-border' }[check.status] || 'bg-border';
-                       const b = { running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200', flag: 'bg-amber-50 text-amber-700 border-amber-200', skipped: 'bg-secondary text-muted-foreground border-border', pending: 'bg-secondary text-muted-foreground border-border' }[check.status] || 'bg-secondary text-muted-foreground border-border';
-                       const t = { running: 'Running…', pass: 'Verified', fail: 'Failed', flag: 'Flagged — EDD', skipped: 'Skipped', pending: 'Pending' }[check.status] || 'Pending';
-                       return (
-                         <div key={key} className="flex items-center gap-2 p-2 bg-card border border-border rounded text-xs">
-                           <div className={`w-2 h-2 rounded-full shrink-0 ${s}`} />
-                           <div className="flex-1 min-w-0">
-                             <p className="font-medium text-navy truncate">{label}</p>
-                             <p className="text-muted-foreground text-[10px] truncate">{check.note || sub}</p>
-                           </div>
-                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 ${b}`}>{t}</span>
-                         </div>
-                       );
-                     })}
-                   </div>
-                 )}
-                 {ficaResult && ficaResult.fica_status && (
-                   <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                     <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
-                     <div className="flex-1">
-                       <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                         {ficaResult.fica_status === 'Approved' ? 'FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'FICA Verification Failed'}
-                       </p>
-                       {ficaResult.fica_reference && (
-                         <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
-                       )}
-                       {ficaResult.rmcp_score && (
-                         <div className="mt-2 p-2 bg-secondary/50 rounded border border-border text-[10px] text-muted-foreground space-y-1">
-                           <p className="font-semibold text-navy">RMCP Risk Score Breakdown:</p>
-                           <div className="grid grid-cols-2 gap-1">
-                             <p>Client risk: <strong>{ficaResult.rmcp_score.breakdown.client_factor}</strong> / {ficaResult.rmcp_score.breakdown.client_factor > 0 ? '30' : '30'} (30%)</p>
-                             <p>Geography risk: <strong>{ficaResult.rmcp_score.breakdown.geography_factor}</strong> / 25 (25%)</p>
-                             <p>Product risk: <strong>{ficaResult.rmcp_score.breakdown.product_factor}</strong> / 20 (20%)</p>
-                             <p>Transaction risk: <strong>{ficaResult.rmcp_score.breakdown.transaction_factor}</strong> / 15 (15%)</p>
-                             <p>Behaviour risk: <strong>{ficaResult.rmcp_score.breakdown.behaviour_factor}</strong> / 10 (10%)</p>
-                             <p className="font-semibold text-navy col-span-2">Total RMCP: <strong>{ficaResult.rmcp_score.score}</strong> / 100 — <strong>{ficaResult.rmcp_score.band}</strong></p>
-                           </div>
-                         </div>
-                       )}
-                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 4.</p>}
-                       {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
-                       {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
-                     </div>
-                   </div>
-                 )}
-                 {!ficaRunning && !ficaResult && (
-                   <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
-                     <p>Complete all fields above then click <strong>Verify with VerifyNow</strong></p>
-                     <p className="mt-1">Checks: Home Affairs ID · AML/PEP · Document auth · Face match · Risk classification</p>
-                   </div>
-                 )}
-                </div>
-
-                <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
-                 <span className="font-semibold text-navy">FICA compliance note: </span>
-                 Verification is performed by VerifyNow against Home Affairs HANIS, international AML/PEP/sanctions lists (190+ countries), and the SA FIC register. WealthWorks remains the FICA Accountable Institution under FICA Schedule 1. All records retained minimum 5 years under FICA Section 23. Processed under POPIA-compliant consent.
-                </div>
-                </div>
+                <p className="text-xs text-muted-foreground mb-2">Used for face match against your Home Affairs photograph.</p>
+                {selfieBase64 ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-teal/10 border border-teal flex items-center justify-center text-teal text-xs font-bold">✓</div>
+                    <div>
+                      <p className="text-xs font-medium text-teal">Selfie captured</p>
+                      <button type="button" onClick={() => setSelfieBase64(null)} className="text-[10px] text-muted-foreground hover:text-red-500">Remove</button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer">
+                    <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                      <p className="text-xs font-medium text-navy">Take or upload a selfie</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">JPEG or PNG · max 2 MB · face clearly visible</p>
+                      <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                    </div>
+                    <input type="file" accept="image/jpeg,image/png" capture="user" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; if (file.size > 2097152) { toast.error('Selfie must be under 2 MB'); return; } const reader = new FileReader(); reader.onload = (ev) => setSelfieBase64(ev.target.result.split(',')[1]); reader.readAsDataURL(file); toast.success('Selfie captured'); }} />
+                  </label>
                 )}
+              </div>
 
-                {/* ── STEP 5: Financial Profile ── */}
-                {currentStep === 5 && (
-                <div className="space-y-3">
+              <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-navy text-sm">FICA / AML Automated Verification</h3>
+                    <p className="text-[10px] text-muted-foreground">Powered by VerifyNow · FICA-aligned · POPIA compliant · 7-year audit trail</p>
+                  </div>
+                  {!ficaRunning && (
+                    <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
+                      {ficaResult ? '↺ Re-verify' : '⊕ Verify with VerifyNow'}
+                    </button>
+                  )}
+                  {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying…</span>}
+                </div>
+                {(ficaRunning || ficaResult) && (
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {[
+                      { key: 'home_affairs_id', label: 'Home Affairs ID', sub: 'HANIS real-time lookup' },
+                      { key: 'aml_pep_screen', label: 'AML / PEP / Sanctions', sub: '190+ country screening' },
+                      { key: 'document_auth', label: 'Document authentication', sub: 'OCR + fraud signals' },
+                      { key: 'face_match', label: 'Liveness & face match', sub: 'Biometric selfie check' },
+                      { key: 'avs_bank', label: 'Bank account (AVS)', sub: 'Verified at proposal stage' },
+                      { key: 'risk_score', label: 'Risk classification', sub: 'CDD risk band' },
+                    ].map(({ key, label, sub }) => {
+                      const check = ficaChecks[key] || { status: 'pending' };
+                      const s = { running: 'bg-ocean animate-pulse', pass: 'bg-teal', fail: 'bg-red-500', flag: 'bg-amber-500', skipped: 'bg-border', pending: 'bg-border' }[check.status] || 'bg-border';
+                      const b = { running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200', flag: 'bg-amber-50 text-amber-700 border-amber-200', skipped: 'bg-secondary text-muted-foreground border-border', pending: 'bg-secondary text-muted-foreground border-border' }[check.status] || 'bg-secondary text-muted-foreground border-border';
+                      const t = { running: 'Running…', pass: 'Verified', fail: 'Failed', flag: 'Flagged — EDD', skipped: 'Skipped', pending: 'Pending' }[check.status] || 'Pending';
+                      return (
+                        <div key={key} className="flex items-center gap-2 p-2 bg-card border border-border rounded text-xs">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${s}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-navy truncate">{label}</p>
+                            <p className="text-muted-foreground text-[10px] truncate">{check.note || sub}</p>
+                          </div>
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 ${b}`}>{t}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {ficaResult && ficaResult.fica_status && (
+                  <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                    <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
+                    <div className="flex-1">
+                      <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
+                        {ficaResult.fica_status === 'Approved' ? 'FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'FICA Verification Failed'}
+                      </p>
+                      {ficaResult.fica_reference && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
+                      )}
+                      {ficaResult.rmcp_score && (
+                        <div className="mt-2 p-2 bg-secondary/50 rounded border border-border text-[10px] text-muted-foreground space-y-1">
+                          <p className="font-semibold text-navy">RMCP Risk Score Breakdown:</p>
+                          <div className="grid grid-cols-2 gap-1">
+                            <p>Client risk: <strong>{ficaResult.rmcp_score.breakdown.client_factor}</strong> / 30 (30%)</p>
+                            <p>Geography risk: <strong>{ficaResult.rmcp_score.breakdown.geography_factor}</strong> / 25 (25%)</p>
+                            <p>Product risk: <strong>{ficaResult.rmcp_score.breakdown.product_factor}</strong> / 20 (20%)</p>
+                            <p>Transaction risk: <strong>{ficaResult.rmcp_score.breakdown.transaction_factor}</strong> / 15 (15%)</p>
+                            <p>Behaviour risk: <strong>{ficaResult.rmcp_score.breakdown.behaviour_factor}</strong> / 10 (10%)</p>
+                            <p className="font-semibold text-navy col-span-2">Total RMCP: <strong>{ficaResult.rmcp_score.score}</strong> / 100 — <strong>{ficaResult.rmcp_score.band}</strong></p>
+                          </div>
+                        </div>
+                      )}
+                      {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 5.</p>}
+                      {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
+                      {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                    </div>
+                  </div>
+                )}
+                {!ficaRunning && !ficaResult && (
+                  <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
+                    <p>Complete all fields above then click <strong>Verify with VerifyNow</strong></p>
+                    <p className="mt-1">Checks: Home Affairs ID · AML/PEP · Document auth · Face match · Risk classification</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-navy">FICA compliance note: </span>
+                Verification is performed by VerifyNow against Home Affairs HANIS, international AML/PEP/sanctions lists (190+ countries), and the SA FIC register. WealthWorks remains the FICA Accountable Institution under FICA Schedule 1. All records retained minimum 5 years under FICA Section 23. Processed under POPIA-compliant consent.
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 5: Financial Profile ── */}
+          {currentStep === 5 && (
+            <div className="space-y-3">
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">INCOME & ASSETS</h3>
                 <div className="grid grid-cols-2 gap-3">
@@ -1369,7 +1270,6 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              {/* Existing Financial Products */}
               <div className="border border-border rounded p-3">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">EXISTING FINANCIAL PRODUCTS</h3>
@@ -1404,7 +1304,7 @@ export default function ClientOnboarding() {
                           className="h-8 text-xs"
                           placeholder="0"
                           type="text"
-                          value={product.value ? Number(String(product.value).replace(/,/g,'')).toLocaleString('en-ZA') : ''}
+                          value={product.value ? Number(String(product.value).replace(/,/g, '')).toLocaleString('en-ZA') : ''}
                           onChange={e => updateProduct(idx, 'value', e.target.value.replace(/,/g, ''))}
                           onFocus={e => updateProduct(idx, 'value', String(product.value).replace(/,/g, ''))}
                         />
@@ -1417,7 +1317,6 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              {/* Letter of Authority */}
               <div className="border border-border rounded p-3">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
                 {formData.loa_uploaded ? (
@@ -1482,7 +1381,6 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
 
-                {/* Risk Score */}
                 {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
                   <div className="mt-3 p-3 bg-ocean/5 border border-ocean/20 rounded">
                     <div className="flex justify-between items-center mb-1">
@@ -1496,7 +1394,6 @@ export default function ClientOnboarding() {
                   </div>
                 )}
 
-                {/* Risk Profile Selection */}
                 <div className="mt-3">
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
@@ -1526,92 +1423,6 @@ export default function ClientOnboarding() {
                   )}
                 </div>
               </div>
-            )}
-
-            {/* ── STEP 6: Risk Profile & Objectives ── */}
-            {currentStep === 6 && (
-              <div className="space-y-3">
-                <div className="border border-border rounded p-3">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE QUESTIONNAIRE</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">IF YOUR PORTFOLIO FELL 20% IN 3 MONTHS</Label>
-                      <Select value={formData.portfolio_drop_response} onValueChange={v => handleChange('portfolio_drop_response', v)}>
-                        <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select your response" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Sell immediately">Sell immediately — protect what's left</SelectItem>
-                          <SelectItem value="Hold">Hold — wait for recovery</SelectItem>
-                          <SelectItem value="Buy more">Buy more — take the opportunity</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PRIMARY INVESTMENT OBJECTIVE</Label>
-                      <Select value={formData.primary_investment_objective} onValueChange={v => handleChange('primary_investment_objective', v)}>
-                        <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{['Capital preservation', 'Income generation', 'Moderate growth', 'Aggressive growth', 'Speculation'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TIME HORIZON</Label>
-                      <Select value={formData.time_horizon} onValueChange={v => handleChange('time_horizon', v)}>
-                        <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{['Less than 1 year', '1–3 years', '3–5 years', '5–10 years', '10+ years'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">LIQUIDITY REQUIREMENT</Label>
-                      <Select value={formData.liquidity_requirement} onValueChange={v => handleChange('liquidity_requirement', v)}>
-                        <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{['Immediate access required', 'Access within 1 year', 'Access within 3 years', 'Long-term — no immediate need'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Risk Score */}
-                  {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
-                    <div className="mt-3 p-3 bg-ocean/5 border border-ocean/20 rounded">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
-                        <span className="text-sm font-bold text-ocean">{riskScore} / 10</span>
-                      </div>
-                      <div className="w-full bg-border rounded-full h-2 mb-1">
-                        <div className="h-2 rounded-full bg-ocean transition-all" style={{ width: `${riskScore * 10}%` }} />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">Based on your answers — auto-selecting <strong>{scoreToProfile(riskScore)}</strong> profile</p>
-                    </div>
-                  )}
-
-                  {/* Risk Profile Selection */}
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
-                      {profileOverridden && (
-                        <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { value: 'Conservative', sub: 'Capital protection.' },
-                        { value: 'Cautious', sub: 'Low risk.' },
-                        { value: 'Moderate', sub: 'Balanced.' },
-                        { value: 'Growth', sub: 'Long-term.' },
-                        { value: 'Aggressive', sub: 'Max growth.' },
-                      ].map(opt => (
-                        <button key={opt.value} type="button"
-                          onClick={() => { setProfileOverridden(true); handleChange('risk_profile', opt.value); }}
-                          className={`p-2 border rounded text-left transition-all ${formData.risk_profile === opt.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
-                          <p className={`text-xs font-semibold ${formData.risk_profile === opt.value ? 'text-ocean' : 'text-navy'}`}>{opt.value}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{opt.sub}</p>
-                          {formData.risk_profile === opt.value && <div className="h-0.5 bg-ocean mt-1 rounded" />}
-                        </button>
-                      ))}
-                    </div>
-                    {profileOverridden && (
-                      <p className="text-[10px] text-warn mt-1">⚠ Profile manually overridden — calculated score suggests <strong>{scoreToProfile(riskScore)}</strong></p>
-                    )}
-                  </div>
-                </div>
 
               <div className="border border-border rounded p-3">
                 <div className="flex justify-between items-center mb-2">
@@ -1697,13 +1508,15 @@ export default function ClientOnboarding() {
                   {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
                 </Button>
               )}
-              </div>
-              {currentStep < 7 && (
-                <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                  You can save and submit at any point. You can return to complete remaining sections later.
-                </p>
-              )}
-              </div>
-              </div>
-              );
-              }
+            </div>
+            {currentStep < 7 && (
+              <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                You can save and submit at any point. You can return to complete remaining sections later.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
