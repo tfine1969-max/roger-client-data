@@ -1025,10 +1025,10 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 3: KYC Declaration ── */}
           {currentStep === 3 && (
-            <div className="space-y-3">
-              <div className="border border-border rounded p-3">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">EMPLOYMENT & OCCUPATION</h3>
-                <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <div className="border border-border rounded p-2.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">EMPLOYMENT & OCCUPATION</h3>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
                     <Select value={formData.employment_status} onValueChange={v => handleChange('employment_status', v)}>
@@ -1054,12 +1054,12 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
+              <div className="border border-border rounded p-2.5">
+                <div className="flex justify-between items-center mb-1.5">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">SOURCE OF FUNDS</h3>
                   <span className="text-[10px] text-muted-foreground">SELECT ALL THAT APPLY</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   {['Salary / employment income', 'Business income / dividends', 'Investment returns', 'Inheritance / gift', 'Retirement / pension fund', 'Sale of property / assets'].map(item => (
                     <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
                       <input type="checkbox" checked={formData.source_of_funds.includes(item)} onChange={() => toggleArrayItem('source_of_funds', item)} className="w-3.5 h-3.5 accent-ocean" />
@@ -1069,12 +1069,12 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
+              <div className="border border-border rounded p-2.5">
+                <div className="flex justify-between items-center mb-1.5">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">TAX & PEP DECLARATION</h3>
                   <span className="text-[10px] font-semibold text-ocean">FATCA / CRS</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER</Label>
                     <Input className="mt-1 h-8 text-sm" placeholder="10-digit SARS reference" value={formData.sa_tax_number} onChange={e => handleChange('sa_tax_number', e.target.value)} />
@@ -1230,10 +1230,10 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 5: Income & Assets ── */}
           {currentStep === 5 && (
-            <div className="space-y-3">
-              <div className="border border-border rounded p-3">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">INCOME & ASSETS</h3>
-                <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <div className="border border-border rounded p-2.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">INCOME & ASSETS</h3>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">GROSS ANNUAL INCOME BAND</Label>
                     <Select value={formData.gross_annual_income_band} onValueChange={v => handleChange('gross_annual_income_band', v)}>
@@ -1283,9 +1283,9 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 6: Existing Products ── */}
           {currentStep === 6 && (
-            <div className="space-y-3">
-              <div className="border border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
+            <div className="space-y-2">
+              <div className="border border-border rounded p-2.5">
+                <div className="flex justify-between items-center mb-1.5">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">EXISTING FINANCIAL PRODUCTS</h3>
                   <button type="button" onClick={addProduct} className="flex items-center gap-1 text-xs text-ocean hover:text-navy transition-colors font-medium">
                     <Plus className="w-3.5 h-3.5" /> Add product
@@ -1331,8 +1331,8 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-3">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
+              <div className="border border-border rounded p-2.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-1.5">LETTER OF AUTHORITY</h3>
                 {formData.loa_uploaded ? (
                   <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
                     <Check className="w-4 h-4 text-teal" />
@@ -1357,10 +1357,10 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 7: Risk Profile & Objectives ── */}
           {currentStep === 7 && (
-            <div className="space-y-3">
-              <div className="border border-border rounded p-3">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE QUESTIONNAIRE</h3>
-                <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <div className="border border-border rounded p-2.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">RISK TOLERANCE QUESTIONNAIRE</h3>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">IF YOUR PORTFOLIO FELL 20% IN 3 MONTHS</Label>
                     <Select value={formData.portfolio_drop_response} onValueChange={v => handleChange('portfolio_drop_response', v)}>
@@ -1396,7 +1396,7 @@ export default function ClientOnboarding() {
                 </div>
 
                 {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
-                  <div className="mt-3 p-3 bg-ocean/5 border border-ocean/20 rounded">
+                  <div className="mt-2 p-2.5 bg-ocean/5 border border-ocean/20 rounded">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-[10px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
                       <span className="text-sm font-bold text-ocean">{riskScore} / 10</span>
@@ -1408,8 +1408,8 @@ export default function ClientOnboarding() {
                   </div>
                 )}
 
-                <div className="mt-3">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1.5">
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
                     {profileOverridden && (
                       <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
@@ -1438,12 +1438,12 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
+              <div className="border border-border rounded p-2.5">
+                <div className="flex justify-between items-center mb-1.5">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">ADVISORY NEEDS</h3>
                   <span className="text-[10px] text-muted-foreground">SELECT ALL THAT APPLY</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   {ADVISORY_NEEDS.map(item => (
                     <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
                       <input type="checkbox" checked={formData.advisory_needs.includes(item)} onChange={() => toggleArrayItem('advisory_needs', item)} className="w-3.5 h-3.5 accent-ocean" />
