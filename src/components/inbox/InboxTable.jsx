@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Trash2, ChevronRight } from 'lucide-react';
+import { Trash2, ChevronRight, CheckCircle2, AlertTriangle, Clock, XCircle } from 'lucide-react';
 import { STATUS_MAP } from '@/components/inbox/InboxMetrics';
 
 const STATUS_BADGE_STYLES = {
@@ -29,10 +29,59 @@ const STATUS_BADGE_STYLES = {
 
 const DEFAULT_BADGE = { bg: '#f0f0f0', color: '#666' };
 
-export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, onClearFilter }) {
+const FICA_STATUS_STYLES = {
+  'Approved': { icon: CheckCircle2, bg: '#f0fdf4', border: '#bbf7d0', text: '#166534', label: 'Verified' },
+  'Referred': { icon: AlertTriangle, bg: '#fef3c7', border: '#fcd34d', text: '#b45309', label: 'EDD Required' },
+  'Declined': { icon: XCircle, bg: '#fef2f2', border: '#fecdd3', text: '#991b1b', label: 'Not Verified' },
+};
+
+const getParsedFailedCheck = (ficaChecksJson) => {
+  if (!ficaChecksJson) return null;
+  try {
+    const checks = typeof ficaChecksJson === 'string' ? JSON.parse(ficaChecksJson) : ficaChecksJson;
+    for (const [key, check] of Object.entries(checks)) {
+      if (check.status === 'fail') {
+        return check.label || key;
+      }
+    }
+  } catch {}
+  return null;
+};
+
+const FicaStatusIndicator = ({ client }) => {
+  if (!client) return null;
+
+  const status = client.fica_status;
+  const styles = FICA_STATUS_STYLES[status];
+
+  if (styles) {
+    const Icon = styles.icon;
+    const failedCheck = status === 'Declined' ? getParsedFailedCheck(client.fica_checks_json) : null;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title={failedCheck ? `Failed: ${failedCheck}` : ''}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, background: styles.bg, border: `1px solid ${styles.border}` }}>
+          <Icon className="w-3.5 h-3.5" style={{ color: styles.text }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: styles.text }}>{styles.label}</span>
+        </div>
+        {failedCheck && <span style={{ fontSize: 9, color: '#64748b' }}>({failedCheck})</span>}
+      </div>
+    );
+  }
+
+  // Pending (null/empty)
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: '#f3f4f6', border: '1px solid #d1d5db' }}>
+      <Clock className="w-3.5 h-3.5" style={{ color: '#6b7280' }} />
+      <span style={{ fontSize: 10, fontWeight: 700, color: '#6b7280' }}>Pending</span>
+    </div>
+  );
+};
+
+export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, ficaFilter = null, onClearFilter }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState(null);
+  const [sortBy, setSortBy] = useState(null);
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
@@ -43,11 +92,32 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
     setDeletingId(null);
   };
 
-  const filtered = statusFilter
+  let filtered = statusFilter
     ? proposals.filter(p =>
         (STATUS_MAP[statusFilter] || []).map(s => s.toLowerCase()).includes((p.status || '').toLowerCase())
       )
     : proposals;
+
+  if (ficaFilter && ficaFilter !== 'All clients') {
+    filtered = filtered.filter(p => {
+      const client = clientMap[p.client_id];
+      if (!client) return ficaFilter === 'Pending verification';
+      if (ficaFilter === 'Verified only') return client.fica_status === 'Approved';
+      if (ficaFilter === 'EDD Required') return client.fica_status === 'Referred';
+      if (ficaFilter === 'Not Verified') return client.fica_status === 'Declined';
+      if (ficaFilter === 'Pending verification') return !client.fica_status;
+      return true;
+    });
+  }
+
+  if (sortBy === 'fica') {
+    const order = { 'Approved': 3, 'Referred': 2, 'Declined': 1 };
+    filtered = [...filtered].sort((a, b) => {
+      const aStatus = clientMap[a.client_id]?.fica_status;
+      const bStatus = clientMap[b.client_id]?.fica_status;
+      return (order[bStatus] || 0) - (order[aStatus] || 0);
+    });
+  }
 
   return (
     <div>
@@ -67,10 +137,11 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
 
       <div className="border border-border bg-card overflow-x-auto">
         {/* Header */}
-        <div className="grid grid-cols-[2fr_2fr_1fr_1fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[600px]">
-          {['Client', 'Needs Identified', 'Created', 'Status', ''].map((h, i) => (
-            <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground">
+        <div className="grid grid-cols-[2fr_2fr_1.2fr_1fr_1fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[700px]">
+          {['Client', 'Needs Identified', 'FICA Status', 'Created', 'Status', ''].map((h, i) => (
+            <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors" style={{ cursor: h === 'FICA Status' ? 'pointer' : 'default' }} onClick={() => h === 'FICA Status' && setSortBy(sortBy === 'fica' ? null : 'fica')}>
               {h}
+              {h === 'FICA Status' && sortBy === 'fica' && <span>↓</span>}
             </div>
           ))}
         </div>
@@ -83,28 +154,28 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
         )}
 
         {filtered.map(p => {
-          const badgeStyle = STATUS_BADGE_STYLES[p.status] || DEFAULT_BADGE;
-          const client = clientMap[p.client_id] || clientMap[p.client] || null;
+           const badgeStyle = STATUS_BADGE_STYLES[p.status] || DEFAULT_BADGE;
+           const client = clientMap[p.client_id] || clientMap[p.client] || null;
 
-          const clientName = client
-            ? client.entity_name || client.trust_name || client.company_name
-              || `${client.first_name || ''} ${client.last_name || ''}`.trim()
-              || client.full_name
-            : p.client_name || '—';
+           const clientName = client
+             ? client.entity_name || client.trust_name || client.company_name
+               || `${client.first_name || ''} ${client.last_name || ''}`.trim()
+               || client.full_name
+             : p.client_name || '—';
 
-          const rawNeeds = (Array.isArray(p.advisory_needs) && p.advisory_needs.length > 0)
-            ? p.advisory_needs
-            : (Array.isArray(client?.advisory_needs) && client.advisory_needs.length > 0)
-            ? client.advisory_needs
-            : null;
-          const needs = rawNeeds ? rawNeeds.join(', ') : '—';
+           const rawNeeds = (Array.isArray(p.advisory_needs) && p.advisory_needs.length > 0)
+             ? p.advisory_needs
+             : (Array.isArray(client?.advisory_needs) && client.advisory_needs.length > 0)
+             ? client.advisory_needs
+             : null;
+           const needs = rawNeeds ? rawNeeds.join(', ') : '—';
 
-          return (
-            <div
-              key={p.id}
-              onClick={() => navigate(`/proposal/${p.id}/engine`)}
-              className="grid grid-cols-[2fr_2fr_1fr_1fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[600px]"
-            >
+           return (
+             <div
+               key={p.id}
+               onClick={() => navigate(`/proposal/${p.id}/engine`)}
+               className="grid grid-cols-[2fr_2fr_1.2fr_1fr_1fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[700px]"
+             >
               <div className="flex items-center gap-2">
                 <div>
                   <div className="text-[13px] font-medium text-navy">{clientName}</div>
@@ -130,6 +201,10 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
               </div>
 
               <div className="text-xs text-foreground pr-4">{needs}</div>
+
+              <div className="flex items-center justify-start">
+                <FicaStatusIndicator client={client} />
+              </div>
 
               <div className="text-xs text-muted-foreground">
                 {p.created_date ? (() => {
