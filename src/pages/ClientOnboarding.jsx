@@ -1357,14 +1357,14 @@ export default function ClientOnboarding() {
 
           {/* ── STEP 7: Risk Profile & Objectives ── */}
           {currentStep === 7 && (
-            <div className="space-y-1.5">
-              <div className="border border-border rounded p-2">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-1.5">RISK TOLERANCE QUESTIONNAIRE</h3>
-                <div className="grid grid-cols-2 gap-1.5">
+            <div className="space-y-1">
+              <div className="border border-border rounded p-1.5">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px] mb-1">RISK TOLERANCE QUESTIONNAIRE</h3>
+                <div className="grid grid-cols-2 gap-1">
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">IF YOUR PORTFOLIO FELL 20% IN 3 MONTHS</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">IF YOUR PORTFOLIO FELL 20% IN 3 MONTHS</Label>
                     <Select value={formData.portfolio_drop_response} onValueChange={v => handleChange('portfolio_drop_response', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select your response" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select your response" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Sell immediately">Sell immediately — protect what's left</SelectItem>
                         <SelectItem value="Hold">Hold — wait for recovery</SelectItem>
@@ -1373,49 +1373,49 @@ export default function ClientOnboarding() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PRIMARY INVESTMENT OBJECTIVE</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PRIMARY INVESTMENT OBJECTIVE</Label>
                     <Select value={formData.primary_investment_objective} onValueChange={v => handleChange('primary_investment_objective', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Capital preservation', 'Income generation', 'Moderate growth', 'Aggressive growth', 'Speculation'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TIME HORIZON</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TIME HORIZON</Label>
                     <Select value={formData.time_horizon} onValueChange={v => handleChange('time_horizon', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Less than 1 year', '1–3 years', '3–5 years', '5–10 years', '10+ years'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">LIQUIDITY REQUIREMENT</Label>
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">LIQUIDITY REQUIREMENT</Label>
                     <Select value={formData.liquidity_requirement} onValueChange={v => handleChange('liquidity_requirement', v)}>
-                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Immediate access required', 'Access within 1 year', 'Access within 3 years', 'Long-term — no immediate need'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
-                  <div className="mt-1.5 p-2 bg-ocean/5 border border-ocean/20 rounded">
-                    <div className="flex justify-between items-center mb-0.5">
-                      <span className="text-[10px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
-                      <span className="text-sm font-bold text-ocean">{riskScore} / 10</span>
+                  <div className="mt-1 p-1 bg-ocean/5 border border-ocean/20 rounded">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
+                      <span className="text-xs font-bold text-ocean">{riskScore} / 10</span>
                     </div>
-                    <div className="w-full bg-border rounded-full h-2 mb-0.5">
-                      <div className="h-2 rounded-full bg-ocean transition-all" style={{ width: `${riskScore * 10}%` }} />
+                    <div className="w-full bg-border rounded-full h-1.5 my-0.5">
+                      <div className="h-1.5 rounded-full bg-ocean transition-all" style={{ width: `${riskScore * 10}%` }} />
                     </div>
-                    <p className="text-[10px] text-muted-foreground">Based on your answers — auto-selecting <strong>{scoreToProfile(riskScore)}</strong> profile</p>
+                    <p className="text-[8px] text-muted-foreground leading-tight">Based on your answers — auto-selecting <strong>{scoreToProfile(riskScore)}</strong></p>
                   </div>
                 )}
 
-                <div className="mt-1.5">
-                  <div className="flex items-center justify-between mb-1">
-                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
+                <div className="mt-1">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
                     {profileOverridden && (
-                      <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
+                      <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[8px] text-ocean hover:underline">Reset</button>
                     )}
                   </div>
-                  <div className="grid grid-cols-5 gap-1">
+                  <div className="grid grid-cols-5 gap-0.5">
                     {[
                       { value: 'Conservative', sub: 'Capital protection.' },
                       { value: 'Cautious', sub: 'Low risk.' },
@@ -1425,27 +1425,27 @@ export default function ClientOnboarding() {
                     ].map(opt => (
                       <button key={opt.value} type="button"
                         onClick={() => { setProfileOverridden(true); handleChange('risk_profile', opt.value); }}
-                        className={`p-1.5 border rounded text-left transition-all ${formData.risk_profile === opt.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
-                        <p className={`text-xs font-semibold ${formData.risk_profile === opt.value ? 'text-ocean' : 'text-navy'}`}>{opt.value}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{opt.sub}</p>
-                        {formData.risk_profile === opt.value && <div className="h-0.5 bg-ocean mt-0.5 rounded" />}
+                        className={`p-1 border rounded text-left transition-all ${formData.risk_profile === opt.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
+                        <p className={`text-[9px] font-semibold ${formData.risk_profile === opt.value ? 'text-ocean' : 'text-navy'}`}>{opt.value}</p>
+                        <p className="text-[8px] text-muted-foreground mt-0">{opt.sub}</p>
+                        {formData.risk_profile === opt.value && <div className="h-0.5 bg-ocean mt-0 rounded" />}
                       </button>
                     ))}
                   </div>
                   {profileOverridden && (
-                    <p className="text-[10px] text-warn mt-0.5">⚠ Profile manually overridden — calculated score suggests <strong>{scoreToProfile(riskScore)}</strong></p>
+                    <p className="text-[8px] text-warn mt-0.5">⚠ Profile overridden — suggests <strong>{scoreToProfile(riskScore)}</strong></p>
                   )}
                 </div>
               </div>
 
-              <div className="border border-border rounded p-2">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">ADVISORY NEEDS</h3>
-                  <span className="text-[10px] text-muted-foreground">SELECT ALL THAT APPLY</span>
+              <div className="border border-border rounded p-1.5">
+                <div className="flex justify-between items-center mb-0.5">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">ADVISORY NEEDS</h3>
+                  <span className="text-[8px] text-muted-foreground">SELECT ALL</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   {ADVISORY_NEEDS.map(item => (
-                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1 border border-border rounded hover:bg-secondary/50 text-[9px]">
                       <input type="checkbox" checked={formData.advisory_needs.includes(item)} onChange={() => toggleArrayItem('advisory_needs', item)} className="w-3.5 h-3.5 accent-ocean" />
                       {item}
                     </label>
