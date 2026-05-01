@@ -1,0 +1,33 @@
+{
+  "name": "ProjectTasks",
+  "type": "object",
+  "properties": {
+    "task_name": {
+      "type": "string",
+      "description": "Name of the task"
+    },
+    "category": {
+      "type": "string",
+      "description": "Task category"
+    },
+    "priority": {
+      "type": "string",
+      "description": "Task priority level"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current status of the task"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Detailed notes about the task"
+    },
+    "completed_at": {
+      "type": "string",
+      "description": "When the task was completed"
+    }
+  },
+  "required": [
+    "task_name"
+  ]
+}
