@@ -232,7 +232,7 @@ export default function ClientOnboardingTrust() {
     if (trustees.filter(t => t.first_name && t.id_number).length === 0) { toast.error('Please complete trustee details first'); return; }
     setFicaRunning(true); setFicaResult(null);
     const activeTrustees = trustees.filter(t => t.first_name && t.id_number);
-    setTrusteeChecks(activeTrustees.map(t => ({ name: t.first_name + ' ' + t.last_name, id: 'pending', aml: 'pending' })));
+    setTrusteeChecks(activeTrustees.map(t => ({ name: t.first_name + ' ' + t.last_name, id: 'pending', address: 'pending', doc: 'pending', aml: 'pending' })));
     try {
       let allPass = true, anyFlag = false;
       const updatedChecks = [];
@@ -243,12 +243,47 @@ export default function ClientOnboardingTrust() {
         const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
         if (!idPass) allPass = false;
+
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, address: 'running' } : c));
+        const traceResult = await base44.functions.invoke('ficaVerify', {
+          action: 'consumerTrace',
+          payload: {
+            id_number: trustee.id_number,
+            first_name: trustee.first_name,
+            last_name: trustee.last_name,
+            street_address: trustee.street_address,
+            suburb: trustee.suburb,
+            city: trustee.city,
+            province: trustee.province,
+            postal_code: trustee.postal_code,
+          },
+        });
+        const addressVerified = traceResult?.data?.data?.results?.consumer_trace?.Status === 'Success';
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, address: addressVerified ? 'pass' : 'flag' } : c));
+
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: 'running' } : c));
+        const docResult = trustee.id_file_url
+          ? await base44.functions.invoke('ficaVerify', {
+              action: 'authenticateDoc',
+              payload: {
+                id_number: trustee.id_number,
+                document_url: trustee.id_file_url,
+                document_type: trustee.identity_type === 'Passport' ? 'passport' : 'sa_id',
+                reference: 'ww-trust-' + clientId + '-trustee-' + i + '-' + Date.now(),
+              },
+            })
+          : { data: null, error: 'No uploaded trustee ID document available for OCR' };
+        const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason || '').match(/Forgery|Tampered/i);
+        const docAuthenticated = docResult?.data?.data?.results?.document_verification?.Status === 'Success' || docResult?.data?.data?.Status === 'Success';
+        if (docIsForgery) allPass = false;
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: docIsForgery ? 'fail' : docAuthenticated ? 'pass' : 'flag' } : c));
+
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: 'running' } : c));
         const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { name: trustee.first_name + ' ' + trustee.last_name, entity: 0, country: 'za', dataset: 'all' } });
         const amlMatch = amlResult?.data?.data?.totalHits > 0 || false;
         if (amlMatch) anyFlag = true;
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
-        updatedChecks.push({ ...trustee, id_verified: idPass, aml_clear: !amlMatch });
+        updatedChecks.push({ ...trustee, id_verified: idPass, address_verified: addressVerified, document_authenticated: docAuthenticated, document_issue: !!docIsForgery, aml_clear: !amlMatch });
       }
       const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
@@ -516,6 +551,8 @@ export default function ClientOnboardingTrust() {
   const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
   const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
   const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
+  const addressLabel = { pending: 'Address pending', running: 'Address running', pass: 'Address verified', flag: 'Address review', fail: 'Address failed' };
+  const documentLabel = { pending: 'OCR pending', running: 'OCR running', pass: 'OCR complete', flag: 'OCR review', fail: 'Doc failed' };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -774,6 +811,8 @@ export default function ClientOnboardingTrust() {
                     <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
                       <div className="flex-1 text-xs font-medium text-navy">Trustee {idx + 1} — {check.name}</div>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.address] || amlCfg.pending}`}>{addressLabel[check.address] || 'Address pending'}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.doc] || amlCfg.pending}`}>{documentLabel[check.doc] || 'OCR pending'}</span>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
                     </div>
                   ))}

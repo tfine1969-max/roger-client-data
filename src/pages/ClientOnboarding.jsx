@@ -469,14 +469,40 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
 
       setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: 'running' } }));
-      const traceResult = await base44.functions.invoke('ficaVerify', { action: 'consumerTrace', payload: { id_number: formData.sa_id_number } });
+      const traceResult = await base44.functions.invoke('ficaVerify', {
+        action: 'consumerTrace',
+        payload: {
+          id_number: formData.sa_id_number,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          street_address: formData.street_address,
+          suburb: formData.suburb,
+          city: formData.city,
+          province: formData.province,
+          postal_code: formData.postal_code,
+        },
+      });
       const addressVerified = traceResult?.data?.data?.results?.consumer_trace?.Status === 'Success';
       setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: addressVerified ? 'pass' : 'flag', note: addressVerified ? 'Address confirmed' : 'Address could not be verified' } }));
 
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'running' } }));
-      const docResult = await base44.functions.invoke('ficaVerify', { action: 'authenticateDoc', payload: { id_number: formData.sa_id_number, document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport', reference: 'ww-' + clientId + '-' + Date.now() } });
+      const docResult = formData.doc_identity
+        ? await base44.functions.invoke('ficaVerify', {
+            action: 'authenticateDoc',
+            payload: {
+              id_number: formData.sa_id_number,
+              document_url: formData.doc_identity,
+              document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport',
+              reference: 'ww-' + clientId + '-' + Date.now(),
+            },
+          })
+        : { data: null, error: 'No uploaded ID document available for OCR' };
       const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason?.includes('Forgery') || docResult?.data?.data?.results?.document_verification?.Reason?.includes('Tampered'));
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending — manual review' } }));
+      const docAuthenticated = docResult?.data?.data?.results?.document_verification?.Status === 'Success' || docResult?.data?.data?.Status === 'Success';
+      if (docAuthenticated) {
+        setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'pass', note: 'ID document OCR completed' } }));
+      }
 
       if (selfieBase64) {
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'running' } }));

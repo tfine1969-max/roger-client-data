@@ -1,14 +1,65 @@
 const API_KEY = Deno.env.get('VERIFYNOW_API_KEY');
+const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
+const VERIFYNOW_API_BASE_URL =
+  (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
+const VERIFYNOW_VERIFY_URL = Deno.env.get('VERIFYNOW_VERIFY_URL') || `${VERIFYNOW_API_BASE_URL}/verify`;
+const VERIFYNOW_AML_URL = Deno.env.get('VERIFYNOW_AML_URL') || 'https://www.verifynow.co.za/aml-screening';
 
-async function callVerify(body) {
-  const url = 'https://www.verifynow.co.za/api/external/verify';
+type VerifyPayload = Record<string, any>;
+
+function idempotencyKey(payload: VerifyPayload = {}) {
+  return payload.reference || `ww-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+}
+
+function normalizeId(payload: VerifyPayload = {}) {
+  return payload.id_number || payload.idNumber || payload.sa_id_number || payload.identity_number || '';
+}
+
+function normalizeBase64(value = '') {
+  if (!value) return '';
+  const commaIndex = value.indexOf(',');
+  return value.startsWith('data:') && commaIndex >= 0 ? value.slice(commaIndex + 1) : value;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function fetchFileAsBase64(fileUrl: string) {
+  if (!fileUrl) return '';
+  const response = await fetch(fileUrl);
+  if (!response.ok) {
+    throw new Error(`Could not fetch uploaded document (${response.status})`);
+  }
+  return arrayBufferToBase64(await response.arrayBuffer());
+}
+
+async function getDocumentImageBase64(payload: VerifyPayload = {}) {
+  if (payload.front_image_base64) return normalizeBase64(payload.front_image_base64);
+  if (payload.image_base64) return normalizeBase64(payload.image_base64);
+  if (payload.document_url) return await fetchFileAsBase64(payload.document_url);
+  if (payload.file_url) return await fetchFileAsBase64(payload.file_url);
+  return '';
+}
+
+function errorMessage(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
+
+async function postJson(url: string, body: VerifyPayload, payload: VerifyPayload = {}) {
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'x-api-key': API_KEY,
         'Content-Type': 'application/json',
-        'Idempotency-Key': `ww-${Date.now()}`,
+        'Idempotency-Key': idempotencyKey(payload),
       },
       body: JSON.stringify(body),
     });
@@ -22,62 +73,39 @@ async function callVerify(body) {
     }
 
     if (!response.ok) {
-      console.error(`[callVerify ${response.status}]:`, text);
+      console.error(`[VerifyNow ${response.status} ${url}]:`, text);
       return { data: null, error: `VerifyNow ${response.status}: ${text}` };
     }
 
     return { data: json, error: null };
   } catch (err) {
-    console.error('[callVerify Error]:', err.message);
-    return { data: null, error: `VerifyNow Error: ${err.message}` };
+    const message = errorMessage(err);
+    console.error('[VerifyNow Error]:', message);
+    return { data: null, error: `VerifyNow Error: ${message}` };
   }
 }
 
-async function callAml(body) {
-  const url = 'https://www.verifynow.co.za/aml-screening';
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'x-api-key': API_KEY,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': `ww-${Date.now()}`,
-      },
-      body: JSON.stringify(body),
-    });
+async function callVerify(body: VerifyPayload, payload: VerifyPayload = {}) {
+  return await postJson(VERIFYNOW_VERIFY_URL, body, payload);
+}
 
-    const text = await response.text();
-    let json = {};
-    try {
-      json = JSON.parse(text);
-    } catch {
-      json = { raw: text };
-    }
-
-    if (!response.ok) {
-      console.error(`[callAml ${response.status}]:`, text);
-      return { data: null, error: `VerifyNow ${response.status}: ${text}` };
-    }
-
-    return { data: json, error: null };
-  } catch (err) {
-    console.error('[callAml Error]:', err.message);
-    return { data: null, error: `VerifyNow Error: ${err.message}` };
-  }
+async function callAml(body: VerifyPayload, payload: VerifyPayload = {}) {
+  return await postJson(VERIFYNOW_AML_URL, body, payload);
 }
 
 Deno.serve(async (req) => {
   try {
-    const { action, payload } = await req.json();
+    const { action, payload = {} } = await req.json();
 
     if (action === 'ping') {
       return Response.json({
         data: {
           pong: true,
+          mode: VERIFYNOW_MODE,
           key_prefix: API_KEY ? API_KEY.substring(0, 10) : 'NOT_SET',
           endpoints: {
-            verify: 'https://www.verifynow.co.za/api/external/verify',
-            aml: 'https://www.verifynow.co.za/aml-screening',
+            verify: VERIFYNOW_VERIFY_URL,
+            aml: VERIFYNOW_AML_URL,
           },
         },
         error: null,
@@ -92,140 +120,130 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'verifyCipc') {
-      // Try primary reportType first
-      const url = 'https://www.verifynow.co.za/api/external/verify';
       const primaryBody = {
         reportType: 'cipc_company_match',
-        registrationNumber: payload.registration_number,
-        mode: 'sandbox',
+        registrationNumber: payload.registration_number || payload.registrationNumber,
+        companyName: payload.company_name || payload.companyName,
+        mode: VERIFYNOW_MODE,
       };
-      const primaryRes = await fetch(url, {
-        method: 'POST',
-        headers: { 'x-api-key': API_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': `ww-${Date.now()}` },
-        body: JSON.stringify(primaryBody),
-      });
-      if (primaryRes.ok) {
-        const text = await primaryRes.text();
-        let json = {};
-        try { json = JSON.parse(text); } catch { json = { raw: text }; }
-        return Response.json({ data: json, error: null });
-      }
-      // Fallback to cipc_verification if 400
-      if (primaryRes.status === 400) {
-        const fallbackBody = {
-          reportType: 'cipc_verification',
-          registrationNumber: payload.registration_number,
-          mode: 'sandbox',
-        };
-        const fallbackRes = await fetch(url, {
-          method: 'POST',
-          headers: { 'x-api-key': API_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': `ww-${Date.now() + 1}` },
-          body: JSON.stringify(fallbackBody),
-        });
-        const fallbackText = await fallbackRes.text();
-        let fallbackJson = {};
-        try { fallbackJson = JSON.parse(fallbackText); } catch { fallbackJson = { raw: fallbackText }; }
-        if (fallbackRes.ok) {
-          return Response.json({ data: fallbackJson, error: null });
-        }
-        console.error(`[verifyCipc fallback ${fallbackRes.status}]:`, fallbackText);
-        return Response.json({ data: null, error: `VerifyNow CIPC ${fallbackRes.status}: ${fallbackText}` });
-      }
-      const errText = await primaryRes.text();
-      console.error(`[verifyCipc ${primaryRes.status}]:`, errText);
-      return Response.json({ data: null, error: `VerifyNow CIPC ${primaryRes.status}: ${errText}` });
+      const primaryResult = await callVerify(primaryBody, payload);
+      if (!primaryResult.error) return Response.json(primaryResult);
+
+      const fallbackResult = await callVerify({
+        ...primaryBody,
+        reportType: 'cipc_verification',
+      }, { ...payload, reference: `${idempotencyKey(payload)}-cipc-fallback` });
+      return Response.json(fallbackResult);
     }
 
     if (action === 'verifyId') {
       const result = await callVerify({
         reportType: 'said_verification',
-        idNumber: payload.id_number,
-        mode: 'sandbox',
-      });
+        idNumber: normalizeId(payload),
+        firstName: payload.first_name || payload.firstName,
+        lastName: payload.last_name || payload.lastName,
+        dateOfBirth: payload.date_of_birth || payload.dateOfBirth,
+        mode: VERIFYNOW_MODE,
+      }, payload);
       return Response.json(result);
     }
 
     if (action === 'verifyIdPhoto') {
       const result = await callVerify({
         reportType: 'home_affairs_id_photo',
-        idNumber: payload.id_number,
-        mode: 'sandbox',
-      });
+        idNumber: normalizeId(payload),
+        mode: VERIFYNOW_MODE,
+      }, payload);
       return Response.json(result);
     }
 
     if (action === 'screenAml') {
       const result = await callAml({
-        mode: 'sandbox',
+        mode: VERIFYNOW_MODE,
         name: payload.name,
-        entity: 0,
-        country: 'za',
-        dataset: 'all',
-      });
+        entity: payload.entity ?? 0,
+        country: payload.country || 'za',
+        dataset: payload.dataset || 'all',
+        idNumber: normalizeId(payload) || undefined,
+        registrationNumber: payload.registration_number || payload.registrationNumber,
+        dateOfBirth: payload.date_of_birth || payload.dateOfBirth,
+      }, payload);
       return Response.json(result);
     }
 
     if (action === 'consumerTrace') {
       const result = await callVerify({
         reportType: 'consumer_trace',
-        idNumber: payload.id_number,
-        mode: 'sandbox',
-      });
+        idNumber: normalizeId(payload),
+        firstName: payload.first_name || payload.firstName,
+        lastName: payload.last_name || payload.lastName,
+        streetAddress: payload.street_address || payload.streetAddress,
+        suburb: payload.suburb,
+        city: payload.city,
+        province: payload.province,
+        postalCode: payload.postal_code || payload.postalCode,
+        mode: VERIFYNOW_MODE,
+      }, payload);
       return Response.json(result);
     }
 
     if (action === 'authenticateDoc') {
-      const url = 'https://www.verifynow.co.za/api/external/verify';
       try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'x-api-key': API_KEY,
-            'Content-Type': 'application/json',
-            'Idempotency-Key': `ww-${Date.now()}`,
-          },
-          body: JSON.stringify({
-            bundle: 'id_document_verification',
-            mode: 'sandbox',
-            front_image_base64: payload.front_image_base64,
-            document_type: payload.document_type || 'Identity Card',
-            issuing_country: 'ZAF',
-          }),
-        });
-
-        const text = await response.text();
-        let json = {};
-        try {
-          json = JSON.parse(text);
-        } catch {
-          json = { raw: text };
+        const frontImageBase64 = await getDocumentImageBase64(payload);
+        if (!frontImageBase64) {
+          return Response.json(
+            { data: null, error: 'Uploaded ID document image is required for document OCR/authentication' },
+            { status: 400 }
+          );
         }
 
-        if (!response.ok) {
-          console.error(`[authenticateDoc ${response.status}]:`, text);
-          return Response.json({
-            data: null,
-            error: `VerifyNow ${response.status}: ${text}`,
-          });
-        }
-
-        return Response.json({ data: json, error: null });
+        const result = await callVerify({
+          bundle: 'id_document_verification',
+          reportType: 'document_ocr',
+          mode: VERIFYNOW_MODE,
+          idNumber: normalizeId(payload) || undefined,
+          front_image_base64: frontImageBase64,
+          document_type: payload.document_type || payload.documentType || 'sa_id',
+          issuing_country: payload.issuing_country || payload.issuingCountry || 'ZAF',
+        }, payload);
+        return Response.json(result);
       } catch (err) {
-        console.error('[authenticateDoc Error]:', err.message);
+        const message = errorMessage(err);
+        console.error('[authenticateDoc Error]:', message);
         return Response.json({
           data: null,
-          error: `VerifyNow Error: ${err.message}`,
+          error: `VerifyNow Error: ${message}`,
         });
       }
+    }
+
+    if (action === 'faceMatch') {
+      const selfieBase64 = normalizeBase64(payload.selfie_image || payload.selfie_image_base64 || '');
+      if (!selfieBase64) {
+        return Response.json(
+          { data: null, error: 'Selfie image is required for face match' },
+          { status: 400 }
+        );
+      }
+      const result = await callVerify({
+        bundle: 'face_match',
+        reportType: 'face_match',
+        idNumber: normalizeId(payload),
+        selfie_image_base64: selfieBase64,
+        mode: VERIFYNOW_MODE,
+      }, payload);
+      return Response.json(result);
     }
 
     if (action === 'verifyAvs') {
       const result = await callVerify({
         reportType: 'bank_verification',
-        idNumber: payload.id_number,
-        accountNumber: payload.account_number,
-        mode: 'sandbox',
-      });
+        idNumber: normalizeId(payload),
+        accountNumber: payload.account_number || payload.accountNumber,
+        branchCode: payload.branch_code || payload.branchCode,
+        accountType: payload.account_type || payload.accountType,
+        mode: VERIFYNOW_MODE,
+      }, payload);
       return Response.json(result);
     }
 
@@ -234,9 +252,10 @@ Deno.serve(async (req) => {
       { status: 400 }
     );
   } catch (err) {
+    const message = errorMessage(err);
     console.error('[ficaVerify Error]', err);
     return Response.json(
-      { data: null, error: err.message || 'Internal server error' },
+      { data: null, error: message || 'Internal server error' },
       { status: 500 }
     );
   }
