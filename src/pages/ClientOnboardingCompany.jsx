@@ -12,36 +12,26 @@ import PersonCard from '@/components/onboarding/PersonCard';
 const STEPS = [
   { number: 1, label: 'Company details' },
   { number: 2, label: 'Directors' },
-  { number: 3, label: 'FICA verification' },
-  { number: 4, label: 'Risk & objectives' },
-  { number: 5, label: 'Documents' },
-  { number: 6, label: 'Submit' },
+  { number: 3, label: 'Document upload' },
+  { number: 4, label: 'KYC declaration' },
+  { number: 5, label: 'FICA verification' },
+  { number: 6, label: 'Financial profile' },
+  { number: 7, label: 'Risk & objectives' },
+  { number: 8, label: 'Submit' },
 ];
 
-const ADVISORY_NEEDS = [
-  'Local and offshore investments', 'Life & risk cover',
-  'Tax planning', 'Business assurance',
-];
+const ADVISORY_NEEDS = ['Local and offshore investments', 'Life & risk cover', 'Tax planning', 'Business assurance'];
+const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
 
 const calcRiskScore = (fd) => {
   let s = 0;
-  const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
-  const horizonMap = { 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 };
-  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 };
-  const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
-  s += dropMap[fd.portfolio_drop_response] || 0;
-  s += horizonMap[fd.time_horizon] || 0;
-  s += liquidMap[fd.liquidity_requirement] || 0;
-  s += objMap[fd.primary_investment_objective] || 0;
+  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
+  s += ({ 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
+  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 })[fd.liquidity_requirement] || 0;
+  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
   return Math.round(Math.min(10, s));
 };
-const scoreToProfile = (score) => {
-  if (score <= 2) return 'Conservative';
-  if (score <= 4) return 'Cautious';
-  if (score <= 6) return 'Moderate';
-  if (score <= 8) return 'Growth';
-  return 'Aggressive';
-};
+const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
 
 const emptyDirector = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -66,28 +56,21 @@ export default function ClientOnboardingCompany() {
   const [directorChecks, setDirectorChecks] = useState([]);
 
   const [formData, setFormData] = useState({
-    entity_name: '',
-    registration_number: '',
-    vat_number: '',
-    street_address: '',
-    suburb: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    email: '',
-    mobile_number: '',
-    // Risk
-    portfolio_drop_response: '',
-    primary_investment_objective: '',
-    time_horizon: '',
-    liquidity_requirement: '',
-    risk_profile: '',
-    advisory_needs: [],
+    entity_name: '', registration_number: '', vat_number: '',
+    street_address: '', suburb: '', city: '', province: '', postal_code: '',
+    email: '', mobile_number: '',
     // Docs
-    cipc_registration_uploaded: false,
-    moi_uploaded: false,
-    proof_of_address_uploaded: false,
-    financial_statements_uploaded: false,
+    cipc_registration_uploaded: false, moi_uploaded: false,
+    proof_of_address_uploaded: false, financial_statements_uploaded: false,
+    // KYC
+    business_activity: '', entity_source_of_funds: [], ubo_declaration: '',
+    entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
+    // Financial
+    gross_annual_turnover: '', total_assets_band: '', entity_total_liabilities: '',
+    entity_existing_products: '', entity_loa_uploaded: false, entity_loa_authorised: false,
+    // Risk
+    portfolio_drop_response: '', primary_investment_objective: '',
+    time_horizon: '', liquidity_requirement: '', risk_profile: '', advisory_needs: [],
   });
 
   const [directors, setDirectors] = useState([emptyDirector(), emptyDirector()]);
@@ -95,60 +78,50 @@ export default function ClientOnboardingCompany() {
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
     if (!id) { navigate('/client-registration', { replace: true }); return; }
-
     const entityType = sessionStorage.getItem('pending_entity_type');
     if (entityType && entityType !== 'Company') {
       if (entityType === 'Trust') { navigate('/client-onboarding-trust', { replace: true }); return; }
       navigate('/client-onboarding', { replace: true }); return;
     }
-
     const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) {
-      try {
-        const seed = JSON.parse(seedRaw);
-        setFormData(prev => ({ ...prev, ...seed }));
-      } catch {}
-      sessionStorage.removeItem('test_onboarding_seed');
-    }
-    const directorsSeedRaw = sessionStorage.getItem('test_directors_seed');
-    if (directorsSeedRaw) {
-      try {
-        const directorsSeed = JSON.parse(directorsSeedRaw);
-        if (Array.isArray(directorsSeed) && directorsSeed.length > 0) setDirectors(directorsSeed);
-      } catch {}
-      sessionStorage.removeItem('test_directors_seed');
-    }
-
+    if (seedRaw) { try { setFormData(prev => ({ ...prev, ...JSON.parse(seedRaw) })); } catch {} sessionStorage.removeItem('test_onboarding_seed'); }
+    const dirSeed = sessionStorage.getItem('test_directors_seed');
+    if (dirSeed) { try { const d = JSON.parse(dirSeed); if (Array.isArray(d) && d.length > 0) setDirectors(d); } catch {} sessionStorage.removeItem('test_directors_seed'); }
     base44.entities.Clients.list().then(clients => {
-      const client = clients.find(c => c.id === id);
-      if (client) {
+      const c = clients.find(x => x.id === id);
+      if (c) {
         setFormData(prev => ({
           ...prev,
-          entity_name: client.entity_name || prev.entity_name,
-          registration_number: client.registration_number || prev.registration_number,
-          street_address: client.street_address || prev.street_address,
-          suburb: client.suburb || prev.suburb,
-          city: client.city || prev.city,
-          province: client.province || prev.province,
-          postal_code: client.postal_code || prev.postal_code,
-          email: client.email || prev.email,
-          mobile_number: client.mobile_number || prev.mobile_number,
-          portfolio_drop_response: client.portfolio_drop_response || prev.portfolio_drop_response,
-          primary_investment_objective: client.primary_investment_objective || prev.primary_investment_objective,
-          time_horizon: client.time_horizon || prev.time_horizon,
-          liquidity_requirement: client.liquidity_requirement || prev.liquidity_requirement,
-          risk_profile: client.risk_profile || prev.risk_profile,
-          advisory_needs: Array.isArray(client.advisory_needs)
-            ? client.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n))
-            : prev.advisory_needs,
+          entity_name: c.entity_name || prev.entity_name,
+          registration_number: c.registration_number || prev.registration_number,
+          street_address: c.street_address || prev.street_address,
+          suburb: c.suburb || prev.suburb, city: c.city || prev.city,
+          province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
+          email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
+          portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
+          primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
+          time_horizon: c.time_horizon || prev.time_horizon,
+          liquidity_requirement: c.liquidity_requirement || prev.liquidity_requirement,
+          risk_profile: c.risk_profile || prev.risk_profile,
+          advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
-        if (client.risk_profile) setProfileOverridden(true);
-        if (Array.isArray(client.directors_list) && client.directors_list.length > 0) setDirectors(client.directors_list);
+        if (c.risk_profile) setProfileOverridden(true);
+        if (Array.isArray(c.directors_list) && c.directors_list.length > 0) setDirectors(c.directors_list);
       }
     }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
   }, [navigate]);
 
   const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const toggleSof = (item) => setFormData(prev => ({
+    ...prev,
+    entity_source_of_funds: prev.entity_source_of_funds.includes(item)
+      ? prev.entity_source_of_funds.filter(i => i !== item)
+      : [...prev.entity_source_of_funds, item],
+  }));
+  const toggleNeed = (item) => setFormData(prev => ({
+    ...prev,
+    advisory_needs: prev.advisory_needs.includes(item) ? prev.advisory_needs.filter(i => i !== item) : [...prev.advisory_needs, item],
+  }));
 
   useEffect(() => {
     if (!profileInitialised || profileOverridden) return;
@@ -158,23 +131,27 @@ export default function ClientOnboardingCompany() {
     }
   }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
 
-  const toggleNeed = (item) => setFormData(prev => ({
-    ...prev,
-    advisory_needs: prev.advisory_needs.includes(item)
-      ? prev.advisory_needs.filter(i => i !== item)
-      : [...prev.advisory_needs, item],
-  }));
-
   const updateDirector = (idx, field, value) => setDirectors(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
   const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
   const removeDirector = (idx) => { if (directors.length > 2) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
 
+  const saveStep = async (data) => {
+    if (!clientId) return false;
+    setIsSavingStep(true);
+    try {
+      await base44.entities.Clients.update(clientId, data);
+      toast.success(`Step ${currentStep} saved`);
+      return true;
+    } catch (err) {
+      toast.error('Save failed: ' + (err.message || 'Unknown error'));
+      return false;
+    } finally { setIsSavingStep(false); }
+  };
+
   const runEntityFicaVerification = async () => {
     if (!formData.registration_number) { toast.error('Registration number required'); return; }
     if (directors.filter(d => d.first_name && d.id_number).length === 0) { toast.error('Please complete director details first'); return; }
-    setFicaRunning(true);
-    setFicaResult(null);
-    setCipcResult(null);
+    setFicaRunning(true); setFicaResult(null); setCipcResult(null);
     const activeDirs = directors.filter(d => d.first_name && d.id_number);
     setDirectorChecks(activeDirs.map(d => ({ name: d.first_name + ' ' + d.last_name, id: 'pending', aml: 'pending' })));
     try {
@@ -185,12 +162,9 @@ export default function ClientOnboardingCompany() {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
         setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'CIPC registration could not be verified' });
         await base44.entities.Clients.update(clientId, { fica_status: 'Declined', fica_reference: ref, cipc_verified: false });
-        setFicaRunning(false);
-        toast.error('FICA Declined — CIPC registration not verified');
-        return;
+        setFicaRunning(false); toast.error('FICA Declined — CIPC registration not verified'); return;
       }
-      let allPass = true;
-      let anyFlag = false;
+      let allPass = true, anyFlag = false;
       const updatedChecks = [];
       for (let i = 0; i < activeDirs.length; i++) {
         const dir = activeDirs[i];
@@ -228,29 +202,15 @@ export default function ClientOnboardingCompany() {
     } finally { setFicaRunning(false); }
   };
 
-  const saveStep = async (data) => {
-    if (!clientId) return false;
-    setIsSavingStep(true);
-    try {
-      await base44.entities.Clients.update(clientId, data);
-      toast.success(`Step ${currentStep} saved`);
-      return true;
-    } catch (err) {
-      toast.error('Save failed: ' + (err.message || 'Unknown error'));
-      return false;
-    } finally { setIsSavingStep(false); }
-  };
-
   const handleContinue = async () => {
     let data = {};
     if (currentStep === 1) {
       if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
       data = {
         client_type: 'Company', identity_type: 'Registration',
-        entity_name: formData.entity_name, registration_number: formData.registration_number,
-        vat_number: formData.vat_number,
-        street_address: formData.street_address, suburb: formData.suburb,
-        city: formData.city, province: formData.province, postal_code: formData.postal_code,
+        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
         email: formData.email, mobile_number: formData.mobile_number,
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
@@ -258,27 +218,42 @@ export default function ClientOnboardingCompany() {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
-      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-      if (ficaResult.fica_status === 'Declined') { toast.warning('FICA verification failed. Please contact your advisor.'); }
       data = {
-        fica_status: ficaResult.fica_status,
-        fica_reference: ficaResult.fica_reference,
-        cipc_verified: cipcResult?.pass || false,
+        cipc_registration_uploaded: formData.cipc_registration_uploaded,
+        moi_uploaded: formData.moi_uploaded,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded,
+        financial_statements_uploaded: formData.financial_statements_uploaded,
       };
     } else if (currentStep === 4) {
+      data = {
+        business_activity: formData.business_activity,
+        source_of_funds: formData.entity_source_of_funds,
+        ubo_declaration: formData.ubo_declaration,
+        sa_tax_number: formData.entity_tax_number,
+        tax_residency: formData.entity_tax_residency,
+        us_person_fatca: formData.entity_fatca,
+        pep_status: formData.entity_pep,
+      };
+    } else if (currentStep === 5) {
+      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+      if (ficaResult.fica_status === 'Declined') toast.warning('FICA verification failed. Please contact your advisor.');
+      data = { fica_status: ficaResult.fica_status, fica_reference: ficaResult.fica_reference, cipc_verified: cipcResult?.pass || false };
+    } else if (currentStep === 6) {
+      data = {
+        gross_annual_income_band: formData.gross_annual_turnover,
+        net_worth_band: formData.total_assets_band,
+        total_liabilities: formData.entity_total_liabilities,
+        existing_financial_products: formData.entity_existing_products,
+        loa_uploaded: formData.entity_loa_uploaded,
+        loa_authorised: formData.entity_loa_authorised,
+      };
+    } else if (currentStep === 7) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
-      };
-    } else if (currentStep === 5) {
-      data = {
-        cipc_registration_uploaded: formData.cipc_registration_uploaded,
-        moi_uploaded: formData.moi_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        financial_statements_uploaded: formData.financial_statements_uploaded,
       };
     }
     const saved = await saveStep(data);
@@ -293,13 +268,17 @@ export default function ClientOnboardingCompany() {
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);
       const clientName = formData.entity_name || 'Company Client';
+      const proposalData = {
+        client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
+        status: 'new', fica_reference: ficaResult?.fica_reference || '',
+      };
       if (existing) {
-        await base44.entities.Proposal.update(existing.id, { client_name: clientName, advisory_needs: formData.advisory_needs, status: 'new' });
+        await base44.entities.Proposal.update(existing.id, proposalData);
       } else {
         await base44.entities.Proposal.create({
-          client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
+          ...proposalData,
           reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
-          advisor_name: 'Trevor Fine', status: 'new', pdf_status: 'No PDF',
+          advisor_name: 'Trevor Fine', pdf_status: 'No PDF',
           advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
         });
       }
@@ -316,29 +295,30 @@ export default function ClientOnboardingCompany() {
     </div>
   );
 
+  const idCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200' };
+  const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
+  const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
+  const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Bar */}
       <div className="bg-card border-b border-border px-5 py-2.5 flex items-center justify-between shrink-0">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> WEALTHWORKS.CO.ZA
         </button>
-        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF {STEPS.length} · COMPANY</span>
+        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 · COMPANY</span>
       </div>
 
-      {/* Step banner */}
       <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
         {STEPS.map(step => {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
           return (
             <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
-                isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'
-              }`}>
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
-                isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'
-              }`}>{isComplete ? '✓' : step.number}</span>
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
+                {isComplete ? '✓' : step.number}
+              </span>
               {step.label}
             </button>
           );
@@ -347,7 +327,7 @@ export default function ClientOnboardingCompany() {
 
       <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
         <div className="mb-4">
-          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF {STEPS.length} · COMPANY ONBOARDING</p>
+          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 · COMPANY ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
         </div>
 
@@ -390,7 +370,7 @@ export default function ClientOnboardingCompany() {
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                     <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                      <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div><Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">POSTAL CODE</Label><Input className="mt-1 h-8 text-sm" maxLength="4" value={formData.postal_code} onChange={e => handleChange('postal_code', e.target.value)} /></div>
@@ -405,15 +385,7 @@ export default function ClientOnboardingCompany() {
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">Add all directors of this company. Minimum 2 required.</p>
             {directors.map((director, idx) => (
-              <PersonCard
-                key={idx}
-                person={director}
-                idx={idx}
-                role="Director"
-                onUpdate={updateDirector}
-                onRemove={removeDirector}
-                canRemove={directors.length > 2 && idx >= 2}
-              />
+              <PersonCard key={idx} person={director} idx={idx} role="Director" onUpdate={updateDirector} onRemove={removeDirector} canRemove={directors.length > 2 && idx >= 2} />
             ))}
             <button type="button" onClick={addDirector} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add director
@@ -421,8 +393,147 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 3 — FICA Verification */}
+        {/* STEP 3 — Document Upload */}
         {currentStep === 3 && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
+                  { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
+                  { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
+                  { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
+                ].map(doc => (
+                  <div key={doc.key} className="border border-border rounded p-3">
+                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                    {formData[doc.key] ? (
+                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
+                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                      </div>
+                    ) : (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                        </div>
+                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER DIRECTOR DOCUMENTS</p>
+              <div className="space-y-3">
+                {directors.map((d, idx) => {
+                  const name = [d.first_name, d.last_name].filter(Boolean).join(' ') || `Director ${idx + 1}`;
+                  return (
+                    <div key={idx} className="border border-border rounded p-3">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Director {idx + 1} — {name}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: `director_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
+                          { key: `director_${idx}_addr_uploaded`, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
+                        ].map(doc => (
+                          <div key={doc.key} className="border border-border rounded p-2">
+                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
+                            {formData[doc.key] ? (
+                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
+                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                              </div>
+                            ) : (
+                              <label className="block cursor-pointer">
+                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
+                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                                </div>
+                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                              </label>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 — KYC Declaration */}
+        {currentStep === 4 && (
+          <div className="space-y-3">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">BUSINESS INFORMATION</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">BUSINESS ACTIVITY / DESCRIPTION *</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.business_activity} onChange={e => handleChange('business_activity', e.target.value)} placeholder="Describe the main business activity" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-2 block">SOURCE OF FUNDS</Label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {['Operational revenue','Investment returns','Capital contributions','Asset sales','Loan funding','Other'].map(item => (
+                      <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                        <input type="checkbox" checked={formData.entity_source_of_funds.includes(item)} onChange={() => toggleSof(item)} className="w-3.5 h-3.5 accent-ocean" />
+                        {item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">UBO DECLARATION</Label>
+                  <p className="text-[10px] text-muted-foreground mb-1">List all beneficial owners with more than 25% shareholding (name and percentage)</p>
+                  <textarea
+                    className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                    value={formData.ubo_declaration} onChange={e => handleChange('ubo_declaration', e.target.value)}
+                    placeholder="e.g. John Smith — 60%, Jane Doe — 40%"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TAX & COMPLIANCE DECLARATION</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.entity_tax_number} onChange={e => handleChange('entity_tax_number', e.target.value)} placeholder="10-digit SARS number" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
+                  <Select value={formData.entity_tax_residency} onValueChange={v => handleChange('entity_tax_residency', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="South Africa only">South Africa only</SelectItem>
+                      <SelectItem value="South Africa + Other">South Africa + Other</SelectItem>
+                      <SelectItem value="Other country only">Other country only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">FATCA (US ENTITY?)</Label>
+                  <Select value={formData.entity_fatca} onValueChange={v => handleChange('entity_fatca', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">ANY DIRECTOR IS A PEP?</Label>
+                  <Select value={formData.entity_pep} onValueChange={v => handleChange('entity_pep', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5 — FICA Verification */}
+        {currentStep === 5 && (
           <div className="space-y-4">
             <div className="border border-border rounded p-3">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">CIPC VERIFICATION</h3>
@@ -439,19 +550,13 @@ export default function ClientOnboardingCompany() {
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">DIRECTOR VERIFICATION</h3>
               {directorChecks.length > 0 ? (
                 <div className="space-y-2">
-                  {directorChecks.map((check, idx) => {
-                    const idCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200' };
-                    const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
-                    const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
-                    const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
-                    return (
-                      <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
-                        <div className="flex-1 text-xs font-medium text-navy">Director {idx + 1} — {check.name}</div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
-                      </div>
-                    );
-                  })}
+                  {directorChecks.map((check, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
+                      <div className="flex-1 text-xs font-medium text-navy">Director {idx + 1} — {check.name}</div>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">Each director will be verified against Home Affairs HANIS and AML/PEP/sanctions lists individually.</p>
@@ -490,13 +595,73 @@ export default function ClientOnboardingCompany() {
             </div>
             <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
               <span className="font-semibold text-navy">FICA compliance note: </span>
-              Company verification includes CIPC registration status and individual identity and AML/PEP screening for each director. WealthWorks remains the FICA Accountable Institution. Records retained 5 years minimum per FICA Section 23.
+              Company verification includes CIPC registration status and individual identity and AML/PEP screening for each director. Records retained 5 years minimum per FICA Section 23.
             </div>
           </div>
         )}
 
-        {/* STEP 4 — Risk & Objectives */}
-        {currentStep === 4 && (
+        {/* STEP 6 — Financial Profile */}
+        {currentStep === 6 && (
+          <div className="space-y-3">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">COMPANY FINANCIALS</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">GROSS ANNUAL TURNOVER</Label>
+                  <Select value={formData.gross_annual_turnover} onValueChange={v => handleChange('gross_annual_turnover', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R1m','R1m – R5m','R5m – R20m','R20m – R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL ASSETS BAND</Label>
+                  <Select value={formData.total_assets_band} onValueChange={v => handleChange('total_assets_band', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R500k','R500k – R2m','R2m – R10m','R10m – R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL LIABILITIES</Label>
+                  <Select value={formData.entity_total_liabilities} onValueChange={v => handleChange('entity_total_liabilities', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['None','Under R500,000','R500k – R1m','R1m – R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="mt-3">
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EXISTING FINANCIAL PRODUCTS / POLICIES</Label>
+                <textarea
+                  className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                  value={formData.entity_existing_products} onChange={e => handleChange('entity_existing_products', e.target.value)}
+                  placeholder="List current policies and investments e.g. Company RA, Group risk cover, Sanlam endowment..."
+                />
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
+              {formData.entity_loa_uploaded ? (
+                <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
+                  <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">LOA uploaded</span>
+                </div>
+              ) : (
+                <label className="block cursor-pointer mb-2">
+                  <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                    <p className="text-xs font-medium text-navy">Letter of Authority document</p>
+                    <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                  </div>
+                  <input type="file" className="hidden" onChange={() => handleChange('entity_loa_uploaded', true)} />
+                </label>
+              )}
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={formData.entity_loa_authorised} onChange={e => handleChange('entity_loa_authorised', e.target.checked)} className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0" />
+                <span className="text-xs text-muted-foreground">I authorise WealthWorks to obtain information on existing policies from the relevant providers.</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7 — Risk & Objectives */}
+        {currentStep === 7 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE</h3>
@@ -531,9 +696,7 @@ export default function ClientOnboardingCompany() {
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
-                  {profileOverridden && (
-                    <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
-                  )}
+                  {profileOverridden && <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>}
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {['Conservative','Cautious','Moderate','Growth','Aggressive'].map(v => (
@@ -560,80 +723,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 5 — Documents */}
-        {currentStep === 5 && (
-          <div className="space-y-4">
-            <div>
-              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
-                  { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
-                  { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
-                ].map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
-                    {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                      </div>
-                    ) : (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
-                        </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                      </label>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER DIRECTOR DOCUMENTS</p>
-              <div className="space-y-3">
-                {directors.map((d, idx) => {
-                  const name = [d.first_name, d.last_name].filter(Boolean).join(' ') || `Director ${idx + 1}`;
-                  const idKey = `director_${idx}_id_uploaded`;
-                  const addrKey = `director_${idx}_addr_uploaded`;
-                  return (
-                    <div key={idx} className="border border-border rounded p-3">
-                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Director {idx + 1} — {name}</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: idKey, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
-                          { key: addrKey, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
-                        ].map(doc => (
-                          <div key={doc.key} className="border border-border rounded p-2">
-                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
-                            {formData[doc.key] ? (
-                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                              </div>
-                            ) : (
-                              <label className="block cursor-pointer">
-                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
-                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
-                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
-                                </div>
-                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                              </label>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 6 — Submit */}
-        {currentStep === 6 && (
+        {/* STEP 8 — Submit */}
+        {currentStep === 8 && (
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
               <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
@@ -660,21 +751,21 @@ export default function ClientOnboardingCompany() {
 
         {/* Navigation */}
         <div className="pt-5 border-t border-border mt-5 flex gap-3">
-          {currentStep > 1 && currentStep < 6 && (
+          {currentStep > 1 && currentStep < 8 && (
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
           )}
           <div className="flex-1" />
-          {currentStep < 5 && (
+          {currentStep < 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
             </Button>
           )}
-          {currentStep === 5 && (
+          {currentStep === 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
             </Button>
           )}
-          {currentStep === 6 && (
+          {currentStep === 8 && (
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
             </Button>

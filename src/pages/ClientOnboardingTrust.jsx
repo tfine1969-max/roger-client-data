@@ -12,41 +12,29 @@ import { ArrowLeft, Loader2, Check, Plus, CalendarIcon } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import PersonCard from '@/components/onboarding/PersonCard';
 
-// Steps: removed FICA/KYC (old 3) and Financial Profile (old 4)
 const STEPS = [
   { number: 1, label: 'Trust details' },
   { number: 2, label: 'Trustees' },
-  { number: 3, label: 'Risk & objectives' },
-  { number: 4, label: 'Documents' },
-  { number: 5, label: 'Submit' },
+  { number: 3, label: 'Document upload' },
+  { number: 4, label: 'KYC declaration' },
+  { number: 5, label: 'FICA verification' },
+  { number: 6, label: 'Financial profile' },
+  { number: 7, label: 'Risk & objectives' },
+  { number: 8, label: 'Submit' },
 ];
 
-const ADVISORY_NEEDS = [
-  'Local and offshore investments', 'Life & risk cover',
-  'Tax planning', 'Business assurance',
-];
+const ADVISORY_NEEDS = ['Local and offshore investments', 'Retirement planning', 'Estate planning', 'Tax planning', 'Business assurance'];
+const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
 
 const calcRiskScore = (fd) => {
   let s = 0;
-  const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
-  const horizonMap = { 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 };
-  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 };
-  const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
-  s += dropMap[fd.portfolio_drop_response] || 0;
-  s += horizonMap[fd.time_horizon] || 0;
-  s += liquidMap[fd.liquidity_requirement] || 0;
-  s += objMap[fd.primary_investment_objective] || 0;
+  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
+  s += ({ 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
+  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 })[fd.liquidity_requirement] || 0;
+  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
   return Math.round(Math.min(10, s));
 };
-const scoreToProfile = (score) => {
-  if (score <= 2) return 'Conservative';
-  if (score <= 4) return 'Cautious';
-  if (score <= 6) return 'Moderate';
-  if (score <= 8) return 'Growth';
-  return 'Aggressive';
-};
-
-
+const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
 
 const emptyTrustee = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -55,8 +43,6 @@ const emptyTrustee = () => ({
   email: '', mobile: '',
   street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
-
-
 
 export default function ClientOnboardingTrust() {
   const navigate = useNavigate();
@@ -67,29 +53,27 @@ export default function ClientOnboardingTrust() {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileOverridden, setProfileOverridden] = useState(false);
   const [profileInitialised, setProfileInitialised] = useState(false);
+  const [ficaRunning, setFicaRunning] = useState(false);
+  const [ficaResult, setFicaResult] = useState(null);
+  const [trusteeChecks, setTrusteeChecks] = useState([]);
 
   const [formData, setFormData] = useState({
-    entity_name: '',
-    trust_number: '',
-    trust_deed_date: '',
-    street_address: '',
-    suburb: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    email: '',
-    mobile_number: '',
-    // Risk
-    portfolio_drop_response: '',
-    primary_investment_objective: '',
-    time_horizon: '',
-    liquidity_requirement: '',
-    risk_profile: '',
-    advisory_needs: [],
+    entity_name: '', trust_number: '', trust_type: '', trust_deed_date: '',
+    contact_trustee_name: '',
+    street_address: '', suburb: '', city: '', province: '', postal_code: '',
+    email: '', mobile_number: '',
     // Docs
-    trust_deed_uploaded: false,
-    loa_uploaded: false,
-    proof_of_address_uploaded: false,
+    trust_deed_uploaded: false, loa_uploaded: false,
+    trust_proof_of_address_uploaded: false, trust_bank_statement_uploaded: false,
+    // KYC
+    trust_purpose: '', trust_source_of_funds: [], beneficiary_declaration: '',
+    entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
+    // Financial
+    trust_asset_value_band: '', trust_income_band: '', entity_total_liabilities: '',
+    entity_existing_products: '', entity_loa_uploaded: false, entity_loa_authorised: false,
+    // Risk
+    portfolio_drop_response: '', primary_investment_objective: '',
+    time_horizon: '', liquidity_requirement: '', risk_profile: '', advisory_needs: [],
   });
 
   const [trustees, setTrustees] = useState([emptyTrustee(), emptyTrustee()]);
@@ -97,61 +81,51 @@ export default function ClientOnboardingTrust() {
   useEffect(() => {
     const id = sessionStorage.getItem('pending_client_id');
     if (!id) { navigate('/client-registration', { replace: true }); return; }
-
     const entityType = sessionStorage.getItem('pending_entity_type');
     if (entityType && entityType !== 'Trust') {
       if (entityType === 'Company') { navigate('/client-onboarding-company', { replace: true }); return; }
       navigate('/client-onboarding', { replace: true }); return;
     }
-
     const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) {
-      try {
-        const seed = JSON.parse(seedRaw);
-        setFormData(prev => ({ ...prev, ...seed }));
-      } catch {}
-      sessionStorage.removeItem('test_onboarding_seed');
-    }
-    const trusteesSeedRaw = sessionStorage.getItem('test_trustees_seed');
-    if (trusteesSeedRaw) {
-      try {
-        const trusteesSeed = JSON.parse(trusteesSeedRaw);
-        if (Array.isArray(trusteesSeed) && trusteesSeed.length > 0) setTrustees(trusteesSeed);
-      } catch {}
-      sessionStorage.removeItem('test_trustees_seed');
-    }
-
+    if (seedRaw) { try { setFormData(prev => ({ ...prev, ...JSON.parse(seedRaw) })); } catch {} sessionStorage.removeItem('test_onboarding_seed'); }
+    const trusteeSeed = sessionStorage.getItem('test_trustees_seed');
+    if (trusteeSeed) { try { const t = JSON.parse(trusteeSeed); if (Array.isArray(t) && t.length > 0) setTrustees(t); } catch {} sessionStorage.removeItem('test_trustees_seed'); }
     base44.entities.Clients.list().then(clients => {
-      const client = clients.find(c => c.id === id);
-      if (client) {
+      const c = clients.find(x => x.id === id);
+      if (c) {
         setFormData(prev => ({
           ...prev,
-          entity_name: client.entity_name || prev.entity_name,
-          trust_number: client.trust_number || prev.trust_number,
-          trust_deed_date: client.trust_deed_date || prev.trust_deed_date,
-          street_address: client.street_address || prev.street_address,
-          suburb: client.suburb || prev.suburb,
-          city: client.city || prev.city,
-          province: client.province || prev.province,
-          postal_code: client.postal_code || prev.postal_code,
-          email: client.email || prev.email,
-          mobile_number: client.mobile_number || prev.mobile_number,
-          portfolio_drop_response: client.portfolio_drop_response || prev.portfolio_drop_response,
-          primary_investment_objective: client.primary_investment_objective || prev.primary_investment_objective,
-          time_horizon: client.time_horizon || prev.time_horizon,
-          liquidity_requirement: client.liquidity_requirement || prev.liquidity_requirement,
-          risk_profile: client.risk_profile || prev.risk_profile,
-          advisory_needs: Array.isArray(client.advisory_needs)
-            ? client.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n))
-            : prev.advisory_needs,
+          entity_name: c.entity_name || prev.entity_name,
+          trust_number: c.trust_number || prev.trust_number,
+          trust_deed_date: c.trust_deed_date || prev.trust_deed_date,
+          street_address: c.street_address || prev.street_address,
+          suburb: c.suburb || prev.suburb, city: c.city || prev.city,
+          province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
+          email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
+          portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
+          primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
+          time_horizon: c.time_horizon || prev.time_horizon,
+          liquidity_requirement: c.liquidity_requirement || prev.liquidity_requirement,
+          risk_profile: c.risk_profile || prev.risk_profile,
+          advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
-        if (client.risk_profile) setProfileOverridden(true);
-        if (Array.isArray(client.trustees_list) && client.trustees_list.length > 0) setTrustees(client.trustees_list);
+        if (c.risk_profile) setProfileOverridden(true);
+        if (Array.isArray(c.trustees_list) && c.trustees_list.length > 0) setTrustees(c.trustees_list);
       }
     }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
   }, [navigate]);
 
   const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const toggleSof = (item) => setFormData(prev => ({
+    ...prev,
+    trust_source_of_funds: prev.trust_source_of_funds.includes(item)
+      ? prev.trust_source_of_funds.filter(i => i !== item)
+      : [...prev.trust_source_of_funds, item],
+  }));
+  const toggleNeed = (item) => setFormData(prev => ({
+    ...prev,
+    advisory_needs: prev.advisory_needs.includes(item) ? prev.advisory_needs.filter(i => i !== item) : [...prev.advisory_needs, item],
+  }));
 
   useEffect(() => {
     if (!profileInitialised || profileOverridden) return;
@@ -160,13 +134,6 @@ export default function ClientOnboardingTrust() {
       setFormData(prev => prev.risk_profile === suggested ? prev : { ...prev, risk_profile: suggested });
     }
   }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
-
-  const toggleNeed = (item) => setFormData(prev => ({
-    ...prev,
-    advisory_needs: prev.advisory_needs.includes(item)
-      ? prev.advisory_needs.filter(i => i !== item)
-      : [...prev.advisory_needs, item],
-  }));
 
   const updateTrustee = (idx, field, value) => setTrustees(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   const addTrustee = () => setTrustees(prev => [...prev, emptyTrustee()]);
@@ -185,6 +152,50 @@ export default function ClientOnboardingTrust() {
     } finally { setIsSavingStep(false); }
   };
 
+  const runTrustFicaVerification = async () => {
+    if (trustees.filter(t => t.first_name && t.id_number).length === 0) { toast.error('Please complete trustee details first'); return; }
+    setFicaRunning(true); setFicaResult(null);
+    const activeTrustees = trustees.filter(t => t.first_name && t.id_number);
+    setTrusteeChecks(activeTrustees.map(t => ({ name: t.first_name + ' ' + t.last_name, id: 'pending', aml: 'pending' })));
+    try {
+      let allPass = true, anyFlag = false;
+      const updatedChecks = [];
+      for (let i = 0; i < activeTrustees.length; i++) {
+        const trustee = activeTrustees[i];
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: 'running' } : c));
+        const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: trustee.id_number, first_name: trustee.first_name, last_name: trustee.last_name, date_of_birth: trustee.date_of_birth } });
+        const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
+        if (!idPass) allPass = false;
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: 'running' } : c));
+        const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { name: trustee.first_name + ' ' + trustee.last_name, entity: 0, country: 'za', dataset: 'all' } });
+        const amlMatch = amlResult?.data?.data?.totalHits > 0 || false;
+        if (amlMatch) anyFlag = true;
+        setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
+        updatedChecks.push({ ...trustee, id_verified: idPass, aml_clear: !amlMatch });
+      }
+      const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
+      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString() };
+      setFicaResult(finalResult);
+      await base44.entities.Clients.update(clientId, {
+        fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        entity_aml_clear: !anyFlag,
+        trustees_json: JSON.stringify(updatedChecks),
+        fica_checks_json: JSON.stringify({ trustees: updatedChecks }),
+      });
+      if (ficaStatus !== 'Approved') {
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+      }
+      if (ficaStatus === 'Approved') toast.success('Trust FICA Approved — ' + ficaRef);
+      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Advisor notified.');
+      else toast.error('FICA Declined — please contact your advisor.');
+    } catch (err) {
+      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
+      toast.error('Verification error — please try again');
+    } finally { setFicaRunning(false); }
+  };
+
   const handleContinue = async () => {
     let data = {};
     if (currentStep === 1) {
@@ -192,9 +203,10 @@ export default function ClientOnboardingTrust() {
       data = {
         client_type: 'Trust', identity_type: 'Trust',
         entity_name: formData.entity_name, trust_number: formData.trust_number,
-        trust_deed_date: formData.trust_deed_date,
-        street_address: formData.street_address, suburb: formData.suburb,
-        city: formData.city, province: formData.province, postal_code: formData.postal_code,
+        trust_type: formData.trust_type, trust_deed_date: formData.trust_deed_date,
+        contact_trustee_name: formData.contact_trustee_name,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
         email: formData.email, mobile_number: formData.mobile_number,
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
@@ -202,6 +214,36 @@ export default function ClientOnboardingTrust() {
       if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
       data = { trustees_list: trustees };
     } else if (currentStep === 3) {
+      data = {
+        trust_deed_uploaded: formData.trust_deed_uploaded,
+        loa_uploaded: formData.loa_uploaded,
+        trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded,
+        trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded,
+      };
+    } else if (currentStep === 4) {
+      data = {
+        trust_purpose: formData.trust_purpose,
+        source_of_funds: formData.trust_source_of_funds,
+        beneficiary_declaration: formData.beneficiary_declaration,
+        sa_tax_number: formData.entity_tax_number,
+        tax_residency: formData.entity_tax_residency,
+        us_person_fatca: formData.entity_fatca,
+        pep_status: formData.entity_pep,
+      };
+    } else if (currentStep === 5) {
+      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+      if (ficaResult.fica_status === 'Declined') toast.warning('FICA verification failed. Please contact your advisor.');
+      data = { fica_status: ficaResult.fica_status, fica_reference: ficaResult.fica_reference };
+    } else if (currentStep === 6) {
+      data = {
+        net_worth_band: formData.trust_asset_value_band,
+        gross_annual_income_band: formData.trust_income_band,
+        total_liabilities: formData.entity_total_liabilities,
+        existing_financial_products: formData.entity_existing_products,
+        loa_uploaded: formData.entity_loa_uploaded,
+        loa_authorised: formData.entity_loa_authorised,
+      };
+    } else if (currentStep === 7) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
@@ -209,8 +251,6 @@ export default function ClientOnboardingTrust() {
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
       };
-    } else if (currentStep === 4) {
-      data = { trust_deed_uploaded: formData.trust_deed_uploaded, loa_uploaded: formData.loa_uploaded, proof_of_address_uploaded: formData.proof_of_address_uploaded };
     }
     const saved = await saveStep(data);
     if (saved) setCurrentStep(prev => prev + 1);
@@ -224,16 +264,26 @@ export default function ClientOnboardingTrust() {
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);
       const clientName = formData.entity_name || 'Trust Client';
+      const proposalData = {
+        client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
+        status: 'new', fica_reference: ficaResult?.fica_reference || '',
+      };
       if (existing) {
-        await base44.entities.Proposal.update(existing.id, { client_name: clientName, advisory_needs: formData.advisory_needs, status: 'new' });
+        await base44.entities.Proposal.update(existing.id, proposalData);
       } else {
         await base44.entities.Proposal.create({
-          client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
+          ...proposalData,
           reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
-          advisor_name: 'Trevor Fine', status: 'new', pdf_status: 'No PDF',
+          advisor_name: 'Trevor Fine', pdf_status: 'No PDF',
           advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
         });
       }
+      await base44.integrations.Core.SendEmail({
+        from_name: 'WealthWorks',
+        to: 'tfine1969@gmail.com',
+        subject: 'New Trust Onboarding — ' + clientName,
+        body: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+      });
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (err) {
@@ -247,29 +297,30 @@ export default function ClientOnboardingTrust() {
     </div>
   );
 
+  const idCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200' };
+  const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
+  const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
+  const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Bar */}
       <div className="bg-card border-b border-border px-5 py-2.5 flex items-center justify-between shrink-0">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> WEALTHWORKS.CO.ZA
         </button>
-        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF {STEPS.length} · TRUST</span>
+        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 · TRUST</span>
       </div>
 
-      {/* Step banner */}
       <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
         {STEPS.map(step => {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
           return (
             <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
-                isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'
-              }`}>
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
-                isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'
-              }`}>{isComplete ? '✓' : step.number}</span>
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
+                {isComplete ? '✓' : step.number}
+              </span>
               {step.label}
             </button>
           );
@@ -278,7 +329,7 @@ export default function ClientOnboardingTrust() {
 
       <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
         <div className="mb-4">
-          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF {STEPS.length} · TRUST ONBOARDING</p>
+          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 · TRUST ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
         </div>
 
@@ -295,27 +346,38 @@ export default function ClientOnboardingTrust() {
                 <Input className="mt-1 h-8 text-sm" value={formData.trust_number} onChange={e => handleChange('trust_number', e.target.value)} placeholder="e.g. IT1234/2015" />
               </div>
               <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST TYPE</Label>
+                <Select value={formData.trust_type} onValueChange={v => handleChange('trust_type', v)}>
+                  <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inter Vivos Trust">Inter Vivos Trust</SelectItem>
+                    <SelectItem value="Testamentary Trust">Testamentary Trust</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">TRUST DEED DATE</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button type="button" className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 text-sm shadow-sm hover:bg-accent/10 transition-colors">
                       <span className={formData.trust_deed_date ? 'text-foreground' : 'text-muted-foreground'}>
-                        {formData.trust_deed_date
-                          ? (() => { try { return format(parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy'); } catch { return formData.trust_deed_date; } })()
-                          : 'dd-mm-yyyy'}
+                        {formData.trust_deed_date ? (() => { try { return format(parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy'); } catch { return formData.trust_deed_date; } })() : 'dd-mm-yyyy'}
                       </span>
                       <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
+                    <Calendar mode="single"
                       selected={formData.trust_deed_date ? (() => { try { const d = parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()); return isValid(d) ? d : undefined; } catch { return undefined; } })() : undefined}
                       onSelect={date => handleChange('trust_deed_date', date ? format(date, 'yyyy-MM-dd') : '')}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT TRUSTEE NAME</Label>
+                <Input className="mt-1 h-8 text-sm" value={formData.contact_trustee_name} onChange={e => handleChange('contact_trustee_name', e.target.value)} placeholder="Primary contact person" />
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT EMAIL</Label>
@@ -340,7 +402,7 @@ export default function ClientOnboardingTrust() {
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                     <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                      <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div><Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">POSTAL CODE</Label><Input className="mt-1 h-8 text-sm" maxLength="4" value={formData.postal_code} onChange={e => handleChange('postal_code', e.target.value)} /></div>
@@ -355,15 +417,7 @@ export default function ClientOnboardingTrust() {
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">Add all trustees of this trust. Minimum 2 required.</p>
             {trustees.map((trustee, idx) => (
-              <PersonCard
-                key={idx}
-                person={trustee}
-                idx={idx}
-                role="Trustee"
-                onUpdate={updateTrustee}
-                onRemove={removeTrustee}
-                canRemove={trustees.length > 2 && idx >= 2}
-              />
+              <PersonCard key={idx} person={trustee} idx={idx} role="Trustee" onUpdate={updateTrustee} onRemove={removeTrustee} canRemove={trustees.length > 2 && idx >= 2} />
             ))}
             <button type="button" onClick={addTrustee} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add trustee
@@ -371,8 +425,264 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 3 — Risk & Objectives */}
+        {/* STEP 3 — Document Upload */}
         {currentStep === 3 && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">TRUST DOCUMENTS</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'trust_deed_uploaded', title: 'TRUST DEED', desc: 'Certified copy of the trust deed' },
+                  { key: 'loa_uploaded', title: 'LETTER OF AUTHORITY', desc: "Master of the High Court letter" },
+                  { key: 'trust_proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
+                  { key: 'trust_bank_statement_uploaded', title: 'TRUST BANK STATEMENT', desc: 'Most recent 3 months' },
+                ].map(doc => (
+                  <div key={doc.key} className="border border-border rounded p-3">
+                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                    {formData[doc.key] ? (
+                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
+                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                      </div>
+                    ) : (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                        </div>
+                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER TRUSTEE DOCUMENTS</p>
+              <div className="space-y-3">
+                {trustees.map((t, idx) => {
+                  const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || `Trustee ${idx + 1}`;
+                  return (
+                    <div key={idx} className="border border-border rounded p-3">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} — {name}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { key: `trustee_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
+                          { key: `trustee_${idx}_addr_uploaded`, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
+                        ].map(doc => (
+                          <div key={doc.key} className="border border-border rounded p-2">
+                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
+                            {formData[doc.key] ? (
+                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
+                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                              </div>
+                            ) : (
+                              <label className="block cursor-pointer">
+                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
+                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                                </div>
+                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                              </label>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 — KYC Declaration */}
+        {currentStep === 4 && (
+          <div className="space-y-3">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TRUST INFORMATION</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST PURPOSE / OBJECTIVE *</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.trust_purpose} onChange={e => handleChange('trust_purpose', e.target.value)} placeholder="Describe the purpose of the trust" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-2 block">SOURCE OF FUNDS</Label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {['Trust income','Investment returns','Donations and contributions','Asset sales','Inheritance','Other'].map(item => (
+                      <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                        <input type="checkbox" checked={formData.trust_source_of_funds.includes(item)} onChange={() => toggleSof(item)} className="w-3.5 h-3.5 accent-ocean" />
+                        {item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">BENEFICIARY DECLARATION</Label>
+                  <p className="text-[10px] text-muted-foreground mb-1">List all named beneficiaries of the trust</p>
+                  <textarea
+                    className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                    value={formData.beneficiary_declaration} onChange={e => handleChange('beneficiary_declaration', e.target.value)}
+                    placeholder="e.g. John Smith (son), Jane Smith (daughter), Smith Foundation (charity)..."
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TAX & COMPLIANCE DECLARATION</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER (TRUST)</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.entity_tax_number} onChange={e => handleChange('entity_tax_number', e.target.value)} placeholder="10-digit SARS number" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
+                  <Select value={formData.entity_tax_residency} onValueChange={v => handleChange('entity_tax_residency', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="South Africa only">South Africa only</SelectItem>
+                      <SelectItem value="South Africa + Other">South Africa + Other</SelectItem>
+                      <SelectItem value="Other country only">Other country only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">FATCA (US TRUST?)</Label>
+                  <Select value={formData.entity_fatca} onValueChange={v => handleChange('entity_fatca', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">ANY TRUSTEE IS A PEP?</Label>
+                  <Select value={formData.entity_pep} onValueChange={v => handleChange('entity_pep', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5 — FICA Verification */}
+        {currentStep === 5 && (
+          <div className="space-y-4">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TRUSTEE VERIFICATION</h3>
+              {trusteeChecks.length > 0 ? (
+                <div className="space-y-2">
+                  {trusteeChecks.map((check, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
+                      <div className="flex-1 text-xs font-medium text-navy">Trustee {idx + 1} — {check.name}</div>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Each trustee will be verified against Home Affairs HANIS and AML/PEP/sanctions lists individually.</p>
+              )}
+            </div>
+            <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-navy text-sm">Trust FICA Verification</h3>
+                  <p className="text-[10px] text-muted-foreground">Trustee ID checks · AML/PEP per trustee · Powered by VerifyNow</p>
+                </div>
+                {!ficaRunning && (
+                  <button type="button" onClick={runTrustFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
+                    {ficaResult ? '↺ Re-verify' : '⊕ Verify trust with VerifyNow'}
+                  </button>
+                )}
+                {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying trustees…</span>}
+              </div>
+              {ficaResult && ficaResult.fica_status && (
+                <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                  <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
+                  <div>
+                    <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
+                      {ficaResult.fica_status === 'Approved' ? 'Trust FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more trustees' : 'Trust FICA Verification Failed'}
+                    </p>
+                    {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
+                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                  </div>
+                </div>
+              )}
+              {!ficaRunning && !ficaResult && (
+                <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
+                  <p>Click <strong>Verify trust with VerifyNow</strong> to run trustee checks</p>
+                </div>
+              )}
+            </div>
+            <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
+              <span className="font-semibold text-navy">FICA compliance note: </span>
+              Trust verification includes individual identity and AML/PEP screening for each trustee. WealthWorks remains the FICA Accountable Institution. Records retained 5 years minimum per FICA Section 23.
+            </div>
+          </div>
+        )}
+
+        {/* STEP 6 — Financial Profile */}
+        {currentStep === 6 && (
+          <div className="space-y-3">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">TRUST FINANCIALS</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST ASSET VALUE BAND</Label>
+                  <Select value={formData.trust_asset_value_band} onValueChange={v => handleChange('trust_asset_value_band', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R500k','R500k – R2m','R2m – R10m','R10m – R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST INCOME BAND</Label>
+                  <Select value={formData.trust_income_band} onValueChange={v => handleChange('trust_income_band', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R150,000','R150,000 – R350,000','R350,000 – R750,000','R750,000 – R1.5m','R1.5m – R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL LIABILITIES</Label>
+                  <Select value={formData.entity_total_liabilities} onValueChange={v => handleChange('entity_total_liabilities', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['None','Under R500,000','R500k – R1m','R1m – R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="mt-3">
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EXISTING INVESTMENTS / POLICIES</Label>
+                <textarea
+                  className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                  value={formData.entity_existing_products} onChange={e => handleChange('entity_existing_products', e.target.value)}
+                  placeholder="List current investments and policies held by the trust..."
+                />
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
+              {formData.entity_loa_uploaded ? (
+                <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
+                  <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">LOA uploaded</span>
+                </div>
+              ) : (
+                <label className="block cursor-pointer mb-2">
+                  <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                    <p className="text-xs font-medium text-navy">Letter of Authority document</p>
+                    <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                  </div>
+                  <input type="file" className="hidden" onChange={() => handleChange('entity_loa_uploaded', true)} />
+                </label>
+              )}
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={formData.entity_loa_authorised} onChange={e => handleChange('entity_loa_authorised', e.target.checked)} className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0" />
+                <span className="text-xs text-muted-foreground">I authorise WealthWorks to obtain information on existing policies from the relevant providers.</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7 — Risk & Objectives */}
+        {currentStep === 7 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE</h3>
@@ -407,9 +717,7 @@ export default function ClientOnboardingTrust() {
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
-                  {profileOverridden && (
-                    <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>
-                  )}
+                  {profileOverridden && <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>}
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {['Conservative','Cautious','Moderate','Growth','Aggressive'].map(v => (
@@ -436,79 +744,8 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 4 — Documents */}
-        {currentStep === 4 && (
-          <div className="space-y-4">
-            <div>
-              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">TRUST DOCUMENTS</p>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { key: 'trust_deed_uploaded', title: 'TRUST DEED', desc: 'Certified copy of the trust deed' },
-                  { key: 'loa_uploaded', title: 'LETTER OF AUTHORITY', desc: "Master of the High Court letter" },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
-                ].map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
-                    {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                      </div>
-                    ) : (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
-                        </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                      </label>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER TRUSTEE DOCUMENTS</p>
-              <div className="space-y-3">
-                {trustees.map((t, idx) => {
-                  const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || `Trustee ${idx + 1}`;
-                  const idKey = `trustee_${idx}_id_uploaded`;
-                  const addrKey = `trustee_${idx}_addr_uploaded`;
-                  return (
-                    <div key={idx} className="border border-border rounded p-3">
-                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} — {name}</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: idKey, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
-                          { key: addrKey, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
-                        ].map(doc => (
-                          <div key={doc.key} className="border border-border rounded p-2">
-                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
-                            {formData[doc.key] ? (
-                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                              </div>
-                            ) : (
-                              <label className="block cursor-pointer">
-                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
-                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
-                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
-                                </div>
-                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                              </label>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 5 — Submit */}
-        {currentStep === 5 && (
+        {/* STEP 8 — Submit */}
+        {currentStep === 8 && (
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
               <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
@@ -521,7 +758,7 @@ export default function ClientOnboardingTrust() {
               {[
                 { label: 'TRUST NAME', value: formData.entity_name },
                 { label: 'RISK PROFILE', value: formData.risk_profile || '—' },
-                { label: 'TRUSTEES', value: `${trustees.filter(t => t.first_name || t.last_name).length} added` },
+                { label: 'TRUSTEES VERIFIED', value: `${trustees.filter(t => t.first_name || t.last_name).length} added` },
                 { label: 'ADVISOR', value: 'Trevor Fine' },
               ].map(s => (
                 <div key={s.label} className="border border-border rounded p-3">
@@ -535,21 +772,21 @@ export default function ClientOnboardingTrust() {
 
         {/* Navigation */}
         <div className="pt-5 border-t border-border mt-5 flex gap-3">
-          {currentStep > 1 && currentStep < 5 && (
+          {currentStep > 1 && currentStep < 8 && (
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
           )}
           <div className="flex-1" />
-          {currentStep < 4 && (
+          {currentStep < 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
             </Button>
           )}
-          {currentStep === 4 && (
+          {currentStep === 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
             </Button>
           )}
-          {currentStep === 5 && (
+          {currentStep === 8 && (
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
             </Button>
