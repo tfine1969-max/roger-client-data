@@ -698,6 +698,11 @@ export default function ClientOnboarding() {
     return await saveStep(stepData);
   };
 
+  const handleSaveAndSubmit = async () => {
+    const saved = await saveAndSubmitCurrent();
+    if (saved) await handleSubmit();
+  };
+
   const handleSubmit = async (e) => {
     if (e?.preventDefault) e.preventDefault();
     if (!clientId) { toast.error('Client record not found'); return; }
@@ -1537,13 +1542,10 @@ export default function ClientOnboarding() {
                   type="button"
                   variant="outline"
                   disabled={isSavingStep || isSubmitting}
-                  onClick={async () => {
-                    const saved = await saveAndSubmitCurrent();
-                    if (saved) handleSubmit();
-                  }}
+                  onClick={handleSaveAndSubmit}
                   className="px-5 h-9 text-sm border-navy text-navy hover:bg-navy hover:text-white"
                 >
-                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & Submit'}
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & submit'}
                 </Button>
               )}
               {currentStep < 7 && (
