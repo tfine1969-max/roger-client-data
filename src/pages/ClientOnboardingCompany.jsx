@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const STEPS = [
   { number: 1, label: 'Company details' },
@@ -244,13 +245,16 @@ export default function ClientOnboardingCompany() {
       if (!cipcPass) {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
         const failureReason = 'CIPC registration could not be verified';
-        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason });
+        const rmcpResult = calculateRmcpScore({ formData, clientType: 'company', cipcVerified: false });
+        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult });
         await base44.entities.Clients.update(clientId, {
           fica_status: 'Declined',
           fica_reference: ref,
           cipc_verified: false,
+          fica_risk_band: rmcpResult.band,
           fica_failure_reason: failureReason,
           fica_checks_json: JSON.stringify({ cipc: { status: 'fail', reason: failureReason } }),
+          ...buildRmcpUpdate(rmcpResult),
         });
         setFicaRunning(false); toast.error('FICA Declined — CIPC registration not verified'); return;
       }
@@ -272,18 +276,27 @@ export default function ClientOnboardingCompany() {
       }
       const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const rmcpResult = calculateRmcpScore({
+        formData,
+        clientType: 'company',
+        amlMatch: anyFlag,
+        cipcVerified: cipcPass,
+        roleChecks: updatedChecks,
+      });
       const failedDirectors = updatedChecks
         .filter(d => !d.id_verified || !d.aml_clear)
         .map(d => `${[d.first_name, d.last_name].filter(Boolean).join(' ') || 'Director'}: ${!d.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
       const failureReason = failedDirectors.join('; ');
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason };
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
         fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_risk_band: rmcpResult.band,
         cipc_verified: cipcPass, entity_aml_clear: !anyFlag,
         directors_json: JSON.stringify(updatedChecks),
         fica_checks_json: JSON.stringify({ cipc: cipcPass, directors: updatedChecks }),
         fica_failure_reason: failureReason,
+        ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
@@ -463,13 +476,19 @@ export default function ClientOnboardingCompany() {
     if (!clientId) return;
     setIsSubmitting(true);
     try {
+      const rmcpResult = ficaResult?.rmcp_score || calculateRmcpScore({
+        formData,
+        clientType: 'company',
+        amlMatch: ficaResult ? ficaResult.fica_status === 'Referred' : false,
+        cipcVerified: cipcResult?.pass !== false,
+        roleChecks: directors,
+      });
       await base44.entities.Clients.update(clientId, {
         client_status: 'Onboarded', onboarding_complete: true,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
-        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
-        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
-        rmcp_risk_score: 0,
+        fica_risk_band: rmcpResult.band,
+        ...buildRmcpUpdate(rmcpResult),
         home_affairs_verified: ficaResult?.fica_status === 'Approved',
         aml_pep_clear: ficaResult?.fica_status === 'Approved',
       });
@@ -481,9 +500,9 @@ export default function ClientOnboardingCompany() {
         status: 'new',
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
-        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
-        rmcp_risk_score: 0,
-        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
+        fica_risk_band: rmcpResult.band,
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
         offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
         aml_pep_clear: ficaResult?.fica_status === 'Approved',
         home_affairs_verified: ficaResult?.fica_status === 'Approved',

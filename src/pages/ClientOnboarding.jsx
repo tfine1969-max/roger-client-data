@@ -9,6 +9,7 @@ import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const extractDOBFromID = (idNumber) => {
   if (!idNumber || idNumber.length < 6) return '';
@@ -431,12 +432,21 @@ export default function ClientOnboarding() {
       setFicaChecks(prev => ({ ...prev, home_affairs_id: { ...prev.home_affairs_id, status: idPass ? 'pass' : 'fail' } }));
       if (!idPass) {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+        const rmcpResult = calculateWeightedRmcpScore({
+          formData,
+          clientType: 'individual',
+          amlMatch: false,
+          idVerified: false,
+          documentIssue: false,
+          faceMatchPassed: false,
+          addressVerified: false,
+        });
         const result = { fica_status: 'Declined', risk_band: 'High', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'Home Affairs ID verification failed' };
         setFicaResult(result);
         await base44.entities.Clients.update(clientId, {
           fica_status: 'Declined',
           fica_reference: ref,
-          fica_risk_band: 'High',
+          fica_risk_band: rmcpResult.band,
           fica_verified_at: result.verified_at,
           home_affairs_verified: false,
           aml_pep_clear: false,
@@ -444,6 +454,7 @@ export default function ClientOnboarding() {
           fica_checks_json: JSON.stringify({
             home_affairs_id: { status: 'fail', label: 'Home Affairs ID', reason: result.failure_reason },
           }),
+          ...buildRmcpUpdate(rmcpResult),
         });
         setFicaRunning(false);
         toast.error('FICA Declined — ID could not be verified');
@@ -478,20 +489,21 @@ export default function ClientOnboarding() {
 
       setFicaChecks(prev => ({ ...prev, avs_bank: { ...prev.avs_bank, status: 'skipped', note: 'Captured at proposal stage' } }));
 
-      const rmcpResult = calculateRmcpScore(formData, ficaChecks, amlMatch);
+      const faceMatchPassed = selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false;
+      const rmcpResult = calculateWeightedRmcpScore({
+        formData,
+        clientType: 'individual',
+        amlMatch,
+        idVerified: true,
+        documentIssue: docIsForgery,
+        faceMatchPassed,
+        addressVerified,
+      });
       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: rmcpResult.band + ' risk (' + rmcpResult.score + ' pts)' } }));
 
       let ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
       if (rmcpResult.band === 'Prohibited') ficaStatus = 'Declined';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
-
-      const { totalScore, rmcpBand, breakdown } = calculateRmcpRiskScore(
-        formData,
-        true,
-        amlMatch,
-        !docIsForgery,
-        selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false
-      );
 
       const failureReason = docIsForgery
         ? 'Document authentication indicated possible forgery or tampering'
@@ -512,10 +524,7 @@ export default function ClientOnboarding() {
         aml_pep_clear: !amlMatch,
         fica_checks_json: JSON.stringify(ficaChecks),
         fica_failure_reason: failureReason,
-        rmcp_risk_score: rmcpResult.score,
-        rmcp_risk_band: rmcpResult.band,
-        rmcp_scored_at: rmcpResult.scoredAt,
-        rmcp_score_breakdown: JSON.stringify(rmcpResult.breakdown),
+        ...buildRmcpUpdate(rmcpResult),
       };
       await base44.entities.Clients.update(clientId, updateData);
 

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const STEPS = [
   { number: 1, label: 'Trust details' },
@@ -251,18 +252,26 @@ export default function ClientOnboardingTrust() {
       }
       const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const rmcpResult = calculateRmcpScore({
+        formData,
+        clientType: 'trust',
+        amlMatch: anyFlag,
+        roleChecks: updatedChecks,
+      });
       const failedTrustees = updatedChecks
         .filter(t => !t.id_verified || !t.aml_clear)
         .map(t => `${[t.first_name, t.last_name].filter(Boolean).join(' ') || 'Trustee'}: ${!t.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
       const failureReason = failedTrustees.join('; ');
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason };
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
         fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_risk_band: rmcpResult.band,
         entity_aml_clear: !anyFlag,
         trustees_json: JSON.stringify(updatedChecks),
         fica_checks_json: JSON.stringify({ trustees: updatedChecks }),
         fica_failure_reason: failureReason,
+        ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
@@ -444,13 +453,18 @@ export default function ClientOnboardingTrust() {
     if (!clientId) return;
     setIsSubmitting(true);
     try {
+      const rmcpResult = ficaResult?.rmcp_score || calculateRmcpScore({
+        formData,
+        clientType: 'trust',
+        amlMatch: ficaResult ? ficaResult.fica_status === 'Referred' : false,
+        roleChecks: trustees,
+      });
       await base44.entities.Clients.update(clientId, {
         client_status: 'Onboarded', onboarding_complete: true,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
-        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
-        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
-        rmcp_risk_score: 0,
+        fica_risk_band: rmcpResult.band,
+        ...buildRmcpUpdate(rmcpResult),
         home_affairs_verified: ficaResult?.fica_status === 'Approved',
         aml_pep_clear: ficaResult?.fica_status === 'Approved',
       });
@@ -462,9 +476,9 @@ export default function ClientOnboardingTrust() {
         status: 'new',
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
-        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
-        rmcp_risk_score: 0,
-        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
+        fica_risk_band: rmcpResult.band,
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
         offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
         aml_pep_clear: ficaResult?.fica_status === 'Approved',
         home_affairs_verified: ficaResult?.fica_status === 'Approved',
