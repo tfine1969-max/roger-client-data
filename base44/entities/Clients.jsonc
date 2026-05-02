@@ -370,6 +370,10 @@
       "type": "string",
       "description": "Full JSON audit record of all individual FICA check results"
     },
+    "fica_failure_reason": {
+      "type": "string",
+      "description": "Human-readable reason for FICA referral or decline"
+    },
     "rmcp_risk_score": {
       "type": "number",
       "description": "RMCP weighted risk score (0-100+)"

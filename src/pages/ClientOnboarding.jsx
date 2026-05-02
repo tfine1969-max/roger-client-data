@@ -432,7 +432,18 @@ export default function ClientOnboarding() {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
         const result = { fica_status: 'Declined', risk_band: 'High', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'Home Affairs ID verification failed' };
         setFicaResult(result);
-        await base44.entities.Clients.update(clientId, { fica_status: 'Declined', fica_reference: ref, fica_risk_band: 'High', fica_verified_at: result.verified_at, home_affairs_verified: false, aml_pep_clear: false });
+        await base44.entities.Clients.update(clientId, {
+          fica_status: 'Declined',
+          fica_reference: ref,
+          fica_risk_band: 'High',
+          fica_verified_at: result.verified_at,
+          home_affairs_verified: false,
+          aml_pep_clear: false,
+          fica_failure_reason: result.failure_reason,
+          fica_checks_json: JSON.stringify({
+            home_affairs_id: { status: 'fail', label: 'Home Affairs ID', reason: result.failure_reason },
+          }),
+        });
         setFicaRunning(false);
         toast.error('FICA Declined — ID could not be verified');
         return;
@@ -481,7 +492,14 @@ export default function ClientOnboarding() {
         selfieBase64 ? (faceResult?.data?.confidence_score || 0) >= 80 : false
       );
 
-      const finalResult = { fica_status: ficaStatus, risk_band: rmcpResult.band, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null, rmcp_score: rmcpResult };
+      const failureReason = docIsForgery
+        ? 'Document authentication indicated possible forgery or tampering'
+        : rmcpResult.band === 'Prohibited'
+        ? 'RMCP score classified the client as prohibited risk'
+        : amlMatch
+        ? 'AML / PEP / sanctions match detected'
+        : '';
+      const finalResult = { fica_status: ficaStatus, risk_band: rmcpResult.band, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
 
       const updateData = {
@@ -492,6 +510,7 @@ export default function ClientOnboarding() {
         home_affairs_verified: true,
         aml_pep_clear: !amlMatch,
         fica_checks_json: JSON.stringify(ficaChecks),
+        fica_failure_reason: failureReason,
         rmcp_risk_score: rmcpResult.score,
         rmcp_risk_band: rmcpResult.band,
         rmcp_scored_at: rmcpResult.scoredAt,

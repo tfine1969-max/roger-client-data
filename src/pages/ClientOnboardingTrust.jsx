@@ -253,13 +253,18 @@ export default function ClientOnboardingTrust() {
       }
       const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString() };
+      const failedTrustees = updatedChecks
+        .filter(t => !t.id_verified || !t.aml_clear)
+        .map(t => `${[t.first_name, t.last_name].filter(Boolean).join(' ') || 'Trustee'}: ${!t.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
+      const failureReason = failedTrustees.join('; ');
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
         fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
         entity_aml_clear: !anyFlag,
         trustees_json: JSON.stringify(updatedChecks),
         fica_checks_json: JSON.stringify({ trustees: updatedChecks }),
+        fica_failure_reason: failureReason,
       });
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });

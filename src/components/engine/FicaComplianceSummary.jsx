@@ -4,6 +4,44 @@ import { AlertTriangle } from 'lucide-react';
 const FicaComplianceSummary = ({ proposal, client }) => {
   if (!proposal || !client) return null;
 
+  const parseFicaChecks = (value) => {
+    if (!value) return null;
+    try {
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    } catch {
+      return null;
+    }
+  };
+
+  const getFailureReasons = () => {
+    const reasons = [];
+    if (client.fica_failure_reason) reasons.push(client.fica_failure_reason);
+
+    const checks = parseFicaChecks(client.fica_checks_json);
+    if (!checks) return [...new Set(reasons)].filter(Boolean);
+
+    Object.entries(checks).forEach(([key, check]) => {
+      if (!check) return;
+      if (Array.isArray(check)) {
+        check.forEach(item => {
+          const name = [item.first_name, item.last_name].filter(Boolean).join(' ') || item.name || key;
+          if (item.id_verified === false) reasons.push(`${name}: ID verification failed`);
+          if (item.aml_clear === false) reasons.push(`${name}: AML / PEP match detected`);
+        });
+        return;
+      }
+      if (typeof check === 'object') {
+        if (check.status === 'fail') reasons.push(`${check.label || key}: ${check.reason || check.note || 'Failed'}`);
+        if (check.status === 'flag') reasons.push(`${check.label || key}: ${check.reason || check.note || 'Requires review'}`);
+      } else if (check === false) {
+        reasons.push(`${key}: failed`);
+      }
+    });
+
+    if (checks.cipc === false) reasons.push('CIPC registration could not be verified');
+    return [...new Set(reasons)].filter(Boolean);
+  };
+
   const getFicaStatusStyle = (status) => {
     if (status === 'Approved') return { bg: '#f0fdf4', text: '#166534', label: 'Verified' };
     if (status === 'Referred') return { bg: '#fef3c7', text: '#b45309', label: 'EDD Required' };
@@ -25,6 +63,7 @@ const FicaComplianceSummary = ({ proposal, client }) => {
   };
 
   const ficaStatus = client.fica_status || proposal.fica_status;
+  const failureReasons = getFailureReasons();
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden mb-6">
@@ -136,6 +175,21 @@ const FicaComplianceSummary = ({ proposal, client }) => {
             <p className="text-sm font-medium text-navy">{proposal.offshore_exposure ? 'Yes' : 'No'}</p>
           </div>
         </div>
+
+        {failureReasons.length > 0 && (
+          <div className="mt-4 p-3 rounded border" style={{ background: '#fff7ed', borderColor: '#fed7aa' }}>
+            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#9a3412' }}>
+              FICA Check Reasons
+            </p>
+            <ul className="space-y-1 m-0 pl-4">
+              {failureReasons.map((reason, idx) => (
+                <li key={idx} className="text-xs" style={{ color: '#7c2d12' }}>
+                  {reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

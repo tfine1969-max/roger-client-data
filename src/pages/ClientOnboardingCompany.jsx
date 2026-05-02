@@ -243,8 +243,15 @@ export default function ClientOnboardingCompany() {
       setCipcResult({ pass: cipcPass, data: cipc?.data?.data });
       if (!cipcPass) {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
-        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'CIPC registration could not be verified' });
-        await base44.entities.Clients.update(clientId, { fica_status: 'Declined', fica_reference: ref, cipc_verified: false });
+        const failureReason = 'CIPC registration could not be verified';
+        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason });
+        await base44.entities.Clients.update(clientId, {
+          fica_status: 'Declined',
+          fica_reference: ref,
+          cipc_verified: false,
+          fica_failure_reason: failureReason,
+          fica_checks_json: JSON.stringify({ cipc: { status: 'fail', reason: failureReason } }),
+        });
         setFicaRunning(false); toast.error('FICA Declined — CIPC registration not verified'); return;
       }
       let allPass = true, anyFlag = false;
@@ -265,13 +272,18 @@ export default function ClientOnboardingCompany() {
       }
       const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
+      const failedDirectors = updatedChecks
+        .filter(d => !d.id_verified || !d.aml_clear)
+        .map(d => `${[d.first_name, d.last_name].filter(Boolean).join(' ') || 'Director'}: ${!d.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
+      const failureReason = failedDirectors.join('; ');
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
         fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
         cipc_verified: cipcPass, entity_aml_clear: !anyFlag,
         directors_json: JSON.stringify(updatedChecks),
         fica_checks_json: JSON.stringify({ cipc: cipcPass, directors: updatedChecks }),
+        fica_failure_reason: failureReason,
       });
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
