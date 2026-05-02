@@ -299,6 +299,20 @@
       ],
       "description": "Low, Medium, High, or Prohibited"
     },
+    "fica_status": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Referred",
+        "Declined",
+        "Pending"
+      ],
+      "description": "FICA verification status copied from the client record"
+    },
+    "fica_risk_band": {
+      "type": "string",
+      "description": "FICA or AML risk rating copied from the client record"
+    },
     "fica_reference": {
       "type": "string",
       "description": "VerifyNow FICA reference number"
@@ -306,6 +320,10 @@
     "fica_verified_at": {
       "type": "string",
       "description": "datetime FICA verification completed"
+    },
+    "aml_pep_clear": {
+      "type": "boolean",
+      "description": "Whether AML and PEP screening passed with no matches"
     },
     "offshore_exposure": {
       "type": "boolean",

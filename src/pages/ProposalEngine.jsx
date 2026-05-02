@@ -126,6 +126,13 @@ export default function ProposalEngine() {
       liquidity_requirement: proposal.liquidity_requirement || client.liquidity_requirement || client.liquidity_needs || '',
       tax_residency: proposal.tax_residency || client.tax_residency || '',
       source_of_funds: proposal.source_of_funds?.length > 0 ? proposal.source_of_funds : (client.source_of_funds || []),
+      fica_status: proposal.fica_status || client.fica_status || '',
+      fica_reference: proposal.fica_reference || client.fica_reference || '',
+      fica_verified_at: proposal.fica_verified_at || client.fica_verified_at || '',
+      fica_risk_band: proposal.fica_risk_band || client.fica_risk_band || '',
+      rmcp_risk_score: proposal.rmcp_risk_score ?? client.rmcp_risk_score,
+      rmcp_risk_band: proposal.rmcp_risk_band || client.rmcp_risk_band || client.fica_risk_band || '',
+      aml_pep_clear: proposal.aml_pep_clear ?? client.aml_pep_clear ?? client.entity_aml_clear,
     });
   }, [proposal, allClients]);
 
@@ -208,7 +215,16 @@ export default function ProposalEngine() {
     const pdfBlob = doc.output('blob');
     const pdfFile = new File([pdfBlob], `${localData.reference || 'proposal'}.pdf`, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-    await base44.entities.Proposal.update(id, { proposal_pdf_url: file_url });
+    const ficaSnapshot = {
+      fica_status: localData.fica_status || '',
+      fica_reference: localData.fica_reference || '',
+      fica_verified_at: localData.fica_verified_at || '',
+      fica_risk_band: localData.fica_risk_band || '',
+      rmcp_risk_score: localData.rmcp_risk_score ?? 0,
+      rmcp_risk_band: localData.rmcp_risk_band || localData.fica_risk_band || '',
+    };
+    if (localData.aml_pep_clear !== undefined) ficaSnapshot.aml_pep_clear = localData.aml_pep_clear;
+    await base44.entities.Proposal.update(id, { proposal_pdf_url: file_url, ...ficaSnapshot });
     setLocalData(prev => ({ ...prev, proposal_pdf_url: file_url }));
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     toast.success('PDF generated');

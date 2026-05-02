@@ -72,6 +72,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   const advisoryNeeds    = Array.isArray(proposal.advisory_needs)  ? proposal.advisory_needs  : [];
   const sourceOfFunds    = Array.isArray(proposal.source_of_funds) ? proposal.source_of_funds : [];
   const normRiskProducts = riskProducts.map(rp => ({...rp, covers: rp.covers || rp._covers || []}));
+  const ficaReference    = proposal.fica_reference || '—';
+  const ficaStatus       = proposal.fica_status || '—';
+  const amlRiskRating    = proposal.rmcp_risk_band || proposal.fica_risk_band || '—';
+  const amlClear         = proposal.aml_pep_clear === undefined ? '—' : (proposal.aml_pep_clear ? 'Yes' : 'No');
 
   const rawType = proposal.client_type || '';
   let clientTypeDisplay = 'Individual';
@@ -439,6 +443,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     ['RMCP SCORE', proposal.rmcp_risk_score !== undefined ? `${proposal.rmcp_risk_score} / 100` : '—'],
     ['AML CLEAR', proposal.aml_pep_clear ? 'Yes' : 'No'],
   ];
+  ficaAmlRows[0] = ['FICA STATUS', ficaStatus];
+  ficaAmlRows[1] = ['FICA REF', ficaReference];
+  ficaAmlRows.splice(2, 0, ['AML RISK', amlRiskRating]);
+  ficaAmlRows[4] = ['AML CLEAR', amlClear];
   const ficaAmlCardH = ficaAmlRows.length*10+16;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
   doc.roundedRect(col2x, rcy, colW2, ficaAmlCardH, 3, 3, 'FD');
@@ -747,6 +755,13 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   spacer(8); h3('Compliance Disclosures Provided'); spacer(2);
   ['FAIS Disclosure and Terms of Business','Conflict of Interest Management Policy','Complaints Resolution Process'].forEach(b=>bullet(b));
   spacer(8); h3('FICA Verification Status'); spacer(4);
+  table([
+    ['FICA Reference', ficaReference],
+    ['FICA Status', ficaStatus],
+    ['AML Risk Rating', amlRiskRating],
+    ['AML / PEP Clear', amlClear],
+  ]);
+  spacer(4);
   ['Identity Verified','Proof of Address Verified','Source of Funds Confirmed','Beneficial Ownership Verified (if applicable)'].forEach(item=>statusItem(item));
   addFooter(pageNum);
 
