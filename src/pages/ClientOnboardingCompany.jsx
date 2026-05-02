@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
+import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 
 const STEPS = [
   { number: 1, label: 'Company details' },
@@ -47,6 +48,7 @@ export default function ClientOnboardingCompany() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingStep, setIsSavingStep] = useState(false);
+  const [uploadingDocs, setUploadingDocs] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
   const [profileOverridden, setProfileOverridden] = useState(false);
   const [profileInitialised, setProfileInitialised] = useState(false);
@@ -62,6 +64,7 @@ export default function ClientOnboardingCompany() {
     // Docs
     cipc_registration_uploaded: false, moi_uploaded: false,
     proof_of_address_uploaded: false, financial_statements_uploaded: false,
+    doc_identity: '', doc_proof_of_address: '', doc_source_of_funds: '', doc_existing_policies: '',
     // KYC
     business_activity: '', entity_source_of_funds: [], ubo_declaration: '',
     entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
@@ -99,10 +102,14 @@ export default function ClientOnboardingCompany() {
           suburb: c.suburb || prev.suburb, city: c.city || prev.city,
           province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
           email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
-          cipc_registration_uploaded: c.cipc_registration_uploaded ?? prev.cipc_registration_uploaded,
-          moi_uploaded: c.moi_uploaded ?? prev.moi_uploaded,
-          proof_of_address_uploaded: c.proof_of_address_uploaded ?? prev.proof_of_address_uploaded,
-          financial_statements_uploaded: c.financial_statements_uploaded ?? prev.financial_statements_uploaded,
+          cipc_registration_uploaded: c.cipc_registration_uploaded || !!c.doc_identity || prev.cipc_registration_uploaded,
+          moi_uploaded: c.moi_uploaded || !!c.doc_existing_policies || prev.moi_uploaded,
+          proof_of_address_uploaded: c.proof_of_address_uploaded || !!c.doc_proof_of_address || prev.proof_of_address_uploaded,
+          financial_statements_uploaded: c.financial_statements_uploaded || !!c.doc_source_of_funds || prev.financial_statements_uploaded,
+          doc_identity: c.doc_identity || prev.doc_identity,
+          doc_proof_of_address: c.doc_proof_of_address || prev.doc_proof_of_address,
+          doc_source_of_funds: c.doc_source_of_funds || prev.doc_source_of_funds,
+          doc_existing_policies: c.doc_existing_policies || prev.doc_existing_policies,
           business_activity: c.business_activity || prev.business_activity,
           entity_source_of_funds: Array.isArray(c.entity_source_of_funds) ? c.entity_source_of_funds : prev.entity_source_of_funds,
           ubo_declaration: c.ubo_declaration || prev.ubo_declaration,
@@ -161,6 +168,47 @@ export default function ClientOnboardingCompany() {
   const updateDirector = (idx, field, value) => setDirectors(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
   const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
   const removeDirector = (idx) => { if (directors.length > 2) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
+
+  const handleDocumentUpload = async (fieldKey, file) => {
+    if (!file) return;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { updateData } = await uploadOnboardingDocument({ clientId, fieldKey, file });
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Document uploaded and sent to advisor portal');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
+
+  const handleDirectorDocumentUpload = async (idx, docType, file) => {
+    if (!file || !clientId) return;
+    const fieldKey = `director_${idx}_${docType}_uploaded`;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
+      const updatedDirectors = directors.map((director, directorIdx) => {
+        if (directorIdx !== idx) return director;
+        return docType === 'id'
+          ? { ...director, id_uploaded: true, id_file_url: fileUrl }
+          : { ...director, addr_uploaded: true, addr_file_url: fileUrl };
+      });
+      setDirectors(updatedDirectors);
+      setFormData(prev => ({ ...prev, [fieldKey]: true }));
+      await base44.entities.Clients.update(clientId, {
+        directors_list: updatedDirectors,
+        doc_submitted_at: new Date().toISOString(),
+        doc_status: 'Submitted',
+      });
+      toast.success('Director document uploaded and indexed');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
 
   const saveStep = async (data) => {
     if (!clientId) return false;
@@ -257,6 +305,10 @@ export default function ClientOnboardingCompany() {
         moi_uploaded: formData.moi_uploaded || false,
         proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
         financial_statements_uploaded: formData.financial_statements_uploaded || false,
+        doc_identity: formData.doc_identity,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_existing_policies: formData.doc_existing_policies,
         directors_list: directorsWithDocs,
       };
     } else if (currentStep === 4) {
@@ -475,7 +527,7 @@ export default function ClientOnboardingCompany() {
                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
                    {formData[doc.key] ? (
                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                       <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                       {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
                      </div>
                    ) : (
                      <label className="block cursor-pointer">
@@ -483,7 +535,7 @@ export default function ClientOnboardingCompany() {
                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
                        </div>
-                       <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                       <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                      </label>
                    )}
                  </div>
@@ -502,9 +554,9 @@ export default function ClientOnboardingCompany() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="border border-border rounded p-2">
                           <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">SA ID / PASSPORT</h4>
-                          {formData[`director_${idx}_id_uploaded`] ? (
+                          {formData[`director_${idx}_id_uploaded`] || d.id_uploaded ? (
                             <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                              <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                              {uploadingDocs[`director_${idx}_id_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_id_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
                             </div>
                           ) : (
                             <label className="block cursor-pointer">
@@ -512,15 +564,15 @@ export default function ClientOnboardingCompany() {
                                 <p className="text-[10px] font-medium text-navy">Certified copy of identity document</p>
                                 <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                               </div>
-                              <input type="file" className="hidden" onChange={() => handleChange(`director_${idx}_id_uploaded`, true)} />
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'id', e.target.files?.[0])} />
                             </label>
                           )}
                         </div>
                         <div className="border border-border rounded p-2">
                           <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">PROOF OF RESIDENTIAL ADDRESS</h4>
-                          {formData[`director_${idx}_addr_uploaded`] ? (
+                          {formData[`director_${idx}_addr_uploaded`] || d.addr_uploaded ? (
                             <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                              <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                              {uploadingDocs[`director_${idx}_addr_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_addr_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
                             </div>
                           ) : (
                             <label className="block cursor-pointer">
@@ -528,7 +580,7 @@ export default function ClientOnboardingCompany() {
                                 <p className="text-[10px] font-medium text-navy">Utility bill / bank statement</p>
                                 <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                               </div>
-                              <input type="file" className="hidden" onChange={() => handleChange(`director_${idx}_addr_uploaded`, true)} />
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'addr', e.target.files?.[0])} />
                             </label>
                           )}
                         </div>

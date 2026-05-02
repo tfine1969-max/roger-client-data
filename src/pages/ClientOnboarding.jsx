@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
+import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 
 const extractDOBFromID = (idNumber) => {
   if (!idNumber || idNumber.length < 6) return '';
@@ -131,6 +132,7 @@ export default function ClientOnboarding() {
   const [clientId, setClientId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingDocs, setUploadingDocs] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
   const [isSavingStep, setIsSavingStep] = useState(false);
   const [profileOverridden, setProfileOverridden] = useState(false);
@@ -190,6 +192,10 @@ export default function ClientOnboarding() {
     proof_of_address_uploaded: false,
     income_proof_uploaded: false,
     existing_policies_uploaded: false,
+    doc_identity: '',
+    doc_proof_of_address: '',
+    doc_source_of_funds: '',
+    doc_existing_policies: '',
     client_signature_name: '',
     client_signature_date: new Date().toISOString().split('T')[0],
   });
@@ -266,10 +272,14 @@ export default function ClientOnboarding() {
             ...(client.advisory_needs?.length > 0   ? { advisory_needs: client.advisory_needs }                             : {}),
             loa_uploaded:                    client.loa_uploaded                    || prev.loa_uploaded,
             loa_authorised:                  client.loa_authorised                  || prev.loa_authorised,
-            identity_document_uploaded:      client.identity_document_uploaded      || prev.identity_document_uploaded,
-            proof_of_address_uploaded:       client.proof_of_address_uploaded       || prev.proof_of_address_uploaded,
-            income_proof_uploaded:           client.income_proof_uploaded           || prev.income_proof_uploaded,
-            existing_policies_uploaded:      client.existing_policies_uploaded      || prev.existing_policies_uploaded,
+            identity_document_uploaded:      client.identity_document_uploaded      || !!client.doc_identity || prev.identity_document_uploaded,
+            proof_of_address_uploaded:       client.proof_of_address_uploaded       || !!client.doc_proof_of_address || prev.proof_of_address_uploaded,
+            income_proof_uploaded:           client.income_proof_uploaded           || !!client.doc_source_of_funds || prev.income_proof_uploaded,
+            existing_policies_uploaded:      client.existing_policies_uploaded      || !!client.doc_existing_policies || prev.existing_policies_uploaded,
+            doc_identity:                    client.doc_identity                    || prev.doc_identity,
+            doc_proof_of_address:            client.doc_proof_of_address            || prev.doc_proof_of_address,
+            doc_source_of_funds:             client.doc_source_of_funds             || prev.doc_source_of_funds,
+            doc_existing_policies:           client.doc_existing_policies           || prev.doc_existing_policies,
             client_signature_name:           client.client_signature_name           || prev.client_signature_name,
             client_signature_date:           client.client_signature_date           || prev.client_signature_date,
           }));
@@ -311,6 +321,20 @@ export default function ClientOnboarding() {
       const arr = prev[field] || [];
       return { ...prev, [field]: arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item] };
     });
+  };
+
+  const handleDocumentUpload = async (fieldKey, file) => {
+    if (!file) return;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { updateData } = await uploadOnboardingDocument({ clientId, fieldKey, file });
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Document uploaded and sent to advisor portal');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
   };
 
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
@@ -534,6 +558,10 @@ export default function ClientOnboarding() {
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
         income_proof_uploaded: formData.income_proof_uploaded,
         existing_policies_uploaded: formData.existing_policies_uploaded,
+        doc_identity: formData.doc_identity,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_existing_policies: formData.doc_existing_policies,
       };
     } else if (currentStep === 3) {
       if (!formData.employment_status || !formData.occupation) {
@@ -625,6 +653,10 @@ export default function ClientOnboarding() {
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
         income_proof_uploaded: formData.income_proof_uploaded,
         existing_policies_uploaded: formData.existing_policies_uploaded,
+        doc_identity: formData.doc_identity,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_existing_policies: formData.doc_existing_policies,
       };
     } else if (currentStep === 3) {
       stepData = {
@@ -676,10 +708,10 @@ export default function ClientOnboarding() {
         onboarding_complete: true,
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
-        doc_identity: formData.identity_document_uploaded ? `identity-${clientId}-${Date.now()}` : '',
-        doc_proof_of_address: formData.proof_of_address_uploaded ? `address-${clientId}-${Date.now()}` : '',
-        doc_source_of_funds: formData.income_proof_uploaded ? `income-${clientId}-${Date.now()}` : '',
-        doc_existing_policies: formData.existing_policies_uploaded ? `policies-${clientId}-${Date.now()}` : '',
+        doc_identity: formData.doc_identity || '',
+        doc_proof_of_address: formData.doc_proof_of_address || '',
+        doc_source_of_funds: formData.doc_source_of_funds || '',
+        doc_existing_policies: formData.doc_existing_policies || '',
       });
 
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
@@ -1007,8 +1039,8 @@ export default function ClientOnboarding() {
                     </div>
                     {formData[doc.key] ? (
                       <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" />
-                        <span className="text-xs text-teal font-medium">Uploaded</span>
+                        {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
+                        <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
                       </div>
                     ) : (
                       <label className="block cursor-pointer">
@@ -1017,7 +1049,7 @@ export default function ClientOnboarding() {
                           <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
                           <p className="text-[10px] text-ocean mt-2">Click to upload</p>
                         </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                       </label>
                     )}
                   </div>

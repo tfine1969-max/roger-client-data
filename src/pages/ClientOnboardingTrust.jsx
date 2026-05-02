@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, CalendarIcon } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import PersonCard from '@/components/onboarding/PersonCard';
+import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 
 const STEPS = [
   { number: 1, label: 'Trust details' },
@@ -50,6 +51,7 @@ export default function ClientOnboardingTrust() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingStep, setIsSavingStep] = useState(false);
+  const [uploadingDocs, setUploadingDocs] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
   const [profileOverridden, setProfileOverridden] = useState(false);
   const [profileInitialised, setProfileInitialised] = useState(false);
@@ -65,6 +67,7 @@ export default function ClientOnboardingTrust() {
     // Docs
     trust_deed_uploaded: false, loa_uploaded: false,
     trust_proof_of_address_uploaded: false, trust_bank_statement_uploaded: false,
+    doc_identity: '', doc_proof_of_address: '', doc_source_of_funds: '', doc_existing_policies: '',
     // KYC
     trust_purpose: '', trust_source_of_funds: [], beneficiary_declaration: '',
     entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
@@ -98,10 +101,20 @@ export default function ClientOnboardingTrust() {
           entity_name: c.entity_name || prev.entity_name,
           trust_number: c.trust_number || prev.trust_number,
           trust_deed_date: c.trust_deed_date || prev.trust_deed_date,
+          trust_type: c.trust_type || prev.trust_type,
+          contact_trustee_name: c.contact_trustee_name || prev.contact_trustee_name,
           street_address: c.street_address || prev.street_address,
           suburb: c.suburb || prev.suburb, city: c.city || prev.city,
           province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
           email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
+          trust_deed_uploaded: c.trust_deed_uploaded || !!c.doc_identity || prev.trust_deed_uploaded,
+          loa_uploaded: c.loa_uploaded || !!c.doc_existing_policies || prev.loa_uploaded,
+          trust_proof_of_address_uploaded: c.trust_proof_of_address_uploaded || !!c.doc_proof_of_address || prev.trust_proof_of_address_uploaded,
+          trust_bank_statement_uploaded: c.trust_bank_statement_uploaded || !!c.doc_source_of_funds || prev.trust_bank_statement_uploaded,
+          doc_identity: c.doc_identity || prev.doc_identity,
+          doc_proof_of_address: c.doc_proof_of_address || prev.doc_proof_of_address,
+          doc_source_of_funds: c.doc_source_of_funds || prev.doc_source_of_funds,
+          doc_existing_policies: c.doc_existing_policies || prev.doc_existing_policies,
           portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
           primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
           time_horizon: c.time_horizon || prev.time_horizon,
@@ -138,6 +151,47 @@ export default function ClientOnboardingTrust() {
   const updateTrustee = (idx, field, value) => setTrustees(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   const addTrustee = () => setTrustees(prev => [...prev, emptyTrustee()]);
   const removeTrustee = (idx) => { if (trustees.length > 2) setTrustees(prev => prev.filter((_, i) => i !== idx)); };
+
+  const handleDocumentUpload = async (fieldKey, file) => {
+    if (!file) return;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { updateData } = await uploadOnboardingDocument({ clientId, fieldKey, file });
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Document uploaded and sent to advisor portal');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
+
+  const handleTrusteeDocumentUpload = async (idx, docType, file) => {
+    if (!file || !clientId) return;
+    const fieldKey = `trustee_${idx}_${docType}_uploaded`;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
+      const updatedTrustees = trustees.map((trustee, trusteeIdx) => {
+        if (trusteeIdx !== idx) return trustee;
+        return docType === 'id'
+          ? { ...trustee, id_uploaded: true, id_file_url: fileUrl }
+          : { ...trustee, addr_uploaded: true, addr_file_url: fileUrl };
+      });
+      setTrustees(updatedTrustees);
+      setFormData(prev => ({ ...prev, [fieldKey]: true }));
+      await base44.entities.Clients.update(clientId, {
+        trustees_list: updatedTrustees,
+        doc_submitted_at: new Date().toISOString(),
+        doc_status: 'Submitted',
+      });
+      toast.success('Trustee document uploaded and indexed');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
 
   const saveStep = async (data) => {
     if (!clientId) return false;
@@ -224,6 +278,10 @@ export default function ClientOnboardingTrust() {
         loa_uploaded: formData.loa_uploaded || false,
         trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
         trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
+        doc_identity: formData.doc_identity,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_existing_policies: formData.doc_existing_policies,
         ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
@@ -473,7 +531,7 @@ export default function ClientOnboardingTrust() {
                     <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
                     {formData[doc.key] ? (
                       <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                        {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
                       </div>
                     ) : (
                       <label className="block cursor-pointer">
@@ -481,7 +539,7 @@ export default function ClientOnboardingTrust() {
                           <p className="text-xs font-medium text-navy">{doc.desc}</p>
                           <p className="text-[10px] text-ocean mt-1">Click to upload</p>
                         </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                       </label>
                     )}
                   </div>
@@ -503,9 +561,9 @@ export default function ClientOnboardingTrust() {
                         ].map(doc => (
                           <div key={doc.key} className="border border-border rounded p-2">
                             <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
-                            {formData[doc.key] ? (
+                            {formData[doc.key] || (doc.key.endsWith('_id_uploaded') ? t.id_uploaded : t.addr_uploaded) ? (
                               <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                                {uploadingDocs[doc.key] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
                               </div>
                             ) : (
                               <label className="block cursor-pointer">
@@ -513,7 +571,7 @@ export default function ClientOnboardingTrust() {
                                   <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
                                   <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                                 </div>
-                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                                <input type="file" className="hidden" onChange={e => handleTrusteeDocumentUpload(idx, doc.key.endsWith('_id_uploaded') ? 'id' : 'addr', e.target.files?.[0])} />
                               </label>
                             )}
                           </div>

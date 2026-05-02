@@ -20,7 +20,7 @@ const STATUS_COLOURS = {
   Incomplete: { bg: '#fff1f2', color: '#9f1239', border: '#fecdd3' },
 };
 
-const DOCUMENT_INDEX = [
+const DEFAULT_DOCUMENT_INDEX = [
   {
     key: 'doc_identity',
     index: '01',
@@ -51,8 +51,31 @@ const DOCUMENT_INDEX = [
   },
 ];
 
+const getDocumentIndex = (clientType) => {
+  if (clientType === 'Company') {
+    return [
+      { key: 'doc_identity', index: '01', label: 'CIPC Registration Certificate', description: 'CoR14.3 / CoR15.1A or equivalent', required: true },
+      { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
+      { key: 'doc_source_of_funds', index: '03', label: 'Financial Statements', description: 'Most recent audited or management accounts', required: true },
+      { key: 'doc_existing_policies', index: '04', label: 'MOI / Memorandum of Incorporation', description: 'Certified copy of current MOI', required: false },
+    ];
+  }
+
+  if (clientType === 'Trust') {
+    return [
+      { key: 'doc_identity', index: '01', label: 'Trust Deed', description: 'Certified copy of the trust deed', required: true },
+      { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
+      { key: 'doc_source_of_funds', index: '03', label: 'Trust Bank Statement', description: 'Most recent 3 months bank statements', required: true },
+      { key: 'doc_existing_policies', index: '04', label: 'Letter of Authority', description: 'Master of the High Court letter', required: false },
+    ];
+  }
+
+  return DEFAULT_DOCUMENT_INDEX;
+};
+
 export default function ClientDocumentRepository({ client, proposals = [], attachments = [], investments = [], onStatusUpdate }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const documentIndex = getDocumentIndex(client?.client_type);
 
   // FICA is complete when the three required docs (01, 02, 03) are uploaded — doc 04 is optional
   const ficaComplete = !!(client?.doc_identity && client?.doc_proof_of_address && client?.doc_source_of_funds);
@@ -133,13 +156,40 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     });
   });
 
+  const personsList = Array.isArray(client?.directors_list)
+    ? client.directors_list
+    : Array.isArray(client?.trustees_list)
+    ? client.trustees_list
+    : [];
+  const personLabel = client?.client_type === 'Trust' ? 'Trustee' : 'Director';
+  const personDocs = [];
+  personsList.forEach((person, personIndex) => {
+    const fullName = [person.first_name, person.last_name].filter(Boolean).join(' ') || `${personLabel} ${personIndex + 1}`;
+    if (person.id_file_url) {
+      personDocs.push({
+        label: `${personLabel} ID / Passport - ${fullName}`,
+        description: 'Certified identity document',
+        fileUrl: person.id_file_url,
+        tag: `${personLabel.toUpperCase()} DOC`,
+      });
+    }
+    if (person.addr_file_url) {
+      personDocs.push({
+        label: `${personLabel} Proof of Address - ${fullName}`,
+        description: 'Residential address verification document',
+        fileUrl: person.addr_file_url,
+        tag: `${personLabel.toUpperCase()} DOC`,
+      });
+    }
+  });
+
   // Counts
-  const ficaUploaded = DOCUMENT_INDEX.filter(d => !!client?.[d.key]).length;
+  const ficaUploaded = documentIndex.filter(d => !!client?.[d.key]).length;
   const proposalUploaded = proposalRows.filter(d => d.statusOverride === 'uploaded').length;
-  const totalRows = DOCUMENT_INDEX.length + proposalRows.length + invDocs.length;
-  const totalUploaded = ficaUploaded + proposalUploaded + invDocs.length;
-  const requiredCount = DOCUMENT_INDEX.filter(d => d.required).length;
-  const requiredUploaded = DOCUMENT_INDEX.filter(d => d.required && !!client?.[d.key]).length;
+  const totalRows = documentIndex.length + personDocs.length + proposalRows.length + invDocs.length;
+  const totalUploaded = ficaUploaded + personDocs.length + proposalUploaded + invDocs.length;
+  const requiredCount = documentIndex.filter(d => d.required).length;
+  const requiredUploaded = documentIndex.filter(d => d.required && !!client?.[d.key]).length;
 
   const badgeUploaded = {
     background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0',
@@ -270,7 +320,7 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
         </thead>
         <tbody>
           {/* FICA rows */}
-          {DOCUMENT_INDEX.map((doc, i) => {
+          {documentIndex.map((doc, i) => {
             const fileUrl = client?.[doc.key];
             const uploaded = !!fileUrl;
             return (
@@ -313,6 +363,59 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
             );
           })}
 
+          {personDocs.length > 0 && (
+            <tr>
+              <td colSpan={5} style={{
+                padding: '10px 12px 6px',
+                fontSize: 10, fontWeight: 700,
+                letterSpacing: '1.2px', textTransform: 'uppercase',
+                color: '#94a3b8', background: '#f8fafc',
+                borderTop: '2px solid #e2e8f0',
+                borderBottom: '1px solid #e2e8f0',
+              }}>
+                {client?.client_type === 'Trust' ? 'Trustee Documents' : 'Director Documents'}
+              </td>
+            </tr>
+          )}
+
+          {personDocs.map((doc, i) => (
+            <tr key={`persondoc-${i}`} style={{
+              borderBottom: '1px solid #f1f5f9',
+              background: i % 2 === 0 ? '#ffffff' : '#fafafa',
+            }}>
+              <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
+                {String(documentIndex.length + i + 1).padStart(2, '0')}
+              </td>
+              <td style={{ padding: '14px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13 }}>
+                    {doc.label}
+                  </p>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
+                    textTransform: 'uppercase', padding: '2px 7px',
+                    borderRadius: 10, whiteSpace: 'nowrap',
+                    background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0',
+                  }}>
+                    {doc.tag}
+                  </span>
+                </div>
+                <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{doc.description}</p>
+              </td>
+              <td style={{ padding: '14px 12px' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#9f1239' }}>Required</span>
+              </td>
+              <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
+                <span style={badgeUploaded}>âœ“ Uploaded</span>
+              </td>
+              <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <button onClick={() => window.open(doc.fileUrl, '_blank')} style={btnDownload}>
+                  â†“ View / Download
+                </button>
+              </td>
+            </tr>
+          ))}
+
           {/* Proposal Documents section divider */}
           {proposalRows.length > 0 && (
             <tr>
@@ -336,7 +439,7 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
               background: i % 2 === 0 ? '#ffffff' : '#fafafa',
             }}>
               <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
-                {doc.index}
+                {String(documentIndex.length + personDocs.length + i + 1).padStart(2, '0')}
               </td>
               <td style={{ padding: '14px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
@@ -393,7 +496,7 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                 </td>
               </tr>
               {invDocs.map((doc, i) => {
-                const docNum = String(DOCUMENT_INDEX.length + proposalRows.length + i + 1).padStart(2, '0');
+                const docNum = String(documentIndex.length + personDocs.length + proposalRows.length + i + 1).padStart(2, '0');
                 return (
                   <tr key={`invdoc-${i}`} style={{
                     borderBottom: '1px solid #f1f5f9',
