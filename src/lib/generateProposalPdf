@@ -37,6 +37,15 @@ const fmtPct = (val) => {
   return n.toFixed(2) + '%';
 };
 
+const fmtMoney = (amount, currency = 'R') => {
+  const n = Number(amount || 0);
+  return n > 0 ? `${currency || 'R'} ${n.toLocaleString('en-ZA')}` : '—';
+};
+
+const recurringRows = (inv) => Number(inv.recurring_amount || 0) > 0
+  ? [['Recurring Contribution', `${fmtMoney(inv.recurring_amount, inv.currency)}${inv.frequency ? ` ${inv.frequency}` : ' pm'}`]]
+  : [];
+
 export default async function generateProposalPdf(proposal, investments = [], riskProducts = [], signatureData = null) {
   // Load all recommendation reasons for resolving IDs to text
   let allReasons = [];
@@ -129,8 +138,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   const clientSignatureBlock = (label) => {
     if (signatureData?.clientSignature) {
       pb(28);
-      doc.addImage(signatureData.clientSignature, 'PNG', M, y, 70, 22);
-      y += 24;
+      doc.addImage(signatureData.clientSignature, 'PNG', M, y, 70, 14);
+      y += 17;
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
       doc.text(`${label}  ·  Date: ${fmtDate(signatureData.signedAt)}`, M, y); y += 8;
     } else {
@@ -221,10 +230,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   const advisorSignatureBlock = () => {
     if (proposal.advisor_signature_type==='draw'&&proposal.advisor_signature_data) {
-      pb(25); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,60,18); y+=22;
+      pb(22); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,70,14); y+=17;
     } else if (proposal.advisor_signature_type==='type'&&proposal.advisor_signature_data) {
-      pb(20); doc.setFont('times','italic'); doc.setFontSize(16); doc.setTextColor(...navy);
-      doc.text(proposal.advisor_signature_data,M,y+6); y+=14;
+      pb(18); doc.setFont('times','italic'); doc.setFontSize(14); doc.setTextColor(...navy);
+      doc.text(proposal.advisor_signature_data,M,y+5); y+=12;
     }
   };
 
@@ -523,21 +532,27 @@ export default async function generateProposalPdf(proposal, investments = [], ri
         doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...navy);
         doc.text(isOffshore?'Offshore Investment':'Local Investment', M+4, y); y+=5;
         doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
-        const invSubtitle = [inv.provider, inv.currency, inv.amount>0?`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`:null].filter(Boolean).join(' | ');
+        const invSubtitle = [
+          inv.provider,
+          inv.currency,
+          inv.amount > 0 ? `Lump sum: ${fmtMoney(inv.amount, inv.currency)}` : null,
+          inv.recurring_amount > 0 ? `Recurring: ${fmtMoney(inv.recurring_amount, inv.currency)}${inv.frequency ? ` ${inv.frequency}` : ' pm'}` : null,
+        ].filter(Boolean).join(' | ');
         doc.text(invSubtitle, M+4, y); y+=8;
 
-        // Three mini-cards: Currency | Amount | Income (side by side)
-        const miniW = (CW-8)/3, miniH = 20;
+        // Mini-cards: Currency | Lump sum | Recurring | Income
         const miniItems = [
           ['CURRENCY', inv.currency||'ZAR'],
           ['AMOUNT', inv.amount>0?`${inv.currency||'R'} ${Number(inv.amount).toLocaleString('en-ZA')}`:'—'],
         ];
+        if (inv.recurring_amount>0) miniItems.push(['RECURRING', `${fmtMoney(inv.recurring_amount, inv.currency)}${inv.frequency ? ` ${inv.frequency}` : ' pm'}`]);
         if (inv.income_required==='Yes') {
           const incStr = inv.income_type==='Percentage'
             ? `${Number(inv.income_percentage||0).toFixed(1)}%`
             : `${inv.currency||'R'} ${Number(inv.income_amount||0).toLocaleString('en-ZA')} pm`;
           miniItems.push(['INCOME', incStr]);
         }
+        const miniW = (CW - 4 * (miniItems.length - 1)) / miniItems.length, miniH = 20;
         miniItems.forEach((mi, mi_i) => {
           const mx = M + mi_i*(miniW+4);
           doc.setDrawColor(...border); doc.setFillColor(...light);
@@ -848,6 +863,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
         pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
         doc.text(fmtInvName(inv), M, y); y+=6;
         table([
+          ...recurringRows(inv),
           ['Portfolio Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
           ['Annual Advice Fee (% per annum)', fmtPct(inv.annual_advice_fee_percent||0)],
           ['Platform / Administration Fee (% per annum)', fmtPct(inv.platform_fee_percent||0)],
@@ -892,6 +908,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
         pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
         doc.text(fmtInvName(inv), M, y); y+=6;
         table([
+          ...recurringRows(inv),
           ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
           ['Performance Fee (%)', fmtPct(inv.performance_fee_percent||0)],
           ['Hurdle Rate (%)', fmtPct(inv.hurdle_rate_percent||0)],
@@ -938,6 +955,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
         pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
         doc.text(fmtInvName(inv), M, y); y+=6;
         table([
+          ...recurringRows(inv),
           ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
           ['Performance Fee (% of returns above hurdle)', fmtPct(inv.performance_fee_percent||0)],
           ['Hurdle Rate (%)', fmtPct(inv.hurdle_rate_percent||0)],
@@ -1056,6 +1074,19 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.text('ADVISOR SIGNATURE', M, y);
   doc.text('CLIENT SIGNATURE', sigRx, y); y+=4;
 
+  // Signature images
+  const sigImageY = y;
+  if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
+    doc.addImage(proposal.advisor_signature_data, 'PNG', M, sigImageY, 60, 12);
+  } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
+    doc.setFont('times','italic'); doc.setFontSize(13); doc.setTextColor(...navy);
+    doc.text(proposal.advisor_signature_data, M, sigImageY + 8);
+  }
+  if (signatureData?.clientSignature) {
+    doc.addImage(signatureData.clientSignature, 'PNG', sigRx, sigImageY, 60, 12);
+  }
+  y += 15;
+
   // Lines
   doc.setDrawColor(...navy); doc.line(M, y, M+sigColW, y);
   doc.line(sigRx, y, sigRx+sigColW, y); y+=4;
@@ -1065,12 +1096,11 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.text(advisorName, M, y);
   doc.text(clientName, sigRx, y); y+=6;
 
-  // Dates + client signature image
+  // Dates
   doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
   doc.text(`Date: ${signDate}`, M, y);
 
   if (signatureData?.clientSignature) {
-    doc.addImage(signatureData.clientSignature, 'PNG', sigRx, y-10, 50, 16);
     doc.text(`Date: ${fmtDate(signatureData.signedAt)}`, sigRx, y);
   } else {
     doc.text('Date: _______________', sigRx, y);

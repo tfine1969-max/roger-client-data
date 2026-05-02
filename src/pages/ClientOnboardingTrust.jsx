@@ -166,7 +166,7 @@ export default function ClientOnboardingTrust() {
 
   const updateTrustee = (idx, field, value) => setTrustees(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   const addTrustee = () => setTrustees(prev => [...prev, emptyTrustee()]);
-  const removeTrustee = (idx) => { if (trustees.length > 2) setTrustees(prev => prev.filter((_, i) => i !== idx)); };
+  const removeTrustee = (idx) => { if (trustees.length > 1) setTrustees(prev => prev.filter((_, i) => i !== idx)); };
 
   const handleDocumentUpload = async (fieldKey, file) => {
     if (!file) return;
@@ -616,7 +616,7 @@ export default function ClientOnboardingTrust() {
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">Add all trustees of this trust. Minimum 2 required.</p>
             {trustees.map((trustee, idx) => (
-              <PersonCard key={idx} person={trustee} idx={idx} role="Trustee" onUpdate={updateTrustee} onRemove={removeTrustee} canRemove={trustees.length > 2 && idx >= 2} />
+              <PersonCard key={idx} person={trustee} idx={idx} role="Trustee" onUpdate={updateTrustee} onRemove={removeTrustee} canRemove={trustees.length > 1} />
             ))}
             <button type="button" onClick={addTrustee} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add trustee

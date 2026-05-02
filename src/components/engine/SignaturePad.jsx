@@ -3,19 +3,57 @@ import { ADVISORS } from '@/lib/constants';
 import DatePickerField from '@/components/ui/date-picker-field';
 
 const todayISO = () => new Date().toISOString().split('T')[0];
+const savedSignatureKey = (advisorKey) => `wealthworks:advisor-signature:${advisorKey || 'trevor'}`;
 
 export default function SignaturePad({ advisorKey, signDate, onSignDateChange, onSignatureChange, initialData, initialType }) {
   const canvasRef = useRef(null);
   const [mode, setMode] = useState(initialType || 'draw');
   const [typedName, setTypedName] = useState(initialType === 'type' ? (initialData || '') : '');
   const [hasDrawn, setHasDrawn] = useState(false);
+  const [rememberSignature, setRememberSignature] = useState(false);
+  const [hasSavedSignature, setHasSavedSignature] = useState(false);
+  const [currentSignature, setCurrentSignature] = useState(initialData || '');
+  const [currentSignatureType, setCurrentSignatureType] = useState(initialType || 'draw');
   const drawingRef = useRef(false);
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
+  const storageKey = savedSignatureKey(advisorKey);
 
   // Auto-populate date with today if not set
   useEffect(() => {
     if (!signDate) onSignDateChange(todayISO());
   }, []);
+
+  useEffect(() => {
+    setHasSavedSignature(!!localStorage.getItem(storageKey));
+  }, [storageKey]);
+
+  const applySignature = useCallback((data, type = 'draw') => {
+    setCurrentSignature(data);
+    setCurrentSignatureType(type);
+    onSignatureChange(data, type);
+    if (rememberSignature && data) {
+      localStorage.setItem(storageKey, JSON.stringify({ data, type }));
+      setHasSavedSignature(true);
+    }
+  }, [onSignatureChange, rememberSignature, storageKey]);
+
+  const restoreSavedSignature = () => {
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) return;
+    try {
+      const { data, type } = JSON.parse(saved);
+      if (!data) return;
+      setMode(type || 'draw');
+      if (type === 'type') setTypedName(data);
+      else setHasDrawn(true);
+      setCurrentSignature(data);
+      setCurrentSignatureType(type || 'draw');
+      onSignatureChange(data, type || 'draw');
+    } catch {
+      localStorage.removeItem(storageKey);
+      setHasSavedSignature(false);
+    }
+  };
 
   // Initialize canvas
   useEffect(() => {
@@ -75,9 +113,9 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
       ctx.beginPath();
       // Save signature data
       const dataUrl = canvasRef.current.toDataURL();
-      onSignatureChange(dataUrl, 'draw');
+      applySignature(dataUrl, 'draw');
     }
-  }, [onSignatureChange]);
+  }, [applySignature]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -108,12 +146,26 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
     }
     setHasDrawn(false);
     setTypedName('');
+    setCurrentSignature('');
+    setCurrentSignatureType('draw');
     onSignatureChange('', 'draw');
   };
 
   const handleTypedChange = (val) => {
     setTypedName(val);
-    onSignatureChange(val, 'type');
+    applySignature(val, 'type');
+  };
+
+  const handleUploadSignature = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      setMode('draw');
+      setHasDrawn(true);
+      applySignature(dataUrl, 'draw');
+    };
+    reader.readAsDataURL(file);
   };
 
   const hasSig = mode === 'draw' ? hasDrawn : typedName.trim().length > 0;
@@ -183,6 +235,10 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
             >
               Type
             </button>
+            <label className="text-[8px] font-medium px-2 py-0.5 tracking-[.06em] uppercase cursor-pointer bg-muted text-muted-foreground border border-border">
+              Upload
+              <input type="file" accept="image/*" className="hidden" onChange={e => handleUploadSignature(e.target.files?.[0])} />
+            </label>
             <button
               onClick={clear}
               className="text-[8px] font-medium px-2 py-0.5 tracking-[.06em] uppercase text-danger border border-border ml-auto"
@@ -196,6 +252,27 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
               ✓ Signature captured — ready to send
             </div>
           )}
+          <div className="flex items-center gap-2 px-2 py-1 border-t border-border bg-white">
+            <label className="flex items-center gap-1 text-[8px] text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={rememberSignature}
+                onChange={e => {
+                  setRememberSignature(e.target.checked);
+                  if (e.target.checked && currentSignature) {
+                    localStorage.setItem(storageKey, JSON.stringify({ data: currentSignature, type: currentSignatureType }));
+                    setHasSavedSignature(true);
+                  }
+                }}
+              />
+              Remember for future use
+            </label>
+            {hasSavedSignature && (
+              <button type="button" onClick={restoreSavedSignature} className="text-[8px] font-medium text-navy underline ml-auto">
+                Use saved signature
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

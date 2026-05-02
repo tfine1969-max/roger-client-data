@@ -168,7 +168,7 @@ export default function ClientOnboardingCompany() {
 
   const updateDirector = (idx, field, value) => setDirectors(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
   const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
-  const removeDirector = (idx) => { if (directors.length > 2) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
+  const removeDirector = (idx) => { if (directors.length > 1) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
 
   const handleDocumentUpload = async (fieldKey, file) => {
     if (!file) return;
@@ -620,7 +620,7 @@ export default function ClientOnboardingCompany() {
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">Add all directors of this company. Minimum 2 required.</p>
             {directors.map((director, idx) => (
-              <PersonCard key={idx} person={director} idx={idx} role="Director" onUpdate={updateDirector} onRemove={removeDirector} canRemove={directors.length > 2 && idx >= 2} />
+              <PersonCard key={idx} person={director} idx={idx} role="Director" onUpdate={updateDirector} onRemove={removeDirector} canRemove={directors.length > 1} />
             ))}
             <button type="button" onClick={addDirector} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add director

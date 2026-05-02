@@ -31,7 +31,6 @@ function F({ label, children }) {
 
 export default function PersonCard({ person, idx, role, onUpdate, onRemove, canRemove }) {
   const update = (field, value) => onUpdate(idx, field, value);
-  // canRemove is true only when this specific card can be removed (idx >= 2 and list.length > 2)
 
   const handleIdNumber = (val) => {
     update('id_number', val);
@@ -48,7 +47,7 @@ export default function PersonCard({ person, idx, role, onUpdate, onRemove, canR
         <span className="text-[11px] font-bold text-navy uppercase tracking-wider">{role} {idx + 1}</span>
         {canRemove && (
           <button type="button" onClick={() => onRemove(idx)} className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 border border-red-200 rounded hover:bg-red-50">
-            Remove
+            Delete
           </button>
         )}
       </div>
