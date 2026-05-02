@@ -367,6 +367,86 @@ export default function ClientOnboardingCompany() {
     if (saved) setCurrentStep(prev => prev + 1);
   };
 
+  const handleSaveAndSubmit = async () => {
+    if (currentStep === 8) {
+      await handleSubmit();
+      return;
+    }
+
+    let data = {};
+    if (currentStep === 1) {
+      if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
+      data = {
+        client_type: 'Company', identity_type: 'Registration',
+        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
+        email: formData.email, mobile_number: formData.mobile_number,
+        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
+      };
+    } else if (currentStep === 2) {
+      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
+      data = { directors_list: directors };
+    } else if (currentStep === 3) {
+      const directorsWithDocs = directors.map((d, idx) => ({
+        ...d,
+        id_uploaded: formData[`director_${idx}_id_uploaded`] || d.id_uploaded || false,
+        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || d.addr_uploaded || false,
+      }));
+      data = {
+        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
+        moi_uploaded: formData.moi_uploaded || false,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
+        financial_statements_uploaded: formData.financial_statements_uploaded || false,
+        doc_identity: formData.doc_identity,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_existing_policies: formData.doc_existing_policies,
+        directors_list: directorsWithDocs,
+      };
+    } else if (currentStep === 4) {
+      data = {
+        business_activity: formData.business_activity,
+        entity_source_of_funds: formData.entity_source_of_funds,
+        ubo_declaration: formData.ubo_declaration,
+        entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca,
+        entity_pep: formData.entity_pep,
+      };
+    } else if (currentStep === 5) {
+      data = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        cipc_verified: cipcResult?.pass || false,
+        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        directors_json: JSON.stringify(directors),
+      };
+    } else if (currentStep === 6) {
+      data = {
+        gross_annual_turnover: formData.gross_annual_turnover,
+        total_assets_band: formData.total_assets_band,
+        entity_total_liabilities: formData.entity_total_liabilities,
+        existing_products_notes: formData.existing_products_notes,
+        entity_loa_uploaded: formData.entity_loa_uploaded,
+        entity_loa_authorised: formData.entity_loa_authorised,
+      };
+    } else if (currentStep === 7) {
+      data = {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
+        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+      };
+    }
+
+    const saved = await saveStep(data);
+    if (saved) await handleSubmit();
+  };
+
   const handleSubmit = async () => {
     if (!clientId) return;
     setIsSubmitting(true);
@@ -891,6 +971,11 @@ export default function ClientOnboardingCompany() {
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
           )}
           <div className="flex-1" />
+          {currentStep < 8 && (
+            <Button type="button" variant="outline" onClick={handleSaveAndSubmit} disabled={isSavingStep || isSubmitting} className="px-5 h-9 text-sm border-navy text-navy hover:bg-navy hover:text-white">
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & submit'}
+            </Button>
+          )}
           {currentStep < 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
