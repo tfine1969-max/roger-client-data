@@ -199,6 +199,12 @@ export default function ClientOnboardingCompany() {
       setFormData(prev => ({ ...prev, [fieldKey]: true }));
       await base44.entities.Clients.update(clientId, {
         directors_list: updatedDirectors,
+        director_documents_json: JSON.stringify(updatedDirectors.map((director, directorIndex) => ({
+          director_index: directorIndex,
+          name: [director.first_name, director.last_name].filter(Boolean).join(' '),
+          id_file_url: director.id_file_url || '',
+          addr_file_url: director.addr_file_url || '',
+        }))),
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
       });

@@ -94,7 +94,7 @@ export default function ClientDashboard() {
   const personsLabel = isTrust ? 'TRUSTEES' : isCompany ? 'DIRECTORS' : '';
 
   const entitySourceOfFunds = isTrust
-    ? (Array.isArray(client.trust_source_of_funds) ? client.trust_source_of_funds : [])
+    ? (Array.isArray(client.trust_source_of_funds) ? client.trust_source_of_funds : Array.isArray(client.entity_source_of_funds) ? client.entity_source_of_funds : [])
     : (Array.isArray(client.entity_source_of_funds) ? client.entity_source_of_funds : []);
 
   const getFicaStatusStyle = (status) => {
@@ -278,8 +278,8 @@ export default function ClientDashboard() {
                 <div className="grid grid-cols-3 gap-3">
                   {isTrust ? (
                     <>
-                      <Field label="Trust Asset Value Band" value={client.trust_asset_value_band} />
-                      <Field label="Trust Income Band" value={client.trust_income_band} />
+                      <Field label="Trust Asset Value Band" value={client.trust_asset_value_band || client.total_assets_band} />
+                      <Field label="Trust Income Band" value={client.trust_income_band || client.gross_annual_turnover} />
                     </>
                   ) : (
                     <>

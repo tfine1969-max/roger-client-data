@@ -73,6 +73,17 @@ const getDocumentIndex = (clientType) => {
   return DEFAULT_DOCUMENT_INDEX;
 };
 
+const parseDocumentJson = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 export default function ClientDocumentRepository({ client, proposals = [], attachments = [], investments = [], onStatusUpdate }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const documentIndex = getDocumentIndex(client?.client_type);
@@ -162,12 +173,18 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     ? client.trustees_list
     : [];
   const personLabel = client?.client_type === 'Trust' ? 'Trustee' : 'Director';
+  const indexedPersonDocs = client?.client_type === 'Trust'
+    ? parseDocumentJson(client?.trustee_documents_json)
+    : parseDocumentJson(client?.director_documents_json);
+  const personDocSources = indexedPersonDocs.length > 0 ? indexedPersonDocs : personsList;
   const personDocs = [];
-  personsList.forEach((person, personIndex) => {
-    const fullName = [person.first_name, person.last_name].filter(Boolean).join(' ') || `${personLabel} ${personIndex + 1}`;
+  personDocSources.forEach((person, personIndex) => {
+    const sourceIndex = person.trustee_index ?? person.director_index ?? personIndex;
+    const listPerson = personsList[sourceIndex] || {};
+    const fullName = person.name || [person.first_name || listPerson.first_name, person.last_name || listPerson.last_name].filter(Boolean).join(' ') || `${personLabel} ${sourceIndex + 1}`;
     if (person.id_file_url) {
       personDocs.push({
-        label: `${personLabel} ID / Passport - ${fullName}`,
+        label: `${personLabel} ${sourceIndex + 1} ID / Passport - ${fullName}`,
         description: 'Certified identity document',
         fileUrl: person.id_file_url,
         tag: `${personLabel.toUpperCase()} DOC`,
@@ -175,7 +192,7 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     }
     if (person.addr_file_url) {
       personDocs.push({
-        label: `${personLabel} Proof of Address - ${fullName}`,
+        label: `${personLabel} ${sourceIndex + 1} Proof of Address - ${fullName}`,
         description: 'Residential address verification document',
         fileUrl: person.addr_file_url,
         tag: `${personLabel.toUpperCase()} DOC`,

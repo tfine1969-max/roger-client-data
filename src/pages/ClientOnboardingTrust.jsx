@@ -116,14 +116,18 @@ export default function ClientOnboardingTrust() {
           doc_source_of_funds: c.doc_source_of_funds || prev.doc_source_of_funds,
           doc_existing_policies: c.doc_existing_policies || prev.doc_existing_policies,
           trust_purpose: c.trust_purpose || prev.trust_purpose,
-          trust_source_of_funds: Array.isArray(c.trust_source_of_funds) ? c.trust_source_of_funds : prev.trust_source_of_funds,
+          trust_source_of_funds: Array.isArray(c.trust_source_of_funds)
+            ? c.trust_source_of_funds
+            : Array.isArray(c.entity_source_of_funds)
+            ? c.entity_source_of_funds
+            : prev.trust_source_of_funds,
           beneficiary_declaration: c.beneficiary_declaration || prev.beneficiary_declaration,
           entity_tax_number: c.entity_tax_number || prev.entity_tax_number,
           entity_tax_residency: c.entity_tax_residency || prev.entity_tax_residency,
           entity_fatca: c.entity_fatca || prev.entity_fatca,
           entity_pep: c.entity_pep || prev.entity_pep,
-          trust_asset_value_band: c.trust_asset_value_band || prev.trust_asset_value_band,
-          trust_income_band: c.trust_income_band || prev.trust_income_band,
+          trust_asset_value_band: c.trust_asset_value_band || c.total_assets_band || prev.trust_asset_value_band,
+          trust_income_band: c.trust_income_band || c.gross_annual_turnover || prev.trust_income_band,
           entity_total_liabilities: c.entity_total_liabilities || prev.entity_total_liabilities,
           entity_existing_products: c.existing_products_notes || prev.entity_existing_products,
           entity_loa_uploaded: c.entity_loa_uploaded || prev.entity_loa_uploaded,
@@ -195,6 +199,12 @@ export default function ClientOnboardingTrust() {
       setFormData(prev => ({ ...prev, [fieldKey]: true }));
       await base44.entities.Clients.update(clientId, {
         trustees_list: updatedTrustees,
+        trustee_documents_json: JSON.stringify(updatedTrustees.map((trustee, trusteeIndex) => ({
+          trustee_index: trusteeIndex,
+          name: [trustee.first_name, trustee.last_name].filter(Boolean).join(' '),
+          id_file_url: trustee.id_file_url || '',
+          addr_file_url: trustee.addr_file_url || '',
+        }))),
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
       });
@@ -301,6 +311,7 @@ export default function ClientOnboardingTrust() {
       data = {
         trust_purpose: formData.trust_purpose,
         trust_source_of_funds: formData.trust_source_of_funds,
+        entity_source_of_funds: formData.trust_source_of_funds,
         beneficiary_declaration: formData.beneficiary_declaration,
         entity_tax_number: formData.entity_tax_number,
         entity_tax_residency: formData.entity_tax_residency,
@@ -324,6 +335,8 @@ export default function ClientOnboardingTrust() {
       data = {
         trust_asset_value_band: formData.trust_asset_value_band,
         trust_income_band: formData.trust_income_band,
+        total_assets_band: formData.trust_asset_value_band,
+        gross_annual_turnover: formData.trust_income_band,
         entity_total_liabilities: formData.entity_total_liabilities,
         existing_products_notes: formData.entity_existing_products,
         entity_loa_uploaded: formData.entity_loa_uploaded,

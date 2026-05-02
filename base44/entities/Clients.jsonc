@@ -469,6 +469,14 @@
       "type": "string",
       "description": "JSON audit record of trustee verification results"
     },
+    "director_documents_json": {
+      "type": "string",
+      "description": "JSON index of uploaded director document URLs"
+    },
+    "trustee_documents_json": {
+      "type": "string",
+      "description": "JSON index of uploaded trustee document URLs"
+    },
     "entity_source_of_funds": {
       "type": "array",
       "items": {
