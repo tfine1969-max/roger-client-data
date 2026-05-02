@@ -65,6 +65,18 @@
       "type": "string",
       "description": "Trust registration/master reference"
     },
+    "trust_type": {
+      "type": "string",
+      "description": "Trust type (Inter Vivos or Testamentary)"
+    },
+    "trust_deed_date": {
+      "type": "string",
+      "description": "Date of trust deed"
+    },
+    "contact_trustee_name": {
+      "type": "string",
+      "description": "Name of contact trustee"
+    },
     "date_of_birth": {
       "type": "string",
       "format": "date",
@@ -179,7 +191,7 @@
       "items": {
         "type": "object"
       },
-      "description": "Existing financial products"
+      "description": "Existing financial products (structured list \u2014 individual onboarding)"
     },
     "products_list": {
       "type": "array",
@@ -187,6 +199,10 @@
         "type": "object"
       },
       "description": "Structured existing products list"
+    },
+    "existing_products_notes": {
+      "type": "string",
+      "description": "Free-text notes about existing financial products (company and trust onboarding)"
     },
     "loa_uploaded": {
       "type": "boolean",
@@ -375,6 +391,56 @@
     "rmcp_score_breakdown": {
       "type": "string",
       "description": "JSON string containing factor scores: client_factor, geography_factor, product_factor, transaction_factor, behaviour_factor"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "VAT number (company)"
+    },
+    "business_activity": {
+      "type": "string",
+      "description": "Business activity description (company)"
+    },
+    "ubo_declaration": {
+      "type": "string",
+      "description": "UBO declaration \u2014 beneficial owners with 25%+ shareholding"
+    },
+    "trust_purpose": {
+      "type": "string",
+      "description": "Purpose/objective of the trust"
+    },
+    "beneficiary_declaration": {
+      "type": "string",
+      "description": "Named beneficiaries of the trust"
+    },
+    "entity_aml_clear": {
+      "type": "boolean",
+      "description": "Whether all directors/trustees passed AML screening"
+    },
+    "cipc_verified": {
+      "type": "boolean",
+      "description": "Whether CIPC registration was verified"
+    },
+    "directors_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "List of company directors"
+    },
+    "trustees_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "List of trust trustees"
+    },
+    "directors_json": {
+      "type": "string",
+      "description": "JSON audit record of director verification results"
+    },
+    "trustees_json": {
+      "type": "string",
+      "description": "JSON audit record of trustee verification results"
     }
   },
   "required": [
