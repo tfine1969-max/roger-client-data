@@ -220,17 +220,17 @@ export default function ClientOnboardingCompany() {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
-      const perDirectorDocs = {};
-      directors.forEach((_, idx) => {
-        perDirectorDocs[`director_${idx}_id_uploaded`] = formData[`director_${idx}_id_uploaded`] || false;
-        perDirectorDocs[`director_${idx}_addr_uploaded`] = formData[`director_${idx}_addr_uploaded`] || false;
-      });
+      const directorsWithDocs = directors.map((d, idx) => ({
+        ...d,
+        id_uploaded: formData[`director_${idx}_id_uploaded`] || false,
+        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || false,
+      }));
       data = {
         cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
         moi_uploaded: formData.moi_uploaded || false,
         proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
         financial_statements_uploaded: formData.financial_statements_uploaded || false,
-        ...perDirectorDocs,
+        directors_list: directorsWithDocs,
       };
     } else if (currentStep === 4) {
       data = {
@@ -265,7 +265,7 @@ export default function ClientOnboardingCompany() {
         gross_annual_turnover: formData.gross_annual_turnover,
         total_assets_band: formData.total_assets_band,
         entity_total_liabilities: formData.entity_total_liabilities,
-        existing_products_notes: formData.entity_existing_products,
+        existing_products_notes: formData.existing_products_notes,
         entity_loa_uploaded: formData.entity_loa_uploaded,
         entity_loa_authorised: formData.entity_loa_authorised,
       };
