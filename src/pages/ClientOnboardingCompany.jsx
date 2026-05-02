@@ -94,10 +94,28 @@ export default function ClientOnboardingCompany() {
           ...prev,
           entity_name: c.entity_name || prev.entity_name,
           registration_number: c.registration_number || prev.registration_number,
+          vat_number: c.vat_number || prev.vat_number,
           street_address: c.street_address || prev.street_address,
           suburb: c.suburb || prev.suburb, city: c.city || prev.city,
           province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
           email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
+          cipc_registration_uploaded: c.cipc_registration_uploaded ?? prev.cipc_registration_uploaded,
+          moi_uploaded: c.moi_uploaded ?? prev.moi_uploaded,
+          proof_of_address_uploaded: c.proof_of_address_uploaded ?? prev.proof_of_address_uploaded,
+          financial_statements_uploaded: c.financial_statements_uploaded ?? prev.financial_statements_uploaded,
+          business_activity: c.business_activity || prev.business_activity,
+          entity_source_of_funds: Array.isArray(c.entity_source_of_funds) ? c.entity_source_of_funds : prev.entity_source_of_funds,
+          ubo_declaration: c.ubo_declaration || prev.ubo_declaration,
+          entity_tax_number: c.entity_tax_number || prev.entity_tax_number,
+          entity_tax_residency: c.entity_tax_residency || prev.entity_tax_residency,
+          entity_fatca: c.entity_fatca || prev.entity_fatca,
+          entity_pep: c.entity_pep || prev.entity_pep,
+          gross_annual_turnover: c.gross_annual_turnover || prev.gross_annual_turnover,
+          total_assets_band: c.total_assets_band || prev.total_assets_band,
+          entity_total_liabilities: c.entity_total_liabilities || prev.entity_total_liabilities,
+          existing_products_notes: c.existing_products_notes || prev.existing_products_notes,
+          entity_loa_uploaded: c.entity_loa_uploaded ?? prev.entity_loa_uploaded,
+          entity_loa_authorised: c.entity_loa_authorised ?? prev.entity_loa_authorised,
           portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
           primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
           time_horizon: c.time_horizon || prev.time_horizon,
@@ -106,6 +124,15 @@ export default function ClientOnboardingCompany() {
           advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
         if (c.risk_profile) setProfileOverridden(true);
+        if (c.fica_status) {
+          setFicaResult({
+            fica_status: c.fica_status,
+            fica_reference: c.fica_reference || '',
+            verified_at: c.fica_verified_at || '',
+            failure_reason: null,
+          });
+        }
+        if (typeof c.cipc_verified === 'boolean') setCipcResult({ pass: c.cipc_verified });
         if (Array.isArray(c.directors_list) && c.directors_list.length > 0) setDirectors(c.directors_list);
       }
     }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
