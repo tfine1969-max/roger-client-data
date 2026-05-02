@@ -5,11 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus, CalendarIcon } from 'lucide-react';
-import { format, parse, isValid } from 'date-fns';
+import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 
@@ -560,23 +558,7 @@ export default function ClientOnboardingTrust() {
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">TRUST DEED DATE</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button type="button" className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 text-sm shadow-sm hover:bg-accent/10 transition-colors">
-                      <span className={formData.trust_deed_date ? 'text-foreground' : 'text-muted-foreground'}>
-                        {formData.trust_deed_date ? (() => { try { return format(parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()), 'dd-MM-yyyy'); } catch { return formData.trust_deed_date; } })() : 'dd-mm-yyyy'}
-                      </span>
-                      <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single"
-                      selected={formData.trust_deed_date ? (() => { try { const d = parse(formData.trust_deed_date, 'yyyy-MM-dd', new Date()); return isValid(d) ? d : undefined; } catch { return undefined; } })() : undefined}
-                      onSelect={date => handleChange('trust_deed_date', date ? format(date, 'yyyy-MM-dd') : '')}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DatePickerField value={formData.trust_deed_date} onChange={v => handleChange('trust_deed_date', v)} />
               </div>
               <div>
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT TRUSTEE NAME</Label>

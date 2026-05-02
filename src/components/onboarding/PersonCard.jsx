@@ -2,6 +2,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DatePickerField from '@/components/ui/date-picker-field';
 import { Trash2 } from 'lucide-react';
 
 const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
@@ -38,11 +39,6 @@ export default function PersonCard({ person, idx, role, onUpdate, onRemove, canR
       const dob = dobFromSAID(val);
       if (dob) update('date_of_birth', dob);
     }
-  };
-
-  const handleDobInput = (val) => {
-    // Allow free-form dd-mm-yyyy entry
-    update('date_of_birth', val);
   };
 
   return (
@@ -93,7 +89,7 @@ export default function PersonCard({ person, idx, role, onUpdate, onRemove, canR
                 <Input className="h-8 text-sm font-mono" maxLength="13" placeholder="13-digit number" value={person.id_number || ''} onChange={e => handleIdNumber(e.target.value)} />
               </F>
               <F label="Date of Birth (dd-mm-yyyy)">
-                <Input className="h-8 text-sm" placeholder="dd-mm-yyyy" value={person.date_of_birth || ''} onChange={e => handleDobInput(e.target.value)} />
+                <DatePickerField value={person.date_of_birth || ''} onChange={v => update('date_of_birth', v)} outputFormat="dd-MM-yyyy" />
               </F>
             </div>
           ) : (
@@ -108,7 +104,7 @@ export default function PersonCard({ person, idx, role, onUpdate, onRemove, canR
                 </Select>
               </F>
               <F label="Date of Birth (dd-mm-yyyy)">
-                <Input className="h-8 text-sm" placeholder="dd-mm-yyyy" value={person.date_of_birth || ''} onChange={e => handleDobInput(e.target.value)} />
+                <DatePickerField value={person.date_of_birth || ''} onChange={v => update('date_of_birth', v)} outputFormat="dd-MM-yyyy" />
               </F>
             </div>
           )}

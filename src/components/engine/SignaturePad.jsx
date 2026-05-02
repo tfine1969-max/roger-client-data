@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ADVISORS } from '@/lib/constants';
+import DatePickerField from '@/components/ui/date-picker-field';
 
 const todayISO = () => new Date().toISOString().split('T')[0];
 
@@ -136,18 +137,10 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
           </div>
           <div className="space-y-0.5">
             <label className="text-[8px] font-semibold tracking-[.06em] uppercase text-navy">Date</label>
-            <input
-              type="text"
-              value={(() => { const d = new Date(signDate || todayISO()); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; })()}
-              onChange={e => {
-                const parts = e.target.value.split('-');
-                if (parts.length === 3) {
-                  const [d, m, y] = parts;
-                  onSignDateChange(`${y}-${m}-${d}`);
-                }
-              }}
-              placeholder="DD-MM-YYYY"
-              className="w-full border border-border bg-card px-2 py-1 text-[10px] text-foreground font-raleway outline-none focus:border-ocean transition-colors"
+            <DatePickerField
+              value={signDate || todayISO()}
+              onChange={onSignDateChange}
+              className="h-7 rounded-none px-2 py-1 text-[10px] font-raleway"
             />
           </div>
         </div>

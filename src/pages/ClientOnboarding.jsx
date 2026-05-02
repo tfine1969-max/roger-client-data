@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
@@ -965,7 +966,7 @@ export default function ClientOnboarding() {
                   </div>
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH (auto-extracted)</Label>
-                    <Input type="date" className="mt-1 h-8 text-sm" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} />
+                    <DatePickerField className="mt-1" value={formData.date_of_birth} onChange={v => handleChange('date_of_birth', v)} />
                   </div>
                 </div>
               ) : (
@@ -980,7 +981,7 @@ export default function ClientOnboarding() {
                   </div>
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DATE OF BIRTH *</Label>
-                    <Input type="date" className="mt-1 h-8 text-sm" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} />
+                    <DatePickerField className="mt-1" value={formData.date_of_birth} onChange={v => handleChange('date_of_birth', v)} />
                   </div>
                 </div>
               )}
