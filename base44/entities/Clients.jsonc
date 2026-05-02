@@ -441,6 +441,61 @@
     "trustees_json": {
       "type": "string",
       "description": "JSON audit record of trustee verification results"
+    },
+    "entity_source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Source of funds for company or trust entities"
+    },
+    "entity_tax_number": {
+      "type": "string",
+      "description": "SA tax number for a company or trust entity"
+    },
+    "entity_tax_residency": {
+      "type": "string",
+      "description": "Tax residency of the entity"
+    },
+    "entity_fatca": {
+      "type": "string",
+      "description": "FATCA declaration for the entity (Yes or No)"
+    },
+    "entity_pep": {
+      "type": "string",
+      "description": "Whether any director or trustee is a politically exposed person (Yes or No)"
+    },
+    "gross_annual_turnover": {
+      "type": "string",
+      "description": "Company gross annual turnover band"
+    },
+    "total_assets_band": {
+      "type": "string",
+      "description": "Company or trust total assets band"
+    },
+    "entity_total_liabilities": {
+      "type": "string",
+      "description": "Company or trust total liabilities band"
+    },
+    "entity_loa_uploaded": {
+      "type": "boolean",
+      "description": "Whether letter of authority has been uploaded for entity client"
+    },
+    "entity_loa_authorised": {
+      "type": "boolean",
+      "description": "Whether LOA authorisation checkbox has been accepted"
+    },
+    "cipc_registration_uploaded": {
+      "type": "boolean",
+      "description": "Whether CIPC registration certificate has been uploaded"
+    },
+    "moi_uploaded": {
+      "type": "boolean",
+      "description": "Whether memorandum of incorporation has been uploaded"
+    },
+    "financial_statements_uploaded": {
+      "type": "boolean",
+      "description": "Whether financial statements have been uploaded"
     }
   },
   "required": [
