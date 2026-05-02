@@ -239,7 +239,7 @@ export default function ClientOnboardingTrust() {
         net_worth_band: formData.trust_asset_value_band,
         gross_annual_income_band: formData.trust_income_band,
         total_liabilities: formData.entity_total_liabilities,
-        existing_financial_products: formData.entity_existing_products,
+        existing_products_notes: formData.entity_existing_products,
         loa_uploaded: formData.entity_loa_uploaded,
         loa_authorised: formData.entity_loa_authorised,
       };

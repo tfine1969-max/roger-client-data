@@ -243,7 +243,7 @@ export default function ClientOnboardingCompany() {
         gross_annual_income_band: formData.gross_annual_turnover,
         net_worth_band: formData.total_assets_band,
         total_liabilities: formData.entity_total_liabilities,
-        existing_financial_products: formData.entity_existing_products,
+        existing_products_notes: formData.entity_existing_products,
         loa_uploaded: formData.entity_loa_uploaded,
         loa_authorised: formData.entity_loa_authorised,
       };
