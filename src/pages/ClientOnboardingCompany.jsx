@@ -67,7 +67,7 @@ export default function ClientOnboardingCompany() {
     entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
     // Financial
     gross_annual_turnover: '', total_assets_band: '', entity_total_liabilities: '',
-    entity_existing_products: '', entity_loa_uploaded: false, entity_loa_authorised: false,
+    entity_existing_products: '', existing_products_notes: '', entity_loa_uploaded: false, entity_loa_authorised: false,
     // Risk
     portfolio_drop_response: '', primary_investment_objective: '',
     time_horizon: '', liquidity_requirement: '', risk_profile: '', advisory_needs: [],
@@ -439,28 +439,29 @@ export default function ClientOnboardingCompany() {
               <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
-                  { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
-                  { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
+                 { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
+                 { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
+                 { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
+                 { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
                 ].map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
-                    {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
-                      </div>
-                    ) : (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-ocean mt-1">Click to upload</p>
-                        </div>
-                        <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                      </label>
-                    )}
-                  </div>
+                 <div key={doc.key} className="border border-border rounded p-3">
+                   <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                   {formData[doc.key] ? (
+                     <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
+                       <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                     </div>
+                   ) : (
+                     <label className="block cursor-pointer">
+                       <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                         <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                         <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                       </div>
+                       <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
+                     </label>
+                   )}
+                 </div>
                 ))}
+
               </div>
             </div>
             <div>
@@ -472,27 +473,38 @@ export default function ClientOnboardingCompany() {
                     <div key={idx} className="border border-border rounded p-3">
                       <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Director {idx + 1} — {name}</p>
                       <div className="grid grid-cols-2 gap-3">
-                        {[
-                          { key: `director_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
-                          { key: `director_${idx}_addr_uploaded`, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
-                        ].map(doc => (
-                          <div key={doc.key} className="border border-border rounded p-2">
-                            <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
-                            {formData[doc.key] ? (
-                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                                <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                        <div className="border border-border rounded p-2">
+                          <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">SA ID / PASSPORT</h4>
+                          {formData[`director_${idx}_id_uploaded`] ? (
+                            <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
+                              <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                            </div>
+                          ) : (
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                <p className="text-[10px] font-medium text-navy">Certified copy of identity document</p>
+                                <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                               </div>
-                            ) : (
-                              <label className="block cursor-pointer">
-                                <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
-                                  <p className="text-[10px] font-medium text-navy">{doc.desc}</p>
-                                  <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
-                                </div>
-                                <input type="file" className="hidden" onChange={() => handleChange(doc.key, true)} />
-                              </label>
-                            )}
-                          </div>
-                        ))}
+                              <input type="file" className="hidden" onChange={() => handleChange(`director_${idx}_id_uploaded`, true)} />
+                            </label>
+                          )}
+                        </div>
+                        <div className="border border-border rounded p-2">
+                          <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">PROOF OF RESIDENTIAL ADDRESS</h4>
+                          {formData[`director_${idx}_addr_uploaded`] ? (
+                            <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
+                              <Check className="w-3.5 h-3.5 text-teal" /><span className="text-xs text-teal font-medium">Uploaded</span>
+                            </div>
+                          ) : (
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                <p className="text-[10px] font-medium text-navy">Utility bill / bank statement</p>
+                                <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                              </div>
+                              <input type="file" className="hidden" onChange={() => handleChange(`director_${idx}_addr_uploaded`, true)} />
+                            </label>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -671,7 +683,7 @@ export default function ClientOnboardingCompany() {
                 <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EXISTING FINANCIAL PRODUCTS / POLICIES</Label>
                 <textarea
                   className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
-                  value={formData.entity_existing_products} onChange={e => handleChange('entity_existing_products', e.target.value)}
+                  value={formData.existing_products_notes || ''} onChange={e => handleChange('existing_products_notes', e.target.value)}
                   placeholder="List current policies and investments e.g. Company RA, Group risk cover, Sanlam endowment..."
                 />
               </div>
