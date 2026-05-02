@@ -214,34 +214,49 @@ export default function ClientOnboardingTrust() {
       if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
       data = { trustees_list: trustees };
     } else if (currentStep === 3) {
+      const perTrusteeDocs = {};
+      trustees.forEach((_, idx) => {
+        perTrusteeDocs[`trustee_${idx}_id_uploaded`] = formData[`trustee_${idx}_id_uploaded`] || false;
+        perTrusteeDocs[`trustee_${idx}_addr_uploaded`] = formData[`trustee_${idx}_addr_uploaded`] || false;
+      });
       data = {
-        trust_deed_uploaded: formData.trust_deed_uploaded,
-        loa_uploaded: formData.loa_uploaded,
-        trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded,
-        trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded,
+        trust_deed_uploaded: formData.trust_deed_uploaded || false,
+        loa_uploaded: formData.loa_uploaded || false,
+        trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
+        trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
+        ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
       data = {
         trust_purpose: formData.trust_purpose,
-        source_of_funds: formData.trust_source_of_funds,
+        trust_source_of_funds: formData.trust_source_of_funds,
         beneficiary_declaration: formData.beneficiary_declaration,
-        sa_tax_number: formData.entity_tax_number,
-        tax_residency: formData.entity_tax_residency,
-        us_person_fatca: formData.entity_fatca,
-        pep_status: formData.entity_pep,
+        entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca,
+        entity_pep: formData.entity_pep,
       };
     } else if (currentStep === 5) {
-      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-      if (ficaResult.fica_status === 'Declined') toast.warning('FICA verification failed. Please contact your advisor.');
-      data = { fica_status: ficaResult.fica_status, fica_reference: ficaResult.fica_reference };
+      if (!ficaResult) {
+        toast.warning('FICA verification not yet run — you may continue but verification will be required later.');
+      } else if (ficaResult.fica_status === 'Declined') {
+        toast.warning('FICA Declined — please contact your advisor.');
+      }
+      data = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
+        trustees_json: ficaResult ? JSON.stringify(trustees) : '',
+      };
     } else if (currentStep === 6) {
       data = {
-        net_worth_band: formData.trust_asset_value_band,
-        gross_annual_income_band: formData.trust_income_band,
-        total_liabilities: formData.entity_total_liabilities,
+        trust_asset_value_band: formData.trust_asset_value_band,
+        trust_income_band: formData.trust_income_band,
+        entity_total_liabilities: formData.entity_total_liabilities,
         existing_products_notes: formData.entity_existing_products,
-        loa_uploaded: formData.entity_loa_uploaded,
-        loa_authorised: formData.entity_loa_authorised,
+        entity_loa_uploaded: formData.entity_loa_uploaded,
+        entity_loa_authorised: formData.entity_loa_authorised,
       };
     } else if (currentStep === 7) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }

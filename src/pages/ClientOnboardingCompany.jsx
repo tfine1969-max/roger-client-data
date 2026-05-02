@@ -218,34 +218,50 @@ export default function ClientOnboardingCompany() {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
+      const perDirectorDocs = {};
+      directors.forEach((_, idx) => {
+        perDirectorDocs[`director_${idx}_id_uploaded`] = formData[`director_${idx}_id_uploaded`] || false;
+        perDirectorDocs[`director_${idx}_addr_uploaded`] = formData[`director_${idx}_addr_uploaded`] || false;
+      });
       data = {
-        cipc_registration_uploaded: formData.cipc_registration_uploaded,
-        moi_uploaded: formData.moi_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        financial_statements_uploaded: formData.financial_statements_uploaded,
+        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
+        moi_uploaded: formData.moi_uploaded || false,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
+        financial_statements_uploaded: formData.financial_statements_uploaded || false,
+        ...perDirectorDocs,
       };
     } else if (currentStep === 4) {
       data = {
         business_activity: formData.business_activity,
-        source_of_funds: formData.entity_source_of_funds,
+        entity_source_of_funds: formData.entity_source_of_funds,
         ubo_declaration: formData.ubo_declaration,
-        sa_tax_number: formData.entity_tax_number,
-        tax_residency: formData.entity_tax_residency,
-        us_person_fatca: formData.entity_fatca,
-        pep_status: formData.entity_pep,
+        entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca,
+        entity_pep: formData.entity_pep,
       };
     } else if (currentStep === 5) {
-      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-      if (ficaResult.fica_status === 'Declined') toast.warning('FICA verification failed. Please contact your advisor.');
-      data = { fica_status: ficaResult.fica_status, fica_reference: ficaResult.fica_reference, cipc_verified: cipcResult?.pass || false };
+      if (!ficaResult) {
+        toast.warning('FICA verification not yet run — you may continue but verification will be required later.');
+      } else if (ficaResult.fica_status === 'Declined') {
+        toast.warning('FICA Declined — please contact your advisor.');
+      }
+      data = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        cipc_verified: cipcResult?.pass || false,
+        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
+        directors_json: ficaResult ? JSON.stringify(directors) : '',
+      };
     } else if (currentStep === 6) {
       data = {
-        gross_annual_income_band: formData.gross_annual_turnover,
-        net_worth_band: formData.total_assets_band,
-        total_liabilities: formData.entity_total_liabilities,
+        gross_annual_turnover: formData.gross_annual_turnover,
+        total_assets_band: formData.total_assets_band,
+        entity_total_liabilities: formData.entity_total_liabilities,
         existing_products_notes: formData.entity_existing_products,
-        loa_uploaded: formData.entity_loa_uploaded,
-        loa_authorised: formData.entity_loa_authorised,
+        entity_loa_uploaded: formData.entity_loa_uploaded,
+        entity_loa_authorised: formData.entity_loa_authorised,
       };
     } else if (currentStep === 7) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
