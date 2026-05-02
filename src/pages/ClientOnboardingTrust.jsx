@@ -260,13 +260,30 @@ export default function ClientOnboardingTrust() {
     if (!clientId) return;
     setIsSubmitting(true);
     try {
-      await base44.entities.Clients.update(clientId, { client_status: 'Onboarded', onboarding_complete: true });
+      await base44.entities.Clients.update(clientId, {
+        client_status: 'Onboarded', onboarding_complete: true,
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
+        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
+        rmcp_risk_score: 0,
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult?.fica_status === 'Approved',
+      });
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);
       const clientName = formData.entity_name || 'Trust Client';
       const proposalData = {
         client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
-        status: 'new', fica_reference: ficaResult?.fica_reference || '',
+        status: 'new',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        fica_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : '',
+        rmcp_risk_score: 0,
+        rmcp_risk_band: ficaResult?.fica_status === 'Approved' ? 'Low' : 'Pending',
+        offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
+        aml_pep_clear: ficaResult?.fica_status === 'Approved',
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
       };
       if (existing) {
         await base44.entities.Proposal.update(existing.id, proposalData);

@@ -102,16 +102,20 @@ const FicaComplianceSummary = ({ proposal, client }) => {
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">RMCP Score</p>
             <p className="text-sm font-medium text-navy">
-              {client.rmcp_risk_score !== undefined || proposal.rmcp_risk_score !== undefined
-                ? `${client.rmcp_risk_score || proposal.rmcp_risk_score} / 100`
-                : '—'}
+              {(client.client_type === 'Company' || client.client_type === 'Trust')
+                ? 'N/A — entity client'
+                : (client.rmcp_risk_score || proposal.rmcp_risk_score)
+                  ? `${client.rmcp_risk_score || proposal.rmcp_risk_score} / 100`
+                  : '—'}
             </p>
           </div>
 
           {/* Re-verification Due */}
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Re-verification Due</p>
-            <p className="text-sm font-medium text-navy">{formatDate(client.fica_next_reverification_date)}</p>
+            <p className="text-sm font-medium text-navy">
+              {client.fica_next_reverification_date ? formatDate(client.fica_next_reverification_date) : 'Not yet set'}
+            </p>
           </div>
 
           {/* Home Affairs Verified */}
