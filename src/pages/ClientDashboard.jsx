@@ -93,6 +93,10 @@ export default function ClientDashboard() {
 
   const personsLabel = isTrust ? 'TRUSTEES' : isCompany ? 'DIRECTORS' : '';
 
+  const entitySourceOfFunds = isTrust
+    ? (Array.isArray(client.trust_source_of_funds) ? client.trust_source_of_funds : [])
+    : (Array.isArray(client.entity_source_of_funds) ? client.entity_source_of_funds : []);
+
   const getFicaStatusStyle = (status) => {
     if (status === 'Approved') return { bg: '#f0fdf4', text: '#166534', label: 'Verified' };
     if (status === 'Referred') return { bg: '#fef3c7', text: '#b45309', label: 'EDD Required' };
@@ -245,6 +249,50 @@ export default function ClientDashboard() {
                   </div>
                 </div>
               )}
+
+              <div className="border-t border-border pt-3">
+                <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">KYC Declaration</h2>
+                <div className="grid grid-cols-3 gap-3">
+                  {isTrust ? (
+                    <>
+                      <Field label="Trust Purpose" value={client.trust_purpose} />
+                      <Field label="Source of Funds" value={entitySourceOfFunds.length ? entitySourceOfFunds.join(', ') : ''} />
+                      <Field label="Beneficiaries" value={client.beneficiary_declaration} />
+                    </>
+                  ) : (
+                    <>
+                      <Field label="Business Activity" value={client.business_activity} />
+                      <Field label="Source of Funds" value={entitySourceOfFunds.length ? entitySourceOfFunds.join(', ') : ''} />
+                      <Field label="UBO Declaration" value={client.ubo_declaration} />
+                    </>
+                  )}
+                  <Field label="SA Tax Number" value={client.entity_tax_number} />
+                  <Field label="Tax Residency" value={client.entity_tax_residency} />
+                  <Field label="FATCA" value={client.entity_fatca} />
+                  <Field label={isTrust ? 'Any Trustee is a PEP' : 'Any Director is a PEP'} value={client.entity_pep} />
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-3">
+                <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">Financial Profile</h2>
+                <div className="grid grid-cols-3 gap-3">
+                  {isTrust ? (
+                    <>
+                      <Field label="Trust Asset Value Band" value={client.trust_asset_value_band} />
+                      <Field label="Trust Income Band" value={client.trust_income_band} />
+                    </>
+                  ) : (
+                    <>
+                      <Field label="Gross Annual Turnover" value={client.gross_annual_turnover} />
+                      <Field label="Total Assets Band" value={client.total_assets_band} />
+                    </>
+                  )}
+                  <Field label="Total Liabilities" value={client.entity_total_liabilities} />
+                  <Field label="Existing Investments / Policies" value={client.existing_products_notes} />
+                  <Field label="LOA Uploaded" value={client.entity_loa_uploaded ? 'Yes' : 'No'} />
+                  <Field label="LOA Authorised" value={client.entity_loa_authorised ? 'Yes' : 'No'} />
+                </div>
+              </div>
             </>
           )}
 

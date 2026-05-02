@@ -412,6 +412,33 @@
       "type": "string",
       "description": "Named beneficiaries of the trust"
     },
+    "trust_source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Source of funds for trust entities"
+    },
+    "trust_asset_value_band": {
+      "type": "string",
+      "description": "Trust total asset value band"
+    },
+    "trust_income_band": {
+      "type": "string",
+      "description": "Trust income band"
+    },
+    "trust_deed_uploaded": {
+      "type": "boolean",
+      "description": "Whether trust deed has been uploaded"
+    },
+    "trust_proof_of_address_uploaded": {
+      "type": "boolean",
+      "description": "Whether proof of registered address has been uploaded for the trust"
+    },
+    "trust_bank_statement_uploaded": {
+      "type": "boolean",
+      "description": "Whether trust bank statement has been uploaded"
+    },
     "entity_aml_clear": {
       "type": "boolean",
       "description": "Whether all directors/trustees passed AML screening"
