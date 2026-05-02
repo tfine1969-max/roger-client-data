@@ -156,7 +156,9 @@ export default function ClientOnboardingCompany() {
     setDirectorChecks(activeDirs.map(d => ({ name: d.first_name + ' ' + d.last_name, id: 'pending', aml: 'pending' })));
     try {
       const cipc = await base44.functions.invoke('ficaVerify', { action: 'verifyCipc', payload: { registration_number: formData.registration_number } });
-      const cipcPass = cipc?.data?.data?.results?.cipc_company_match?.Status === 'Success' || cipc?.data?.data?.results?.cipc_company_match?.Status === 'Active';
+      const cipcData = cipc?.data?.data?.results || {};
+      const cipcMatch = cipcData.cipc_company_match || cipcData.cipc_verification || {};
+      const cipcPass = cipcMatch.Status === 'Success' || cipcMatch.Status === 'Active';
       setCipcResult({ pass: cipcPass, data: cipc?.data?.data });
       if (!cipcPass) {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
@@ -242,17 +244,21 @@ export default function ClientOnboardingCompany() {
       };
     } else if (currentStep === 5) {
       if (!ficaResult) {
-        toast.warning('FICA verification not yet run — you may continue but verification will be required later.');
-      } else if (ficaResult.fica_status === 'Declined') {
+        toast.error('Please complete FICA verification before continuing');
+        return;
+      }
+      if (ficaResult.fica_status === 'Declined') {
         toast.warning('FICA Declined — please contact your advisor.');
       }
       data = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
+        fica_status: ficaResult.fica_status,
+        fica_reference: ficaResult.fica_reference || '',
+        fica_verified_at: ficaResult.verified_at || '',
         cipc_verified: cipcResult?.pass || false,
-        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
-        directors_json: ficaResult ? JSON.stringify(directors) : '',
+        entity_aml_clear: ficaResult.fica_status !== 'Referred',
+        home_affairs_verified: ficaResult.fica_status === 'Approved',
+        aml_pep_clear: ficaResult.fica_status !== 'Referred',
+        directors_json: JSON.stringify(directors),
       };
     } else if (currentStep === 6) {
       data = {

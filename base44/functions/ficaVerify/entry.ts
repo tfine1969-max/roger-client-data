@@ -91,6 +91,51 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === 'verifyCipc') {
+      // Try primary reportType first
+      const url = 'https://www.verifynow.co.za/api/external/verify';
+      const primaryBody = {
+        reportType: 'cipc_company_match',
+        registrationNumber: payload.registration_number,
+        mode: 'sandbox',
+      };
+      const primaryRes = await fetch(url, {
+        method: 'POST',
+        headers: { 'x-api-key': API_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': `ww-${Date.now()}` },
+        body: JSON.stringify(primaryBody),
+      });
+      if (primaryRes.ok) {
+        const text = await primaryRes.text();
+        let json = {};
+        try { json = JSON.parse(text); } catch { json = { raw: text }; }
+        return Response.json({ data: json, error: null });
+      }
+      // Fallback to cipc_verification if 400
+      if (primaryRes.status === 400) {
+        const fallbackBody = {
+          reportType: 'cipc_verification',
+          registrationNumber: payload.registration_number,
+          mode: 'sandbox',
+        };
+        const fallbackRes = await fetch(url, {
+          method: 'POST',
+          headers: { 'x-api-key': API_KEY, 'Content-Type': 'application/json', 'Idempotency-Key': `ww-${Date.now() + 1}` },
+          body: JSON.stringify(fallbackBody),
+        });
+        const fallbackText = await fallbackRes.text();
+        let fallbackJson = {};
+        try { fallbackJson = JSON.parse(fallbackText); } catch { fallbackJson = { raw: fallbackText }; }
+        if (fallbackRes.ok) {
+          return Response.json({ data: fallbackJson, error: null });
+        }
+        console.error(`[verifyCipc fallback ${fallbackRes.status}]:`, fallbackText);
+        return Response.json({ data: null, error: `VerifyNow CIPC ${fallbackRes.status}: ${fallbackText}` });
+      }
+      const errText = await primaryRes.text();
+      console.error(`[verifyCipc ${primaryRes.status}]:`, errText);
+      return Response.json({ data: null, error: `VerifyNow CIPC ${primaryRes.status}: ${errText}` });
+    }
+
     if (action === 'verifyId') {
       const result = await callVerify({
         reportType: 'said_verification',
