@@ -9,13 +9,13 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 
-// Steps: removed FICA/KYC (old 3) and Financial Profile (old 4)
 const STEPS = [
   { number: 1, label: 'Company details' },
   { number: 2, label: 'Directors' },
-  { number: 3, label: 'Risk & objectives' },
-  { number: 4, label: 'Documents' },
-  { number: 5, label: 'Submit' },
+  { number: 3, label: 'FICA verification' },
+  { number: 4, label: 'Risk & objectives' },
+  { number: 5, label: 'Documents' },
+  { number: 6, label: 'Submit' },
 ];
 
 const ADVISORY_NEEDS = [
@@ -60,6 +60,10 @@ export default function ClientOnboardingCompany() {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileOverridden, setProfileOverridden] = useState(false);
   const [profileInitialised, setProfileInitialised] = useState(false);
+  const [ficaRunning, setFicaRunning] = useState(false);
+  const [ficaResult, setFicaResult] = useState(null);
+  const [cipcResult, setCipcResult] = useState(null);
+  const [directorChecks, setDirectorChecks] = useState([]);
 
   const [formData, setFormData] = useState({
     entity_name: '',
@@ -165,6 +169,65 @@ export default function ClientOnboardingCompany() {
   const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
   const removeDirector = (idx) => { if (directors.length > 2) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
 
+  const runEntityFicaVerification = async () => {
+    if (!formData.registration_number) { toast.error('Registration number required'); return; }
+    if (directors.filter(d => d.first_name && d.id_number).length === 0) { toast.error('Please complete director details first'); return; }
+    setFicaRunning(true);
+    setFicaResult(null);
+    setCipcResult(null);
+    const activeDirs = directors.filter(d => d.first_name && d.id_number);
+    setDirectorChecks(activeDirs.map(d => ({ name: d.first_name + ' ' + d.last_name, id: 'pending', aml: 'pending' })));
+    try {
+      const cipc = await base44.functions.invoke('ficaVerify', { action: 'verifyCipc', payload: { registration_number: formData.registration_number } });
+      const cipcPass = cipc?.data?.data?.results?.cipc_company_match?.Status === 'Success' || cipc?.data?.data?.results?.cipc_company_match?.Status === 'Active';
+      setCipcResult({ pass: cipcPass, data: cipc?.data?.data });
+      if (!cipcPass) {
+        const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'CIPC registration could not be verified' });
+        await base44.entities.Clients.update(clientId, { fica_status: 'Declined', fica_reference: ref, cipc_verified: false });
+        setFicaRunning(false);
+        toast.error('FICA Declined — CIPC registration not verified');
+        return;
+      }
+      let allPass = true;
+      let anyFlag = false;
+      const updatedChecks = [];
+      for (let i = 0; i < activeDirs.length; i++) {
+        const dir = activeDirs[i];
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: 'running' } : c));
+        const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: dir.id_number, first_name: dir.first_name, last_name: dir.last_name, date_of_birth: dir.date_of_birth } });
+        const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
+        if (!idPass) allPass = false;
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: 'running' } : c));
+        const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { name: dir.first_name + ' ' + dir.last_name, entity: 0, country: 'za', dataset: 'all' } });
+        const amlMatch = amlResult?.data?.data?.totalHits > 0 || false;
+        if (amlMatch) anyFlag = true;
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
+        updatedChecks.push({ ...dir, id_verified: idPass, aml_clear: !amlMatch });
+      }
+      const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
+      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: null };
+      setFicaResult(finalResult);
+      await base44.entities.Clients.update(clientId, {
+        fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        cipc_verified: cipcPass, entity_aml_clear: !anyFlag,
+        directors_json: JSON.stringify(updatedChecks),
+        fica_checks_json: JSON.stringify({ cipc: cipcPass, directors: updatedChecks }),
+      });
+      if (ficaStatus !== 'Approved') {
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+      }
+      if (ficaStatus === 'Approved') toast.success('Entity FICA Approved — ' + ficaRef);
+      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Advisor notified.');
+      else toast.error('FICA Declined — please contact your advisor.');
+    } catch (err) {
+      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
+      toast.error('Verification error — please try again');
+    } finally { setFicaRunning(false); }
+  };
+
   const saveStep = async (data) => {
     if (!clientId) return false;
     setIsSavingStep(true);
@@ -195,6 +258,14 @@ export default function ClientOnboardingCompany() {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
       data = { directors_list: directors };
     } else if (currentStep === 3) {
+      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+      if (ficaResult.fica_status === 'Declined') { toast.warning('FICA verification failed. Please contact your advisor.'); }
+      data = {
+        fica_status: ficaResult.fica_status,
+        fica_reference: ficaResult.fica_reference,
+        cipc_verified: cipcResult?.pass || false,
+      };
+    } else if (currentStep === 4) {
       if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
@@ -202,7 +273,7 @@ export default function ClientOnboardingCompany() {
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
       };
-    } else if (currentStep === 4) {
+    } else if (currentStep === 5) {
       data = {
         cipc_registration_uploaded: formData.cipc_registration_uploaded,
         moi_uploaded: formData.moi_uploaded,
@@ -350,8 +421,82 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 3 — Risk & Objectives */}
+        {/* STEP 3 — FICA Verification */}
         {currentStep === 3 && (
+          <div className="space-y-4">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">CIPC VERIFICATION</h3>
+              {cipcResult ? (
+                <div className={`flex items-center gap-2 p-2 rounded border ${cipcResult.pass ? 'bg-teal/10 border-teal/20' : 'bg-red-50 border-red-200'}`}>
+                  <span className="text-sm">{cipcResult.pass ? '✓' : '✕'}</span>
+                  <span className={`text-xs font-medium ${cipcResult.pass ? 'text-teal' : 'text-red-700'}`}>{cipcResult.pass ? 'CIPC registration verified — ' + formData.registration_number : 'CIPC verification failed — ' + formData.registration_number}</span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">CIPC registration number will be verified against the Companies and Intellectual Property Commission database.</p>
+              )}
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">DIRECTOR VERIFICATION</h3>
+              {directorChecks.length > 0 ? (
+                <div className="space-y-2">
+                  {directorChecks.map((check, idx) => {
+                    const idCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200' };
+                    const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
+                    const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
+                    const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
+                    return (
+                      <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
+                        <div className="flex-1 text-xs font-medium text-navy">Director {idx + 1} — {check.name}</div>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Each director will be verified against Home Affairs HANIS and AML/PEP/sanctions lists individually.</p>
+              )}
+            </div>
+            <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-navy text-sm">Entity FICA Verification</h3>
+                  <p className="text-[10px] text-muted-foreground">CIPC · Director ID checks · AML/PEP per director · Powered by VerifyNow</p>
+                </div>
+                {!ficaRunning && (
+                  <button type="button" onClick={runEntityFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
+                    {ficaResult ? '↺ Re-verify' : '⊕ Verify entity with VerifyNow'}
+                  </button>
+                )}
+                {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying directors…</span>}
+              </div>
+              {ficaResult && ficaResult.fica_status && (
+                <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                  <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
+                  <div>
+                    <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
+                      {ficaResult.fica_status === 'Approved' ? 'Entity FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more directors' : 'Entity FICA Verification Failed'}
+                    </p>
+                    {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
+                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                  </div>
+                </div>
+              )}
+              {!ficaRunning && !ficaResult && (
+                <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
+                  <p>Click <strong>Verify entity with VerifyNow</strong> to run CIPC and director checks</p>
+                </div>
+              )}
+            </div>
+            <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
+              <span className="font-semibold text-navy">FICA compliance note: </span>
+              Company verification includes CIPC registration status and individual identity and AML/PEP screening for each director. WealthWorks remains the FICA Accountable Institution. Records retained 5 years minimum per FICA Section 23.
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 — Risk & Objectives */}
+        {currentStep === 4 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE</h3>
@@ -415,8 +560,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 4 — Documents */}
-        {currentStep === 4 && (
+        {/* STEP 5 — Documents */}
+        {currentStep === 5 && (
           <div className="space-y-4">
             <div>
               <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
@@ -487,8 +632,8 @@ export default function ClientOnboardingCompany() {
           </div>
         )}
 
-        {/* STEP 5 — Submit */}
-        {currentStep === 5 && (
+        {/* STEP 6 — Submit */}
+        {currentStep === 6 && (
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
               <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
@@ -515,21 +660,21 @@ export default function ClientOnboardingCompany() {
 
         {/* Navigation */}
         <div className="pt-5 border-t border-border mt-5 flex gap-3">
-          {currentStep > 1 && currentStep < 5 && (
+          {currentStep > 1 && currentStep < 6 && (
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
           )}
           <div className="flex-1" />
-          {currentStep < 4 && (
+          {currentStep < 5 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
             </Button>
           )}
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
               {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
             </Button>
           )}
-          {currentStep === 5 && (
+          {currentStep === 6 && (
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
             </Button>
