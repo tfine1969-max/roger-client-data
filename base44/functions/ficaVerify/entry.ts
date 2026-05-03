@@ -3,7 +3,10 @@ const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
 const VERIFYNOW_API_BASE_URL =
   (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
 const VERIFYNOW_VERIFY_URL = Deno.env.get('VERIFYNOW_VERIFY_URL') || `${VERIFYNOW_API_BASE_URL}/verify`;
-const VERIFYNOW_AML_URL = Deno.env.get('VERIFYNOW_AML_URL') || 'https://www.verifynow.co.za/aml-screening';
+const VERIFYNOW_CIPC_URL = Deno.env.get('VERIFYNOW_CIPC_URL') || `${VERIFYNOW_API_BASE_URL}/cipc`;
+const VERIFYNOW_AML_URL = Deno.env.get('VERIFYNOW_AML_URL') || `${VERIFYNOW_API_BASE_URL}/aml-screening`;
+const VERIFYNOW_DOCUMENT_URL = Deno.env.get('VERIFYNOW_DOCUMENT_URL') || `${VERIFYNOW_API_BASE_URL}/id-document-verify`;
+const VERIFYNOW_LIVENESS_URL = Deno.env.get('VERIFYNOW_LIVENESS_URL') || `${VERIFYNOW_API_BASE_URL}/passive-liveness`;
 
 type VerifyPayload = Record<string, any>;
 
@@ -19,6 +22,13 @@ function normalizeBase64(value = '') {
   if (!value) return '';
   const commaIndex = value.indexOf(',');
   return value.startsWith('data:') && commaIndex >= 0 ? value.slice(commaIndex + 1) : value;
+}
+
+function normalizeDocumentType(value = '') {
+  const normalized = String(value || '').toLowerCase();
+  if (normalized.includes('passport')) return 'Passport';
+  if (normalized.includes('driver')) return "Driver's License";
+  return 'Identity Card';
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
@@ -93,6 +103,18 @@ async function callAml(body: VerifyPayload, payload: VerifyPayload = {}) {
   return await postJson(VERIFYNOW_AML_URL, body, payload);
 }
 
+async function callCipc(body: VerifyPayload, payload: VerifyPayload = {}) {
+  return await postJson(VERIFYNOW_CIPC_URL, body, payload);
+}
+
+async function callDocumentOcr(body: VerifyPayload, payload: VerifyPayload = {}) {
+  return await postJson(VERIFYNOW_DOCUMENT_URL, body, payload);
+}
+
+async function callLiveness(body: VerifyPayload, payload: VerifyPayload = {}) {
+  return await postJson(VERIFYNOW_LIVENESS_URL, body, payload);
+}
+
 Deno.serve(async (req) => {
   try {
     const { action, payload = {} } = await req.json();
@@ -105,7 +127,10 @@ Deno.serve(async (req) => {
           key_prefix: API_KEY ? API_KEY.substring(0, 10) : 'NOT_SET',
           endpoints: {
             verify: VERIFYNOW_VERIFY_URL,
+            cipc: VERIFYNOW_CIPC_URL,
             aml: VERIFYNOW_AML_URL,
+            document_ocr: VERIFYNOW_DOCUMENT_URL,
+            liveness: VERIFYNOW_LIVENESS_URL,
           },
         },
         error: null,
@@ -122,18 +147,12 @@ Deno.serve(async (req) => {
     if (action === 'verifyCipc') {
       const primaryBody = {
         reportType: 'cipc_company_match',
-        registrationNumber: payload.registration_number || payload.registrationNumber,
-        companyName: payload.company_name || payload.companyName,
+        registration_number: payload.registration_number || payload.registrationNumber,
+        sole_prop_id_number: payload.sole_prop_id_number || payload.solePropIdNumber,
         mode: VERIFYNOW_MODE,
       };
-      const primaryResult = await callVerify(primaryBody, payload);
-      if (!primaryResult.error) return Response.json(primaryResult);
-
-      const fallbackResult = await callVerify({
-        ...primaryBody,
-        reportType: 'cipc_verification',
-      }, { ...payload, reference: `${idempotencyKey(payload)}-cipc-fallback` });
-      return Response.json(fallbackResult);
+      const result = await callCipc(primaryBody, payload);
+      return Response.json(result);
     }
 
     if (action === 'verifyId') {
@@ -197,13 +216,12 @@ Deno.serve(async (req) => {
           );
         }
 
-        const result = await callVerify({
+        const result = await callDocumentOcr({
           bundle: 'id_document_verification',
-          reportType: 'document_ocr',
           mode: VERIFYNOW_MODE,
-          idNumber: normalizeId(payload) || undefined,
           front_image_base64: frontImageBase64,
-          document_type: payload.document_type || payload.documentType || 'sa_id',
+          back_image_base64: payload.back_image_base64 ? normalizeBase64(payload.back_image_base64) : undefined,
+          document_type: normalizeDocumentType(payload.document_type || payload.documentType),
           issuing_country: payload.issuing_country || payload.issuingCountry || 'ZAF',
         }, payload);
         return Response.json(result);
@@ -225,12 +243,28 @@ Deno.serve(async (req) => {
           { status: 400 }
         );
       }
-      const result = await callVerify({
-        bundle: 'face_match',
-        reportType: 'face_match',
-        idNumber: normalizeId(payload),
-        selfie_image_base64: selfieBase64,
+      const result = await callLiveness({
         mode: VERIFYNOW_MODE,
+        image_base64: selfieBase64,
+      }, payload);
+      if (result.data?.results?.liveness?.score != null) {
+        result.data.confidence_score = result.data.results.liveness.score;
+        result.data.liveness_status = result.data.results.liveness.status;
+      }
+      return Response.json(result);
+    }
+
+    if (action === 'passiveLiveness') {
+      const imageBase64 = normalizeBase64(payload.image_base64 || payload.selfie_image || '');
+      if (!imageBase64) {
+        return Response.json(
+          { data: null, error: 'Image is required for passive liveness' },
+          { status: 400 }
+        );
+      }
+      const result = await callLiveness({
+        mode: VERIFYNOW_MODE,
+        image_base64: imageBase64,
       }, payload);
       return Response.json(result);
     }

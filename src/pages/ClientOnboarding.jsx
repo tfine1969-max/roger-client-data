@@ -497,9 +497,12 @@ export default function ClientOnboarding() {
             },
           })
         : { data: null, error: 'No uploaded ID document available for OCR' };
-      const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason?.includes('Forgery') || docResult?.data?.data?.results?.document_verification?.Reason?.includes('Tampered'));
+      const docVerification = docResult?.data?.data?.results?.document_verification || docResult?.data?.data?.results?.id_verification || {};
+      const docStatus = docVerification.Status || docVerification.status || docResult?.data?.data?.Status || docResult?.data?.data?.status;
+      const docReason = docVerification.Reason || docVerification.reason || '';
+      const docIsForgery = ['Failed', 'Rejected', 'Declined'].includes(docStatus) && /Forgery|Tampered|Fraud/i.test(docReason);
       setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending — manual review' } }));
-      const docAuthenticated = docResult?.data?.data?.results?.document_verification?.Status === 'Success' || docResult?.data?.data?.Status === 'Success';
+      const docAuthenticated = ['Success', 'Approved'].includes(docStatus);
       if (docAuthenticated) {
         setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'pass', note: 'ID document OCR completed' } }));
       }

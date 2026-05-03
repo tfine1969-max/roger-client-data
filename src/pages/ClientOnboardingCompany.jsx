@@ -297,8 +297,11 @@ export default function ClientOnboardingCompany() {
               },
             })
           : { data: null, error: 'No uploaded director ID document available for OCR' };
-        const docIsForgery = docResult?.data?.data?.results?.document_verification?.Status === 'Failed' && (docResult?.data?.data?.results?.document_verification?.Reason || '').match(/Forgery|Tampered/i);
-        const docAuthenticated = docResult?.data?.data?.results?.document_verification?.Status === 'Success' || docResult?.data?.data?.Status === 'Success';
+        const docVerification = docResult?.data?.data?.results?.document_verification || docResult?.data?.data?.results?.id_verification || {};
+        const docStatus = docVerification.Status || docVerification.status || docResult?.data?.data?.Status || docResult?.data?.data?.status;
+        const docReason = docVerification.Reason || docVerification.reason || '';
+        const docIsForgery = ['Failed', 'Rejected', 'Declined'].includes(docStatus) && /Forgery|Tampered|Fraud/i.test(docReason);
+        const docAuthenticated = ['Success', 'Approved'].includes(docStatus);
         if (docIsForgery) allPass = false;
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: docIsForgery ? 'fail' : docAuthenticated ? 'pass' : 'flag' } : c));
 
