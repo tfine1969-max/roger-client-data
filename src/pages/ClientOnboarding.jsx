@@ -1101,10 +1101,16 @@ export default function ClientOnboarding() {
                       <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
                     </div>
                     {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
-                        <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                      </div>
+                      <label className="block cursor-pointer">
+                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
+                            <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                          </div>
+                          <span className="text-[10px] text-ocean font-medium">Change document</span>
+                        </div>
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                      </label>
                     ) : (
                       <label className="block cursor-pointer">
                         <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">

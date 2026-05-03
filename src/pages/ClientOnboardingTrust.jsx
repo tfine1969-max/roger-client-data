@@ -679,9 +679,15 @@ export default function ClientOnboardingTrust() {
                   <div key={doc.key} className="border border-border rounded p-3">
                     <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
                     {formData[doc.key] ? (
-                      <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded">
-                        {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                      </div>
+                      <label className="block cursor-pointer">
+                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                          </div>
+                          <span className="text-[10px] text-ocean font-medium">Change document</span>
+                        </div>
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                      </label>
                     ) : (
                       <label className="block cursor-pointer">
                         <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
@@ -711,9 +717,15 @@ export default function ClientOnboardingTrust() {
                           <div key={doc.key} className="border border-border rounded p-2">
                             <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
                             {formData[doc.key] || (doc.key.endsWith('_id_uploaded') ? t.id_uploaded : t.addr_uploaded) ? (
-                              <div className="flex items-center gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded">
-                                {uploadingDocs[doc.key] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                              </div>
+                              <label className="block cursor-pointer">
+                                <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                                  <div className="flex items-center gap-2">
+                                    {uploadingDocs[doc.key] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                                  </div>
+                                  <span className="text-[10px] text-ocean font-medium">Change</span>
+                                </div>
+                                <input type="file" className="hidden" onChange={e => handleTrusteeDocumentUpload(idx, doc.key.endsWith('_id_uploaded') ? 'id' : 'addr', e.target.files?.[0])} />
+                              </label>
                             ) : (
                               <label className="block cursor-pointer">
                                 <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
