@@ -230,7 +230,6 @@ export default function ClientOnboarding() {
         const seed = JSON.parse(seedRaw);
         setFormData(prev => ({ ...prev, ...seed }));
         if (Array.isArray(seed.products_list) && seed.products_list.length > 0) setProductsList(seed.products_list);
-        if (seed.risk_profile) setProfileOverridden(true);
       } catch {}
       sessionStorage.removeItem('test_onboarding_seed');
     }
@@ -306,7 +305,7 @@ export default function ClientOnboarding() {
             client_signature_name:           client.client_signature_name           || prev.client_signature_name,
             client_signature_date:           client.client_signature_date           || prev.client_signature_date,
           }));
-          if (client.risk_profile) setProfileOverridden(true);
+          if (client.risk_profile_overridden) setProfileOverridden(true);
           if (Array.isArray(client.products_list) && client.products_list.length > 0) setProductsList(client.products_list);
         }
       })
@@ -329,7 +328,7 @@ export default function ClientOnboarding() {
         return { ...prev, risk_profile: suggested };
       });
     }
-  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
+  }, [profileInitialised, profileOverridden, formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -729,6 +728,9 @@ export default function ClientOnboarding() {
         time_horizon: formData.time_horizon,
         liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
         advisory_needs: formData.advisory_needs,
       };
     }
@@ -815,7 +817,11 @@ export default function ClientOnboarding() {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
       };
     }
     return await saveStep(stepData);
@@ -924,6 +930,7 @@ export default function ClientOnboarding() {
   }
 
   const riskScore = calcRiskScore(formData);
+  const clientDisplayName = [formData.first_name, formData.last_name].filter(Boolean).join(' ') || formData.email || 'Client';
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -1015,6 +1022,7 @@ export default function ClientOnboarding() {
               {currentStep === 7 && 'Risk profile & objectives'}
               {currentStep === 8 && 'Review & submit'}
             </h1>
+            <p className="text-xs text-muted-foreground mb-1">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
             <p className="text-muted-foreground text-xs max-w-xl">
               {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
               {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}

@@ -138,7 +138,7 @@ export default function ClientOnboardingTrust() {
           risk_profile: c.risk_profile || prev.risk_profile,
           advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
-        if (c.risk_profile) setProfileOverridden(true);
+        if (c.risk_profile_overridden) setProfileOverridden(true);
         if (Array.isArray(c.trustees_list) && c.trustees_list.length > 0) setTrustees(c.trustees_list);
       }
     }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
@@ -162,7 +162,7 @@ export default function ClientOnboardingTrust() {
       const suggested = scoreToProfile(calcRiskScore(formData));
       setFormData(prev => prev.risk_profile === suggested ? prev : { ...prev, risk_profile: suggested });
     }
-  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
+  }, [profileInitialised, profileOverridden, formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
 
   const updateTrustee = (idx, field, value) => setTrustees(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   const addTrustee = () => setTrustees(prev => [...prev, emptyTrustee()]);
@@ -409,7 +409,11 @@ export default function ClientOnboardingTrust() {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
       };
     }
     const saved = await saveStep(data);
@@ -490,7 +494,11 @@ export default function ClientOnboardingTrust() {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
       };
     }
 
@@ -567,6 +575,7 @@ export default function ClientOnboardingTrust() {
   const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
   const addressLabel = { pending: 'Address pending', running: 'Address running', pass: 'Address verified', flag: 'Address review', fail: 'Address failed' };
   const documentLabel = { pending: 'OCR pending', running: 'OCR running', pass: 'OCR complete', flag: 'OCR review', fail: 'Doc failed' };
+  const clientDisplayName = formData.entity_name || formData.email || 'Trust client';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -597,6 +606,7 @@ export default function ClientOnboardingTrust() {
         <div className="mb-4">
           <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 · TRUST ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
+          <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
         </div>
 
         {/* STEP 1 — Trust Details */}
@@ -1090,3 +1100,4 @@ export default function ClientOnboardingTrust() {
     </div>
   );
 }
+

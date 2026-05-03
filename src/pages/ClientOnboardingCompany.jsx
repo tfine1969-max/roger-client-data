@@ -131,7 +131,7 @@ export default function ClientOnboardingCompany() {
           risk_profile: c.risk_profile || prev.risk_profile,
           advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
-        if (c.risk_profile) setProfileOverridden(true);
+        if (c.risk_profile_overridden) setProfileOverridden(true);
         if (c.fica_status) {
           setFicaResult({
             fica_status: c.fica_status,
@@ -164,7 +164,7 @@ export default function ClientOnboardingCompany() {
       const suggested = scoreToProfile(calcRiskScore(formData));
       setFormData(prev => prev.risk_profile === suggested ? prev : { ...prev, risk_profile: suggested });
     }
-  }, [formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
+  }, [profileInitialised, profileOverridden, formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
 
   const updateDirector = (idx, field, value) => setDirectors(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
   const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
@@ -434,7 +434,11 @@ export default function ClientOnboardingCompany() {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
       };
     }
     const saved = await saveStep(data);
@@ -513,7 +517,11 @@ export default function ClientOnboardingCompany() {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile, advisory_needs: formData.advisory_needs,
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
       };
     }
 
@@ -585,6 +593,7 @@ export default function ClientOnboardingCompany() {
   const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
   const addressLabel = { pending: 'Address pending', running: 'Address running', pass: 'Address verified', flag: 'Address review', fail: 'Address failed' };
   const documentLabel = { pending: 'OCR pending', running: 'OCR running', pass: 'OCR complete', flag: 'OCR review', fail: 'Doc failed' };
+  const clientDisplayName = formData.entity_name || formData.email || 'Company client';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -615,6 +624,7 @@ export default function ClientOnboardingCompany() {
         <div className="mb-4">
           <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 · COMPANY ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
+          <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
         </div>
 
         {/* STEP 1 — Company Details */}
@@ -1124,3 +1134,4 @@ export default function ClientOnboardingCompany() {
     </div>
   );
 }
+

@@ -78,9 +78,11 @@ const FicaStatusIndicator = ({ client }) => {
 };
 
 const formatTimestamp = (value) => {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (!value) return '-';
+  const raw = String(value);
+  const hasTimezone = /Z$|[+-]\d{2}:?\d{2}$/.test(raw);
+  const d = new Date(hasTimezone ? raw : `${raw}Z`);
+  if (Number.isNaN(d.getTime())) return '-';
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Africa/Johannesburg',
     day: '2-digit',
@@ -90,7 +92,7 @@ const formatTimestamp = (value) => {
     minute: '2-digit',
     hour12: false,
   }).formatToParts(d).reduce((acc, part) => ({ ...acc, [part.type]: part.value }), {});
-  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute}`;
+  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute} SAST`;
 };
 
 export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, ficaFilter = null, onClearFilter }) {
@@ -239,3 +241,4 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
     </div>
   );
 }
+

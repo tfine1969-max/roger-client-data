@@ -236,6 +236,18 @@
       "type": "string",
       "description": "Risk profile"
     },
+    "calculated_risk_score": {
+      "type": "number",
+      "description": "Calculated onboarding risk score out of 10"
+    },
+    "calculated_risk_profile": {
+      "type": "string",
+      "description": "Risk profile suggested by the onboarding risk score"
+    },
+    "risk_profile_overridden": {
+      "type": "boolean",
+      "description": "Whether the selected risk profile was manually overridden"
+    },
     "advisory_needs": {
       "type": "array",
       "items": {
