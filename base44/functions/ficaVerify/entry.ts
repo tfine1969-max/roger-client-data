@@ -58,6 +58,13 @@ async function getDocumentImageBase64(payload: VerifyPayload = {}) {
   return '';
 }
 
+async function getBackDocumentImageBase64(payload: VerifyPayload = {}) {
+  if (payload.back_image_base64) return normalizeBase64(payload.back_image_base64);
+  if (payload.back_document_url) return await fetchFileAsBase64(payload.back_document_url);
+  if (payload.back_file_url) return await fetchFileAsBase64(payload.back_file_url);
+  return '';
+}
+
 function errorMessage(err: unknown) {
   return err instanceof Error ? err.message : String(err);
 }
@@ -220,7 +227,7 @@ Deno.serve(async (req) => {
           bundle: 'id_document_verification',
           mode: VERIFYNOW_MODE,
           front_image_base64: frontImageBase64,
-          back_image_base64: payload.back_image_base64 ? normalizeBase64(payload.back_image_base64) : undefined,
+          back_image_base64: await getBackDocumentImageBase64(payload) || undefined,
           document_type: normalizeDocumentType(payload.document_type || payload.documentType),
           issuing_country: payload.issuing_country || payload.issuingCountry || 'ZAF',
         }, payload);

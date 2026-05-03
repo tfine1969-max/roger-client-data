@@ -195,9 +195,15 @@ export default function ClientOnboarding() {
     income_proof_uploaded: false,
     existing_policies_uploaded: false,
     doc_identity: '',
+    doc_identity_name: '',
+    doc_identity_back: '',
+    doc_identity_back_name: '',
     doc_proof_of_address: '',
+    doc_proof_of_address_name: '',
     doc_source_of_funds: '',
+    doc_source_of_funds_name: '',
     doc_existing_policies: '',
+    doc_existing_policies_name: '',
     client_signature_name: '',
     client_signature_date: new Date().toISOString().split('T')[0],
   });
@@ -288,9 +294,15 @@ export default function ClientOnboarding() {
             income_proof_uploaded:           client.income_proof_uploaded           || !!client.doc_source_of_funds || prev.income_proof_uploaded,
             existing_policies_uploaded:      client.existing_policies_uploaded      || !!client.doc_existing_policies || prev.existing_policies_uploaded,
             doc_identity:                    client.doc_identity                    || prev.doc_identity,
+            doc_identity_name:               client.doc_identity_name               || prev.doc_identity_name,
+            doc_identity_back:               client.doc_identity_back               || prev.doc_identity_back,
+            doc_identity_back_name:          client.doc_identity_back_name          || prev.doc_identity_back_name,
             doc_proof_of_address:            client.doc_proof_of_address            || prev.doc_proof_of_address,
+            doc_proof_of_address_name:       client.doc_proof_of_address_name       || prev.doc_proof_of_address_name,
             doc_source_of_funds:             client.doc_source_of_funds             || prev.doc_source_of_funds,
+            doc_source_of_funds_name:        client.doc_source_of_funds_name        || prev.doc_source_of_funds_name,
             doc_existing_policies:           client.doc_existing_policies           || prev.doc_existing_policies,
+            doc_existing_policies_name:      client.doc_existing_policies_name      || prev.doc_existing_policies_name,
             client_signature_name:           client.client_signature_name           || prev.client_signature_name,
             client_signature_date:           client.client_signature_date           || prev.client_signature_date,
           }));
@@ -339,13 +351,32 @@ export default function ClientOnboarding() {
     setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
     try {
       const { updateData } = await uploadOnboardingDocument({ clientId, fieldKey, file });
-      setFormData(prev => ({ ...prev, ...updateData }));
+      setFormData(prev => {
+        const next = { ...prev, ...updateData };
+        if (fieldKey === 'identity_document_front_uploaded' || fieldKey === 'identity_document_back_uploaded') {
+          next.identity_document_uploaded = !!(next.identity_document_front_uploaded && next.identity_document_back_uploaded);
+        }
+        return next;
+      });
       toast.success('Document uploaded and sent to advisor portal');
     } catch (error) {
       toast.error('Upload failed: ' + (error.message || 'Unknown error'));
     } finally {
       setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
     }
+  };
+
+  const uploadedFileName = (fieldKey) => {
+    const map = {
+      identity_document_uploaded: 'doc_identity',
+      identity_document_front_uploaded: 'doc_identity',
+      identity_document_back_uploaded: 'doc_identity_back',
+      proof_of_address_uploaded: 'doc_proof_of_address',
+      income_proof_uploaded: 'doc_source_of_funds',
+      existing_policies_uploaded: 'doc_existing_policies',
+    };
+    const repoField = map[fieldKey];
+    return formData[`${fieldKey}_name`] || (repoField ? formData[`${repoField}_name`] : '') || '';
   };
 
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
@@ -501,6 +532,7 @@ export default function ClientOnboarding() {
             payload: {
               id_number: formData.sa_id_number,
               document_url: formData.doc_identity,
+              back_document_url: formData.doc_identity_back,
               document_type: formData.identity_type === 'SA ID' ? 'sa_id' : 'passport',
               reference: 'ww-' + clientId + '-' + Date.now(),
             },
@@ -620,15 +652,27 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
+      if (formData.identity_type === 'SA ID' && (!formData.identity_document_front_uploaded || !formData.identity_document_back_uploaded)) {
+        toast.error('Please upload both the front and back of the SA ID');
+        return;
+      }
       stepData = {
         identity_document_uploaded: formData.identity_document_uploaded,
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
         income_proof_uploaded: formData.income_proof_uploaded,
         existing_policies_uploaded: formData.existing_policies_uploaded,
+        identity_document_front_uploaded: formData.identity_document_front_uploaded,
+        identity_document_back_uploaded: formData.identity_document_back_uploaded,
         doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
+        doc_identity_back: formData.doc_identity_back,
+        doc_identity_back_name: formData.doc_identity_back_name,
         doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
         doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
         doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 3) {
       if (!formData.employment_status || !formData.occupation) {
@@ -715,15 +759,27 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
+      if (formData.identity_type === 'SA ID' && (!formData.identity_document_front_uploaded || !formData.identity_document_back_uploaded)) {
+        toast.error('Please upload both the front and back of the SA ID');
+        return false;
+      }
       stepData = {
         identity_document_uploaded: formData.identity_document_uploaded,
         proof_of_address_uploaded: formData.proof_of_address_uploaded,
         income_proof_uploaded: formData.income_proof_uploaded,
         existing_policies_uploaded: formData.existing_policies_uploaded,
+        identity_document_front_uploaded: formData.identity_document_front_uploaded,
+        identity_document_back_uploaded: formData.identity_document_back_uploaded,
         doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
+        doc_identity_back: formData.doc_identity_back,
+        doc_identity_back_name: formData.doc_identity_back_name,
         doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
         doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
         doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 3) {
       stepData = {
@@ -1103,7 +1159,7 @@ export default function ClientOnboarding() {
                   { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
                   { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
                   { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
-                ].map(doc => (
+                ].filter(doc => !(doc.key === 'identity_document_uploaded' && formData.identity_type === 'SA ID')).map(doc => (
                   <div key={doc.key} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
@@ -1115,6 +1171,7 @@ export default function ClientOnboarding() {
                           <div className="flex items-center gap-2">
                             {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
                             <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                            {uploadedFileName(doc.key) && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={uploadedFileName(doc.key)}>{uploadedFileName(doc.key)}</span>}
                           </div>
                           <span className="text-[10px] text-ocean font-medium">Change document</span>
                         </div>
@@ -1125,6 +1182,38 @@ export default function ClientOnboarding() {
                         <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
                           <p className="text-xs font-medium text-navy">{doc.desc}</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
+                          <p className="text-[10px] text-ocean mt-2">Click to upload</p>
+                        </div>
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                      </label>
+                    )}
+                  </div>
+                ))}
+                {formData.identity_type === 'SA ID' && [
+                  { key: 'identity_document_front_uploaded', title: 'SA ID FRONT', desc: 'Front of smart card / green ID' },
+                  { key: 'identity_document_back_uploaded', title: 'SA ID BACK', desc: 'Back of smart card / green ID' },
+                ].map(doc => (
+                  <div key={doc.key} className="border border-border rounded p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
+                      <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
+                    </div>
+                    {formData[doc.key] ? (
+                      <label className="block cursor-pointer">
+                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin shrink-0" /> : <Check className="w-4 h-4 text-teal shrink-0" />}
+                            <span className="text-xs text-teal font-medium shrink-0">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                            {uploadedFileName(doc.key) && <span className="text-[10px] text-muted-foreground truncate" title={uploadedFileName(doc.key)}>{uploadedFileName(doc.key)}</span>}
+                          </div>
+                          <span className="text-[10px] text-ocean font-medium shrink-0">Change document</span>
+                        </div>
+                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                      </label>
+                    ) : (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
+                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
                           <p className="text-[10px] text-ocean mt-2">Click to upload</p>
                         </div>
                         <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />

@@ -305,17 +305,41 @@
       "type": "string",
       "description": "Identity Document file URL"
     },
+    "doc_identity_name": {
+      "type": "string",
+      "description": "Identity Document original file name"
+    },
+    "doc_identity_back": {
+      "type": "string",
+      "description": "Identity Document back image file URL"
+    },
+    "doc_identity_back_name": {
+      "type": "string",
+      "description": "Identity Document back image original file name"
+    },
     "doc_proof_of_address": {
       "type": "string",
       "description": "Proof of Address file URL"
+    },
+    "doc_proof_of_address_name": {
+      "type": "string",
+      "description": "Proof of Address original file name"
     },
     "doc_source_of_funds": {
       "type": "string",
       "description": "Income / Source of Funds file URL"
     },
+    "doc_source_of_funds_name": {
+      "type": "string",
+      "description": "Income / Source of Funds original file name"
+    },
     "doc_existing_policies": {
       "type": "string",
       "description": "Existing Policies file URL"
+    },
+    "doc_existing_policies_name": {
+      "type": "string",
+      "description": "Existing Policies original file name"
     },
     "doc_submitted_at": {
       "type": "string",

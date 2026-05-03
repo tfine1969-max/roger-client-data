@@ -184,6 +184,8 @@ export default function ClientOnboardingCompany() {
     }
   };
 
+  const fileNameFor = (person, key) => person?.[`${key}_name`] || '';
+
   const handleDirectorDocumentUpload = async (idx, docType, file) => {
     if (!file || !clientId) return;
     const fieldKey = `director_${idx}_${docType}_uploaded`;
@@ -192,9 +194,11 @@ export default function ClientOnboardingCompany() {
       const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
       const updatedDirectors = directors.map((director, directorIdx) => {
         if (directorIdx !== idx) return director;
+        if (docType === 'id_front') return { ...director, id_front_uploaded: true, id_front_file_url: fileUrl, id_front_file_name: file.name, id_uploaded: director.id_back_uploaded || director.identity_type !== 'SA ID', id_file_url: fileUrl, id_file_name: file.name };
+        if (docType === 'id_back') return { ...director, id_back_uploaded: true, id_back_file_url: fileUrl, id_back_file_name: file.name, id_uploaded: director.id_front_uploaded || director.identity_type !== 'SA ID' };
         return docType === 'id'
-          ? { ...director, id_uploaded: true, id_file_url: fileUrl }
-          : { ...director, addr_uploaded: true, addr_file_url: fileUrl };
+          ? { ...director, id_uploaded: true, id_file_url: fileUrl, id_file_name: file.name }
+          : { ...director, addr_uploaded: true, addr_file_url: fileUrl, addr_file_name: file.name };
       });
       setDirectors(updatedDirectors);
       setFormData(prev => ({ ...prev, [fieldKey]: true }));
@@ -204,7 +208,13 @@ export default function ClientOnboardingCompany() {
           director_index: directorIndex,
           name: [director.first_name, director.last_name].filter(Boolean).join(' '),
           id_file_url: director.id_file_url || '',
+          id_file_name: director.id_file_name || '',
+          id_front_file_url: director.id_front_file_url || '',
+          id_front_file_name: director.id_front_file_name || '',
+          id_back_file_url: director.id_back_file_url || '',
+          id_back_file_name: director.id_back_file_name || '',
           addr_file_url: director.addr_file_url || '',
+          addr_file_name: director.addr_file_name || '',
         }))),
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
@@ -286,12 +296,13 @@ export default function ClientOnboardingCompany() {
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, address: addressVerified ? 'pass' : 'flag' } : c));
 
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: 'running' } : c));
-        const docResult = dir.id_file_url
+        const docResult = (dir.id_front_file_url || dir.id_file_url)
           ? await base44.functions.invoke('ficaVerify', {
               action: 'authenticateDoc',
               payload: {
                 id_number: dir.id_number,
-                document_url: dir.id_file_url,
+                document_url: dir.id_front_file_url || dir.id_file_url,
+                back_document_url: dir.id_back_file_url,
                 document_type: dir.identity_type === 'Passport' ? 'passport' : 'sa_id',
                 reference: 'ww-company-' + clientId + '-director-' + i + '-' + Date.now(),
               },
@@ -687,6 +698,7 @@ export default function ClientOnboardingCompany() {
                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                          <div className="flex items-center gap-2">
                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                           {formData[`${doc.key}_name`] && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={formData[`${doc.key}_name`]}>{formData[`${doc.key}_name`]}</span>}
                          </div>
                          <span className="text-[10px] text-ocean font-medium">Change document</span>
                        </div>
@@ -717,11 +729,35 @@ export default function ClientOnboardingCompany() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="border border-border rounded p-2">
                           <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">SA ID / PASSPORT</h4>
-                          {formData[`director_${idx}_id_uploaded`] || d.id_uploaded ? (
+                          {d.identity_type === 'SA ID' ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {[{ key: 'id_front', label: 'Front' }, { key: 'id_back', label: 'Back' }].map(part => {
+                                const uploaded = d[`${part.key}_uploaded`];
+                                const uploadKey = `director_${idx}_${part.key}_uploaded`;
+                                return (
+                                  <label key={part.key} className="block cursor-pointer">
+                                    <div className={`p-1.5 rounded border transition-colors ${uploaded ? 'bg-teal/10 border-teal/20 hover:border-ocean/50' : 'border-dashed border-border hover:border-ocean/50 text-center'}`}>
+                                      {uploaded ? (
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          {uploadingDocs[uploadKey] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin shrink-0" /> : <Check className="w-3.5 h-3.5 text-teal shrink-0" />}
+                                          <span className="text-[10px] text-teal font-medium shrink-0">{part.label}</span>
+                                          {fileNameFor(d, `${part.key}_file`) && <span className="text-[10px] text-muted-foreground truncate" title={fileNameFor(d, `${part.key}_file`)}>{fileNameFor(d, `${part.key}_file`)}</span>}
+                                        </div>
+                                      ) : (
+                                        <><p className="text-[10px] font-medium text-navy">{part.label}</p><p className="text-[10px] text-ocean">Upload</p></>
+                                      )}
+                                    </div>
+                                    <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, part.key, e.target.files?.[0])} />
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : formData[`director_${idx}_id_uploaded`] || d.id_uploaded ? (
                             <label className="block cursor-pointer">
                               <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                                 <div className="flex items-center gap-2">
                                   {uploadingDocs[`director_${idx}_id_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_id_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
+                                  {d.id_file_name && <span className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={d.id_file_name}>{d.id_file_name}</span>}
                                 </div>
                                 <span className="text-[10px] text-ocean font-medium">Change</span>
                               </div>
@@ -744,6 +780,7 @@ export default function ClientOnboardingCompany() {
                               <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                                 <div className="flex items-center gap-2">
                                   {uploadingDocs[`director_${idx}_addr_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_addr_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
+                                  {d.addr_file_name && <span className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={d.addr_file_name}>{d.addr_file_name}</span>}
                                 </div>
                                 <span className="text-[10px] text-ocean font-medium">Change</span>
                               </div>

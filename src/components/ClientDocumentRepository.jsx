@@ -182,18 +182,34 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     const sourceIndex = person.trustee_index ?? person.director_index ?? personIndex;
     const listPerson = personsList[sourceIndex] || {};
     const fullName = person.name || [person.first_name || listPerson.first_name, person.last_name || listPerson.last_name].filter(Boolean).join(' ') || `${personLabel} ${sourceIndex + 1}`;
-    if (person.id_file_url) {
+    if (person.id_file_url && !person.id_front_file_url) {
       personDocs.push({
         label: `${personLabel} ${sourceIndex + 1} ID / Passport - ${fullName}`,
-        description: 'Certified identity document',
+        description: person.id_file_name || 'Certified identity document',
         fileUrl: person.id_file_url,
+        tag: `${personLabel.toUpperCase()} DOC`,
+      });
+    }
+    if (person.id_front_file_url) {
+      personDocs.push({
+        label: `${personLabel} ${sourceIndex + 1} SA ID Front - ${fullName}`,
+        description: person.id_front_file_name || 'Certified identity document front',
+        fileUrl: person.id_front_file_url,
+        tag: `${personLabel.toUpperCase()} DOC`,
+      });
+    }
+    if (person.id_back_file_url) {
+      personDocs.push({
+        label: `${personLabel} ${sourceIndex + 1} SA ID Back - ${fullName}`,
+        description: person.id_back_file_name || 'Certified identity document back',
+        fileUrl: person.id_back_file_url,
         tag: `${personLabel.toUpperCase()} DOC`,
       });
     }
     if (person.addr_file_url) {
       personDocs.push({
         label: `${personLabel} ${sourceIndex + 1} Proof of Address - ${fullName}`,
-        description: 'Residential address verification document',
+        description: person.addr_file_name || 'Residential address verification document',
         fileUrl: person.addr_file_url,
         tag: `${personLabel.toUpperCase()} DOC`,
       });
@@ -352,6 +368,16 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                   <p style={{ fontWeight: 600, color: '#1e3a5f', margin: '0 0 2px 0', fontSize: 13 }}>
                     {doc.label}
                   </p>
+                  {client?.[`${doc.key}_name`] && (
+                    <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
+                      {client[`${doc.key}_name`]}
+                    </p>
+                  )}
+                  {doc.key === 'doc_identity' && client?.doc_identity_back_name && (
+                    <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
+                      Back: {client.doc_identity_back_name}
+                    </p>
+                  )}
                   <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
                     {doc.description}
                   </p>

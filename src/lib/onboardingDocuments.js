@@ -5,6 +5,8 @@ export const DOCUMENT_FIELD_MAP = {
   proof_of_address_uploaded: 'doc_proof_of_address',
   income_proof_uploaded: 'doc_source_of_funds',
   existing_policies_uploaded: 'doc_existing_policies',
+  identity_document_front_uploaded: 'doc_identity',
+  identity_document_back_uploaded: 'doc_identity_back',
   cipc_registration_uploaded: 'doc_identity',
   financial_statements_uploaded: 'doc_source_of_funds',
   moi_uploaded: 'doc_existing_policies',
@@ -30,8 +32,10 @@ export const uploadOnboardingDocument = async ({ clientId, fieldKey, file }) => 
 
   if (repositoryField) {
     updateData[repositoryField] = fileUrl;
+    updateData[`${repositoryField}_name`] = file.name;
   }
+  updateData[`${fieldKey}_name`] = file.name;
 
   await base44.entities.Clients.update(clientId, updateData);
-  return { fileUrl, updateData, repositoryField };
+  return { fileUrl, fileName: file.name, updateData, repositoryField };
 };
