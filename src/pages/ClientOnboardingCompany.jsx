@@ -935,14 +935,12 @@ export default function ClientOnboardingCompany() {
                 <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? 'OK' : 'i'}</span>
                 <div>
                   <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-amber-700' : 'text-navy'}`}>
-                    {ficaResult?.fica_status === 'Approved' ? 'Verified' : ficaResult ? 'Under review by WealthWorks' : 'Ready for review'}
+                    {ficaResult ? 'Verification submitted' : 'Ready for submission'}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {ficaResult?.fica_status === 'Approved'
-                      ? 'Your entity verification has been completed.'
-                      : ficaResult
-                      ? 'Your entity information has been received and will be reviewed by WealthWorks. No further action is required unless your advisor contacts you.'
-                      : 'Submit this section so WealthWorks can review the required checks.'}
+                    {ficaResult
+                      ? 'Additional verification may be required. WealthWorks will contact you if further documentation is needed.'
+                      : 'Submit this section so WealthWorks can review the required information.'}
                   </p>
                   {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                 </div>
@@ -1134,4 +1132,3 @@ export default function ClientOnboardingCompany() {
     </div>
   );
 }
-

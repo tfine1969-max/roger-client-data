@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, XCircle, FileText } from 'lucide-react';
+import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, XCircle, FileText, Lock } from 'lucide-react';
+import { isComplianceAuthorised, ficaStatusLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'All Submissions' },
@@ -44,11 +45,39 @@ export default function ComplianceReview() {
   const initialFilter = searchParams.get('filter') || 'all';
   const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [search, setSearch] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    base44.auth.me().then(u => { setCurrentUser(u); setAuthChecked(true); }).catch(() => setAuthChecked(true));
+  }, []);
+
+  const authorised = isComplianceAuthorised(currentUser);
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['compliance-clients'],
     queryFn: () => base44.entities.Clients.list('-created_date', 200),
+    enabled: authChecked && authorised,
   });
+
+  if (!authChecked) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-border border-t-navy rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!authorised) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-sm text-center p-8 border border-border rounded bg-card">
+          <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-lg font-bold text-navy mb-2">Access Restricted</h2>
+          <p className="text-sm text-muted-foreground mb-4">Compliance Review is only accessible to authorised advisors and compliance officers.</p>
+          <button onClick={() => navigate('/')} className="px-4 py-2 bg-navy text-white text-xs font-semibold rounded hover:bg-ocean transition-colors">Go Home</button>
+        </div>
+      </div>
+    );
+  }
 
   // Only show clients who have started onboarding (have email)
   const onboardedClients = clients.filter(c => c.email && (c.onboarding_complete || c.fica_status || c.doc_status));
@@ -150,13 +179,9 @@ export default function ComplianceReview() {
                 </div>
                 <p className="text-xs text-muted-foreground truncate pr-2">{client.email || '—'}</p>
                 <div>
-                  {client.fica_status ? (
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded border ${style.bg} ${style.text} ${style.border}`}>
-                      {client.fica_status}
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-muted-foreground">Pending</span>
-                  )}
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded border ${style.bg} ${style.text} ${style.border}`}>
+                    {ficaStatusLabel(client.fica_status)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-muted-foreground">{client.doc_status || 'Pending'}</span>
