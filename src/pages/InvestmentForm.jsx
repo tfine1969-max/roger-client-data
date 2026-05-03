@@ -42,6 +42,7 @@ const detectAnnexure = (pt, jur) => {
   if (p.includes('share')||p.includes('direct')) return 'C';
   return 'B';
 };
+const isLivingAnnuity = (productType) => String(productType || '').toLowerCase().includes('living annuity');
 
 const emptyRow = () => ({ fund:'', allocation:'', customFund:'' });
 const fmtFee = v => { const n = parseFloat(v); return isNaN(n) ? '0.00' : n.toFixed(2); };
@@ -181,14 +182,30 @@ export default function InvestmentForm() {
       qc.invalidateQueries({ queryKey: ['investments', proposalId] });
       navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } });
     },
+    onError: () => {
+      setSubmitting(false);
+      alert('Investment could not be saved. Please try again.');
+    },
   });
 
   const totalAlloc = form.fund_rows.reduce((s,r)=>s+(parseFloat(r.allocation)||0),0);
   const multiRow = form.fund_rows.length>1;
-  const isLivingAnnuity = form.product_type === 'Living Annuity';
+  const livingAnnuity = isLivingAnnuity(form.product_type);
+
+  useEffect(() => {
+    if (!livingAnnuity) return;
+    setForm(prev => ({
+      ...prev,
+      recurring: false,
+      recurring_amount: '',
+      frequency: '',
+      income_required: 'Yes',
+    }));
+    setRecDisplay('');
+  }, [livingAnnuity]);
 
   const validate = () => {
-    if (isLivingAnnuity && form.income_required !== 'Yes') {
+    if (livingAnnuity && form.income_required !== 'Yes') {
       toast.error('Income drawdown is required for a Living Annuity.');
       return false;
     }
@@ -207,8 +224,10 @@ export default function InvestmentForm() {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    if (submitting || saveMutation.isPending) return;
     if(!validate()) return;
-    const contrib = form.lump_sum&&form.recurring?'Both':form.lump_sum?'Lump Sum':'Recurring';
+    const effectiveRecurring = livingAnnuity ? false : form.recurring;
+    const contrib = form.lump_sum&&effectiveRecurring?'Both':form.lump_sum?'Lump Sum':'Recurring';
     const ann = form.applicable_annexure||detectAnnexure(form.product_type,form.jurisdiction);
     const underlying_funds = form.fund_rows.filter(r=>r.fund).map(r=>{
       const n = r.fund==='__custom__'?(r.customFund||'Custom'):r.fund;
@@ -246,7 +265,12 @@ export default function InvestmentForm() {
     }
 
     // Income drawdown validation
-    if (form.income_required === 'Yes') {
+    if (livingAnnuity && form.income_required !== 'Yes') {
+      alert('Income drawdown is compulsory for living annuity products.');
+      setSubmitting(false); return;
+    }
+    const incomeRequired = livingAnnuity ? 'Yes' : (form.income_required || 'No');
+    if (incomeRequired === 'Yes') {
       if (!form.income_drawdown_reasons || form.income_drawdown_reasons.length === 0) {
         alert('Please select at least one reason for the income drawdown.');
         setSubmitting(false); return;
@@ -261,12 +285,12 @@ export default function InvestmentForm() {
     }
 
     const incomePayload = {
-      income_required: form.income_required || 'No',
-      income_type: form.income_required === 'Yes' ? (form.income_type || '') : '',
-      income_percentage: form.income_required === 'Yes' && form.income_type === 'Percentage' ? (parseFloat(form.income_percentage) || 0) : 0,
-      income_amount: form.income_required === 'Yes' && form.income_type === 'Fixed Amount' ? (parseFloat(form.income_amount) || 0) : 0,
-      income_frequency: form.income_required === 'Yes' ? (form.income_frequency || '') : '',
-      income_notes: form.income_required === 'Yes' ? (form.income_notes || '') : '',
+      income_required: incomeRequired,
+      income_type: incomeRequired === 'Yes' ? (form.income_type || '') : '',
+      income_percentage: incomeRequired === 'Yes' && form.income_type === 'Percentage' ? (parseFloat(form.income_percentage) || 0) : 0,
+      income_amount: incomeRequired === 'Yes' && form.income_type === 'Fixed Amount' ? (parseFloat(form.income_amount) || 0) : 0,
+      income_frequency: incomeRequired === 'Yes' ? (form.income_frequency || '') : '',
+      income_notes: incomeRequired === 'Yes' ? (form.income_notes || '') : '',
     };
 
     console.log('[InvestmentForm] saving:', { annexure: ann, mandate: form.investment_mandate, ...feePayload, ...incomePayload });
@@ -280,10 +304,10 @@ export default function InvestmentForm() {
       custom_fund:form.custom_fund,
       contribution_type:contrib,
       amount:parseFloat(String(form.lump_sum_amount).replace(/[\s,]/g,''))||0,
-      recurring_amount:parseFloat(String(form.recurring_amount).replace(/[\s,]/g,''))||0,
-      frequency:form.frequency,
+      recurring_amount: effectiveRecurring ? (parseFloat(String(form.recurring_amount).replace(/[\s,]/g,''))||0) : 0,
+      frequency: effectiveRecurring ? form.frequency : '',
       investment_recommendation_reasons: form.investment_recommendation_reasons || [],
-      income_drawdown_reasons: form.income_required === 'Yes' ? (form.income_drawdown_reasons || []) : [],
+      income_drawdown_reasons: incomeRequired === 'Yes' ? (form.income_drawdown_reasons || []) : [],
       ...feePayload,
       ...incomePayload,
     };
@@ -525,18 +549,16 @@ export default function InvestmentForm() {
               <div className="flex gap-2">
                 <label className={tog(form.lump_sum)}>
                   <input type="checkbox" checked={form.lump_sum} onChange={e=>setF('lump_sum',e.target.checked)} className="sr-only"/>
-                  <span>{form.lump_sum?'✓':'○'}</span> Lump Sum
+                  <span>{form.lump_sum?'Yes':'No'}</span> Lump Sum
                 </label>
-                {!isLivingAnnuity && (
+                {!livingAnnuity && (
                   <label className={tog(form.recurring)}>
                     <input type="checkbox" checked={form.recurring} onChange={e=>setF('recurring',e.target.checked)} className="sr-only"/>
-                    <span>{form.recurring?'✓':'○'}</span> Recurring
+                    <span>{form.recurring?'Yes':'No'}</span> Recurring
                   </label>
                 )}
               </div>
-              {isLivingAnnuity && (
-                <p className="text-[10px] text-amber-700 mt-1">Recurring contributions are not applicable for Living Annuities.</p>
-              )}
+              {livingAnnuity && <p className="text-[10px] text-muted-foreground mt-1">Recurring investment is not available for living annuity products.</p>}
             </div>
 
             <div className="grid grid-cols-3 gap-3">
@@ -614,25 +636,23 @@ export default function InvestmentForm() {
           {/* INCOME DRAWDOWN */}
           <div className="bg-card border border-border rounded-lg p-3 space-y-3">
             <h3 className="text-[10px] font-bold text-navy uppercase tracking-wider">Income Drawdown</h3>
-            {isLivingAnnuity && (
+            {livingAnnuity && (
               <div className="flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-300 rounded-sm">
-                <span className="text-amber-700 text-[10px] font-semibold">⚠ Living Annuity — Income drawdown is compulsory. Please complete all income details below.</span>
+                <span className="text-amber-700 text-[10px] font-semibold">Living Annuity - income drawdown is compulsory. Please complete all income details below.</span>
               </div>
             )}
             <div>
               <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Does the investor require an income to be drawn from this investment?</Label>
-              {isLivingAnnuity ? (
-                <div className="px-3 h-8 text-xs font-medium border border-navy bg-navy text-white rounded-sm inline-flex items-center">Yes — required</div>
-              ) : (
-                <div className="flex gap-1.5">
-                  {['No','Yes'].map(opt=>(
-                    <button key={opt} type="button" onClick={()=>setF('income_required',opt)}
-                      className={`px-8 h-8 text-xs font-medium border rounded-sm transition-all ${form.income_required===opt?'bg-navy text-white border-navy':'bg-card text-navy border-border hover:border-navy'}`}>
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex gap-1.5">
+                {['No','Yes'].map(opt=>(
+                  <button key={opt} type="button" onClick={()=>!livingAnnuity && setF('income_required',opt)}
+                    disabled={livingAnnuity && opt === 'No'}
+                    className={`px-8 h-8 text-xs font-medium border rounded-sm transition-all ${form.income_required===opt?'bg-navy text-white border-navy':'bg-card text-navy border-border hover:border-navy'} ${livingAnnuity && opt === 'No' ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              {livingAnnuity && <p className="text-[10px] text-amber-700 mt-1">Income drawdown is compulsory for living annuity products.</p>}
             </div>
             {form.income_required==='Yes'&&(
               <>
@@ -819,7 +839,7 @@ export default function InvestmentForm() {
           {/* ACTIONS */}
           <div className="flex gap-3">
             <Button type="button" onClick={()=>navigate(`/proposal/${proposalId}/engine`,{state:{step:'recommendations'}})} variant="outline" className="flex-1 h-9 rounded-sm text-xs">Cancel</Button>
-            <Button type="submit" disabled={submitting||!form.provider||!form.product_type||(!form.lump_sum&&!form.recurring)}
+            <Button type="submit" disabled={submitting||saveMutation.isPending||!form.provider||!form.product_type||(!form.lump_sum&&!form.recurring)}
               className="flex-1 h-9 bg-ocean hover:bg-sky text-white rounded-sm text-xs font-medium disabled:opacity-50">
               {submitting?'Saving...':isEdit?'Update Investment':'Add Investment'}
             </Button>

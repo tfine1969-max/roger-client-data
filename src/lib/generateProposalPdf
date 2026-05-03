@@ -43,6 +43,7 @@ const fmtMoney = (amount, currency = 'R') => {
 };
 
 const recurringRows = (inv) => Number(inv.recurring_amount || 0) > 0
+  && !String(inv.product_type || '').toLowerCase().includes('living annuity')
   ? [['Recurring Contribution', `${fmtMoney(inv.recurring_amount, inv.currency)}${inv.frequency ? ` ${inv.frequency}` : ' pm'}`]]
   : [];
 
@@ -154,19 +155,15 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     const fy = H - 8;
     doc.setDrawColor(...border); doc.line(M, fy - 6, W - M, fy - 6);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(5.5); doc.setTextColor(...muted);
-    // Line 1: company names left, page number centre, initials right
-    doc.text('WealthWorks (Pty) Ltd  FSP 28337  |  Wealthworks Investments (Pty) Ltd  FSP 45624', M, fy - 2);
+    doc.text('WealthWorks (Pty) Ltd FSP 28337 | Wealthworks Investments (Pty) Ltd FSP 45624', M, fy - 2);
     doc.text(String(pn), W / 2, fy - 2, { align: 'center' });
     if (signatureData?.clientInitials) {
       doc.setFont('helvetica', 'bold'); doc.setTextColor(...navy);
       doc.text(`Initials: ${signatureData.clientInitials}`, W - M, fy - 2, { align: 'right' });
     } else {
       doc.setFont('helvetica', 'normal'); doc.setTextColor(...muted);
-      doc.text('Initials: ___________', W - M, fy - 2, { align: 'right' });
+      doc.text('Initials: _______', W - M, fy - 2, { align: 'right' });
     }
-    // Line 2: compliance text centred
-    doc.setFontSize(5); doc.setTextColor(...muted);
-    doc.text('FICA / AML reviewed  |  Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', W / 2, fy + 2, { align: 'center' });
   };
 
   // Helper: draw client signature block (image + date) or blank sign line
@@ -463,7 +460,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     lcy+=12;
   });
 
-  // Right side — Risk Profile card + FICA & AML Compliance card
+  // Right side - Risk Profile card
   let rcy = y;
   // Risk card
   const riskCardH = 52;
@@ -480,32 +477,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+24+(i*4)));
   rcy += riskCardH + 6;
 
-  // FICA & AML Compliance card
-  const ficaAmlRows = [
-    ['FICA STATUS', ficaStatus],
-    ['FICA REF', ficaReference],
-    ['VERIFIED / REVIEWED', verificationDate],
-    ['MANUAL REVIEW', manualReview],
-    ['AML RISK', amlRiskRating],
-    ['RMCP SCORE', rmcpScore],
-    ['AML CLEAR', amlClear],
-  ];
-  const ficaAmlCardH = ficaAmlRows.length*10+16;
-  doc.setDrawColor(...border); doc.setFillColor(255,255,255);
-  doc.roundedRect(col2x, rcy, colW2, ficaAmlCardH, 3, 3, 'FD');
-  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('FICA / AML STATUS', col2x+5, rcy+8);
-  doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
-  let facy = rcy+18;
-  ficaAmlRows.forEach(([label, value]) => {
-    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text(label, col2x+5, facy);
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...navy);
-    doc.text(String(valueOrFallback(value)), col2x+colW2-5, facy, {align:'right'});
-    facy+=10;
-  });
-
-  y = Math.max(y+leftCardH, rcy+ficaAmlCardH) + 8;
+  y = Math.max(y+leftCardH, rcy) + 8;
 
   // Risk profile characteristics below
   doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);

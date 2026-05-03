@@ -110,7 +110,13 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
         <div className="px-3 py-2 border-b border-border bg-muted flex items-center justify-between">
           <span className="text-[10px] font-semibold tracking-[.06em] uppercase text-navy">Investments</span>
           <button
-            onClick={() => navigate(`/proposal/${proposalId}/add-investment`)}
+            onClick={() => {
+              if (investments.length > 0) {
+                const proceed = window.confirm('There is already an investment on this proposal. Do you want to add another investment product?');
+                if (!proceed) return;
+              }
+              navigate(`/proposal/${proposalId}/add-investment`);
+            }}
             className="flex items-center gap-1 bg-ocean text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide hover:bg-sky transition-colors rounded-sm"
           >
             <Plus className="w-3 h-3" /> Add Investment
