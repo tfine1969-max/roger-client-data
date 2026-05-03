@@ -130,16 +130,16 @@ export default function ClientDashboard() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-navy">
-                  {client.fica_status === 'Approved' || client.verification_status === 'Verified' ? 'Verified' : 'To be completed'}
+                  {client.fica_status === 'Approved' || client.verification_status === 'Verified' ? 'Verified' : 'Under review'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {client.fica_status === 'Approved' || client.verification_status === 'Verified'
                     ? 'Your verification has been completed.'
-                    : 'Your information has been received. WealthWorks will contact you if anything further is required.'}
+                    : 'Your information has been received and will be reviewed by WealthWorks. No further action is required unless your advisor contacts you.'}
                 </p>
               </div>
               <div style={{ display: 'inline-block', padding: '6px 12px', borderRadius: 999, background: (client.fica_status === 'Approved' || client.verification_status === 'Verified') ? '#f0fdf4' : '#fef3c7', color: (client.fica_status === 'Approved' || client.verification_status === 'Verified') ? '#166534' : '#b45309', fontSize: 12, fontWeight: 700 }}>
-                {client.fica_status === 'Approved' || client.verification_status === 'Verified' ? 'Verified' : 'To be completed'}
+                {client.fica_status === 'Approved' || client.verification_status === 'Verified' ? 'Verified' : 'Under review'}
               </div>
             </div>
           </div>

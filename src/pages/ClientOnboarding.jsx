@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
-import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const extractDOBFromID = (idNumber) => {
@@ -371,18 +371,7 @@ export default function ClientOnboarding() {
     }
   };
 
-  const uploadedFileName = (fieldKey) => {
-    const map = {
-      identity_document_uploaded: 'doc_identity',
-      identity_document_front_uploaded: 'doc_identity',
-      identity_document_back_uploaded: 'doc_identity_back',
-      proof_of_address_uploaded: 'doc_proof_of_address',
-      income_proof_uploaded: 'doc_source_of_funds',
-      existing_policies_uploaded: 'doc_existing_policies',
-    };
-    const repoField = map[fieldKey];
-    return formData[`${fieldKey}_name`] || (repoField ? formData[`${repoField}_name`] : '') || '';
-  };
+  const uploadedFileName = (fieldKey) => uploadedDocumentName(formData, fieldKey);
 
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
   const removeProduct = (idx) => setProductsList(prev => prev.filter((_, i) => i !== idx));
@@ -608,7 +597,7 @@ export default function ClientOnboarding() {
       await base44.entities.Clients.update(clientId, updateData);
 
       if (rmcpResult.band === 'Prohibited' || rmcpResult.band === 'High' || ficaStatus !== 'Approved') {
-        const scoreSummary = `Client Factor: ${rmcpResult.breakdown.client_factor} / 30\nGeography Factor: ${rmcpResult.breakdown.geography_factor} / 25\nProduct Factor: ${rmcpResult.breakdown.product_factor} / 20\nTransaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15\nBehaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10\nTOTAL RMCP SCORE: ${rmcpResult.score} / 100 Ã¢â€ â€™ ${rmcpResult.band} RISK`;
+        const scoreSummary = `Client Factor: ${rmcpResult.breakdown.client_factor} / 30\nGeography Factor: ${rmcpResult.breakdown.geography_factor} / 25\nProduct Factor: ${rmcpResult.breakdown.product_factor} / 20\nTransaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15\nBehaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10\nTOTAL RMCP SCORE: ${rmcpResult.score} / 100 - ${rmcpResult.band} RISK`;
         const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT - Prohibited client: ${formData.first_name} ${formData.last_name}` :
                             rmcpResult.band === 'High' ? `EDD Required - High risk client: ${formData.first_name} ${formData.last_name}` :
                             `FICA ${ficaStatus} - ${formData.first_name} ${formData.last_name}`;
@@ -867,10 +856,10 @@ export default function ClientOnboarding() {
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
       const clientIdNumber = formData.sa_id_number || formData.passport_number || 'N/A';
       const submittedDocs = [
-        formData.identity_document_uploaded && 'Ã¢Å“â€œ Identity Document\n',
-        formData.proof_of_address_uploaded && 'Ã¢Å“â€œ Proof of Address\n',
-        formData.income_proof_uploaded && 'Ã¢Å“â€œ Income / Source of Funds\n',
-        formData.existing_policies_uploaded && 'Ã¢Å“â€œ Existing Policies\n',
+        formData.identity_document_uploaded && 'Uploaded Identity Document\n',
+        formData.proof_of_address_uploaded && 'Uploaded Proof of Address\n',
+        formData.income_proof_uploaded && 'Uploaded Income / Source of Funds\n',
+        formData.existing_policies_uploaded && 'Uploaded Existing Policies\n',
       ].filter(Boolean).join('');
 
       await base44.integrations.Core.SendEmail({
@@ -1016,7 +1005,7 @@ export default function ClientOnboarding() {
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
                   isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'
                 }`}>
-                  {isComplete ? 'Ã¢Å“â€œ' : step.number}
+                  {isComplete ? 'OK' : step.number}
                 </span>
                 {step.label}
               </button>
@@ -1352,7 +1341,7 @@ export default function ClientOnboarding() {
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
                     <h3 className="font-semibold text-navy text-sm">FICA verification</h3>
-                    <p className="text-xs text-muted-foreground">We will run the required checks securely in the background. Any items that need attention are handled internally by your advisor.</p>
+                    
                   </div>
                   {!ficaRunning && (
                     <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
@@ -1363,17 +1352,17 @@ export default function ClientOnboarding() {
                 </div>
 
                 <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult?.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult ? 'bg-amber-50 border-amber-200' : 'bg-secondary/50 border-border'}`}>
-                  <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? '?' : ficaResult ? '!' : 'â€¢'}</span>
+                  <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? 'OK' : 'i'}</span>
                   <div>
                     <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-amber-700' : 'text-navy'}`}>
-                      {ficaResult?.fica_status === 'Approved' ? 'Verified' : ficaResult ? 'To be completed internally' : 'Ready to submit'}
+                      {ficaResult?.fica_status === 'Approved' ? 'Verified' : ficaResult ? 'Under review by WealthWorks' : 'Ready for review'}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {ficaResult?.fica_status === 'Approved'
                         ? 'Your verification has been completed.'
                         : ficaResult
-                        ? 'We have received your information. No further action is required at this stage unless your advisor contacts you.'
-                        : 'Submit this section and continue with the rest of onboarding.'}
+                        ? 'Your information has been received and will be reviewed by WealthWorks. No further action is required unless your advisor contacts you.'
+                        : 'Submit this section so WealthWorks can review the required checks.'}
                     </p>
                     {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                   </div>
@@ -1591,7 +1580,7 @@ export default function ClientOnboarding() {
                     ))}
                   </div>
                   {profileOverridden && (
-                    <p className="text-[8px] text-warn mt-0.5">Ã¢Å¡Â  Profile overridden - suggests <strong>{scoreToProfile(riskScore)}</strong></p>
+                    <p className="text-[8px] text-warn mt-0.5">Profile overridden - suggests <strong>{scoreToProfile(riskScore)}</strong></p>
                   )}
                 </div>
               </div>
@@ -1647,7 +1636,7 @@ export default function ClientOnboarding() {
             <div className="flex gap-3">
               {currentStep > 1 && currentStep < 8 && (
                 <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">
-                  Ã¢â€ Â Back
+                  Back
                 </Button>
               )}
               <div className="flex-1" />
@@ -1664,17 +1653,17 @@ export default function ClientOnboarding() {
               )}
               {currentStep < 7 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue Ã¢â€ â€™'}
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue'}
                 </Button>
               )}
               {currentStep === 7 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit Ã¢â€ â€™'}
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit'}
                 </Button>
               )}
               {currentStep === 8 && (
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
-                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done Ã¢â€ â€™'}
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done'}
                 </Button>
               )}
             </div>
@@ -1689,3 +1678,4 @@ export default function ClientOnboarding() {
     </div>
   );
 }
+
