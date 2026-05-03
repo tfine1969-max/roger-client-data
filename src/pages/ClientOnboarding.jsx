@@ -1184,7 +1184,7 @@ export default function ClientOnboarding() {
                   { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
                   { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
                   { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
-                  { key: 'banking_proof_uploaded', title: 'PROOF OF BANKING DETAILS', badge: 'OPTIONAL', desc: 'Cancelled cheque or bank-stamped letter', sub: 'Shows account holder, bank and account number' },
+                  { key: 'banking_proof_uploaded', title: 'PROOF OF BANKING DETAILS', badge: 'OPTIONAL', desc: 'Bank-stamped letter or 3 months bank statements', sub: 'Shows account holder, bank and account number' },
                 ].filter(doc => !(doc.key === 'identity_document_uploaded' && formData.identity_type === 'SA ID')).map(doc => (
                   <div key={doc.key} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start mb-2">
