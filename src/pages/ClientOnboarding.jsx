@@ -1529,7 +1529,7 @@ export default function ClientOnboarding() {
                     <div key={idx} className="grid grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-2 items-end">
                       <div>
                         {idx === 0 && <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase block mb-1">PRODUCT TYPE</Label>}
-                        <Select value={product.type} onValueChange={v => updateProduct(idx, 'type', v)}>
+                        <Select value={product.type || undefined} onValueChange={v => updateProduct(idx, 'type', v)}>
                           <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select type" /></SelectTrigger>
                           <SelectContent>{PRODUCT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                         </Select>
