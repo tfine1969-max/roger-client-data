@@ -1,8 +1,63 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
-const FicaComplianceSummary = ({ proposal, client }) => {
+const FicaComplianceSummary = ({ proposal, client, onFicaUpdate }) => {
+  const [verifying, setVerifying] = useState(false);
   if (!proposal || !client) return null;
+
+  const canReverify = !!(client.sa_id_number && client.first_name && client.last_name);
+
+  const handleReVerify = async () => {
+    if (!canReverify) {
+      toast.error('Cannot re-verify: missing SA ID number or client name');
+      return;
+    }
+    setVerifying(true);
+    try {
+      const [idResult, amlResult] = await Promise.all([
+        base44.functions.invoke('ficaVerify', {
+          action: 'verifyId',
+          payload: {
+            id_number: client.sa_id_number,
+            first_name: client.first_name,
+            last_name: client.last_name,
+            date_of_birth: client.date_of_birth || '',
+          },
+        }),
+        base44.functions.invoke('ficaVerify', {
+          action: 'screenAml',
+          payload: { name: `${client.first_name} ${client.last_name}`, entity: 0, country: 'za', dataset: 'all' },
+        }),
+      ]);
+
+      const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
+      const amlMatch = (amlResult?.data?.data?.totalHits || 0) > 0;
+      const ficaStatus = !idPass ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
+      const ficaRef = `FICA-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}-ZA`;
+      const verifiedAt = new Date().toISOString();
+
+      const updateData = {
+        fica_status: ficaStatus,
+        fica_reference: ficaRef,
+        fica_verified_at: verifiedAt,
+        aml_pep_clear: !amlMatch,
+        home_affairs_verified: idPass,
+      };
+
+      await base44.entities.Clients.update(client.id, updateData);
+      onFicaUpdate && onFicaUpdate(updateData);
+
+      if (ficaStatus === 'Approved') toast.success(`FICA Approved — Ref: ${ficaRef}`);
+      else if (ficaStatus === 'Referred') toast.warning(`FICA Referred — EDD required (Ref: ${ficaRef})`);
+      else toast.error(`FICA Declined — Ref: ${ficaRef}`);
+    } catch (err) {
+      toast.error(`Re-verification failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const parseFicaChecks = (value) => {
     if (!value) return null;
@@ -78,7 +133,19 @@ const FicaComplianceSummary = ({ proposal, client }) => {
       )}
 
       <div className="p-4">
-        <h3 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-4">FICA & AML Compliance Summary</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xs font-semibold tracking-widest text-ocean uppercase">FICA & AML Compliance Summary</h3>
+          {onFicaUpdate && (
+            <button
+              onClick={handleReVerify}
+              disabled={verifying || !canReverify}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-navy text-white rounded hover:bg-sky-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${verifying ? 'animate-spin' : ''}`} />
+              {verifying ? 'Verifying…' : 'Re-verify FICA'}
+            </button>
+          )}
+        </div>
 
         <div className="grid grid-cols-4 gap-4">
           {/* FICA Status */}

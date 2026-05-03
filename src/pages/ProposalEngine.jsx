@@ -182,6 +182,15 @@ export default function ProposalEngine() {
     debouncedSave(updated);
   };
 
+  const handleFicaUpdate = (ficaData) => {
+    setLocalData(prev => {
+      const updated = { ...prev, ...ficaData };
+      debouncedSave(updated);
+      return updated;
+    });
+    queryClient.invalidateQueries({ queryKey: ['clients'] });
+  };
+
 
 
   const handleGeneratePdf = async () => {
@@ -213,7 +222,9 @@ export default function ProposalEngine() {
     await appendAttachmentsToPdf(doc, orderedAttachments, localData.client_initials || '', pageNum);
 
     const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `${localData.reference || 'proposal'}.pdf`, { type: 'application/pdf' });
+    const safeName = (localData.client_name || '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+    const filename = safeName ? `${safeName}_${localData.reference || 'proposal'}.pdf` : `${localData.reference || 'proposal'}.pdf`;
+    const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
     const ficaSnapshot = {
       fica_status: localData.fica_status || '',
@@ -289,7 +300,7 @@ export default function ProposalEngine() {
 
         {activeStep === 'client_details' && (
           <>
-            <FicaComplianceSummary proposal={localData} client={clientObj} />
+            <FicaComplianceSummary proposal={localData} client={clientObj} onFicaUpdate={handleFicaUpdate} />
             <Step01ClientDetails
               data={localData}
               onFieldChange={handleFieldChange}

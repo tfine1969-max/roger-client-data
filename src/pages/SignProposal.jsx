@@ -144,7 +144,9 @@ export default function SignProposal() {
 
         const doc = await generateProposalPdf(proposal, investments, riskProducts, signatureData);
         const pdfBlob = doc.output('blob');
-        const pdfFile = new File([pdfBlob], `${proposal.reference || proposal.id}-signed.pdf`, { type: 'application/pdf' });
+        const safeName = (proposal.client_name || '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+        const signedFilename = safeName ? `${safeName}_${proposal.reference || proposal.id}-signed.pdf` : `${proposal.reference || proposal.id}-signed.pdf`;
+        const pdfFile = new File([pdfBlob], signedFilename, { type: 'application/pdf' });
         const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
         signedPdfUrl = file_url;
       } catch (pdfErr) {
