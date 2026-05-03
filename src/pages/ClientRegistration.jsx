@@ -12,6 +12,158 @@ import { toast } from 'sonner';
 const TEST_MODE = true;
 // ─────────────────────────────────────────────────────────────
 
+const testDocUrl = (slug, doc) => `https://wealthworks.test/documents/${slug}/${doc}.pdf`;
+const makeFicaReference = (seed) => `FICA-2026-${seed}-ZA`;
+
+const enrichTestProfile = (profile, index) => {
+  const slug = profile.email.split('@')[0].replace(/\./g, '-');
+  const now = new Date().toISOString();
+  const isIndividual = profile.onboarding.client_type === 'Natural Person';
+  const isTrust = profile.onboarding.client_type === 'Trust';
+  const isCompany = profile.onboarding.client_type === 'Company';
+  const common = {
+    client_source: 'Onboarding',
+    email: profile.email,
+    mobile_number: profile.mobile,
+    doc_identity: testDocUrl(slug, 'identity'),
+    doc_proof_of_address: testDocUrl(slug, 'proof-of-address'),
+    doc_source_of_funds: testDocUrl(slug, 'source-of-funds'),
+    doc_existing_policies: testDocUrl(slug, 'existing-policies'),
+    doc_status: 'Submitted',
+    doc_submitted_at: now,
+    fica_status: 'Approved',
+    fica_reference: makeFicaReference(23000 + index * 137),
+    fica_risk_band: profile.onboarding.risk_profile === 'Aggressive' ? 'High' : 'Medium',
+    fica_verified_at: now,
+    home_affairs_verified: true,
+    aml_pep_clear: true,
+    rmcp_risk_score: profile.onboarding.risk_profile === 'Aggressive' ? 68 : profile.onboarding.risk_profile === 'Growth' ? 53 : 38,
+    rmcp_risk_band: profile.onboarding.risk_profile === 'Aggressive' ? 'High' : 'Medium',
+    rmcp_scored_at: now,
+    rmcp_score_breakdown: JSON.stringify({ client_factor: 0, geography_factor: 25, product_factor: 15, transaction_factor: 10, behaviour_factor: 3 }),
+    fica_checks_json: JSON.stringify({
+      home_affairs_id: { status: 'pass', label: 'Home Affairs ID' },
+      aml_pep_screen: { status: 'pass', label: 'AML / PEP screen' },
+      consumer_trace: { status: 'pass', label: 'Address verification' },
+      document_auth: { status: 'pass', label: 'Document authentication' },
+      risk_score: { status: 'pass', label: 'Risk classification' },
+    }),
+  };
+  const individualDefaults = isIndividual ? {
+    title: profile.label.startsWith('Sarah') ? 'Ms' : 'Mr',
+    full_name: profile.label,
+    marital_status: profile.label.startsWith('Sarah') ? 'Single' : 'Married',
+    dependants: profile.label.startsWith('Sarah') ? '0' : '2',
+    employment_status: 'Employed',
+    occupation: profile.label.startsWith('Sarah') ? 'Investment Analyst' : 'Senior Project Manager',
+    employer: profile.label.startsWith('Sarah') ? 'Cape Capital Partners' : 'Petersen Engineering',
+    industry: 'Financial Services',
+    source_of_funds: ['Salary', 'Investment returns'],
+    sa_tax_number: profile.label.startsWith('Sarah') ? '9234567890' : '8012345678',
+    tax_residency: 'South Africa only',
+    us_person_fatca: 'No',
+    pep_status: 'No',
+    net_worth_band: profile.label.startsWith('Sarah') ? 'R2m - R5m' : 'R1m - R2m',
+    total_liabilities: profile.label.startsWith('Sarah') ? 'Under R500,000' : 'R500k - R1m',
+    existing_financial_products: [
+      { provider: 'Allan Gray', product_type: 'Unit trust / CIS', product_name: 'Balanced Fund', current_value: '850000', monthly_contribution: '10000', notes: 'Core investment portfolio' },
+      { provider: 'Discovery', product_type: 'Retirement annuity', product_name: 'RA', current_value: '620000', monthly_contribution: '7500', notes: 'Retirement savings' },
+    ],
+    products_list: [
+      { provider: 'Allan Gray', product_type: 'Unit trust / CIS', product_name: 'Balanced Fund', current_value: '850000', monthly_contribution: '10000', notes: 'Core investment portfolio' },
+      { provider: 'Discovery', product_type: 'Retirement annuity', product_name: 'RA', current_value: '620000', monthly_contribution: '7500', notes: 'Retirement savings' },
+    ],
+    loa_uploaded: true,
+    loa_authorised: true,
+    will_in_place: 'Yes',
+    identity_document_uploaded: true,
+    proof_of_address_uploaded: true,
+    income_proof_uploaded: true,
+    existing_policies_uploaded: true,
+    liquidity_requirement: 'Access within 3 years',
+    client_signature_name: profile.label,
+    client_signature_date: now.split('T')[0],
+  } : {};
+  const trustDefaults = isTrust ? {
+    trust_type: profile.label.startsWith('Blue') ? 'Inter Vivos Trust' : 'Testamentary Trust',
+    trust_deed_date: profile.label.startsWith('Blue') ? '2015-06-15' : '2018-09-20',
+    contact_trustee_name: profile.trustees?.[0] ? `${profile.trustees[0].first_name} ${profile.trustees[0].last_name}` : '',
+    trust_deed_uploaded: true,
+    loa_uploaded: true,
+    trust_proof_of_address_uploaded: true,
+    trust_bank_statement_uploaded: true,
+    trust_purpose: profile.label.startsWith('Blue') ? 'Family wealth preservation and intergenerational planning' : 'Legacy investment and beneficiary support',
+    trust_source_of_funds: ['Trust income', 'Investment returns'],
+    entity_source_of_funds: ['Trust income', 'Investment returns'],
+    beneficiary_declaration: profile.label.startsWith('Blue') ? 'James Petersen, Mary Petersen, Petersen children' : 'David Green, Linda Green, Green Legacy beneficiaries',
+    entity_tax_number: profile.label.startsWith('Blue') ? '9123456780' : '9345678901',
+    entity_tax_residency: 'South Africa only',
+    entity_fatca: 'No',
+    entity_pep: 'No',
+    trust_asset_value_band: profile.label.startsWith('Blue') ? 'R2m - R10m' : 'R10m - R50m',
+    trust_income_band: 'R750,000 - R1.5m',
+    entity_total_liabilities: 'R500k - R1m',
+    entity_existing_products: 'Existing local unit trust portfolio, offshore endowment and money market account.',
+    existing_products_notes: 'Existing local unit trust portfolio, offshore endowment and money market account.',
+    entity_loa_uploaded: true,
+    entity_loa_authorised: true,
+    liquidity_requirement: 'Long-term - no immediate need',
+  } : {};
+  const companyDefaults = isCompany ? {
+    vat_number: profile.label.startsWith('Alpha') ? '4123456789' : '4321098765',
+    cipc_registration_uploaded: true,
+    moi_uploaded: true,
+    proof_of_address_uploaded: true,
+    financial_statements_uploaded: true,
+    business_activity: profile.label.startsWith('Alpha') ? 'Investment holding company and advisory services' : 'Property and investment holding company',
+    entity_source_of_funds: ['Business income', 'Investment returns'],
+    ubo_declaration: profile.directors?.map((d, idx) => `${d.first_name} ${d.last_name} - ${idx === 0 ? '55' : idx === 1 ? '30' : '15'}%`).join('; '),
+    entity_tax_number: profile.label.startsWith('Alpha') ? '9012345678' : '8901234567',
+    entity_tax_residency: 'South Africa only',
+    entity_fatca: 'No',
+    entity_pep: 'No',
+    gross_annual_turnover: profile.label.startsWith('Alpha') ? 'R5m - R20m' : 'R20m - R50m',
+    total_assets_band: profile.label.startsWith('Alpha') ? 'R10m - R50m' : 'Over R50m',
+    entity_total_liabilities: 'R1m - R3m',
+    existing_products_notes: 'Corporate money market account, local equity portfolio and key-person risk policies.',
+    entity_loa_uploaded: true,
+    entity_loa_authorised: true,
+    liquidity_requirement: 'Access within 3 years',
+  } : {};
+  const trustees = profile.trustees?.map((person, idx) => ({
+    ...person,
+    id_uploaded: true,
+    addr_uploaded: true,
+    id_file_url: testDocUrl(slug, `trustee-${idx + 1}-id`),
+    addr_file_url: testDocUrl(slug, `trustee-${idx + 1}-address`),
+  }));
+  const directors = profile.directors?.map((person, idx) => ({
+    ...person,
+    id_uploaded: true,
+    addr_uploaded: true,
+    id_file_url: testDocUrl(slug, `director-${idx + 1}-id`),
+    addr_file_url: testDocUrl(slug, `director-${idx + 1}-address`),
+  }));
+  const relatedUploadFlags = {
+    ...(trustees || []).reduce((acc, _, idx) => ({
+      ...acc,
+      [`trustee_${idx}_id_uploaded`]: true,
+      [`trustee_${idx}_addr_uploaded`]: true,
+    }), {}),
+    ...(directors || []).reduce((acc, _, idx) => ({
+      ...acc,
+      [`director_${idx}_id_uploaded`]: true,
+      [`director_${idx}_addr_uploaded`]: true,
+    }), {}),
+  };
+  return {
+    ...profile,
+    trustees,
+    directors,
+    onboarding: { ...common, ...individualDefaults, ...trustDefaults, ...companyDefaults, ...relatedUploadFlags, ...profile.onboarding },
+  };
+};
+
 const TEST_PROFILES = [
   {
     label: 'James Petersen',
@@ -175,12 +327,13 @@ const TEST_PROFILES = [
       { title: 'Mr', first_name: 'Themba', last_name: 'Zulu', identity_type: 'SA ID', id_number: '9112085009086', date_of_birth: '08-12-1991', gender: 'Male', marital_status: 'Single', nationality: 'South African', email: 'themba.zulu@test.co.za', mobile: '0851234569', street_address: '7 Blouberg Rise', suburb: 'Cape Town', city: 'Cape Town', province: 'Western Cape', postal_code: '7441' },
     ],
   },
-];
+].map(enrichTestProfile);
 
 export default function ClientRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [entityType, setEntityType] = useState('Individual');
+  const [selectedTestEmail, setSelectedTestEmail] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     mobile: '',
@@ -210,6 +363,8 @@ export default function ClientRegistration() {
     sessionStorage.setItem('test_onboarding_seed', JSON.stringify(profile.onboarding));
     if (profile.trustees) sessionStorage.setItem('test_trustees_seed', JSON.stringify(profile.trustees));
     if (profile.directors) sessionStorage.setItem('test_directors_seed', JSON.stringify(profile.directors));
+    if (profile.onboarding?.products_list) sessionStorage.setItem('test_products_seed', JSON.stringify(profile.onboarding.products_list));
+    setSelectedTestEmail(profile.email);
     toast.success(`Filled with ${profile.label} test data`);
   };
 
@@ -264,7 +419,39 @@ export default function ClientRegistration() {
 
       // Persist entity type on the client record
       const clientTypeMap = { Individual: 'Natural Person', Trust: 'Trust', Company: 'Company' };
-      await base44.entities.Clients.update(clientId, { client_type: clientTypeMap[entityType] || 'Natural Person' });
+      const seedRaw = sessionStorage.getItem('test_onboarding_seed');
+      const trusteeSeed = sessionStorage.getItem('test_trustees_seed');
+      const directorSeed = sessionStorage.getItem('test_directors_seed');
+      const productsSeed = sessionStorage.getItem('test_products_seed');
+      const testProfileUpdate = TEST_MODE && isTestEmail(formData.email) && seedRaw
+        ? {
+            ...JSON.parse(seedRaw),
+            email: formData.email,
+            mobile_number: formData.mobile,
+            full_name: JSON.parse(seedRaw).client_type === 'Natural Person'
+              ? `${JSON.parse(seedRaw).first_name || ''} ${JSON.parse(seedRaw).last_name || ''}`.trim()
+              : undefined,
+            trustees_list: trusteeSeed ? JSON.parse(trusteeSeed) : undefined,
+            directors_list: directorSeed ? JSON.parse(directorSeed) : undefined,
+            products_list: productsSeed ? JSON.parse(productsSeed) : JSON.parse(seedRaw).products_list,
+            trustee_documents_json: trusteeSeed ? JSON.stringify(JSON.parse(trusteeSeed).map((t, idx) => ({
+              trusteeIndex: idx,
+              name: `${t.first_name} ${t.last_name}`,
+              id: t.id_file_url || testDocUrl(`trustee-${idx + 1}`, 'id'),
+              address: t.addr_file_url || testDocUrl(`trustee-${idx + 1}`, 'address'),
+            }))) : undefined,
+            director_documents_json: directorSeed ? JSON.stringify(JSON.parse(directorSeed).map((d, idx) => ({
+              directorIndex: idx,
+              name: `${d.first_name} ${d.last_name}`,
+              id: d.id_file_url || testDocUrl(`director-${idx + 1}`, 'id'),
+              address: d.addr_file_url || testDocUrl(`director-${idx + 1}`, 'address'),
+            }))) : undefined,
+          }
+        : {};
+      await base44.entities.Clients.update(clientId, {
+        client_type: clientTypeMap[entityType] || 'Natural Person',
+        ...testProfileUpdate,
+      });
 
       const onboardingRoute = entityType === 'Trust' ? '/client-onboarding-trust'
         : entityType === 'Company' ? '/client-onboarding-company'
@@ -311,21 +498,23 @@ export default function ClientRegistration() {
                 <span className="font-bold text-amber-800 text-sm tracking-wide uppercase">TEST MODE — Remove before go-live</span>
               </div>
               <p className="text-xs text-amber-700 mb-3">
-                Click a profile to auto-fill all fields. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
+                Select a profile to auto-fill every onboarding step. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <select
+                value={selectedTestEmail}
+                onChange={(e) => {
+                  const profile = TEST_PROFILES.find(p => p.email === e.target.value);
+                  if (profile) handleQuickFill(profile);
+                }}
+                className="w-full h-10 px-3 bg-white border border-amber-300 rounded text-sm text-amber-900 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              >
+                <option value="">Choose test data set...</option>
                 {TEST_PROFILES.map((profile) => (
-                  <button
-                    key={profile.email}
-                    type="button"
-                    onClick={() => handleQuickFill(profile)}
-                    className="text-left px-3 py-2 bg-white border border-amber-300 rounded hover:bg-amber-100 hover:border-amber-500 transition-all"
-                  >
-                    <div className="text-xs font-semibold text-amber-900">{profile.label}</div>
-                    <div className="text-[10px] text-amber-600">{profile.sub}</div>
-                  </button>
+                  <option key={profile.email} value={profile.email}>
+                    {profile.label} - {profile.sub}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
           )}
 

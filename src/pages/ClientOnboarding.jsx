@@ -223,9 +223,18 @@ export default function ClientOnboarding() {
       try {
         const seed = JSON.parse(seedRaw);
         setFormData(prev => ({ ...prev, ...seed }));
+        if (Array.isArray(seed.products_list) && seed.products_list.length > 0) setProductsList(seed.products_list);
         if (seed.risk_profile) setProfileOverridden(true);
       } catch {}
       sessionStorage.removeItem('test_onboarding_seed');
+    }
+    const productsSeed = sessionStorage.getItem('test_products_seed');
+    if (productsSeed) {
+      try {
+        const seededProducts = JSON.parse(productsSeed);
+        if (Array.isArray(seededProducts) && seededProducts.length > 0) setProductsList(seededProducts);
+      } catch {}
+      sessionStorage.removeItem('test_products_seed');
     }
     base44.entities.Clients.list()
       .then(clients => {

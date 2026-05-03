@@ -77,6 +77,13 @@ const FicaStatusIndicator = ({ client }) => {
   );
 };
 
+const formatTimestamp = (value) => {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+
 export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, ficaFilter = null, onClearFilter }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -137,8 +144,8 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
 
       <div className="border border-border bg-card overflow-x-auto">
         {/* Header */}
-        <div className="grid grid-cols-[2fr_2fr_1.2fr_1fr_1fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[700px]">
-          {['Client', 'Needs Identified', 'FICA Status', 'Created', 'Status', ''].map((h, i) => (
+        <div className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_1fr_0.9fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[900px]">
+          {['Client', 'Needs Identified', 'FICA Status', 'Created', 'Updated', 'Status', ''].map((h, i) => (
             <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors" style={{ cursor: h === 'FICA Status' ? 'pointer' : 'default' }} onClick={() => h === 'FICA Status' && setSortBy(sortBy === 'fica' ? null : 'fica')}>
               {h}
               {h === 'FICA Status' && sortBy === 'fica' && <span>↓</span>}
@@ -174,7 +181,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
              <div
                key={p.id}
                onClick={() => navigate(`/proposal/${p.id}/engine`)}
-               className="grid grid-cols-[2fr_2fr_1.2fr_1fr_1fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[700px]"
+               className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_1fr_0.9fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[900px]"
              >
               <div>
                 <div className="text-[13px] font-medium text-navy">{clientName}</div>
@@ -187,12 +194,9 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
                 <FicaStatusIndicator client={client} />
               </div>
 
-              <div className="text-xs text-muted-foreground">
-                {p.created_date ? (() => {
-                  const d = new Date(p.created_date);
-                  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-                })() : '—'}
-              </div>
+              <div className="text-[11px] text-muted-foreground">{formatTimestamp(client?.created_date || p.created_date)}</div>
+
+              <div className="text-[11px] text-muted-foreground">{formatTimestamp(client?.updated_date || p.updated_date)}</div>
 
               <div>
                 <span style={{
