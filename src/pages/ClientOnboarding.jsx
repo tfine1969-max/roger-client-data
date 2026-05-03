@@ -692,7 +692,6 @@ export default function ClientOnboarding() {
       };
     } else if (currentStep === 4) {
       if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
-      if (ficaResult.fica_status === 'Declined') { toast.error('FICA verification failed. Please contact your advisor.'); return; }
       stepData = {
         fica_status: ficaResult?.fica_status || 'Pending',
         fica_reference: ficaResult?.fica_reference || '',
@@ -1423,7 +1422,13 @@ export default function ClientOnboarding() {
                       )}
                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 5.</p>}
                       {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
-                      {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                      {ficaResult.fica_status === 'Declined' && (
+                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
+                          <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
+                          <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
+                        </div>
+                      )}
+                      {ficaResult.failure_reason && ficaResult.fica_status !== 'Declined' && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                     </div>
                   </div>
                 )}

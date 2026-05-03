@@ -903,7 +903,13 @@ export default function ClientOnboardingTrust() {
                       {ficaResult.fica_status === 'Approved' ? 'Trust FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more trustees' : 'Trust FICA Verification Failed'}
                     </p>
                     {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
-                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                    {ficaResult.fica_status === 'Declined' && (
+                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
+                        <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
+                        <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
+                      </div>
+                    )}
+                    {ficaResult.failure_reason && ficaResult.fica_status !== 'Declined' && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                   </div>
                 </div>
               )}
@@ -1100,4 +1106,3 @@ export default function ClientOnboardingTrust() {
     </div>
   );
 }
-
