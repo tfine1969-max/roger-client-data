@@ -371,7 +371,19 @@ export default function ClientOnboarding() {
     }
   };
 
-  const uploadedFileName = (fieldKey) => uploadedDocumentName(formData, fieldKey);
+  const uploadedFileName = (fieldKey) => {
+    const map = {
+      identity_document_uploaded: 'doc_identity',
+      identity_document_front_uploaded: 'doc_identity',
+      identity_document_back_uploaded: 'doc_identity_back',
+      proof_of_address_uploaded: 'doc_proof_of_address',
+      income_proof_uploaded: 'doc_source_of_funds',
+      existing_policies_uploaded: 'doc_existing_policies',
+      banking_proof_uploaded: 'doc_banking_proof',
+    };
+    const repoField = map[fieldKey];
+    return formData[`${fieldKey}_name`] || (repoField ? formData[`${repoField}_name`] : '') || '';
+  };
 
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
   const removeProduct = (idx) => setProductsList(prev => prev.filter((_, i) => i !== idx));
@@ -1172,6 +1184,7 @@ export default function ClientOnboarding() {
                   { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
                   { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
                   { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
+                  { key: 'banking_proof_uploaded', title: 'PROOF OF BANKING DETAILS', badge: 'OPTIONAL', desc: 'Cancelled cheque or bank-stamped letter', sub: 'Shows account holder, bank and account number' },
                 ].filter(doc => !(doc.key === 'identity_document_uploaded' && formData.identity_type === 'SA ID')).map(doc => (
                   <div key={doc.key} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start mb-2">
