@@ -1,130 +1,32 @@
 import React, { useState } from 'react';
 import { X, BookOpen } from 'lucide-react';
 
+// Personalised Client Message categories only — for use in the Personalised Message to Client section.
+// Do NOT add technical investment, income, or risk reasons here.
 const CATEGORIES = [
   {
-    name: 'Product-Level Reasons',
+    name: 'Client-Friendly',
     phrases: [
-      'Provides an appropriate balance between growth and capital preservation',
-      'Suitable for the client\'s stated investment objective',
-      'Aligns with the client\'s investment horizon',
-      'Offers flexibility in terms of contributions and withdrawals',
-      'Provides an efficient structure for long-term wealth accumulation',
-      'Enables access to professionally managed investment solutions',
-      'Provides an appropriate level of diversification within the product structure',
-      'Suitable for the client\'s liquidity requirements',
-      'Allows for ongoing portfolio management and rebalancing',
-      'Offers transparency in terms of underlying holdings and costs',
-      'Provides a scalable solution that can adapt to future financial needs',
-      'Structured to support long-term capital growth objectives',
-      'Provides access to a broad range of underlying investment options',
-      'Allows for appropriate risk management within the portfolio',
-      'Supports the client\'s overall financial planning strategy',
+      'This recommendation has been structured to align with your specific financial goals and long-term objectives.',
+      'The selected solution is designed to support your financial needs while managing risk appropriately.',
+      'The strategy reflects your investment preferences and overall financial position.',
+      'This approach ensures your portfolio remains aligned with your evolving financial objectives.',
+      'The recommendation has been tailored to suit your individual circumstances.',
+      'This solution provides a balance between growth, flexibility, and long-term sustainability.',
+      'The structure allows for ongoing management as your needs change over time.',
+      'This recommendation supports a disciplined and consistent financial planning approach.',
     ],
   },
   {
-    name: 'Fund / Portfolio Reasons',
+    name: 'Personalised Narrative',
     phrases: [
-      'Provides diversified exposure across asset classes',
-      'Managed in line with the stated investment mandate',
-      'Demonstrates consistency in investment approach',
-      'Managed by an experienced and reputable investment team',
-      'Suitable for the selected risk profile',
-      'Provides exposure to both local and/or global markets as required',
-      'Designed to optimise risk-adjusted returns',
-      'Aligns with the client\'s long-term investment objectives',
-      'Offers an appropriate balance between growth and income',
-      'Provides exposure to a range of underlying securities and sectors',
-      'Reduces concentration risk within the portfolio',
-      'Supports capital appreciation over the selected time horizon',
-      'Incorporates active or passive strategies as appropriate',
-      'Designed to perform across varying market conditions',
-      'Offers appropriate diversification across geographies and asset classes',
-    ],
-  },
-  {
-    name: 'Risk Alignment Reasons',
-    phrases: [
-      'Aligned with the client\'s conservative risk profile',
-      'Aligned with the client\'s moderate risk profile',
-      'Aligned with the client\'s aggressive growth objectives',
-      'Provides an appropriate level of volatility given the client\'s tolerance',
-      'Balances growth potential with downside risk',
-      'Suitable given the client\'s capacity for loss',
-      'Reflects the client\'s willingness to accept market fluctuations',
-      'Structured to manage risk over the long term',
-      'Provides appropriate exposure to growth assets relative to risk tolerance',
-      'Designed to minimise excessive short-term volatility',
-      'Supports a disciplined approach to long-term investing',
-    ],
-  },
-  {
-    name: 'Strategy / Objective Reasons',
-    phrases: [
-      'Supports long-term wealth creation',
-      'Facilitates offshore diversification',
-      'Provides exposure to global growth opportunities',
-      'Supports capital preservation objectives',
-      'Designed to generate income where required',
-      'Protects against inflation over the long term',
-      'Aligns with retirement planning objectives',
-      'Supports education funding goals',
-      'Diversifies overall portfolio risk',
-      'Reduces reliance on a single asset class or market',
-      'Enhances long-term portfolio resilience',
-      'Provides access to international markets and currency diversification',
-      'Enables a structured and disciplined investment approach',
-      'Supports phased investment or contribution strategies',
-    ],
-  },
-  {
-    name: 'Provider / Platform Reasons',
-    phrases: [
-      'Reputable and established product provider',
-      'Strong track record in managing client assets',
-      'Offers a robust and reliable investment platform',
-      'Provides access to a wide range of investment solutions',
-      'Transparent fee structure',
-      'Strong governance and regulatory oversight',
-      'Efficient administration and reporting capabilities',
-      'Provides consolidated portfolio reporting',
-      'Offers flexibility in portfolio construction',
-      'Well-supported by industry infrastructure and services',
-    ],
-  },
-  {
-    name: 'Cost / Fee Justification',
-    phrases: [
-      'Fees are competitive relative to the services provided',
-      'Fees are reasonable given the level of management and oversight',
-      'Costs are transparent and fully disclosed to the client',
-      'The fee structure aligns with the value of advice provided',
-      'Fees are appropriate for the selected product and platform',
-      'Ongoing advice fee reflects continuous portfolio monitoring and support',
-      'Costs are justified by the expected long-term benefits',
-      'No excessive or hidden costs identified',
-      'Total cost structure is in line with industry norms',
-    ],
-  },
-  {
-    name: 'Offshore-Specific Reasons',
-    phrases: [
-      'Provides diversification outside the South African market',
-      'Reduces concentration risk to local economic conditions',
-      'Offers exposure to global growth sectors and economies',
-      'Provides currency diversification benefits',
-      'Enhances long-term return potential',
-      'Mitigates local market volatility',
-      'Supports international investment strategy',
-    ],
-  },
-  {
-    name: 'Liquidity / Structure Reasons',
-    phrases: [
-      'Suitable given the client\'s liquidity requirements',
-      'Provides access to funds when required',
-      'Aligns with expected cash flow needs',
-      'Balances liquidity with long-term growth',
+      'Based on our discussions, this recommendation reflects your preference for long-term growth and financial stability.',
+      'Taking into account your current financial position, this solution is designed to provide a structured path towards achieving your goals.',
+      'This recommendation has been carefully considered to ensure it remains aligned with your risk tolerance and future plans.',
+      'Your investment strategy has been structured to provide flexibility while maintaining a clear long-term direction.',
+      'This approach ensures that your portfolio remains aligned with both your short-term and long-term priorities.',
+      'The recommendation reflects the need to balance growth opportunities with appropriate risk management.',
+      'This solution has been selected to support your financial objectives while remaining adaptable over time.',
     ],
   },
 ];
@@ -161,7 +63,7 @@ export default function PhraseLibrary({ onSelect, onClose }) {
         <div className="flex items-center justify-between px-4 py-3 bg-navy border-b border-border shrink-0">
           <div className="flex items-center gap-2">
             <BookOpen className="w-3.5 h-3.5 text-white/70" />
-            <span className="text-[11px] font-bold text-white uppercase tracking-wider">Phrase Library</span>
+            <span className="text-[11px] font-bold text-white uppercase tracking-wider">Client Message Library</span>
           </div>
           <button
             onClick={onClose}

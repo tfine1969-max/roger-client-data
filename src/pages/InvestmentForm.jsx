@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import LibraryPickerModal from '@/components/LibraryPickerModal';
+import { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 const PROVIDER_MAP = {
   Local: {
@@ -681,18 +682,7 @@ export default function InvestmentForm() {
             </div>
 
             {/* Library button */}
-            <button
-              type="button"
-              onClick={() => setInvestmentReasonsModalOpen(true)}
-              style={{
-                background: 'none', border: '1px dashed #94a3b8',
-                borderRadius: '8px', padding: '8px 16px',
-                fontSize: 12, color: '#64748b', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6
-              }}
-            >
-              + SELECT FROM LIBRARY
-            </button>
+            <LibraryButton onOpen={() => setInvestmentReasonsModalOpen(true)} />
 
             {/* Modal */}
             <LibraryPickerModal
@@ -745,18 +735,7 @@ export default function InvestmentForm() {
               </div>
 
               {/* Library button */}
-              <button
-                type="button"
-                onClick={() => setIncomeDrawdownReasonsModalOpen(true)}
-                style={{
-                  background: 'none', border: '1px dashed #94a3b8',
-                  borderRadius: '8px', padding: '8px 16px',
-                  fontSize: 12, color: '#64748b', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6
-                }}
-              >
-                + SELECT FROM LIBRARY
-              </button>
+              <LibraryButton onOpen={() => setIncomeDrawdownReasonsModalOpen(true)} />
 
               {/* Modal */}
               <LibraryPickerModal

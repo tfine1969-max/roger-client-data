@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
 import LibraryPickerModal from '@/components/LibraryPickerModal';
+import { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 const updateProductTypes = async (invList, proposalId) => {
   const selectedTypes = new Set();
@@ -293,19 +294,9 @@ export default function Step02Recommendations({ proposalId, investments, riskPro
         </div>
 
         {/* Library button */}
-        <button
-          type="button"
-          onClick={() => setPersonalisedReasonsModalOpen(true)}
-          style={{
-            background: 'none', border: '1px dashed #94a3b8',
-            borderRadius: '8px', padding: '8px 16px',
-            fontSize: 12, color: '#64748b', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6,
-            marginBottom: 12
-          }}
-        >
-          + SELECT FROM LIBRARY
-        </button>
+        <div style={{ marginBottom: 12 }}>
+          <LibraryButton onOpen={() => setPersonalisedReasonsModalOpen(true)} />
+        </div>
 
         {/* Modal */}
         <LibraryPickerModal
