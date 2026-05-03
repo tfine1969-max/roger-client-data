@@ -363,14 +363,14 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                 </td>
                 <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
                   {uploaded
-                    ? <span style={badgeUploaded}>✓ Uploaded</span>
-                    : <span style={badgeMissing}>✗ Missing</span>
+                    ? <span style={badgeUploaded}>Uploaded</span>
+                    : <span style={badgeMissing}>Missing</span>
                   }
                 </td>
                 <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   {uploaded ? (
                     <button onClick={() => window.open(fileUrl, '_blank')} style={btnDownload}>
-                      ↓ View / Download
+                      View / Download
                     </button>
                   ) : (
                     <span style={{ fontSize: 11, color: '#cbd5e1' }}>Not uploaded</span>
@@ -423,11 +423,11 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#9f1239' }}>Required</span>
               </td>
               <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                <span style={badgeUploaded}>âœ“ Uploaded</span>
+                <span style={badgeUploaded}>Uploaded</span>
               </td>
               <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                 <button onClick={() => window.open(doc.fileUrl, '_blank')} style={btnDownload}>
-                  â†“ View / Download
+                      View / Download
                 </button>
               </td>
             </tr>
@@ -481,14 +481,14 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
               </td>
               <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
                 {doc.statusOverride === 'uploaded'
-                  ? <span style={badgeUploaded}>✓ Uploaded</span>
-                  : <span style={badgeMissing}>✗ Missing</span>
+                  ? <span style={badgeUploaded}>Uploaded</span>
+                  : <span style={badgeMissing}>Missing</span>
                 }
               </td>
               <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                 {doc.fileUrl ? (
                   <button onClick={() => window.open(doc.fileUrl, '_blank')} style={btnDownload}>
-                    ↓ View / Download
+                      View / Download
                   </button>
                 ) : (
                   <span style={{ fontSize: 11, color: '#cbd5e1' }}>Not available</span>
@@ -537,11 +537,11 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                       <span style={{ fontSize: 11, color: '#64748b' }}>Optional</span>
                     </td>
                     <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                      <span style={badgeUploaded}>✓ Uploaded</span>
+                      <span style={badgeUploaded}>Uploaded</span>
                     </td>
                     <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button onClick={() => window.open(doc.url, '_blank')} style={btnDownload}>
-                        ↓ View / Download
+                      View / Download
                       </button>
                     </td>
                   </tr>
@@ -566,3 +566,5 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     </div>
   );
 }
+
+
