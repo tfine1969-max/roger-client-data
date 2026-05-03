@@ -57,7 +57,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
     const fy = H - 10;
     doc.setDrawColor(...border); doc.line(M, fy-3, W-M, fy-3);
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, fy);
+    doc.text('WealthWorks FSP 28337  |  Wealthworks Investments FSP 45624', M, fy);
     doc.text(String(pn), W/2, fy, {align:'center'});
     doc.text('Initials: ___________', W-M, fy, {align:'right'});
   };
@@ -225,8 +225,6 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   doc.addPage(); pageNum += 1; y = 28; addLogoTopRight();
   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...navy);
   doc.text('RECORD OF ADVICE (ROA)', M, y); y += 6;
-  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
-  doc.text('Wealth Works (Pty) Ltd FSP 28337  |  Wealthworks Investments (Pty) Ltd FSP 45624', M, y); y += 8;
   doc.setDrawColor(...navy); doc.line(M, y, W-M, y); y += 8;
 
   // Section 1
@@ -242,11 +240,6 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   else if (rawType==='company'||rawType==='entity') clientTypeDisplay='Company';
   else if (rawType&&rawType!=='natural_person'&&rawType!=='individual') clientTypeDisplay=rawType.charAt(0).toUpperCase()+rawType.slice(1);
   dataRow('Client Type', clientTypeDisplay);
-  y += 2;
-  roaPb(30);
-  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
-  doc.text('FICA Verification Checklist', M, y); y += 5;
-  ['Identity Verified','Proof of Address Verified','Source of Funds Confirmed','Beneficial Ownership Verified (if applicable)'].forEach(item => checkBox(item, false));
   y += 2; hRule();
 
   // Section 2
