@@ -151,17 +151,22 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   };
 
   const addFooter = (pn) => {
-    const fy = H-10;
-    doc.setDrawColor(...border); doc.line(M,fy-4,W-M,fy-4);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text('WealthWorks (Pty) Ltd FSP 28337 | Wealthworks Investments (Pty) Ltd FSP 45624 | FICA / AML reviewed | Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', M, fy);
-    doc.text(String(pn), W/2, fy, {align:'center'});
+    const fy = H - 8;
+    doc.setDrawColor(...border); doc.line(M, fy - 6, W - M, fy - 6);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(5.5); doc.setTextColor(...muted);
+    // Line 1: company names left, page number centre, initials right
+    doc.text('WealthWorks (Pty) Ltd  FSP 28337  |  Wealthworks Investments (Pty) Ltd  FSP 45624', M, fy - 2);
+    doc.text(String(pn), W / 2, fy - 2, { align: 'center' });
     if (signatureData?.clientInitials) {
-      doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
-      doc.text(`Initials: ${signatureData.clientInitials}`, W-M, fy, {align:'right'});
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(...navy);
+      doc.text(`Initials: ${signatureData.clientInitials}`, W - M, fy - 2, { align: 'right' });
     } else {
-      doc.text('Initials: ___________', W-M, fy, {align:'right'});
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(...muted);
+      doc.text('Initials: ___________', W - M, fy - 2, { align: 'right' });
     }
+    // Line 2: compliance text centred
+    doc.setFontSize(5); doc.setTextColor(...muted);
+    doc.text('FICA / AML reviewed  |  Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', W / 2, fy + 2, { align: 'center' });
   };
 
   // Helper: draw client signature block (image + date) or blank sign line
@@ -296,16 +301,16 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.line(M, 34, M+20, 34); doc.setLineWidth(0.2);
 
   y = 58;
-  // Title
+  // Title — centred
   doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(...navy);
-  doc.text('Financial Strategy', M, y); y+=13;
-  doc.text('& Recommendation Report', M, y); y+=12;
+  doc.text('Financial Strategy', W/2, y, {align:'center'}); y+=13;
+  doc.text('& Recommendation Report', W/2, y, {align:'center'}); y+=12;
 
-  // Prepared for
+  // Prepared for — centred
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...muted);
-  doc.text('Prepared for', M, y); y+=9;
+  doc.text('Prepared for', W/2, y, {align:'center'}); y+=9;
   doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...navy);
-  doc.text(clientName, M, y); y+=18;
+  doc.text(clientName, W/2, y, {align:'center'}); y+=18;
 
   // Metadata card
   const metaRows=[
@@ -315,16 +320,16 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     ['RISK PROFILE', riskProfile],
     ['TIME HORIZON', timeHorizon],
   ];
-  const cardX=M, cardW=95, cardPad=6;
+  const cardW=120, cardX=(W-cardW)/2, cardPad=6;
   const cardH = metaRows.length * 11 + cardPad * 2 + 4;
   const cardY = y;
   doc.setDrawColor(...border); doc.setFillColor(...light);
   doc.roundedRect(cardX, cardY, cardW, cardH, 3, 3, 'FD');
   let cy = cardY + cardPad + 5;
   metaRows.forEach(([label, value]) => {
-    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...navy);
     doc.text(label, cardX+cardPad, cy);
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...navy);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...blue);
     doc.text(String(value), cardX+cardW-cardPad, cy, {align:'right'});
     cy += 11;
   });
@@ -347,35 +352,30 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.text('EXECUTIVE SUMMARY', M, y); y+=3;
   doc.setDrawColor(...blue); doc.line(M, y, M+50, y); y+=8;
 
-  // Left column width and right column start
-  const lw = 95, rw = 70, rx = W-M-rw;
-
-  // Left: intro paragraph
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
+  // Full-width intro paragraph
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...black);
   const summaryText = `This report sets out ${scopeText} aligned to the client's stated financial objectives, assessed risk profile and investment horizon. The recommended strategy is designed to balance growth, liquidity and risk management within a clear advice framework.`;
-  const summaryLines = doc.splitTextToSize(summaryText, lw-4);
-  let ly = y;
-  summaryLines.forEach(l => { doc.text(l, M, ly); ly+=4.5; });
+  const summaryLines = doc.splitTextToSize(summaryText, CW);
+  summaryLines.forEach(l => { doc.text(l, M, y); y+=5.5; });
+  y += 8;
 
-  // Right column: Client Snapshot cards
-  let ry = y;
+  // Snap cards in ONE ROW under the intro
   const snapItems = [
     ['RISK PROFILE', riskProfile],
     ['TIME HORIZON', timeHorizon],
     ['PRIMARY OBJECTIVE', advisoryNeeds.length>0 ? advisoryNeeds[0] : 'Growth + Income']
   ];
-  snapItems.forEach(([label, value]) => {
-    const snapH = 22;
+  const snapW = (CW - 8) / 3, snapH = 24;
+  snapItems.forEach(([label, value], si) => {
+    const sx = M + si * (snapW + 4);
     doc.setDrawColor(...border); doc.setFillColor(...light);
-    doc.roundedRect(rx, ry, rw, snapH, 2, 2, 'FD');
+    doc.roundedRect(sx, y, snapW, snapH, 2, 2, 'FD');
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text(label, rx+5, ry+7);
+    doc.text(label, sx+5, y+8);
     doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy);
-    doc.text(String(value), rx+5, ry+17);
-    ry += snapH + 4;
+    doc.text(String(value), sx+5, y+19);
   });
-
-  y = Math.max(ly, ry) + 10;
+  y += snapH + 10;
 
   // Strategy focus heading
   doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...blue);
@@ -412,10 +412,10 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   if (advisoryNeeds.length>0) {
     y+=4;
     doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...blue);
-    doc.text('ADVISORY NEEDS IDENTIFIED', M, y); y+=5;
+    doc.text('ADVISORY NEEDS IDENTIFIED', M, y); y+=6;
     advisoryNeeds.forEach(n => {
-      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
-      doc.text(`- ${n}`, M, y); y+=5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...black);
+      doc.text(`- ${n}`, M, y); y+=6;
     });
   }
   addFooter(pageNum);
@@ -451,7 +451,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
   doc.roundedRect(M, y, colW2, leftCardH, 3, 3, 'FD');
   doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('CLIENT DETAILS - FICA / AML STATUS', M+5, y+8);
+  doc.text('CLIENT DETAILS', M+5, y+8);
   doc.setDrawColor(...border); doc.line(M+5, y+10, M+colW2-5, y+10);
   let lcy = y+18;
   ldRows.forEach(([label, value]) => {
@@ -469,18 +469,15 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   const riskCardH = 52;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
   doc.roundedRect(col2x, rcy, colW2, riskCardH, 3, 3, 'FD');
-  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('RISK PROFILE ASSESSMENT', col2x+5, rcy+8);
-  doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
-  // Risk badge
-  doc.setFillColor(...blue); doc.roundedRect(col2x+5, rcy+14, 30, 9, 2, 2, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(255,255,255);
-  doc.text(riskProfile.toUpperCase(), col2x+20, rcy+20, {align:'center'});
+  // Risk badge (no header)
+  doc.setFillColor(...blue); doc.roundedRect(col2x+5, rcy+8, 35, 10, 2, 2, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+  doc.text(riskProfile.toUpperCase(), col2x+22, rcy+15, {align:'center'});
   // Description
   doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...black);
   const riskDesc = `Balanced exposure to growth assets with controlled volatility. The client accepts moderate market fluctuations in pursuit of the stated objectives.`;
   const rdlines = doc.splitTextToSize(riskDesc, colW2-10);
-  rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+28+(i*4)));
+  rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+24+(i*4)));
   rcy += riskCardH + 6;
 
   // FICA & AML Compliance card
@@ -516,8 +513,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   ['Tolerance for investment volatility','Investment time horizon and objectives',
    'Liquidity requirements','Reaction to market downturns','Investment knowledge and experience',
   ].forEach(b => {
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black);
-    doc.text(`- ${b}`, M+3, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...black);
+    doc.text(`- ${b}`, M+3, y); y+=6;
   });
   addFooter(pageNum);
 
@@ -560,13 +557,13 @@ export default async function generateProposalPdf(proposal, investments = [], ri
         const isOffshore = String(inv.jurisdiction||'').toLowerCase().includes('off')||(inv.currency&&inv.currency!=='ZAR'&&inv.currency!=='R');
 
         // Investment Recommendation header bar
-        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-        doc.text('INVESTMENT RECOMMENDATION', M+4, y+6);
-        doc.setDrawColor(...border); doc.line(M, y+8, W-M, y+8);
-        y+=12;
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...blue);
+        doc.text('INVESTMENT RECOMMENDATION', M+4, y+8);
+        doc.setDrawColor(...border); doc.line(M, y+11, W-M, y+11);
+        y+=16;
 
         // Investment title
-        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...navy);
+        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...navy);
         doc.text(isOffshore?'Offshore Investment':'Local Investment', M+4, y); y+=5;
         doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
         const invSubtitle = [
@@ -608,8 +605,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
           const funds = inv.underlying_funds;
           const pct = Math.round(100/funds.length);
           funds.forEach(fund => {
-            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...black);
-            doc.text(fund, M+4, y); y+=4;
+            doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...black);
+            doc.text(fund, M+4, y); y+=5;
             // Bar background
             doc.setFillColor(...light); doc.rect(M+4, y, CW-8, 5, 'F');
             // Bar fill
@@ -895,7 +892,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
       doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
-      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      body(`This Annexure forms an integral part of the Investment Management Mandate entered into between ${clientName} ("the Client") and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").`);
       spacer(4);
       [['APPLICABILITY','This Annexure applies where the Client\'s investments are managed through model portfolios, discretionary portfolios, or similar managed investment solutions where the FSP exercises full discretionary authority over the selection and management of underlying investments.'],
        ['1. SCOPE OF DISCRETIONARY MANAGEMENT','The FSP is authorised to manage the Client\'s investment portfolio on a discretionary basis within a model portfolio structure.'],
@@ -904,14 +901,14 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(4); h3('4. PORTFOLIO MANAGEMENT FEE'); spacer(4);
       annexureAInvs.forEach(inv => {
-        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
-        doc.text(fmtInvName(inv), M, y); y+=6;
+        pb(16); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=8;
         table([
           ...recurringRows(inv),
           ['Portfolio Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
           ['Annual Advice Fee (% per annum)', fmtPct(inv.annual_advice_fee_percent||0)],
           ['Platform / Administration Fee (% per annum)', fmtPct(inv.platform_fee_percent||0)],
-        ]); spacer(4);
+        ]); spacer(8);
       });
       [['5. REMUNERATION AND DISCLOSURE','The FSP confirms that all fees are disclosed in the Record of Advice and that no undisclosed commissions or incentives are received.'],
        ['6. RISK DISCLOSURE','The Client acknowledges that portfolio values may fluctuate due to market conditions, capital loss may occur, returns are not guaranteed, and past performance is not indicative of future performance.'],
@@ -940,7 +937,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
       doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
-      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      body(`This Annexure forms an integral part of the Investment Management Mandate entered into between ${clientName} ("the Client") and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").`);
       spacer(4);
       [['APPLICABILITY','This Annexure applies where the Client invests in Collective Investment Schemes (Unit Trusts), Linked Investment Service Provider (LISP) platforms, Endowment policies, or Retirement products (including Retirement Annuities, Preservation Funds, and Living Annuities).'],
        ['1. SCOPE OF DISCRETIONARY MANAGEMENT','The FSP is authorised to manage the Client\'s investments within collective investment and platform-based structures on a discretionary basis, including investments held via unit trust portfolios, platform-based investment accounts, and wrapper products such as endowments and retirement vehicles.'],
@@ -949,15 +946,15 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(4); h3('4. FEES AND COST STRUCTURE'); spacer(4);
       annexureBInvs.forEach(inv => {
-        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
-        doc.text(fmtInvName(inv), M, y); y+=6;
+        pb(16); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=8;
         table([
           ...recurringRows(inv),
           ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
           ['Performance Fee (%)', fmtPct(inv.performance_fee_percent||0)],
           ['Hurdle Rate (%)', fmtPct(inv.hurdle_rate_percent||0)],
           ['Platform / Administration Fee (% per annum)', fmtPct(inv.platform_fee_percent||0)],
-        ]); spacer(4);
+        ]); spacer(8);
       });
       [['5. COST DISCLOSURE','The Client acknowledges that fees may be charged at multiple levels, total investment costs may vary depending on fund selection, and detailed cost disclosures are provided in product documentation.'],
        ['6. TAX CONSIDERATIONS','The Client acknowledges that switching between funds may trigger tax events, tax treatment depends on the investment structure, and the FSP does not provide tax advice unless explicitly agreed.'],
@@ -987,7 +984,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...muted);
       doc.text('ADDENDUM TO INVESTMENT MANAGEMENT MANDATE',W/2,y,{align:'center'}); y+=12;
       thinRule();
-      body('This Annexure forms an integral part of the Investment Management Mandate entered into between the Client and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").');
+      body(`This Annexure forms an integral part of the Investment Management Mandate entered into between ${clientName} ("the Client") and Wealthworks Investments (Pty) Ltd (FSP No. 45624) ("the FSP").`);
       spacer(4);
       [['APPLICABILITY','This Annexure applies where the Client invests in alternative, non-traditional, or illiquid investment structures, including but not limited to: private equity investments, real estate funds or property syndications, hedge funds, structured products, unlisted securities, and offshore or specialist investment vehicles.'],
        ['1. NATURE OF INVESTMENTS','The Client acknowledges that investments under this Annexure are typically long-term in nature, may not be readily realisable, may not have an active or liquid secondary market, and may be subject to complex structures and underlying agreements.'],
@@ -996,8 +993,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
       ].forEach(([h,t])=>{ pb(20); h3(h); spacer(2); body(t); spacer(4); });
       spacer(4); h3('4. FEES AND COST STRUCTURE'); spacer(4);
       annexureCInvs.forEach(inv => {
-        pb(12); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
-        doc.text(fmtInvName(inv), M, y); y+=6;
+        pb(16); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
+        doc.text(fmtInvName(inv), M, y); y+=8;
         table([
           ...recurringRows(inv),
           ['Management Fee (% per annum)', fmtPct(inv.management_fee_percent||0)],
@@ -1007,7 +1004,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
           ['Raising Fee (%)', fmtPct(inv.raising_fee_percent||0)],
           ['Carry (%)', fmtPct(inv.carry_fee_percent||0)],
           ['Carry Hurdle Rate (%)', fmtPct(inv.carry_hurdle_percent||0)],
-        ]); spacer(4);
+        ]); spacer(8);
       });
       [['5. LIQUIDITY AND INVESTMENT TERM','The Client acknowledges that investments may be subject to lock-in periods, early redemption may not be possible, and exit opportunities may be limited or conditional.'],
        ['6. VALUATION','The Client acknowledges that valuations may not be frequent, pricing may be based on estimates or periodic reporting, and market values may not be readily available.'],
