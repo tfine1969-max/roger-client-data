@@ -299,7 +299,7 @@ export default function ClientOnboardingTrust() {
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
         updatedChecks.push({ ...trustee, id_verified: idPass, address_verified: addressVerified, document_authenticated: docAuthenticated, document_issue: !!docIsForgery, aml_clear: !amlMatch });
       }
-      const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
+      const ficaStatus = !allPass ? 'Referred' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
       const rmcpResult = calculateRmcpScore({
         formData,
@@ -311,10 +311,10 @@ export default function ClientOnboardingTrust() {
         .filter(t => !t.id_verified || !t.aml_clear)
         .map(t => `${[t.first_name, t.last_name].filter(Boolean).join(' ') || 'Trustee'}: ${!t.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
       const failureReason = failedTrustees.join('; ');
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
+      const finalResult = { fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
-        fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
         fica_risk_band: rmcpResult.band,
         entity_aml_clear: !anyFlag,
         trustees_json: JSON.stringify(updatedChecks),
@@ -325,12 +325,12 @@ export default function ClientOnboardingTrust() {
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
-      if (ficaStatus === 'Approved') toast.success('Trust FICA Approved — ' + ficaRef);
-      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Advisor notified.');
-      else toast.error('FICA Declined — please contact your advisor.');
+      if (ficaStatus === 'Approved') toast.success('Trust verification completed - ' + ficaRef);
+      else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } catch (err) {
-      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
-      toast.error('Verification error — please try again');
+      const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: err.message || 'Verification service unavailable' });
+      toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } finally { setFicaRunning(false); }
   };
 
@@ -381,12 +381,13 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 5) {
       if (!ficaResult) {
-        toast.warning('FICA verification not yet run — you may continue but verification will be required later.');
-      } else if (ficaResult.fica_status === 'Declined') {
-        toast.warning('FICA Declined — please contact your advisor.');
+        toast.info('Verification will continue in the background. You can keep completing onboarding.');
+        runTrustFicaVerification();
       }
       data = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         entity_aml_clear: ficaResult?.fica_status !== 'Referred',
@@ -473,6 +474,8 @@ export default function ClientOnboardingTrust() {
     } else if (currentStep === 5) {
       data = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
@@ -517,7 +520,7 @@ export default function ClientOnboardingTrust() {
         roleChecks: trustees,
       });
       await base44.entities.Clients.update(clientId, {
-        client_status: 'Onboarded', onboarding_complete: true,
+        client_status: 'Under Review', onboarding_complete: true,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         fica_risk_band: rmcpResult.band,
@@ -900,16 +903,16 @@ export default function ClientOnboardingTrust() {
                   <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
                   <div>
                     <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                      {ficaResult.fica_status === 'Approved' ? 'Trust FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more trustees' : 'Trust FICA Verification Failed'}
+                      {ficaResult.fica_status === 'Approved' ? 'Trust verification completed' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more trustees' : 'Trust Verification routed for review'}
                     </p>
                     {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
-                    {ficaResult.fica_status === 'Declined' && (
+                    {false && ficaResult.fica_status === 'Declined' && (
                       <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
                         <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
                         <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
                       </div>
                     )}
-                    {ficaResult.failure_reason && ficaResult.fica_status !== 'Declined' && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                   </div>
                 </div>
               )}
@@ -1106,3 +1109,7 @@ export default function ClientOnboardingTrust() {
     </div>
   );
 }
+
+
+
+

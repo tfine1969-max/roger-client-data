@@ -480,10 +480,12 @@ export default function ClientOnboarding() {
           faceMatchPassed: false,
           addressVerified: false,
         });
-        const result = { fica_status: 'Declined', risk_band: 'High', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'Home Affairs ID verification failed' };
+        const result = { fica_status: 'Referred', risk_band: 'High', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: 'Home Affairs ID verification failed' };
         setFicaResult(result);
         await base44.entities.Clients.update(clientId, {
-          fica_status: 'Declined',
+          fica_status: 'Referred',
+          verification_status: 'Manual Review',
+          advisor_review_required: true,
           fica_reference: ref,
           fica_risk_band: rmcpResult.band,
           fica_verified_at: result.verified_at,
@@ -496,7 +498,7 @@ export default function ClientOnboarding() {
           ...buildRmcpUpdate(rmcpResult),
         });
         setFicaRunning(false);
-        toast.error('FICA Declined — ID could not be verified');
+        toast.info('Verification submitted. Your advisor will review anything that needs attention.');
         return;
       }
       setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: 'running' } }));
@@ -570,8 +572,8 @@ export default function ClientOnboarding() {
       });
       setFicaChecks(prev => ({ ...prev, risk_score: { ...prev.risk_score, status: 'pass', note: rmcpResult.band + ' risk (' + rmcpResult.score + ' pts)' } }));
 
-      let ficaStatus = docIsForgery ? 'Declined' : amlMatch ? 'Referred' : 'Approved';
-      if (rmcpResult.band === 'Prohibited') ficaStatus = 'Declined';
+      let ficaStatus = docIsForgery ? 'Referred' : amlMatch ? 'Referred' : 'Approved';
+      if (rmcpResult.band === 'Prohibited') ficaStatus = 'Referred';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
 
       const failureReason = docIsForgery
@@ -586,6 +588,8 @@ export default function ClientOnboarding() {
 
       const updateData = {
         fica_status: ficaStatus,
+        verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review',
+        advisor_review_required: ficaStatus !== 'Approved',
         fica_reference: ficaRef,
         fica_risk_band: rmcpResult.band,
         fica_verified_at: finalResult.verified_at,
@@ -602,16 +606,16 @@ export default function ClientOnboarding() {
         const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT — Prohibited client: ${formData.first_name} ${formData.last_name}` :
                             rmcpResult.band === 'High' ? `EDD Required — High risk client: ${formData.first_name} ${formData.last_name}` :
                             `FICA ${ficaStatus} — ${formData.first_name} ${formData.last_name}`;
-        const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}\n\nFICA Status: ${ficaStatus}\nFICA Reference: ${ficaRef}\nRMCP Risk Band: ${rmcpResult.band}\n\nRISK SCORE BREAKDOWN:\n${scoreSummary}\n\nCLIENT DETAILS:\nID: ${formData.sa_id_number || 'N/A'}\nPEP Status: ${formData.pep_status}\nFATCA US Person: ${formData.us_person_fatca}\nTax Residency: ${formData.tax_residency}\nMonthly Investable: ${formData.monthly_investable_surplus}\nAdvisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}\n\n${rmcpResult.band === 'Prohibited' ? 'ACTION: This client cannot be onboarded. Decline and file as suspected ML/TF with FIC.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}\n\nLog in to the WealthWorks Advisor Portal to manage this client.`;
+        const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}\n\nFICA Status: ${ficaStatus}\nFICA Reference: ${ficaRef}\nRMCP Risk Band: ${rmcpResult.band}\n\nRISK SCORE BREAKDOWN:\n${scoreSummary}\n\nCLIENT DETAILS:\nID: ${formData.sa_id_number || 'N/A'}\nPEP Status: ${formData.pep_status}\nFATCA US Person: ${formData.us_person_fatca}\nTax Residency: ${formData.tax_residency}\nMonthly Investable: ${formData.monthly_investable_surplus}\nAdvisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}\n\n${rmcpResult.band === 'Prohibited' ? 'ACTION: Manual compliance review required before internal approval.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}\n\nLog in to the WealthWorks Advisor Portal to manage this client.`;
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: emailSubject, body: emailBody });
       }
 
-      if (ficaStatus === 'Approved') toast.success('FICA Approved — Reference: ' + ficaRef);
-      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Your advisor has been notified.');
-      else toast.error('FICA Declined — please contact your advisor.');
+      if (ficaStatus === 'Approved') toast.success('Verification completed - Reference: ' + ficaRef);
+      else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } catch (err) {
-      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
-      toast.error('Verification error — please try again');
+      const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: err.message || 'Verification service unavailable' });
+      toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } finally {
       setFicaRunning(false);
     }
@@ -691,9 +695,14 @@ export default function ClientOnboarding() {
         pep_explanation: formData.pep_explanation,
       };
     } else if (currentStep === 4) {
-      if (!ficaResult) { toast.error('Please complete FICA verification before continuing'); return; }
+      if (!ficaResult) {
+        toast.info('Verification will continue in the background. You can keep completing onboarding.');
+        runFicaVerification();
+      }
       stepData = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_risk_band: ficaResult?.risk_band || '',
         fica_verified_at: ficaResult?.verified_at || '',
@@ -793,6 +802,8 @@ export default function ClientOnboarding() {
     } else if (currentStep === 4) {
       stepData = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_risk_band: ficaResult?.risk_band || '',
         fica_verified_at: ficaResult?.verified_at || '',
@@ -837,7 +848,7 @@ export default function ClientOnboarding() {
     setIsSubmitting(true);
     try {
       await base44.entities.Clients.update(clientId, {
-        client_status: 'Onboarded',
+        client_status: 'Under Review',
         onboarding_complete: true,
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
@@ -1402,7 +1413,7 @@ export default function ClientOnboarding() {
                     <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
                     <div className="flex-1">
                       <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                        {ficaResult.fica_status === 'Approved' ? 'FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'FICA Verification Failed'}
+                        {ficaResult.fica_status === 'Approved' ? 'Verification completed' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'Verification routed for review'}
                       </p>
                       {ficaResult.fica_reference && (
                         <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
@@ -1421,14 +1432,14 @@ export default function ClientOnboarding() {
                         </div>
                       )}
                       {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 5.</p>}
-                      {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">A PEP or sanctions match was detected. Your advisor has been notified and will apply Enhanced Due Diligence.</p>}
-                      {ficaResult.fica_status === 'Declined' && (
+                      {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">Your information has been received and will be reviewed internally. No further action is required at this stage.</p>}
+                      {false && ficaResult.fica_status === 'Declined' && (
                         <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
                           <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
                           <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
                         </div>
                       )}
-                      {ficaResult.failure_reason && ficaResult.fica_status !== 'Declined' && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                      {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                     </div>
                   </div>
                 )}
@@ -1750,3 +1761,7 @@ export default function ClientOnboarding() {
     </div>
   );
 }
+
+
+
+

@@ -256,9 +256,11 @@ export default function ClientOnboardingCompany() {
         const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
         const failureReason = 'CIPC registration could not be verified';
         const rmcpResult = calculateRmcpScore({ formData, clientType: 'company', cipcVerified: false });
-        setFicaResult({ fica_status: 'Declined', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult });
+        setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult });
         await base44.entities.Clients.update(clientId, {
-          fica_status: 'Declined',
+          fica_status: 'Referred',
+          verification_status: 'Manual Review',
+          advisor_review_required: true,
           fica_reference: ref,
           cipc_verified: false,
           fica_risk_band: rmcpResult.band,
@@ -266,7 +268,7 @@ export default function ClientOnboardingCompany() {
           fica_checks_json: JSON.stringify({ cipc: { status: 'fail', reason: failureReason } }),
           ...buildRmcpUpdate(rmcpResult),
         });
-        setFicaRunning(false); toast.error('FICA Declined — CIPC registration not verified'); return;
+        setFicaRunning(false); toast.info('Verification submitted. Your advisor will review anything that needs attention.'); return;
       }
       let allPass = true, anyFlag = false;
       const updatedChecks = [];
@@ -323,7 +325,7 @@ export default function ClientOnboardingCompany() {
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
         updatedChecks.push({ ...dir, id_verified: idPass, address_verified: addressVerified, document_authenticated: docAuthenticated, document_issue: !!docIsForgery, aml_clear: !amlMatch });
       }
-      const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
+      const ficaStatus = !allPass ? 'Referred' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
       const rmcpResult = calculateRmcpScore({
         formData,
@@ -336,10 +338,10 @@ export default function ClientOnboardingCompany() {
         .filter(d => !d.id_verified || !d.aml_clear)
         .map(d => `${[d.first_name, d.last_name].filter(Boolean).join(' ') || 'Director'}: ${!d.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
       const failureReason = failedDirectors.join('; ');
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
+      const finalResult = { fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
-        fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
         fica_risk_band: rmcpResult.band,
         cipc_verified: cipcPass, entity_aml_clear: !anyFlag,
         directors_json: JSON.stringify(updatedChecks),
@@ -350,12 +352,12 @@ export default function ClientOnboardingCompany() {
       if (ficaStatus !== 'Approved') {
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
-      if (ficaStatus === 'Approved') toast.success('Entity FICA Approved — ' + ficaRef);
-      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Advisor notified.');
-      else toast.error('FICA Declined — please contact your advisor.');
+      if (ficaStatus === 'Approved') toast.success('Entity verification completed - ' + ficaRef);
+      else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } catch (err) {
-      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
-      toast.error('Verification error — please try again');
+      const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: err.message || 'Verification service unavailable' });
+      toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } finally { setFicaRunning(false); }
   };
 
@@ -403,17 +405,19 @@ export default function ClientOnboardingCompany() {
       };
     } else if (currentStep === 5) {
       if (!ficaResult) {
-        toast.error('Please complete FICA verification before continuing');
-        return;
+        toast.info('Verification will continue in the background. You can keep completing onboarding.');
+        runEntityFicaVerification();
       }
       data = {
-        fica_status: ficaResult.fica_status,
-        fica_reference: ficaResult.fica_reference || '',
-        fica_verified_at: ficaResult.verified_at || '',
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
         cipc_verified: cipcResult?.pass || false,
-        entity_aml_clear: ficaResult.fica_status !== 'Referred',
-        home_affairs_verified: ficaResult.fica_status === 'Approved',
-        aml_pep_clear: ficaResult.fica_status !== 'Referred',
+        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
         directors_json: JSON.stringify(directors),
       };
     } else if (currentStep === 6) {
@@ -492,6 +496,8 @@ export default function ClientOnboardingCompany() {
     } else if (currentStep === 5) {
       data = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         cipc_verified: cipcResult?.pass || false,
@@ -538,7 +544,7 @@ export default function ClientOnboardingCompany() {
         roleChecks: directors,
       });
       await base44.entities.Clients.update(clientId, {
-        client_status: 'Onboarded', onboarding_complete: true,
+        client_status: 'Under Review', onboarding_complete: true,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         fica_risk_band: rmcpResult.band,
@@ -931,16 +937,16 @@ export default function ClientOnboardingCompany() {
                   <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
                   <div>
                     <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                      {ficaResult.fica_status === 'Approved' ? 'Entity FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more directors' : 'Entity FICA Verification Failed'}
+                      {ficaResult.fica_status === 'Approved' ? 'Entity verification completed' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more directors' : 'Entity Verification routed for review'}
                     </p>
                     {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
-                    {ficaResult.fica_status === 'Declined' && (
+                    {false && ficaResult.fica_status === 'Declined' && (
                       <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
                         <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
                         <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
                       </div>
                     )}
-                    {ficaResult.failure_reason && ficaResult.fica_status !== 'Declined' && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
+                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
                   </div>
                 </div>
               )}
@@ -1137,3 +1143,7 @@ export default function ClientOnboardingCompany() {
     </div>
   );
 }
+
+
+
+
