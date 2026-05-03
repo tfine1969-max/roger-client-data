@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import TopBar from '@/components/layout/TopBar';
 import InboxMetrics from '@/components/inbox/InboxMetrics';
 import InboxTable from '@/components/inbox/InboxTable';
 import NewProposalModal from '@/components/inbox/NewProposalModal';
-import { Plus, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle2, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, LogOut, ShieldCheck } from 'lucide-react';
 import { ADVISORS } from '@/lib/constants';
 
 async function checkAndSendReminders(proposals) {
@@ -38,61 +37,6 @@ async function checkAndSendReminders(proposals) {
 
     await base44.entities.Proposal.update(proposal.id, { reminder_sent: true });
   }
-}
-
-function getVerificationStatus(client) {
-  if (!client) return 'unknown';
-  const vs = (client.verification_status || '').toLowerCase().replace(/\s/g, '_');
-  const ficaStatus = client.fica_status;
-  if (ficaStatus === 'Approved' && client.onboarding_complete) return 'ready';
-  if (vs === 'manual_review' || vs === 'manual review' || ficaStatus === 'Referred') return 'manual_review';
-  if (vs === 'awaiting_documents') return 'awaiting_documents';
-  if (vs === 'pending' || (!client.onboarding_complete && (client.email || client.fica_status || client.doc_status))) return 'new';
-  if (ficaStatus === 'Approved') return 'ready';
-  return 'new';
-}
-
-function ComplianceSummaryCards({ navigate, clients }) {
-  const onboarded = clients.filter(c => c.email && (c.onboarding_complete || c.fica_status || c.doc_status));
-  const counts = {
-    new: onboarded.filter(c => getVerificationStatus(c) === 'new').length,
-    manual_review: onboarded.filter(c => getVerificationStatus(c) === 'manual_review').length,
-    awaiting_documents: onboarded.filter(c => getVerificationStatus(c) === 'awaiting_documents').length,
-    ready: onboarded.filter(c => getVerificationStatus(c) === 'ready').length,
-  };
-  const cards = [
-    { key: 'new', label: 'New Submissions', icon: FileText, color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
-    { key: 'manual_review', label: 'Manual Review Required', icon: AlertTriangle, color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
-    { key: 'awaiting_documents', label: 'Awaiting Documents', icon: Clock, color: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200' },
-    { key: 'ready', label: 'Ready for Approval', icon: CheckCircle2, color: 'text-teal', bg: 'bg-teal/10', border: 'border-teal/20' },
-  ];
-  return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-ocean" /> Compliance Review
-        </h2>
-        <button onClick={() => navigate('/compliance-review')} className="text-xs text-ocean hover:underline font-medium">
-          Open full queue →
-        </button>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {cards.map(({ key, label, icon: Icon, color, bg, border }) => (
-          <button
-            key={key}
-            onClick={() => navigate(`/compliance-review?filter=${key}`)}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded border ${bg} ${border} hover:opacity-80 transition-opacity text-center`}
-          >
-            <Icon className={`w-5 h-5 shrink-0 ${color}`} />
-            <div>
-              <p className={`text-xl font-bold ${color}`}>{counts[key]}</p>
-              <p className={`text-[10px] font-semibold ${color} opacity-80`}>{label}</p>
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function Inbox() {
@@ -143,6 +87,12 @@ export default function Inbox() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={() => navigate('/advisor-dashboard')}
+            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" /> Dashboard
+          </button>
+          <button
             onClick={() => navigate('/compliance-review')}
             className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
           >
@@ -158,9 +108,6 @@ export default function Inbox() {
       </div>
 
       <div className="flex-1 p-4 md:p-7 max-w-7xl mx-auto w-full">
-        {/* Compliance Review Dashboard Cards */}
-        <ComplianceSummaryCards navigate={navigate} clients={clients} />
-
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-medium text-navy tracking-tight">Proposal inbox</h2>
           <button

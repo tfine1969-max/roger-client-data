@@ -27,6 +27,7 @@ import ClientSign from '@/pages/ClientSign';
 import ClientDashboard from '@/pages/ClientDashboard';
 import SignProposal from '@/pages/SignProposal';
 import ProjectTracker from '@/pages/ProjectTracker';
+import AdvisorDashboard from '@/pages/AdvisorDashboard';
 import ComplianceReview from '@/pages/ComplianceReview';
 import ComplianceClientReview from '@/pages/ComplianceClientReview';
 
@@ -116,6 +117,7 @@ const AuthenticatedApp = () => {
       <Route path="/client-confirmation" element={<ProtectedClientInitRoute element={<ClientOnboardingConfirmation />} />} />
       <Route path="/client-dashboard" element={<ProtectedClientInitRoute element={<ClientDashboard />} />} />
 
+      <Route path="/advisor-dashboard" element={<ProtectedAdvisorRoute element={<AdvisorDashboard />} />} />
       <Route path="/proposals" element={<ProtectedAdvisorRoute element={<Inbox />} />} />
       <Route path="/create-proposal" element={<ProtectedAdvisorRoute element={<CreateProposal />} />} />
       <Route path="/proposal/:id" element={<ProtectedAdvisorRoute element={<ProposalDetail />} />} />
@@ -127,8 +129,6 @@ const AuthenticatedApp = () => {
       <Route path="/project-tracker" element={<ProjectTracker />} />
       <Route path="/compliance-review" element={<ProtectedAdvisorRoute element={<ComplianceReview />} />} />
       <Route path="/compliance-review/:clientId" element={<ProtectedAdvisorRoute element={<ComplianceClientReview />} />} />
-
-      <Route path="/advisor-dashboard" element={<Navigate to="/proposals" replace />} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>

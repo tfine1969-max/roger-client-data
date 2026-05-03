@@ -105,7 +105,7 @@ export default function ComplianceReview() {
       {/* Header */}
       <div className="bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/proposals')} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
+          <button onClick={() => navigate('/advisor-dashboard')} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>

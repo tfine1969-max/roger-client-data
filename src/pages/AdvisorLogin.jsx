@@ -45,7 +45,7 @@ export default function AdvisorLogin() {
       // Set advisor type
       setAdvisorUserType();
       toast.success('Welcome back!');
-      navigate('/proposals', { replace: true });
+      navigate('/advisor-dashboard', { replace: true });
     } catch (error) {
       toast.error('Login failed');
       setIsLoading(false);
