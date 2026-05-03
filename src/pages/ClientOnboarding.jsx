@@ -1110,7 +1110,7 @@ export default function ClientOnboarding() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MARITAL STATUS</Label>
-                  <Select value={formData.marital_status} onValueChange={v => handleChange('marital_status', v)}>
+                  <Select value={formData.marital_status || undefined} onValueChange={v => handleChange('marital_status', v)}>
                     <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['Single', 'Married in community', 'Married out of community', 'Divorced', 'Widowed'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
@@ -1761,7 +1761,3 @@ export default function ClientOnboarding() {
     </div>
   );
 }
-
-
-
-
