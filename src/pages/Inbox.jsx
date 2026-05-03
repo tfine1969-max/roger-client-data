@@ -81,7 +81,7 @@ function ComplianceSummaryCards({ navigate, clients }) {
           <button
             key={key}
             onClick={() => navigate(`/compliance-review?filter=${key}`)}
-            className={`flex items-center gap-3 p-3 rounded border ${bg} ${border} hover:opacity-80 transition-opacity text-left`}
+            className={`flex flex-col items-center justify-center gap-2 p-3 rounded border ${bg} ${border} hover:opacity-80 transition-opacity text-center`}
           >
             <Icon className={`w-5 h-5 shrink-0 ${color}`} />
             <div>
