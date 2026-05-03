@@ -9,7 +9,7 @@ import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
-import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const STEPS = [
@@ -29,12 +29,18 @@ const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limp
 const calcRiskScore = (fd) => {
   let s = 0;
   s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
-  s += ({ 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
-  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 })[fd.liquidity_requirement] || 0;
+  s += ({ 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
+  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 })[fd.liquidity_requirement] || 0;
   s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
   return Math.round(Math.min(10, s));
 };
 const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
+
+const normalizeRangeValue = (value) => (
+  typeof value === 'string'
+    ? value.replace(/Ã¢â‚¬â€œ|â€“|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
+    : value
+);
 
 const emptyTrustee = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -66,7 +72,12 @@ export default function ClientOnboardingTrust() {
     // Docs
     trust_deed_uploaded: false, loa_uploaded: false,
     trust_proof_of_address_uploaded: false, trust_bank_statement_uploaded: false,
-    doc_identity: '', doc_proof_of_address: '', doc_source_of_funds: '', doc_existing_policies: '',
+    doc_identity: '', doc_identity_name: '',
+    doc_proof_of_address: '', doc_proof_of_address_name: '',
+    doc_source_of_funds: '', doc_source_of_funds_name: '',
+    doc_existing_policies: '', doc_existing_policies_name: '',
+    trust_deed_uploaded_name: '', loa_uploaded_name: '',
+    trust_proof_of_address_uploaded_name: '', trust_bank_statement_uploaded_name: '',
     // KYC
     trust_purpose: '', trust_source_of_funds: [], beneficiary_declaration: '',
     entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
@@ -111,9 +122,17 @@ export default function ClientOnboardingTrust() {
           trust_proof_of_address_uploaded: c.trust_proof_of_address_uploaded || !!c.doc_proof_of_address || prev.trust_proof_of_address_uploaded,
           trust_bank_statement_uploaded: c.trust_bank_statement_uploaded || !!c.doc_source_of_funds || prev.trust_bank_statement_uploaded,
           doc_identity: c.doc_identity || prev.doc_identity,
+          doc_identity_name: c.doc_identity_name || prev.doc_identity_name,
           doc_proof_of_address: c.doc_proof_of_address || prev.doc_proof_of_address,
+          doc_proof_of_address_name: c.doc_proof_of_address_name || prev.doc_proof_of_address_name,
           doc_source_of_funds: c.doc_source_of_funds || prev.doc_source_of_funds,
+          doc_source_of_funds_name: c.doc_source_of_funds_name || prev.doc_source_of_funds_name,
           doc_existing_policies: c.doc_existing_policies || prev.doc_existing_policies,
+          doc_existing_policies_name: c.doc_existing_policies_name || prev.doc_existing_policies_name,
+          trust_deed_uploaded_name: c.trust_deed_uploaded_name || prev.trust_deed_uploaded_name,
+          loa_uploaded_name: c.loa_uploaded_name || prev.loa_uploaded_name,
+          trust_proof_of_address_uploaded_name: c.trust_proof_of_address_uploaded_name || prev.trust_proof_of_address_uploaded_name,
+          trust_bank_statement_uploaded_name: c.trust_bank_statement_uploaded_name || prev.trust_bank_statement_uploaded_name,
           trust_purpose: c.trust_purpose || prev.trust_purpose,
           trust_source_of_funds: Array.isArray(c.trust_source_of_funds)
             ? c.trust_source_of_funds
@@ -125,16 +144,16 @@ export default function ClientOnboardingTrust() {
           entity_tax_residency: c.entity_tax_residency || prev.entity_tax_residency,
           entity_fatca: c.entity_fatca || prev.entity_fatca,
           entity_pep: c.entity_pep || prev.entity_pep,
-          trust_asset_value_band: c.trust_asset_value_band || c.total_assets_band || prev.trust_asset_value_band,
-          trust_income_band: c.trust_income_band || c.gross_annual_turnover || prev.trust_income_band,
-          entity_total_liabilities: c.entity_total_liabilities || prev.entity_total_liabilities,
+          trust_asset_value_band: normalizeRangeValue(c.trust_asset_value_band || c.total_assets_band) || prev.trust_asset_value_band,
+          trust_income_band: normalizeRangeValue(c.trust_income_band || c.gross_annual_turnover) || prev.trust_income_band,
+          entity_total_liabilities: normalizeRangeValue(c.entity_total_liabilities) || prev.entity_total_liabilities,
           entity_existing_products: c.existing_products_notes || prev.entity_existing_products,
           entity_loa_uploaded: c.entity_loa_uploaded || prev.entity_loa_uploaded,
           entity_loa_authorised: c.entity_loa_authorised || prev.entity_loa_authorised,
           portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
           primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
-          time_horizon: c.time_horizon || prev.time_horizon,
-          liquidity_requirement: c.liquidity_requirement || prev.liquidity_requirement,
+          time_horizon: normalizeRangeValue(c.time_horizon) || prev.time_horizon,
+          liquidity_requirement: normalizeRangeValue(c.liquidity_requirement) || prev.liquidity_requirement,
           risk_profile: c.risk_profile || prev.risk_profile,
           advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
         }));
@@ -299,7 +318,7 @@ export default function ClientOnboardingTrust() {
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
         updatedChecks.push({ ...trustee, id_verified: idPass, address_verified: addressVerified, document_authenticated: docAuthenticated, document_issue: !!docIsForgery, aml_clear: !amlMatch });
       }
-      const ficaStatus = !allPass ? 'Declined' : anyFlag ? 'Referred' : 'Approved';
+      const ficaStatus = !allPass ? 'Referred' : anyFlag ? 'Referred' : 'Approved';
       const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
       const rmcpResult = calculateRmcpScore({
         formData,
@@ -311,10 +330,10 @@ export default function ClientOnboardingTrust() {
         .filter(t => !t.id_verified || !t.aml_clear)
         .map(t => `${[t.first_name, t.last_name].filter(Boolean).join(' ') || 'Trustee'}: ${!t.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
       const failureReason = failedTrustees.join('; ');
-      const finalResult = { fica_status: ficaStatus, fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
+      const finalResult = { fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
       setFicaResult(finalResult);
       await base44.entities.Clients.update(clientId, {
-        fica_status: ficaStatus, fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
         fica_risk_band: rmcpResult.band,
         entity_aml_clear: !anyFlag,
         trustees_json: JSON.stringify(updatedChecks),
@@ -323,14 +342,14 @@ export default function ClientOnboardingTrust() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' — ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
-      if (ficaStatus === 'Approved') toast.success('Trust FICA Approved — ' + ficaRef);
-      else if (ficaStatus === 'Referred') toast.warning('FICA Referred — EDD required. Advisor notified.');
-      else toast.error('FICA Declined — please contact your advisor.');
+      if (ficaStatus === 'Approved') toast.success('Trust verification completed - ' + ficaRef);
+      else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } catch (err) {
-      setFicaResult({ fica_status: 'Error', failure_reason: err.message || 'Verification service unavailable' });
-      toast.error('Verification error — please try again');
+      const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: err.message || 'Verification service unavailable' });
+      toast.info('Verification submitted. Your advisor will review anything that needs attention.');
     } finally { setFicaRunning(false); }
   };
 
@@ -363,9 +382,17 @@ export default function ClientOnboardingTrust() {
         trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
         trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
         doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
         doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
         doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
         doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
+        trust_deed_uploaded_name: formData.trust_deed_uploaded_name,
+        loa_uploaded_name: formData.loa_uploaded_name,
+        trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
+        trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
         ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
@@ -381,12 +408,13 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 5) {
       if (!ficaResult) {
-        toast.warning('FICA verification not yet run — you may continue but verification will be required later.');
-      } else if (ficaResult.fica_status === 'Declined') {
-        toast.warning('FICA Declined — please contact your advisor.');
+        toast.info('Verification will continue in the background. You can keep completing onboarding.');
+        runTrustFicaVerification();
       }
       data = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         entity_aml_clear: ficaResult?.fica_status !== 'Referred',
@@ -394,11 +422,11 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 6) {
       data = {
-        trust_asset_value_band: formData.trust_asset_value_band,
-        trust_income_band: formData.trust_income_band,
+        trust_asset_value_band: normalizeRangeValue(formData.trust_asset_value_band),
+        trust_income_band: normalizeRangeValue(formData.trust_income_band),
         total_assets_band: formData.trust_asset_value_band,
         gross_annual_turnover: formData.trust_income_band,
-        entity_total_liabilities: formData.entity_total_liabilities,
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
         existing_products_notes: formData.entity_existing_products,
         entity_loa_uploaded: formData.entity_loa_uploaded,
         entity_loa_authorised: formData.entity_loa_authorised,
@@ -408,7 +436,7 @@ export default function ClientOnboardingTrust() {
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
+        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
@@ -454,9 +482,17 @@ export default function ClientOnboardingTrust() {
         trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
         trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
         doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
         doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
         doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
         doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
+        trust_deed_uploaded_name: formData.trust_deed_uploaded_name,
+        loa_uploaded_name: formData.loa_uploaded_name,
+        trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
+        trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
         ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
@@ -473,6 +509,8 @@ export default function ClientOnboardingTrust() {
     } else if (currentStep === 5) {
       data = {
         fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
@@ -480,11 +518,11 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 6) {
       data = {
-        trust_asset_value_band: formData.trust_asset_value_band,
-        trust_income_band: formData.trust_income_band,
+        trust_asset_value_band: normalizeRangeValue(formData.trust_asset_value_band),
+        trust_income_band: normalizeRangeValue(formData.trust_income_band),
         total_assets_band: formData.trust_asset_value_band,
         gross_annual_turnover: formData.trust_income_band,
-        entity_total_liabilities: formData.entity_total_liabilities,
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
         existing_products_notes: formData.entity_existing_products,
         entity_loa_uploaded: formData.entity_loa_uploaded,
         entity_loa_authorised: formData.entity_loa_authorised,
@@ -493,7 +531,7 @@ export default function ClientOnboardingTrust() {
       data = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
+        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
@@ -517,7 +555,7 @@ export default function ClientOnboardingTrust() {
         roleChecks: trustees,
       });
       await base44.entities.Clients.update(clientId, {
-        client_status: 'Onboarded', onboarding_complete: true,
+        client_status: 'Under Review', onboarding_complete: true,
         fica_reference: ficaResult?.fica_reference || '',
         fica_verified_at: ficaResult?.verified_at || '',
         fica_risk_band: rmcpResult.band,
@@ -553,7 +591,7 @@ export default function ClientOnboardingTrust() {
       await base44.integrations.Core.SendEmail({
         from_name: 'WealthWorks',
         to: 'tfine1969@gmail.com',
-        subject: 'New Trust Onboarding — ' + clientName,
+        subject: 'New Trust Onboarding - ' + clientName,
         body: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
       });
       toast.success('Onboarding completed successfully');
@@ -568,13 +606,6 @@ export default function ClientOnboardingTrust() {
       <Loader2 className="w-8 h-8 animate-spin text-navy" />
     </div>
   );
-
-  const idCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200' };
-  const amlCfg = { pending: 'bg-secondary text-muted-foreground border-border', running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', flag: 'bg-amber-50 text-amber-700 border-amber-200', fail: 'bg-red-50 text-red-700 border-red-200' };
-  const idLabel = { pending: 'Pending', running: 'Running…', pass: 'ID Verified', fail: 'Failed' };
-  const amlLabel = { pending: 'Pending', running: 'Running…', pass: 'AML Clear', flag: 'Flagged — EDD', fail: 'Failed' };
-  const addressLabel = { pending: 'Address pending', running: 'Address running', pass: 'Address verified', flag: 'Address review', fail: 'Address failed' };
-  const documentLabel = { pending: 'OCR pending', running: 'OCR running', pass: 'OCR complete', flag: 'OCR review', fail: 'Doc failed' };
   const clientDisplayName = formData.entity_name || formData.email || 'Trust client';
 
   return (
@@ -583,7 +614,7 @@ export default function ClientOnboardingTrust() {
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> WEALTHWORKS.CO.ZA
         </button>
-        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 · TRUST</span>
+        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 - TRUST</span>
       </div>
 
       <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
@@ -594,7 +625,7 @@ export default function ClientOnboardingTrust() {
             <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
-                {isComplete ? '✓' : step.number}
+                {isComplete ? 'OK' : step.number}
               </span>
               {step.label}
             </button>
@@ -604,12 +635,12 @@ export default function ClientOnboardingTrust() {
 
       <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
         <div className="mb-4">
-          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 · TRUST ONBOARDING</p>
+          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 - TRUST ONBOARDING</p>
           <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
           <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
         </div>
 
-        {/* STEP 1 — Trust Details */}
+        {/* STEP 1 - Trust Details */}
         {currentStep === 1 && (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -672,7 +703,7 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 2 — Trustees */}
+        {/* STEP 2 - Trustees */}
         {currentStep === 2 && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">Add all trustees of this trust. Minimum 2 required.</p>
@@ -685,7 +716,7 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 3 — Document Upload */}
+        {/* STEP 3 - Document Upload */}
         {currentStep === 3 && (
           <div className="space-y-4">
             <div>
@@ -704,7 +735,7 @@ export default function ClientOnboardingTrust() {
                         <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                           <div className="flex items-center gap-2">
                             {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                            {formData[`${doc.key}_name`] && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={formData[`${doc.key}_name`]}>{formData[`${doc.key}_name`]}</span>}
+                            {uploadedDocumentName(formData, doc.key) && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={uploadedDocumentName(formData, doc.key)}>{uploadedDocumentName(formData, doc.key)}</span>}
                           </div>
                           <span className="text-[10px] text-ocean font-medium">Change document</span>
                         </div>
@@ -730,7 +761,7 @@ export default function ClientOnboardingTrust() {
                   const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || `Trustee ${idx + 1}`;
                   return (
                     <div key={idx} className="border border-border rounded p-3">
-                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} — {name}</p>
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} - {name}</p>
                       <div className="grid grid-cols-2 gap-3">
                         {[
                           { key: `trustee_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
@@ -792,7 +823,7 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 4 — KYC Declaration */}
+        {/* STEP 4 - KYC Declaration */}
         {currentStep === 4 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
@@ -861,66 +892,46 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 5 — FICA Verification */}
+        {/* STEP 5 - FICA Verification */}
         {currentStep === 5 && (
           <div className="space-y-4">
-            <div className="border border-border rounded p-3">
-              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TRUSTEE VERIFICATION</h3>
-              {trusteeChecks.length > 0 ? (
-                <div className="space-y-2">
-                  {trusteeChecks.map((check, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-2 border border-border rounded">
-                      <div className="flex-1 text-xs font-medium text-navy">Trustee {idx + 1} — {check.name}</div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${idCfg[check.id] || idCfg.pending}`}>{idLabel[check.id] || 'Pending'}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.address] || amlCfg.pending}`}>{addressLabel[check.address] || 'Address pending'}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.doc] || amlCfg.pending}`}>{documentLabel[check.doc] || 'OCR pending'}</span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${amlCfg[check.aml] || amlCfg.pending}`}>{amlLabel[check.aml] || 'Pending'}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">Each trustee will be verified against Home Affairs HANIS and AML/PEP/sanctions lists individually.</p>
-              )}
-            </div>
             <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between gap-3 mb-3">
                 <div>
-                  <h3 className="font-semibold text-navy text-sm">Trust FICA Verification</h3>
-                  <p className="text-[10px] text-muted-foreground">Trustee ID checks · AML/PEP per trustee · Powered by VerifyNow</p>
+                  <h3 className="font-semibold text-navy text-sm">Trust verification</h3>
+                  
                 </div>
                 {!ficaRunning && (
                   <button type="button" onClick={runTrustFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
-                    {ficaResult ? '↺ Re-verify' : '⊕ Verify trust with VerifyNow'}
+                    {ficaResult ? 'Re-submit verification' : 'Submit verification'}
                   </button>
                 )}
-                {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying trustees…</span>}
+                {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Submitting...</span>}
               </div>
-              {ficaResult && ficaResult.fica_status && (
-                <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                  <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
-                  <div>
-                    <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                      {ficaResult.fica_status === 'Approved' ? 'Trust FICA Approved' : ficaResult.fica_status === 'Referred' ? 'Referred — EDD required on one or more trustees' : 'Trust FICA Verification Failed'}
-                    </p>
-                    {ficaResult.fica_reference && <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>}
-                    {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
-                  </div>
+              <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult?.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult ? 'bg-amber-50 border-amber-200' : 'bg-secondary/50 border-border'}`}>
+                <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? 'OK' : 'i'}</span>
+                <div>
+                  <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-amber-700' : 'text-navy'}`}>
+                    {ficaResult?.fica_status === 'Approved' ? 'Verified' : ficaResult ? 'Under review by WealthWorks' : 'Ready for review'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ficaResult?.fica_status === 'Approved'
+                      ? 'Your trust verification has been completed.'
+                      : ficaResult
+                      ? 'Your trust information has been received and will be reviewed by WealthWorks. No further action is required unless your advisor contacts you.'
+                      : 'Submit this section so WealthWorks can review the required checks.'}
+                  </p>
+                  {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                 </div>
-              )}
-              {!ficaRunning && !ficaResult && (
-                <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
-                  <p>Click <strong>Verify trust with VerifyNow</strong> to run trustee checks</p>
-                </div>
-              )}
+              </div>
             </div>
             <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
-              <span className="font-semibold text-navy">FICA compliance note: </span>
-              Trust verification includes individual identity and AML/PEP screening for each trustee. WealthWorks remains the FICA Accountable Institution. Records retained 5 years minimum per FICA Section 23.
+              <span className="font-semibold text-navy">Privacy note: </span>
+              Trustee screening, AML and risk results are retained for WealthWorks internal compliance review and are not displayed as client-facing pass/fail decisions.
             </div>
           </div>
         )}
-
-        {/* STEP 6 — Financial Profile */}
+        {/* STEP 6 - Financial Profile */}
         {currentStep === 6 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
@@ -930,21 +941,21 @@ export default function ClientOnboardingTrust() {
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST ASSET VALUE BAND</Label>
                   <Select value={formData.trust_asset_value_band} onValueChange={v => handleChange('trust_asset_value_band', v)}>
                     <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{['Under R500k','R500k – R2m','R2m – R10m','R10m – R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{['Under R500k','R500k - R2m','R2m - R10m','R10m - R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TRUST INCOME BAND</Label>
                   <Select value={formData.trust_income_band} onValueChange={v => handleChange('trust_income_band', v)}>
                     <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{['Under R150,000','R150,000 – R350,000','R350,000 – R750,000','R750,000 – R1.5m','R1.5m – R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{['Under R150,000','R150,000 - R350,000','R350,000 - R750,000','R750,000 - R1.5m','R1.5m - R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL LIABILITIES</Label>
                   <Select value={formData.entity_total_liabilities} onValueChange={v => handleChange('entity_total_liabilities', v)}>
                     <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{['None','Under R500,000','R500k – R1m','R1m – R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{['None','Under R500,000','R500k - R1m','R1m - R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
@@ -980,7 +991,7 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 7 — Risk & Objectives */}
+        {/* STEP 7 - Risk & Objectives */}
         {currentStep === 7 && (
           <div className="space-y-3">
             <div className="border border-border rounded p-3">
@@ -989,8 +1000,8 @@ export default function ClientOnboardingTrust() {
                 {[
                   { field: 'portfolio_drop_response', label: 'IF PORTFOLIO FELL 20%', opts: ['Sell immediately','Hold','Buy more'] },
                   { field: 'primary_investment_objective', label: 'PRIMARY OBJECTIVE', opts: ['Capital preservation','Income generation','Moderate growth','Aggressive growth','Speculation'] },
-                  { field: 'time_horizon', label: 'TIME HORIZON', opts: ['Less than 1 year','1–3 years','3–5 years','5–10 years','10+ years'] },
-                  { field: 'liquidity_requirement', label: 'LIQUIDITY REQUIREMENT', opts: ['Immediate access required','Access within 1 year','Access within 3 years','Long-term — no immediate need'] },
+                  { field: 'time_horizon', label: 'TIME HORIZON', opts: ['Less than 1 year','1-3 years','3-5 years','5-10 years','10+ years'] },
+                  { field: 'liquidity_requirement', label: 'LIQUIDITY REQUIREMENT', opts: ['Immediate access required','Access within 1 year','Access within 3 years','Long-term - no immediate need'] },
                 ].map(({ field, label, opts }) => (
                   <div key={field}>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">{label}</Label>
@@ -1026,7 +1037,7 @@ export default function ClientOnboardingTrust() {
                     </button>
                   ))}
                 </div>
-                {profileOverridden && <p className="text-[10px] text-warn mt-1">⚠ Profile manually overridden — calculated score suggests <strong>{scoreToProfile(calcRiskScore(formData))}</strong></p>}
+                {profileOverridden && <p className="text-[10px] text-warn mt-1">Profile manually overridden - calculated score suggests <strong>{scoreToProfile(calcRiskScore(formData))}</strong></p>}
               </div>
             </div>
             <div className="border border-border rounded p-3">
@@ -1043,7 +1054,7 @@ export default function ClientOnboardingTrust() {
           </div>
         )}
 
-        {/* STEP 8 — Submit */}
+        {/* STEP 8 - Submit */}
         {currentStep === 8 && (
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
@@ -1056,7 +1067,7 @@ export default function ClientOnboardingTrust() {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: 'TRUST NAME', value: formData.entity_name },
-                { label: 'RISK PROFILE', value: formData.risk_profile || '—' },
+                { label: 'RISK PROFILE', value: formData.risk_profile || '-' },
                 { label: 'TRUSTEES VERIFIED', value: `${trustees.filter(t => t.first_name || t.last_name).length} added` },
                 { label: 'ADVISOR', value: 'Trevor Fine' },
               ].map(s => (
@@ -1072,7 +1083,7 @@ export default function ClientOnboardingTrust() {
         {/* Navigation */}
         <div className="pt-5 border-t border-border mt-5 flex gap-3">
           {currentStep > 1 && currentStep < 8 && (
-            <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">← Back</Button>
+            <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">Back</Button>
           )}
           <div className="flex-1" />
           {currentStep < 8 && (
@@ -1082,17 +1093,17 @@ export default function ClientOnboardingTrust() {
           )}
           {currentStep < 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
+              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue'}
             </Button>
           )}
           {currentStep === 7 && (
             <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
+              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit'}
             </Button>
           )}
           {currentStep === 8 && (
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
-              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done'}
             </Button>
           )}
         </div>

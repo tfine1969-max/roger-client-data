@@ -92,7 +92,7 @@ const formatTimestamp = (value) => {
     minute: '2-digit',
     hour12: false,
   }).formatToParts(d).reduce((acc, part) => ({ ...acc, [part.type]: part.value }), {});
-  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute} SAST`;
+  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute}`;
 };
 
 export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, ficaFilter = null, onClearFilter }) {
@@ -155,9 +155,9 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
 
       <div className="border border-border bg-card overflow-x-auto">
         {/* Header */}
-        <div className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_1fr_0.9fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[900px]">
-          {['Client', 'Needs Identified', 'FICA Status', 'Created', 'Updated', 'Status', ''].map((h, i) => (
-            <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors" style={{ cursor: h === 'FICA Status' ? 'pointer' : 'default' }} onClick={() => h === 'FICA Status' && setSortBy(sortBy === 'fica' ? null : 'fica')}>
+        <div className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_0.9fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[820px]">
+          {['Client', 'Needs Identified', 'FICA Status', 'Created / Updated', 'Status', ''].map((h, i) => (
+            <div key={i} className="text-[9px] font-medium tracking-[.1em] uppercase text-muted-foreground flex items-center gap-1" style={{ cursor: h === 'FICA Status' ? 'pointer' : 'default' }} onClick={() => h === 'FICA Status' && setSortBy(sortBy === 'fica' ? null : 'fica')}>
               {h}
               {h === 'FICA Status' && sortBy === 'fica' && <span>↓</span>}
             </div>
@@ -192,7 +192,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
              <div
                key={p.id}
                onClick={() => navigate(`/proposal/${p.id}/engine`)}
-               className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_1fr_0.9fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[900px]"
+               className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_0.9fr_120px] px-4 py-3.5 border-b border-border cursor-pointer hover:bg-blue-50/50 transition-colors items-center min-w-[820px]"
              >
               <div>
                 <div className="text-[13px] font-medium text-navy">{clientName}</div>
@@ -205,9 +205,15 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
                 <FicaStatusIndicator client={client} />
               </div>
 
-              <div className="text-[11px] text-muted-foreground">{formatTimestamp(client?.created_date || p.created_date)}</div>
-
-              <div className="text-[11px] text-muted-foreground">{formatTimestamp(client?.updated_date || p.updated_date)}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {(() => {
+                  const pUpdated = p.updated_date;
+                  const pCreated = p.created_date;
+                  // Use proposal updated_date if it differs from created (i.e. proposal was modified)
+                  const hasUpdate = pUpdated && pUpdated !== pCreated;
+                  return formatTimestamp(hasUpdate ? pUpdated : pCreated);
+                })()}
+              </div>
 
               <div>
                 <span style={{
@@ -241,4 +247,3 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
     </div>
   );
 }
-

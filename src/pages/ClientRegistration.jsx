@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-// ─────────────────────────────────────────────────────────────
-// 🧪 TEST MODE — Set to false before go-live
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ðŸ§ª TEST MODE - Set to false before go-live
 const TEST_MODE = true;
-// ─────────────────────────────────────────────────────────────
+const TEST_DATA_VERSION = 'Test data v2';
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const testDocUrl = (slug, doc) => `https://wealthworks.test/documents/${slug}/${doc}.pdf`;
 const makeFicaReference = (seed) => `FICA-2026-${seed}-ZA`;
@@ -214,10 +215,10 @@ const TEST_PROFILES = [
       province: 'Gauteng',
       postal_code: '2196',
       risk_profile: 'Moderate',
-      time_horizon: '5–10 years',
+      time_horizon: '5-10 years',
       advisory_needs: ['Local and offshore investments', 'Retirement planning'],
-      gross_annual_income_band: 'R750,000 – R1.5m',
-      monthly_investable_surplus: 'R15,000 – R50,000',
+      gross_annual_income_band: 'R750,000 - R1.5m',
+      monthly_investable_surplus: 'R15,000 - R50,000',
       primary_investment_objective: 'Moderate growth',
     },
   },
@@ -242,7 +243,7 @@ const TEST_PROFILES = [
       risk_profile: 'Growth',
       time_horizon: '10+ years',
       advisory_needs: ['Local and offshore investments', 'Estate planning'],
-      gross_annual_income_band: 'R750,000 – R1.5m',
+      gross_annual_income_band: 'R750,000 - R1.5m',
       monthly_investable_surplus: 'Over R50,000',
       primary_investment_objective: 'Aggressive growth',
     },
@@ -263,7 +264,7 @@ const TEST_PROFILES = [
       province: 'Gauteng',
       postal_code: '0181',
       risk_profile: 'Cautious',
-      time_horizon: '3–5 years',
+      time_horizon: '3-5 years',
       advisory_needs: ['Estate planning', 'Tax planning'],
       gross_annual_income_band: 'Over R3m',
       monthly_investable_surplus: 'Over R50,000',
@@ -304,7 +305,7 @@ const TEST_PROFILES = [
   },
   {
     label: 'Alpha Investments',
-    sub: '(Pty) Ltd · 2 directors',
+    sub: '(Pty) Ltd Â· 2 directors',
     email: 'alpha.company@test.co.za',
     mobile: '0821234567',
     onboarding: {
@@ -318,7 +319,7 @@ const TEST_PROFILES = [
       province: 'Gauteng',
       postal_code: '2196',
       risk_profile: 'Growth',
-      time_horizon: '5–10 years',
+      time_horizon: '5-10 years',
       advisory_needs: ['Local and offshore investments', 'Tax planning'],
       gross_annual_income_band: 'Over R3m',
       monthly_investable_surplus: 'Over R50,000',
@@ -331,7 +332,7 @@ const TEST_PROFILES = [
   },
   {
     label: 'Beta Holdings',
-    sub: '(Pty) Ltd · 3 directors',
+    sub: '(Pty) Ltd Â· 3 directors',
     email: 'beta.company@test.co.za',
     mobile: '0821234567',
     onboarding: {
@@ -345,7 +346,7 @@ const TEST_PROFILES = [
       province: 'Western Cape',
       postal_code: '8001',
       risk_profile: 'Moderate',
-      time_horizon: '3–5 years',
+      time_horizon: '3-5 years',
       advisory_needs: ['Local and offshore investments', 'Retirement planning', 'Tax planning'],
       gross_annual_income_band: 'Over R3m',
       monthly_investable_surplus: 'Over R50,000',
@@ -664,7 +665,7 @@ export default function ClientRegistration() {
       // TEST MODE: skip OTP for @test.co.za emails
       if (TEST_MODE && isTestEmail(formData.email)) {
         await base44.entities.Clients.update(clientId, { otp_verified: true });
-        toast.success('Test email — OTP skipped. Proceeding to onboarding.');
+        toast.success('Test email - OTP skipped. Proceeding to onboarding.');
         navigate(onboardingRoute, { replace: true });
       } else {
         toast.success('Account created. Verify your OTP to continue.');
@@ -694,16 +695,17 @@ export default function ClientRegistration() {
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-6">
         <div className="w-full max-w-lg">
 
-          {/* ── TEST MODE BANNER ── */}
+          {/* â”€â”€ TEST MODE BANNER â”€â”€ */}
           {TEST_MODE && (
             <div className="mb-4 border-2 border-amber-400 bg-amber-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">🧪</span>
-                <span className="font-bold text-amber-800 text-sm tracking-wide uppercase">TEST MODE — Remove before go-live</span>
+                <span className="text-lg">ðŸ§ª</span>
+                <span className="font-bold text-amber-800 text-sm tracking-wide uppercase">TEST MODE - Remove before go-live</span>
               </div>
               <p className="text-xs text-amber-700 mb-3">
-                Select a profile to auto-fill every onboarding step. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
+                Select from {TEST_PROFILES.length} full profiles to auto-fill every onboarding step. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
               </p>
+              <p className="text-[11px] font-semibold text-amber-800 mb-2">{TEST_DATA_VERSION}</p>
               <select
                 value={selectedTestEmail}
                 onChange={(e) => {
@@ -778,7 +780,7 @@ export default function ClientRegistration() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   required
                   className="mt-1.5 rounded-sm"
                 />
@@ -791,7 +793,7 @@ export default function ClientRegistration() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   required
                   className="mt-1.5 rounded-sm"
                 />
@@ -818,3 +820,6 @@ export default function ClientRegistration() {
     </div>
   );
 }
+
+
+

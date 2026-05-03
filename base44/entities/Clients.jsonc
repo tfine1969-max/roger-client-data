@@ -308,10 +308,26 @@
       "enum": [
         "Draft",
         "Onboarded",
-        "Active"
+        "Under Review",
+        "Active",
+        "Rejected"
       ],
       "default": "Draft",
       "description": "Client status"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Verified",
+        "Manual Review"
+      ],
+      "default": "Pending",
+      "description": "Internal verification workflow status. Clients are not blocked by this status."
+    },
+    "advisor_review_required": {
+      "type": "boolean",
+      "description": "Whether an advisor must review verification exceptions before final approval"
     },
     "doc_identity": {
       "type": "string",
@@ -375,7 +391,7 @@
         "Referred",
         "Declined"
       ],
-      "description": "FICA outcome: Approved, Referred, or Declined"
+      "description": "FICA outcome. Client-facing flow uses Approved or Referred; Declined is reserved for internal advisor rejection."
     },
     "fica_reference": {
       "type": "string",
@@ -613,3 +629,4 @@
     }
   }
 }
+

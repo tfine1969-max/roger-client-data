@@ -39,3 +39,25 @@ export const uploadOnboardingDocument = async ({ clientId, fieldKey, file }) => 
   await base44.entities.Clients.update(clientId, updateData);
   return { fileUrl, fileName: file.name, updateData, repositoryField };
 };
+
+export const fileNameFromUrl = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  try {
+    const path = value.split(/[?#]/)[0];
+    const name = path.split('/').filter(Boolean).pop() || '';
+    return decodeURIComponent(name).replace(/^[a-f0-9]{8,}_/i, '');
+  } catch {
+    return '';
+  }
+};
+
+export const uploadedDocumentName = (data, fieldKey) => {
+  const repositoryField = DOCUMENT_FIELD_MAP[fieldKey];
+  return (
+    data?.[`${fieldKey}_name`] ||
+    (repositoryField ? data?.[`${repositoryField}_name`] : '') ||
+    (repositoryField ? fileNameFromUrl(data?.[repositoryField]) : '') ||
+    fileNameFromUrl(data?.[fieldKey]) ||
+    ''
+  );
+};
