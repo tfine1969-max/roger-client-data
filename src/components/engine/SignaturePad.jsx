@@ -162,8 +162,25 @@ export default function SignaturePad({ advisorKey, signDate, onSignDateChange, o
     reader.onload = () => {
       const dataUrl = reader.result;
       setMode('draw');
-      setHasDrawn(true);
-      applySignature(dataUrl, 'draw');
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+          const pngDataUrl = canvas.toDataURL('image/png');
+          setHasDrawn(true);
+          applySignature(pngDataUrl, 'draw');
+        };
+        img.src = dataUrl;
+      } else {
+        setHasDrawn(true);
+        applySignature(dataUrl, 'draw');
+      }
     };
     reader.readAsDataURL(file);
   };

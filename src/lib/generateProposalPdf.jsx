@@ -34,6 +34,18 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   const navy=[14,65,102], ocean=[26,100,148], teal=[74,155,175], white=[255,255,255],
         muted=[138,154,170], bg=[247,249,251], border=[216,228,236], black=[30,30,30];
 
+  const imgFmt = (dataUrl) => {
+    if (!dataUrl) return 'PNG';
+    if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) return 'JPEG';
+    if (dataUrl.startsWith('data:image/gif')) return 'GIF';
+    return 'PNG';
+  };
+
+  const addSigImage = (dataUrl, x, yPos, w, h) => {
+    if (!dataUrl) return;
+    try { doc.addImage(dataUrl, imgFmt(dataUrl), x, yPos, w, h); } catch { /* skip if image corrupt */ }
+  };
+
   const addLogoTopRight = () => {
     doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
     doc.text('wealthworks', W-M, 12, {align:'right'});
@@ -429,7 +441,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   dataRow('Date', signDate);
   y += 6;
   if (proposal.advisor_signature_type==='draw' && proposal.advisor_signature_data) {
-    roaPb(25); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,60,18); y += 22;
+    roaPb(25); addSigImage(proposal.advisor_signature_data,M,y,60,18); y += 22;
   } else if (proposal.advisor_signature_type==='type' && proposal.advisor_signature_data) {
     roaPb(20); doc.setFont('times','italic'); doc.setFontSize(16); doc.setTextColor(...navy);
     doc.text(proposal.advisor_signature_data, M, y+6); y += 14;
@@ -465,7 +477,7 @@ export default function generateProposalPdf(proposal, investments = [], riskProd
   const body = (text) => { roaPb(8); doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...black); const lines = doc.splitTextToSize(text, CW); lines.forEach(l => { roaPb(5); doc.text(l, M, y); y += 4.5; }); };
   const bullet = (text) => { roaPb(6); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...black); const lines = doc.splitTextToSize(text, CW-6); lines.forEach((l, i) => { roaPb(5); if (i===0) doc.text('• '+l, M, y); else doc.text(l, M+3, y); y += 4.5; }); };
   const mandateThinRule = () => { roaPb(5); doc.setDrawColor(...border); doc.line(M, y, W-M, y); y += 2; };
-  const advisorSignatureBlock = () => { if (proposal.advisor_signature_type==='draw'&&proposal.advisor_signature_data) { roaPb(20); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,50,15); y+=18; } else if (proposal.advisor_signature_type==='type'&&proposal.advisor_signature_data) { roaPb(15); doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(...navy); doc.text(proposal.advisor_signature_data, M, y+3); y+=10; } };
+  const advisorSignatureBlock = () => { if (proposal.advisor_signature_type==='draw'&&proposal.advisor_signature_data) { roaPb(20); addSigImage(proposal.advisor_signature_data,M,y,50,15); y+=18; } else if (proposal.advisor_signature_type==='type'&&proposal.advisor_signature_data) { roaPb(15); doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(...navy); doc.text(proposal.advisor_signature_data, M, y+3); y+=10; } };
   const addHeader = () => { addLogoTopRight(); };
 
   if (proposal.mandate_included==='Yes') {
