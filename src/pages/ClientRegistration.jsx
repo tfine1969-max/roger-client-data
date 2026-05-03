@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 // ─────────────────────────────────────────────────────────────
 // 🧪 TEST MODE — Set to false before go-live
 const TEST_MODE = true;
+const TEST_DATA_VERSION = 'Test data v2';
 // ─────────────────────────────────────────────────────────────
 
 const testDocUrl = (slug, doc) => `https://wealthworks.test/documents/${slug}/${doc}.pdf`;
@@ -702,8 +703,9 @@ export default function ClientRegistration() {
                 <span className="font-bold text-amber-800 text-sm tracking-wide uppercase">TEST MODE — Remove before go-live</span>
               </div>
               <p className="text-xs text-amber-700 mb-3">
-                Select a profile to auto-fill every onboarding step. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
+                Select from {TEST_PROFILES.length} full profiles to auto-fill every onboarding step. <code className="bg-amber-100 px-1 rounded font-mono">@test.co.za</code> emails skip OTP automatically.
               </p>
+              <p className="text-[11px] font-semibold text-amber-800 mb-2">{TEST_DATA_VERSION}</p>
               <select
                 value={selectedTestEmail}
                 onChange={(e) => {
