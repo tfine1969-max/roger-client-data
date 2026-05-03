@@ -71,6 +71,12 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   // keep ocean alias for helpers that still use it
   const ocean = blue;
 
+  const imgFormat = (dataUrl) => {
+    if (!dataUrl || typeof dataUrl !== 'string') return 'PNG';
+    if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) return 'JPEG';
+    return 'PNG';
+  };
+
   const clientName       = proposal.client_name   || '—';
   const advisorName      = proposal.advisor_name  || 'Trevor Fine';
   const riskProfile      = proposal.risk_profile  || '—';
@@ -79,12 +85,24 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   const signDate         = fmtDate(proposal.sign_date) || todayDMY();
   const today            = todayDMY();
   const advisoryNeeds    = Array.isArray(proposal.advisory_needs)  ? proposal.advisory_needs  : [];
-  const sourceOfFunds    = Array.isArray(proposal.source_of_funds) ? proposal.source_of_funds : [];
+  const sourceOfFunds    = Array.isArray(proposal.source_of_funds) && proposal.source_of_funds.length > 0
+    ? proposal.source_of_funds
+    : Array.isArray(proposal.trust_source_of_funds) && proposal.trust_source_of_funds.length > 0
+    ? proposal.trust_source_of_funds
+    : Array.isArray(proposal.entity_source_of_funds)
+    ? proposal.entity_source_of_funds
+    : [];
+  const sourceOfFundsNotes = proposal.source_of_funds_notes || proposal.beneficiary_declaration || proposal.ubo_declaration || proposal.trust_purpose || '';
   const normRiskProducts = riskProducts.map(rp => ({...rp, covers: rp.covers || rp._covers || []}));
-  const ficaReference    = proposal.fica_reference || '—';
-  const ficaStatus       = proposal.fica_status || '—';
-  const amlRiskRating    = proposal.rmcp_risk_band || proposal.fica_risk_band || '—';
-  const amlClear         = proposal.aml_pep_clear === undefined ? '—' : (proposal.aml_pep_clear ? 'Yes' : 'No');
+  const fallback         = '-';
+  const valueOrFallback  = (value) => (value === undefined || value === null || value === '' ? fallback : value);
+  const ficaReference    = valueOrFallback(proposal.fica_reference);
+  const ficaStatus       = valueOrFallback(proposal.fica_status || proposal.verification_status);
+  const amlRiskRating    = valueOrFallback(proposal.rmcp_risk_band || proposal.fica_risk_band || proposal.risk_band);
+  const amlClear         = proposal.aml_pep_clear === undefined ? fallback : (proposal.aml_pep_clear ? 'Yes' : 'No');
+  const rmcpScore        = proposal.rmcp_risk_score !== undefined && proposal.rmcp_risk_score !== null ? `${proposal.rmcp_risk_score} / 100` : fallback;
+  const manualReview     = proposal.advisor_review_required === true || (ficaStatus !== fallback && !['Approved', 'Verified'].includes(ficaStatus)) ? 'Yes' : 'No';
+  const verificationDate = valueOrFallback(fmtDate(proposal.fica_verified_at || proposal.verified_at));
 
   const rawType = proposal.client_type || '';
   let clientTypeDisplay = 'Individual';
@@ -92,6 +110,18 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   else if (rawType==='company'||rawType==='entity') clientTypeDisplay='Company';
   else if (rawType&&rawType!=='natural_person'&&rawType!=='individual')
     clientTypeDisplay = rawType.charAt(0).toUpperCase()+rawType.slice(1);
+  const isTrust = clientTypeDisplay === 'Trust';
+  const isCompany = clientTypeDisplay === 'Company';
+  const entityPeople = isTrust
+    ? (Array.isArray(proposal.trustees_list) ? proposal.trustees_list : [])
+    : isCompany
+    ? (Array.isArray(proposal.directors_list) ? proposal.directors_list : [])
+    : [];
+  const financialIncomeBand = proposal.annual_income_band || proposal.gross_annual_income_band || proposal.trust_income_band || proposal.gross_annual_turnover || fallback;
+  const financialNetWorthBand = proposal.net_worth_band || proposal.trust_asset_value_band || proposal.total_assets_band || fallback;
+  const financialLiquidity = proposal.liquidity_requirement || proposal.client_liquidity_needs || fallback;
+  const financialLiabilities = proposal.total_liabilities || proposal.entity_total_liabilities || fallback;
+  const financialTaxResidency = proposal.tax_residency || proposal.client_tax_residency || proposal.entity_tax_residency || fallback;
 
   const hasInvestments   = investments.length > 0;
   const hasRisk          = normRiskProducts.length > 0;
@@ -124,7 +154,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     const fy = H-10;
     doc.setDrawColor(...border); doc.line(M,fy-4,W-M,fy-4);
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
-    doc.text('WealthWorks (Pty) Ltd FSP 28337 | Wealthworks Investments (Pty) Ltd FSP 45624 | FICA Verified | RMCP Compliant | Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', M, fy);
+    doc.text('WealthWorks (Pty) Ltd FSP 28337 | Wealthworks Investments (Pty) Ltd FSP 45624 | FICA / AML reviewed | Record of Advice generated in accordance with FAIS GCC and FICA Act 38 of 2001', M, fy);
     doc.text(String(pn), W/2, fy, {align:'center'});
     if (signatureData?.clientInitials) {
       doc.setFont('helvetica','bold'); doc.setTextColor(...navy);
@@ -136,14 +166,16 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   // Helper: draw client signature block (image + date) or blank sign line
   const clientSignatureBlock = (label) => {
-    if (signatureData?.clientSignature) {
+    const clientSignature = signatureData?.clientSignature || proposal.client_signature_data || proposal.client_signature;
+    const clientSignedAt = signatureData?.signedAt || proposal.signed_at || proposal.client_signature_date;
+    if (clientSignature) {
       pb(28);
-      doc.addImage(signatureData.clientSignature, 'PNG', M, y, 70, 14);
+      try { doc.addImage(clientSignature, imgFormat(clientSignature), M, y, 58, 16); } catch(_) {}
       y += 17;
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
-      doc.text(`${label}  ·  Date: ${fmtDate(signatureData.signedAt)}`, M, y); y += 8;
+      doc.text(`${label} - Date: ${fmtDate(clientSignedAt)}`, M, y); y += 8;
     } else {
-      signLine(`${label}  ·  Date: _______________`, 100);
+      signLine(`${label} - Date: _______________`, 100);
     }
   };
 
@@ -184,8 +216,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   const statusItem = (text) => {
     pb(7); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...teal);
-    doc.text('/',M,y); doc.setFont('helvetica','normal'); doc.setTextColor(...black);
-    doc.text(text,M+6,y); y+=6;
+    doc.text('Confirmed:',M,y); doc.setFont('helvetica','normal'); doc.setTextColor(...black);
+    doc.text(text,M+22,y); y+=6;
   };
 
   const spacer = (n=6) => { y+=n; };
@@ -229,11 +261,14 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   };
 
   const advisorSignatureBlock = () => {
-    if (proposal.advisor_signature_type==='draw'&&proposal.advisor_signature_data) {
-      pb(22); doc.addImage(proposal.advisor_signature_data,'PNG',M,y,70,14); y+=17;
-    } else if (proposal.advisor_signature_type==='type'&&proposal.advisor_signature_data) {
+    if (!proposal.advisor_signature_data) return;
+    if (proposal.advisor_signature_type === 'type' && !String(proposal.advisor_signature_data).startsWith('data:image/')) {
       pb(18); doc.setFont('times','italic'); doc.setFontSize(14); doc.setTextColor(...navy);
       doc.text(proposal.advisor_signature_data,M,y+5); y+=12;
+    } else {
+      pb(24);
+      try { doc.addImage(proposal.advisor_signature_data, imgFormat(proposal.advisor_signature_data), M, y, 58, 16); } catch(_) {}
+      y+=19;
     }
   };
 
@@ -396,32 +431,35 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   const colW2 = (CW-8)/2, col2x = M+colW2+8;
 
-  // Left card — Client Details
+  // Left card - Client Details
   const ldRows = [
     ['CLIENT NAME', clientName],
     ['CLIENT TYPE', clientTypeDisplay],
-    ['ID / REGISTRATION', proposal.client_id_number||'—'],
-    ['EMAIL', proposal.client_email||'—'],
-    ['MOBILE', proposal.client_mobile||'—'],
+    ['ID / REGISTRATION', proposal.client_id_number || fallback],
+    ['EMAIL', proposal.client_email || fallback],
+    ['MOBILE', proposal.client_mobile || fallback],
   ];
-  if (proposal.annual_income_band||proposal.gross_annual_income_band)
-    ldRows.push(['INCOME BAND', proposal.annual_income_band||proposal.gross_annual_income_band]);
-  if (proposal.net_worth_band) ldRows.push(['NET WORTH BAND', proposal.net_worth_band]);
-  if (proposal.tax_residency) ldRows.push(['TAX RESIDENCY', proposal.tax_residency]);
+  if (isTrust && (proposal.trust_number || proposal.client_id_number)) ldRows.push(['TRUST NUMBER', proposal.trust_number || proposal.client_id_number]);
+  if (entityPeople.length > 0) ldRows.push([isTrust ? 'TRUSTEES' : 'DIRECTORS', `${entityPeople.length} recorded`]);
+  ldRows.push([isTrust ? 'TRUST INCOME BAND' : 'INCOME BAND', financialIncomeBand]);
+  ldRows.push([isTrust ? 'TRUST ASSET VALUE' : 'NET WORTH BAND', financialNetWorthBand]);
+  ldRows.push(['LIABILITIES', financialLiabilities]);
+  ldRows.push(['LIQUIDITY REQUIREMENT', financialLiquidity]);
+  ldRows.push(['TAX RESIDENCY', financialTaxResidency]);
 
   const leftCardH = ldRows.length * 12 + 16;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
   doc.roundedRect(M, y, colW2, leftCardH, 3, 3, 'FD');
   doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('CLIENT DETAILS', M+5, y+8);
+  doc.text('CLIENT DETAILS - FICA / AML STATUS', M+5, y+8);
   doc.setDrawColor(...border); doc.line(M+5, y+10, M+colW2-5, y+10);
   let lcy = y+18;
   ldRows.forEach(([label, value]) => {
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
     doc.text(label, M+5, lcy);
     doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
-    const vlines = doc.splitTextToSize(String(value), colW2-10);
-    doc.text(vlines[0]||'—', M+colW2-5, lcy, {align:'right'});
+    const vlines = doc.splitTextToSize(String(valueOrFallback(value)), colW2-10);
+    doc.text(vlines[0] || fallback, M+colW2-5, lcy, {align:'right'});
     lcy+=12;
   });
 
@@ -447,27 +485,26 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   // FICA & AML Compliance card
   const ficaAmlRows = [
-    ['FICA STATUS', proposal.fica_status || '—'],
-    ['FICA REF', proposal.fica_reference || '—'],
-    ['RMCP SCORE', proposal.rmcp_risk_score !== undefined ? `${proposal.rmcp_risk_score} / 100` : '—'],
-    ['AML CLEAR', proposal.aml_pep_clear ? 'Yes' : 'No'],
+    ['FICA STATUS', ficaStatus],
+    ['FICA REF', ficaReference],
+    ['VERIFIED / REVIEWED', verificationDate],
+    ['MANUAL REVIEW', manualReview],
+    ['AML RISK', amlRiskRating],
+    ['RMCP SCORE', rmcpScore],
+    ['AML CLEAR', amlClear],
   ];
-  ficaAmlRows[0] = ['FICA STATUS', ficaStatus];
-  ficaAmlRows[1] = ['FICA REF', ficaReference];
-  ficaAmlRows.splice(2, 0, ['AML RISK', amlRiskRating]);
-  ficaAmlRows[4] = ['AML CLEAR', amlClear];
   const ficaAmlCardH = ficaAmlRows.length*10+16;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
   doc.roundedRect(col2x, rcy, colW2, ficaAmlCardH, 3, 3, 'FD');
   doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...blue);
-  doc.text('FICA & AML COMPLIANCE', col2x+5, rcy+8);
+  doc.text('FICA / AML STATUS', col2x+5, rcy+8);
   doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
   let facy = rcy+18;
   ficaAmlRows.forEach(([label, value]) => {
     doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...muted);
     doc.text(label, col2x+5, facy);
     doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...navy);
-    doc.text(String(value), col2x+colW2-5, facy, {align:'right'});
+    doc.text(String(valueOrFallback(value)), col2x+colW2-5, facy, {align:'right'});
     facy+=10;
   });
 
@@ -764,16 +801,23 @@ export default async function generateProposalPdf(proposal, investments = [], ri
    'The client\'s financial profile, investment horizon, and liquidity needs have been considered',
    'All recommendations are in the client\'s best interest as required under FAIS',
   ].forEach(b=>bullet(b));
-  spacer(8); h3('FICA — Source of Funds'); spacer(2);
+  spacer(8); h3('FICA - Source of Funds'); spacer(2);
   if(sourceOfFunds.length>0) sourceOfFunds.forEach(s=>bullet(String(s)));
-  else body('Source of funds as declared by the client and verified in terms of FICA requirements.');
+  else body('No source of funds declaration was captured in the onboarding record. Advisor must review before issue.');
+  if (sourceOfFundsNotes) {
+    spacer(2);
+    body(`Supporting declaration / notes: ${sourceOfFundsNotes}`);
+  }
   spacer(8); h3('Compliance Disclosures Provided'); spacer(2);
   ['FAIS Disclosure and Terms of Business','Conflict of Interest Management Policy','Complaints Resolution Process'].forEach(b=>bullet(b));
-  spacer(8); h3('FICA Verification Status'); spacer(4);
+  spacer(8); h3('FICA / AML Status'); spacer(4);
   table([
     ['FICA Reference', ficaReference],
     ['FICA Status', ficaStatus],
+    ['Verified / Reviewed On', verificationDate],
+    ['Manual Review Required', manualReview],
     ['AML Risk Rating', amlRiskRating],
+    ['RMCP Score', rmcpScore],
     ['AML / PEP Clear', amlClear],
   ]);
   spacer(4);
@@ -1032,7 +1076,7 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   ].forEach(b=>bullet(b));
   spacer(6); table([['Advisor Name',advisorName],['Date',signDate]]); spacer(6);
   advisorSignatureBlock();
-  signLine(`Advisor Signature  ·  Date: ${signDate}`,90);
+  signLine(`Advisor Signature - Date: ${signDate}`,90);
   spacer(8); rule(); spacer(6);
   h2('Client Acceptance',navy); spacer(2);
   ['I have provided complete and accurate information to my advisor',
@@ -1076,16 +1120,18 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   // Signature images
   const sigImageY = y;
-  if (proposal.advisor_signature_type === 'draw' && proposal.advisor_signature_data) {
-    doc.addImage(proposal.advisor_signature_data, 'PNG', M, sigImageY, 60, 12);
-  } else if (proposal.advisor_signature_type === 'type' && proposal.advisor_signature_data) {
+  const finalClientSignature = signatureData?.clientSignature || proposal.client_signature_data || proposal.client_signature;
+  const finalClientSignedAt = signatureData?.signedAt || proposal.signed_at || proposal.client_signature_date;
+  if (proposal.advisor_signature_data && (proposal.advisor_signature_type !== 'type' || String(proposal.advisor_signature_data).startsWith('data:image/'))) {
+    try { doc.addImage(proposal.advisor_signature_data, imgFormat(proposal.advisor_signature_data), M, sigImageY, 58, 16); } catch(_) {}
+  } else if (proposal.advisor_signature_data) {
     doc.setFont('times','italic'); doc.setFontSize(13); doc.setTextColor(...navy);
     doc.text(proposal.advisor_signature_data, M, sigImageY + 8);
   }
-  if (signatureData?.clientSignature) {
-    doc.addImage(signatureData.clientSignature, 'PNG', sigRx, sigImageY, 60, 12);
+  if (finalClientSignature) {
+    try { doc.addImage(finalClientSignature, imgFormat(finalClientSignature), sigRx, sigImageY, 58, 16); } catch(_) {}
   }
-  y += 15;
+  y += 18;
 
   // Lines
   doc.setDrawColor(...navy); doc.line(M, y, M+sigColW, y);
@@ -1100,8 +1146,8 @@ export default async function generateProposalPdf(proposal, investments = [], ri
   doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...muted);
   doc.text(`Date: ${signDate}`, M, y);
 
-  if (signatureData?.clientSignature) {
-    doc.text(`Date: ${fmtDate(signatureData.signedAt)}`, sigRx, y);
+  if (finalClientSignature) {
+    doc.text(`Date: ${fmtDate(finalClientSignedAt)}`, sigRx, y);
   } else {
     doc.text('Date: _______________', sigRx, y);
   }
@@ -1117,3 +1163,4 @@ export default async function generateProposalPdf(proposal, investments = [], ri
 
   return doc;
 }
+
