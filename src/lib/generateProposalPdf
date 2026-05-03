@@ -460,22 +460,32 @@ export default async function generateProposalPdf(proposal, investments = [], ri
     lcy+=12;
   });
 
-  // Right side - Risk Profile card
+  // Right side - FICA / AML Status card
   let rcy = y;
-  // Risk card
-  const riskCardH = 52;
+  const ficaAmlRows = [
+    ['FICA STATUS', ficaStatus],
+    ['FICA REF', ficaReference],
+    ['VERIFIED / REVIEWED', verificationDate],
+    ['MANUAL REVIEW', manualReview],
+    ['AML RISK', amlRiskRating],
+    ['RMCP SCORE', rmcpScore],
+    ['AML CLEAR', amlClear],
+  ];
+  const ficaAmlCardH = ficaAmlRows.length * 11 + 16;
   doc.setDrawColor(...border); doc.setFillColor(255,255,255);
-  doc.roundedRect(col2x, rcy, colW2, riskCardH, 3, 3, 'FD');
-  // Risk badge (no header)
-  doc.setFillColor(...blue); doc.roundedRect(col2x+5, rcy+8, 35, 10, 2, 2, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
-  doc.text(riskProfile.toUpperCase(), col2x+22, rcy+15, {align:'center'});
-  // Description
-  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...black);
-  const riskDesc = `Balanced exposure to growth assets with controlled volatility. The client accepts moderate market fluctuations in pursuit of the stated objectives.`;
-  const rdlines = doc.splitTextToSize(riskDesc, colW2-10);
-  rdlines.forEach((l,i) => doc.text(l, col2x+5, rcy+24+(i*4)));
-  rcy += riskCardH + 6;
+  doc.roundedRect(col2x, rcy, colW2, ficaAmlCardH, 3, 3, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...blue);
+  doc.text('FICA / AML STATUS', col2x+5, rcy+8);
+  doc.setDrawColor(...border); doc.line(col2x+5, rcy+10, col2x+colW2-5, rcy+10);
+  let facy = rcy+20;
+  ficaAmlRows.forEach(([label, value]) => {
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...muted);
+    doc.text(label, col2x+5, facy);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...navy);
+    doc.text(String(valueOrFallback(value)), col2x+colW2-5, facy, {align:'right'});
+    facy += 11;
+  });
+  rcy += ficaAmlCardH;
 
   y = Math.max(y+leftCardH, rcy) + 8;
 
