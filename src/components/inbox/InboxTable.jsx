@@ -92,7 +92,7 @@ const formatTimestamp = (value) => {
     minute: '2-digit',
     hour12: false,
   }).formatToParts(d).reduce((acc, part) => ({ ...acc, [part.type]: part.value }), {});
-  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute} SAST`;
+  return `${parts.day}-${parts.month}-${parts.year} ${parts.hour}:${parts.minute}`;
 };
 
 export default function InboxTable({ proposals, clientMap = {}, statusFilter = null, ficaFilter = null, onClearFilter }) {
