@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LibraryPickerModal from '@/components/LibraryPickerModal';
+import { LibraryButton } from '@/components/engine/PhraseLibrary';
 
 const RISK_PROVIDERS = ['PPS', 'Momentum', 'Discovery', 'Hollard', 'Brightrock'];
 
@@ -436,18 +437,7 @@ export default function AddEditRiskProduct() {
             </div>
 
             {/* Library button */}
-            <button
-              type="button"
-              onClick={() => setRiskReasonsModalOpen(true)}
-              style={{
-                background: 'none', border: '1px dashed #94a3b8',
-                borderRadius: '8px', padding: '8px 16px',
-                fontSize: 12, color: '#64748b', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6
-              }}
-            >
-              + SELECT FROM LIBRARY
-            </button>
+            <LibraryButton onOpen={() => setRiskReasonsModalOpen(true)} />
 
             {/* Modal */}
             <LibraryPickerModal
