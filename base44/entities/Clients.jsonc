@@ -30,348 +30,228 @@
       "description": "Type of identification"
     },
     "first_name": {
-      "type": "string",
-      "description": "First name (natural person)"
+      "type": "string"
     },
     "last_name": {
-      "type": "string",
-      "description": "Last name (natural person)"
+      "type": "string"
     },
     "full_name": {
-      "type": "string",
-      "description": "Full name (natural person)"
+      "type": "string"
     },
     "entity_name": {
-      "type": "string",
-      "description": "Entity name (company/trust)"
+      "type": "string"
     },
     "sa_id_number": {
-      "type": "string",
-      "description": "SA ID number (13 digits)"
+      "type": "string"
     },
     "passport_number": {
-      "type": "string",
-      "description": "Passport number"
+      "type": "string"
     },
     "passport_country": {
-      "type": "string",
-      "description": "Country of issue for passport"
+      "type": "string"
     },
     "registration_number": {
-      "type": "string",
-      "description": "Company/registration number"
+      "type": "string"
     },
     "trust_number": {
-      "type": "string",
-      "description": "Trust registration/master reference"
+      "type": "string"
     },
     "trust_type": {
-      "type": "string",
-      "description": "Trust type (Inter Vivos or Testamentary)"
+      "type": "string"
     },
     "trust_deed_date": {
-      "type": "string",
-      "description": "Date of trust deed"
+      "type": "string"
     },
     "contact_trustee_name": {
-      "type": "string",
-      "description": "Name of contact trustee"
+      "type": "string"
     },
     "date_of_birth": {
       "type": "string",
-      "format": "date",
-      "description": "Date of birth"
+      "format": "date"
     },
     "email": {
       "type": "string",
-      "format": "email",
-      "description": "Email address"
+      "format": "email"
     },
     "mobile_number": {
-      "type": "string",
-      "description": "Mobile phone number"
+      "type": "string"
     },
     "title": {
-      "type": "string",
-      "description": "Title (Mr, Mrs, etc.)"
+      "type": "string"
     },
     "marital_status": {
-      "type": "string",
-      "description": "Marital status"
+      "type": "string"
     },
     "dependants": {
-      "type": "string",
-      "description": "Number of dependants"
+      "type": "string"
     },
     "street_address": {
-      "type": "string",
-      "description": "Street address"
+      "type": "string"
     },
     "suburb": {
-      "type": "string",
-      "description": "Suburb"
+      "type": "string"
     },
     "city": {
-      "type": "string",
-      "description": "City"
+      "type": "string"
     },
     "province": {
-      "type": "string",
-      "description": "Province"
+      "type": "string"
     },
     "postal_code": {
-      "type": "string",
-      "description": "Postal code"
+      "type": "string"
     },
     "residential_address": {
-      "type": "string",
-      "description": "Full residential address"
+      "type": "string"
     },
     "employment_status": {
-      "type": "string",
-      "description": "Employment status"
+      "type": "string"
     },
     "occupation": {
-      "type": "string",
-      "description": "Occupation"
+      "type": "string"
     },
     "employer": {
-      "type": "string",
-      "description": "Employer or business name"
+      "type": "string"
     },
     "industry": {
-      "type": "string",
-      "description": "Industry"
+      "type": "string"
     },
     "source_of_funds": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Sources of funds"
+      }
     },
     "sa_tax_number": {
-      "type": "string",
-      "description": "SA tax number"
+      "type": "string"
     },
     "tax_residency": {
-      "type": "string",
-      "description": "Tax residency"
+      "type": "string"
     },
     "us_person_fatca": {
-      "type": "string",
-      "description": "US person FATCA status"
+      "type": "string"
     },
     "pep_status": {
-      "type": "string",
-      "description": "PEP status"
+      "type": "string"
     },
     "pep_explanation": {
-      "type": "string",
-      "description": "PEP explanation"
+      "type": "string"
     },
     "gross_annual_income_band": {
-      "type": "string",
-      "description": "Gross annual income band"
+      "type": "string"
     },
     "monthly_investable_surplus": {
-      "type": "string",
-      "description": "Monthly investable surplus"
+      "type": "string"
     },
     "net_worth_band": {
-      "type": "string",
-      "description": "Net worth band"
+      "type": "string"
     },
     "total_liabilities": {
-      "type": "string",
-      "description": "Total liabilities band"
+      "type": "string"
     },
     "existing_financial_products": {
       "type": "array",
       "items": {
         "type": "object"
-      },
-      "description": "Existing financial products (structured list \u2014 individual onboarding)"
+      }
     },
     "products_list": {
       "type": "array",
       "items": {
         "type": "object"
-      },
-      "description": "Structured existing products list"
+      }
     },
     "existing_products_notes": {
-      "type": "string",
-      "description": "Free-text notes about existing financial products (company and trust onboarding)"
+      "type": "string"
     },
     "loa_uploaded": {
-      "type": "boolean",
-      "description": "Letter of authority uploaded"
+      "type": "boolean"
     },
     "loa_authorised": {
-      "type": "boolean",
-      "description": "Letter of authority authorised"
+      "type": "boolean"
     },
     "will_in_place": {
-      "type": "string",
-      "description": "Will in place status"
+      "type": "string"
     },
     "portfolio_drop_response": {
-      "type": "string",
-      "description": "Portfolio drop response"
+      "type": "string"
     },
     "primary_investment_objective": {
-      "type": "string",
-      "description": "Primary investment objective"
+      "type": "string"
     },
     "time_horizon": {
-      "type": "string",
-      "description": "Investment time horizon"
+      "type": "string"
     },
     "liquidity_requirement": {
-      "type": "string",
-      "description": "Liquidity requirement"
+      "type": "string"
     },
     "risk_profile": {
-      "type": "string",
-      "description": "Risk profile"
-    },
-    "calculated_risk_score": {
-      "type": "number",
-      "description": "Calculated onboarding risk score out of 10"
-    },
-    "calculated_risk_profile": {
-      "type": "string",
-      "description": "Risk profile suggested by the onboarding risk score"
-    },
-    "risk_profile_overridden": {
-      "type": "boolean",
-      "description": "Whether the selected risk profile was manually overridden"
+      "type": "string"
     },
     "advisory_needs": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Advisory needs"
+      }
     },
     "identity_document_uploaded": {
-      "type": "boolean",
-      "description": "Identity document uploaded"
+      "type": "boolean"
     },
     "proof_of_address_uploaded": {
-      "type": "boolean",
-      "description": "Proof of address uploaded"
+      "type": "boolean"
     },
     "income_proof_uploaded": {
-      "type": "boolean",
-      "description": "Income proof uploaded"
+      "type": "boolean"
     },
     "existing_policies_uploaded": {
-      "type": "boolean",
-      "description": "Existing policies uploaded"
+      "type": "boolean"
     },
     "client_signature_name": {
-      "type": "string",
-      "description": "Client signature name"
+      "type": "string"
     },
     "client_signature_date": {
-      "type": "string",
-      "description": "Client signature date"
+      "type": "string"
     },
     "identity_verified": {
-      "type": "boolean",
-      "description": "FICA: identity verified"
+      "type": "boolean"
     },
     "proof_of_address_verified": {
-      "type": "boolean",
-      "description": "FICA: proof of address verified"
+      "type": "boolean"
     },
     "source_of_funds_confirmed": {
-      "type": "boolean",
-      "description": "FICA: source of funds confirmed"
+      "type": "boolean"
     },
     "beneficial_ownership_verified": {
-      "type": "boolean",
-      "description": "FICA: beneficial ownership verified"
+      "type": "boolean"
     },
     "otp_verified": {
-      "type": "boolean",
-      "description": "OTP verification status"
+      "type": "boolean"
     },
     "onboarding_complete": {
-      "type": "boolean",
-      "description": "Onboarding completed flag"
+      "type": "boolean"
     },
     "client_status": {
       "type": "string",
       "enum": [
         "Draft",
         "Onboarded",
-        "Under Review",
-        "Active",
-        "Rejected"
+        "Active"
       ],
-      "default": "Draft",
-      "description": "Client status"
-    },
-    "verification_status": {
-      "type": "string",
-      "enum": [
-        "Pending",
-        "Verified",
-        "Manual Review"
-      ],
-      "default": "Pending",
-      "description": "Internal verification workflow status. Clients are not blocked by this status."
-    },
-    "advisor_review_required": {
-      "type": "boolean",
-      "description": "Whether an advisor must review verification exceptions before final approval"
+      "default": "Draft"
     },
     "doc_identity": {
-      "type": "string",
-      "description": "Identity Document file URL"
-    },
-    "doc_identity_name": {
-      "type": "string",
-      "description": "Identity Document original file name"
-    },
-    "doc_identity_back": {
-      "type": "string",
-      "description": "Identity Document back image file URL"
-    },
-    "doc_identity_back_name": {
-      "type": "string",
-      "description": "Identity Document back image original file name"
+      "type": "string"
     },
     "doc_proof_of_address": {
-      "type": "string",
-      "description": "Proof of Address file URL"
-    },
-    "doc_proof_of_address_name": {
-      "type": "string",
-      "description": "Proof of Address original file name"
+      "type": "string"
     },
     "doc_source_of_funds": {
-      "type": "string",
-      "description": "Income / Source of Funds file URL"
-    },
-    "doc_source_of_funds_name": {
-      "type": "string",
-      "description": "Income / Source of Funds original file name"
+      "type": "string"
     },
     "doc_existing_policies": {
-      "type": "string",
-      "description": "Existing Policies file URL"
-    },
-    "doc_existing_policies_name": {
-      "type": "string",
-      "description": "Existing Policies original file name"
+      "type": "string"
     },
     "doc_submitted_at": {
-      "type": "string",
-      "description": "DateTime when documents were submitted"
+      "type": "string"
     },
     "doc_status": {
       "type": "string",
@@ -381,8 +261,7 @@
         "Verified",
         "Incomplete"
       ],
-      "default": "Pending",
-      "description": "Document verification status"
+      "default": "Pending"
     },
     "fica_status": {
       "type": "string",
@@ -391,11 +270,10 @@
         "Referred",
         "Declined"
       ],
-      "description": "FICA outcome. Client-facing flow uses Approved or Referred; Declined is reserved for internal advisor rejection."
+      "description": "Raw automated FICA outcome"
     },
     "fica_reference": {
-      "type": "string",
-      "description": "Unique FICA reference number e.g. FICA-2026-84721-ZA"
+      "type": "string"
     },
     "fica_risk_band": {
       "type": "string",
@@ -403,32 +281,54 @@
         "Low",
         "Medium",
         "High"
-      ],
-      "description": "Risk classification: Low, Medium, or High"
+      ]
     },
     "fica_verified_at": {
-      "type": "string",
-      "description": "ISO datetime of when verification was completed"
+      "type": "string"
     },
     "home_affairs_verified": {
-      "type": "boolean",
-      "description": "Whether identity was confirmed against Home Affairs HANIS"
+      "type": "boolean"
     },
     "aml_pep_clear": {
-      "type": "boolean",
-      "description": "Whether client passed AML and PEP screening with no matches"
+      "type": "boolean"
     },
     "fica_checks_json": {
-      "type": "string",
-      "description": "Full JSON audit record of all individual FICA check results"
+      "type": "string"
     },
-    "fica_failure_reason": {
+    "verification_status": {
       "type": "string",
-      "description": "Human-readable reason for FICA referral or decline"
+      "enum": [
+        "Pending",
+        "Verified",
+        "Manual Review"
+      ],
+      "default": "Pending",
+      "description": "Automated verification outcome \u2014 set by system checks only, never by advisor actions"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ],
+      "default": "Pending",
+      "description": "Final advisor decision \u2014 set only by authorised advisors, independent of automated checks"
+    },
+    "review_decision_at": {
+      "type": "string",
+      "description": "ISO timestamp when advisor made their review decision"
+    },
+    "review_decision_by": {
+      "type": "string",
+      "description": "Email of advisor who made the review decision"
+    },
+    "review_rejection_reason": {
+      "type": "string",
+      "description": "Required reason when advisor rejects a client"
     },
     "rmcp_risk_score": {
-      "type": "number",
-      "description": "RMCP weighted risk score (0-100+)"
+      "type": "number"
     },
     "rmcp_risk_band": {
       "type": "string",
@@ -437,156 +337,94 @@
         "Medium",
         "High",
         "Prohibited"
-      ],
-      "description": "RMCP risk band: Low (0-30), Medium (31-60), High (61-80), Prohibited (81+)"
+      ]
     },
     "rmcp_scored_at": {
-      "type": "string",
-      "description": "ISO datetime when RMCP score was calculated"
+      "type": "string"
     },
     "rmcp_score_breakdown": {
-      "type": "string",
-      "description": "JSON string containing factor scores: client_factor, geography_factor, product_factor, transaction_factor, behaviour_factor"
+      "type": "string"
     },
     "vat_number": {
-      "type": "string",
-      "description": "VAT number (company)"
+      "type": "string"
     },
     "business_activity": {
-      "type": "string",
-      "description": "Business activity description (company)"
+      "type": "string"
     },
     "ubo_declaration": {
-      "type": "string",
-      "description": "UBO declaration \u2014 beneficial owners with 25%+ shareholding"
+      "type": "string"
     },
     "trust_purpose": {
-      "type": "string",
-      "description": "Purpose/objective of the trust"
+      "type": "string"
     },
     "beneficiary_declaration": {
-      "type": "string",
-      "description": "Named beneficiaries of the trust"
-    },
-    "trust_source_of_funds": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Source of funds for trust entities"
-    },
-    "trust_asset_value_band": {
-      "type": "string",
-      "description": "Trust total asset value band"
-    },
-    "trust_income_band": {
-      "type": "string",
-      "description": "Trust income band"
-    },
-    "trust_deed_uploaded": {
-      "type": "boolean",
-      "description": "Whether trust deed has been uploaded"
-    },
-    "trust_proof_of_address_uploaded": {
-      "type": "boolean",
-      "description": "Whether proof of registered address has been uploaded for the trust"
-    },
-    "trust_bank_statement_uploaded": {
-      "type": "boolean",
-      "description": "Whether trust bank statement has been uploaded"
+      "type": "string"
     },
     "entity_aml_clear": {
-      "type": "boolean",
-      "description": "Whether all directors/trustees passed AML screening"
+      "type": "boolean"
     },
     "cipc_verified": {
-      "type": "boolean",
-      "description": "Whether CIPC registration was verified"
+      "type": "boolean"
     },
     "directors_list": {
       "type": "array",
       "items": {
         "type": "object"
-      },
-      "description": "List of company directors"
+      }
     },
     "trustees_list": {
       "type": "array",
       "items": {
         "type": "object"
-      },
-      "description": "List of trust trustees"
+      }
     },
     "directors_json": {
-      "type": "string",
-      "description": "JSON audit record of director verification results"
+      "type": "string"
     },
     "trustees_json": {
-      "type": "string",
-      "description": "JSON audit record of trustee verification results"
-    },
-    "director_documents_json": {
-      "type": "string",
-      "description": "JSON index of uploaded director document URLs"
-    },
-    "trustee_documents_json": {
-      "type": "string",
-      "description": "JSON index of uploaded trustee document URLs"
+      "type": "string"
     },
     "entity_source_of_funds": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Source of funds for company or trust entities"
+      }
     },
     "entity_tax_number": {
-      "type": "string",
-      "description": "SA tax number for a company or trust entity"
+      "type": "string"
     },
     "entity_tax_residency": {
-      "type": "string",
-      "description": "Tax residency of the entity"
+      "type": "string"
     },
     "entity_fatca": {
-      "type": "string",
-      "description": "FATCA declaration for the entity (Yes or No)"
+      "type": "string"
     },
     "entity_pep": {
-      "type": "string",
-      "description": "Whether any director or trustee is a politically exposed person (Yes or No)"
+      "type": "string"
     },
     "gross_annual_turnover": {
-      "type": "string",
-      "description": "Company gross annual turnover band"
+      "type": "string"
     },
     "total_assets_band": {
-      "type": "string",
-      "description": "Company or trust total assets band"
+      "type": "string"
     },
     "entity_total_liabilities": {
-      "type": "string",
-      "description": "Company or trust total liabilities band"
+      "type": "string"
     },
     "entity_loa_uploaded": {
-      "type": "boolean",
-      "description": "Whether letter of authority has been uploaded for entity client"
+      "type": "boolean"
     },
     "entity_loa_authorised": {
-      "type": "boolean",
-      "description": "Whether LOA authorisation checkbox has been accepted"
+      "type": "boolean"
     },
     "cipc_registration_uploaded": {
-      "type": "boolean",
-      "description": "Whether CIPC registration certificate has been uploaded"
+      "type": "boolean"
     },
     "moi_uploaded": {
-      "type": "boolean",
-      "description": "Whether memorandum of incorporation has been uploaded"
+      "type": "boolean"
     },
     "financial_statements_uploaded": {
-      "type": "boolean",
-      "description": "Whether financial statements have been uploaded"
+      "type": "boolean"
     }
   },
   "required": [
@@ -629,4 +467,3 @@
     }
   }
 }
-

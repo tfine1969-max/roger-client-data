@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, XCircle, FileText, Lock } from 'lucide-react';
-import { isComplianceAuthorised, ficaStatusLabel } from '@/lib/complianceHelpers';
+import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'All Submissions' },
@@ -15,13 +15,15 @@ const STATUS_FILTERS = [
 
 const getVerificationStatus = (client) => {
   if (!client) return 'unknown';
+  // Advisor decision takes priority
+  if (client.review_status === 'Approved') return 'ready';
+  if (client.review_status === 'Rejected') return 'manual_review';
   const vs = (client.verification_status || '').toLowerCase().replace(/\s/g, '_');
   const ficaStatus = client.fica_status;
-  if (ficaStatus === 'Approved' && client.onboarding_complete) return 'ready';
-  if (vs === 'manual_review' || vs === 'manual review' || ficaStatus === 'Referred') return 'manual_review';
-  if (vs === 'pending' || !client.onboarding_complete) return 'new';
+  if (vs === 'verified' || ficaStatus === 'Approved') return 'ready';
+  if (vs === 'manual_review' || vs === 'manual review' || ficaStatus === 'Referred' || ficaStatus === 'Declined') return 'manual_review';
   if (vs === 'awaiting_documents') return 'awaiting_documents';
-  if (ficaStatus === 'Approved') return 'ready';
+  if (!client.onboarding_complete) return 'new';
   return 'new';
 };
 
@@ -180,7 +182,7 @@ export default function ComplianceReview() {
                 <p className="text-xs text-muted-foreground truncate pr-2">{client.email || '—'}</p>
                 <div>
                   <span className={`text-[10px] font-bold px-2 py-1 rounded border ${style.bg} ${style.text} ${style.border}`}>
-                    {ficaStatusLabel(client.fica_status)}
+                    {resolvedFicaLabel(client)}
                   </span>
                 </div>
                 <div>

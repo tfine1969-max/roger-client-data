@@ -5,10 +5,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, LogOut, CheckCircle2, AlertTriangle, Clock,
   FileText, User, Shield, DollarSign, ClipboardList,
-  Lock, Send, History, Upload
+  Lock, Send, History, Upload, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { isComplianceAuthorised, ficaStatusLabel, writeAuditLog, canApproveClient } from '@/lib/complianceHelpers';
+import { isComplianceAuthorised, resolvedFicaLabel, writeAuditLog, canApproveClient } from '@/lib/complianceHelpers';
 
 const formatDate = (val) => {
   if (!val) return '—';
@@ -108,6 +108,8 @@ export default function ComplianceClientReview() {
   const [isApproving, setIsApproving] = useState(false);
   const [manualOverride, setManualOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectForm, setShowRejectForm] = useState(false);
 
   // Document request modal
   const [showDocRequest, setShowDocRequest] = useState(false);
@@ -158,68 +160,98 @@ export default function ComplianceClientReview() {
     try { return JSON.parse(client.rmcp_score_breakdown); } catch { return null; }
   })();
 
-  const handleApproval = async (action) => {
-    if (!client) return;
-
-    // RBAC gate
-    if (!isComplianceAuthorised(currentUser)) {
+  const handleApprove = async () => {
+    if (!client || !isComplianceAuthorised(currentUser)) {
       toast.error('Access denied: Only authorised advisors may approve clients.');
       return;
     }
-
-    // Approval lock
-    const isApproveAction = action === 'approved';
-    if (isApproveAction) {
-      const canApprove = canApproveClient(client, manualOverride);
-      if (!canApprove) {
-        toast.error('Approval locked: Verification must pass or a manual override reason must be provided.');
-        return;
-      }
-      if (manualOverride && !overrideReason.trim()) {
-        toast.error('Please provide a reason for the manual verification override.');
-        return;
-      }
+    const needsOverride = client.verification_status !== 'Verified';
+    if (needsOverride && !manualOverride) {
+      toast.error('Automated verification did not pass. Enable the manual override to approve.');
+      return;
     }
-
+    if (needsOverride && !overrideReason.trim()) {
+      toast.error('Please provide a reason for the manual override.');
+      return;
+    }
     setIsApproving(true);
-    const previousStatus = client.client_status || 'Draft';
-    const newStatus = isApproveAction ? 'Active' : 'Draft';
-
+    const previousStatus = client.review_status || 'Pending';
     try {
       const updateData = {
-        client_status: newStatus,
-        verification_status: isApproveAction ? 'Verified' : 'Manual Review',
-        advisor_review_required: !isApproveAction,
+        review_status: 'Approved',
+        verification_status: 'Verified',
+        client_status: 'Active',
+        advisor_review_required: false,
+        review_decision_at: new Date().toISOString(),
+        review_decision_by: currentUser.email,
         advisor_notes: notes || client.advisor_notes || '',
-        advisor_approved_at: isApproveAction ? new Date().toISOString() : null,
-        advisor_approval_status: action,
+        advisor_approved_at: new Date().toISOString(),
       };
-      if (manualOverride && isApproveAction) {
+      if (needsOverride) {
         updateData.manual_override_reason = overrideReason;
         updateData.manual_override_by = currentUser.email;
         updateData.manual_override_at = new Date().toISOString();
       }
-
       await base44.entities.Clients.update(clientId, updateData);
-
       await writeAuditLog({
         clientId,
         actor: currentUser,
-        action: isApproveAction ? (manualOverride ? 'Verification Override' : 'Approved') : 'Returned for Review',
+        action: needsOverride ? 'Verification Override' : 'Approved',
         previousStatus,
-        newStatus,
-        notes: notes || (manualOverride ? `Override reason: ${overrideReason}` : ''),
-        metadata: { fica_status: client.fica_status, fica_reference: client.fica_reference, manual_override: manualOverride },
+        newStatus: 'Approved',
+        notes: notes || (needsOverride ? `Override reason: ${overrideReason}` : ''),
+        metadata: { fica_status: client.fica_status, fica_reference: client.fica_reference, manual_override: needsOverride },
       });
-
       queryClient.invalidateQueries({ queryKey: ['compliance-client', clientId] });
       queryClient.invalidateQueries({ queryKey: ['compliance-clients'] });
       queryClient.invalidateQueries({ queryKey: ['audit-log', clientId] });
-
-      toast.success(isApproveAction ? 'Client approved and activated.' : 'Client returned for review.');
-      if (isApproveAction) navigate('/compliance-review');
+      toast.success('Client approved and activated.');
+      navigate('/compliance-review');
     } catch (err) {
-      toast.error('Failed to update: ' + err.message);
+      toast.error('Failed to approve: ' + err.message);
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!client || !isComplianceAuthorised(currentUser)) {
+      toast.error('Access denied.');
+      return;
+    }
+    if (!rejectionReason.trim()) {
+      toast.error('A rejection reason is required.');
+      return;
+    }
+    setIsApproving(true);
+    const previousStatus = client.review_status || 'Pending';
+    try {
+      await base44.entities.Clients.update(clientId, {
+        review_status: 'Rejected',
+        client_status: 'Draft',
+        advisor_review_required: true,
+        review_decision_at: new Date().toISOString(),
+        review_decision_by: currentUser.email,
+        review_rejection_reason: rejectionReason,
+        advisor_notes: notes || client.advisor_notes || '',
+      });
+      await writeAuditLog({
+        clientId,
+        actor: currentUser,
+        action: 'Returned for Review',
+        previousStatus,
+        newStatus: 'Rejected',
+        notes: `Rejection reason: ${rejectionReason}${notes ? ` | Notes: ${notes}` : ''}`,
+        metadata: { fica_status: client.fica_status, fica_reference: client.fica_reference },
+      });
+      queryClient.invalidateQueries({ queryKey: ['compliance-client', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['compliance-clients'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-log', clientId] });
+      toast.success('Client rejected. Record updated.');
+      setShowRejectForm(false);
+      navigate('/compliance-review');
+    } catch (err) {
+      toast.error('Failed to reject: ' + err.message);
     } finally {
       setIsApproving(false);
     }
@@ -310,10 +342,13 @@ export default function ComplianceClientReview() {
   );
 
   const clientName = client.full_name || client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Unknown Client';
-  const alreadyApproved = client.client_status === 'Active';
-  const internalFicaLabel = ficaStatusLabel(client.fica_status);
-  const ficaPassedAuto = client.fica_status === 'Approved';
-  const approvalLocked = !ficaPassedAuto && !manualOverride;
+  const reviewStatus = client.review_status || 'Pending';
+  const alreadyDecided = reviewStatus === 'Approved' || reviewStatus === 'Rejected';
+  const alreadyApproved = reviewStatus === 'Approved';
+  const alreadyRejected = reviewStatus === 'Rejected';
+  const displayFicaLabel = resolvedFicaLabel(client);
+  const autoVerified = client.verification_status === 'Verified';
+  const needsManualOverride = !autoVerified;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -341,23 +376,32 @@ export default function ComplianceClientReview() {
             <CheckCircle2 className="w-5 h-5 text-teal shrink-0" />
             <div>
               <p className="font-semibold text-teal text-sm">Client Approved & Active</p>
-              <p className="text-xs text-muted-foreground">This client was approved on {formatDate(client.advisor_approved_at)}.</p>
+              <p className="text-xs text-muted-foreground">Approved by {client.review_decision_by} on {formatDate(client.review_decision_at)}.</p>
             </div>
           </div>
-        ) : internalFicaLabel === 'Manual Review Required' ? (
+        ) : alreadyRejected ? (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded">
+            <XCircle className="w-5 h-5 text-red-600 shrink-0" />
+            <div>
+              <p className="font-semibold text-red-700 text-sm">Client Rejected</p>
+              <p className="text-xs text-red-600">Rejected by {client.review_decision_by} on {formatDate(client.review_decision_at)}.</p>
+              {client.review_rejection_reason && <p className="text-xs text-red-600 mt-0.5">Reason: {client.review_rejection_reason}</p>}
+            </div>
+          </div>
+        ) : needsManualOverride ? (
           <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded">
             <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
             <div>
-              <p className="font-semibold text-amber-800 text-sm">Manual Review Required</p>
-              <p className="text-xs text-amber-700">Verification was not conclusive. Review all checks and documents before making a final decision. Approval is locked until verification is resolved.</p>
+              <p className="font-semibold text-amber-800 text-sm">Awaiting Advisor Decision — Automated Verification Incomplete</p>
+              <p className="text-xs text-amber-700">Automated checks did not fully pass. Review all data and documents, then Approve (with override) or Reject.</p>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded">
             <FileText className="w-5 h-5 text-blue-700 shrink-0" />
             <div>
-              <p className="font-semibold text-blue-800 text-sm">Pending Review</p>
-              <p className="text-xs text-blue-700">Review client details and documents before making a final decision.</p>
+              <p className="font-semibold text-blue-800 text-sm">Awaiting Advisor Decision — Verification Passed</p>
+              <p className="text-xs text-blue-700">Automated checks passed. Review client details and approve or reject.</p>
             </div>
           </div>
         )}
@@ -393,12 +437,27 @@ export default function ComplianceClientReview() {
             </div>
             <div className="space-y-2 mb-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Internal Status</span>
+                <span className="text-xs text-muted-foreground">Display Status</span>
                 <span className={`text-[10px] font-bold px-2 py-1 rounded border ${
-                  internalFicaLabel === 'Verified' ? 'bg-teal/10 text-teal border-teal/20' :
-                  internalFicaLabel === 'Manual Review Required' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                  displayFicaLabel === 'Verified' ? 'bg-teal/10 text-teal border-teal/20' :
+                  displayFicaLabel === 'Rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                  displayFicaLabel === 'Manual Review Required' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                   'bg-secondary text-muted-foreground border-border'
-                }`}>{internalFicaLabel}</span>
+                }`}>{displayFicaLabel}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Automated Verification</span>
+                <span className={`text-[10px] font-semibold ${autoVerified ? 'text-teal' : 'text-amber-700'}`}>
+                  {client.verification_status || 'Pending'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Advisor Review Decision</span>
+                <span className={`text-[10px] font-bold ${
+                  reviewStatus === 'Approved' ? 'text-teal' :
+                  reviewStatus === 'Rejected' ? 'text-red-600' :
+                  'text-muted-foreground'
+                }`}>{reviewStatus}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Raw VerifyNow Response</span>
@@ -613,27 +672,15 @@ export default function ComplianceClientReview() {
             Save Notes
           </button>
 
-          {!alreadyApproved && (
-            <div className="border-t border-border pt-4">
-              <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-3">Final Approval Decision</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                Access restricted to authorised advisors. Actions are permanently recorded in the audit log.
-              </p>
+          {/* Final decision — shown only when no decision has been made yet */}
+          {!alreadyDecided && (
+            <div className="border-t border-border pt-4 space-y-4">
+              <p className="text-[10px] font-bold tracking-wider text-navy uppercase">Final Advisor Decision</p>
+              <p className="text-xs text-muted-foreground">Actions are permanently recorded in the audit log and cannot be undone.</p>
 
-              {/* Approval lock warning */}
-              {approvalLocked && (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded mb-4">
-                  <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-semibold text-amber-800">Approval Locked</p>
-                    <p className="text-xs text-amber-700 mt-0.5">Verification has not passed automatically. To approve, an authorised advisor must enable the manual override below and provide a documented reason.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Manual override toggle */}
-              {!ficaPassedAuto && (
-                <div className="mb-4 p-3 border border-border rounded bg-secondary/30">
+              {/* Manual override toggle — only shown when automated verification did not pass */}
+              {needsManualOverride && (
+                <div className="p-3 border border-amber-200 rounded bg-amber-50">
                   <label className="flex items-start gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -642,40 +689,67 @@ export default function ComplianceClientReview() {
                       className="w-3.5 h-3.5 accent-ocean mt-0.5"
                     />
                     <div>
-                      <p className="text-xs font-semibold text-navy">Manual Verification Override</p>
-                      <p className="text-[10px] text-muted-foreground">I confirm that I have independently verified the client's identity and eligibility, and I accept responsibility for this override decision.</p>
+                      <p className="text-xs font-semibold text-amber-800">Manual Verification Override (required to approve)</p>
+                      <p className="text-[10px] text-amber-700 mt-0.5">I confirm I have independently verified this client's identity and eligibility, and accept responsibility for this override.</p>
                     </div>
                   </label>
                   {manualOverride && (
-                    <div className="mt-2">
-                      <textarea
-                        className="w-full rounded border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px]"
-                        placeholder="Required: Provide a documented reason for the manual override…"
-                        value={overrideReason}
-                        onChange={e => setOverrideReason(e.target.value)}
-                      />
-                    </div>
+                    <textarea
+                      className="mt-2 w-full rounded border border-amber-300 bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px]"
+                      placeholder="Required: Document your reason for the manual override…"
+                      value={overrideReason}
+                      onChange={e => setOverrideReason(e.target.value)}
+                    />
                   )}
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleApproval('approved')}
-                  disabled={isApproving || approvalLocked}
-                  className="px-5 py-2.5 bg-teal text-white text-xs font-bold uppercase tracking-wide hover:bg-teal/90 transition-colors rounded disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {isApproving ? 'Processing…' : 'Approve Client'}
-                </button>
-                <button
-                  onClick={() => handleApproval('returned')}
-                  disabled={isApproving}
-                  className="px-5 py-2.5 border border-amber-300 bg-amber-50 text-amber-700 text-xs font-bold uppercase tracking-wide hover:bg-amber-100 transition-colors rounded disabled:opacity-50"
-                >
-                  Return for Review
-                </button>
-              </div>
+              {/* Reject form */}
+              {showRejectForm && (
+                <div className="p-3 border border-red-200 rounded bg-red-50">
+                  <p className="text-xs font-semibold text-red-700 mb-1">Rejection Reason (required)</p>
+                  <textarea
+                    className="w-full rounded border border-red-300 bg-white px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px]"
+                    placeholder="Document the reason for rejection…"
+                    value={rejectionReason}
+                    onChange={e => setRejectionReason(e.target.value)}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={handleReject}
+                      disabled={isApproving}
+                      className="px-4 py-2 bg-red-600 text-white text-xs font-bold uppercase tracking-wide hover:bg-red-700 transition-colors rounded disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      {isApproving ? 'Processing…' : 'Confirm Rejection'}
+                    </button>
+                    <button onClick={() => { setShowRejectForm(false); setRejectionReason(''); }} className="px-4 py-2 border border-border text-xs font-semibold text-navy hover:bg-secondary rounded">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!showRejectForm && (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleApprove}
+                    disabled={isApproving || (needsManualOverride && !manualOverride)}
+                    className="px-5 py-2.5 bg-teal text-white text-xs font-bold uppercase tracking-wide hover:bg-teal/90 transition-colors rounded disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {isApproving ? 'Processing…' : 'Approve Client'}
+                  </button>
+                  <button
+                    onClick={() => setShowRejectForm(true)}
+                    disabled={isApproving}
+                    className="px-5 py-2.5 border border-red-300 bg-red-50 text-red-700 text-xs font-bold uppercase tracking-wide hover:bg-red-100 transition-colors rounded disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    Reject Client
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -684,11 +758,22 @@ export default function ComplianceClientReview() {
               <div className="flex items-center gap-2 text-teal mb-1">
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-sm font-semibold">Client Approved & Active</span>
-                {client.advisor_approved_at && <span className="text-xs text-muted-foreground ml-2">on {formatDate(client.advisor_approved_at)}</span>}
+                {client.review_decision_at && <span className="text-xs text-muted-foreground ml-2">on {formatDate(client.review_decision_at)}</span>}
               </div>
               {client.manual_override_reason && (
                 <p className="text-xs text-muted-foreground mt-1">⚠ Approved via manual override — {client.manual_override_reason}</p>
               )}
+            </div>
+          )}
+
+          {alreadyRejected && (
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center gap-2 text-red-600 mb-1">
+                <XCircle className="w-4 h-4" />
+                <span className="text-sm font-semibold">Client Rejected</span>
+                {client.review_decision_at && <span className="text-xs text-muted-foreground ml-2">on {formatDate(client.review_decision_at)}</span>}
+              </div>
+              <p className="text-xs text-muted-foreground">Reason: {client.review_rejection_reason || '—'}</p>
             </div>
           )}
         </div>
