@@ -53,9 +53,9 @@ const calcRiskScore = (formData) => {
   let score = 0;
   const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
   score += dropMap[formData.portfolio_drop_response] || 0;
-  const horizonMap = { 'Less than 1 year': 0, '1–3 years': 0.75, '3–5 years': 1.5, '5–10 years': 2.25, '10+ years': 3 };
+  const horizonMap = { 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 };
   score += horizonMap[formData.time_horizon] || 0;
-  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term — no immediate need': 2 };
+  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 };
   score += liquidMap[formData.liquidity_requirement] || 0;
   const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
   score += objMap[formData.primary_investment_objective] || 0;
@@ -69,6 +69,12 @@ const scoreToProfile = (score) => {
   if (score <= 8) return 'Growth';
   return 'Aggressive';
 };
+
+const normalizeRangeValue = (value) => (
+  typeof value === 'string'
+    ? value.replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“|Ã¢â‚¬â€œ|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
+    : value
+);
 
 const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuthPassed, faceMatchPassed) => {
   const breakdown = {
@@ -106,9 +112,9 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
 
   if (formData.monthly_investable_surplus === 'Over R50,000') {
     breakdown.transaction_factor = 15;
-  } else if (formData.monthly_investable_surplus === 'R15,000 – R50,000') {
+  } else if (formData.monthly_investable_surplus === 'R15,000 - R50,000') {
     breakdown.transaction_factor = 10;
-  } else if (formData.monthly_investable_surplus === 'R5,000 – R15,000') {
+  } else if (formData.monthly_investable_surplus === 'R5,000 - R15,000') {
     breakdown.transaction_factor = 5;
   } else {
     breakdown.transaction_factor = 0;
@@ -275,15 +281,15 @@ export default function ClientOnboarding() {
             ...(client.us_person_fatca    ? { us_person_fatca: client.us_person_fatca }       : {}),
             ...(client.pep_status         ? { pep_status: client.pep_status }                 : {}),
             ...(client.pep_explanation    ? { pep_explanation: client.pep_explanation }       : {}),
-            ...(client.gross_annual_income_band     ? { gross_annual_income_band: client.gross_annual_income_band }         : {}),
-            ...(client.monthly_investable_surplus   ? { monthly_investable_surplus: client.monthly_investable_surplus }     : {}),
-            ...(client.net_worth_band               ? { net_worth_band: client.net_worth_band }                             : {}),
-            ...(client.total_liabilities            ? { total_liabilities: client.total_liabilities }                       : {}),
+            ...(client.gross_annual_income_band     ? { gross_annual_income_band: normalizeRangeValue(client.gross_annual_income_band) }         : {}),
+            ...(client.monthly_investable_surplus   ? { monthly_investable_surplus: normalizeRangeValue(client.monthly_investable_surplus) }     : {}),
+            ...(client.net_worth_band               ? { net_worth_band: normalizeRangeValue(client.net_worth_band) }                             : {}),
+            ...(client.total_liabilities            ? { total_liabilities: normalizeRangeValue(client.total_liabilities) }                       : {}),
             ...(client.will_in_place                ? { will_in_place: client.will_in_place }                               : {}),
             ...(client.portfolio_drop_response      ? { portfolio_drop_response: client.portfolio_drop_response }           : {}),
             ...(client.primary_investment_objective ? { primary_investment_objective: client.primary_investment_objective } : {}),
-            ...(client.time_horizon                 ? { time_horizon: client.time_horizon }                                 : {}),
-            ...(client.liquidity_requirement        ? { liquidity_requirement: client.liquidity_requirement }               : {}),
+            ...(client.time_horizon                 ? { time_horizon: normalizeRangeValue(client.time_horizon) }                                 : {}),
+            ...(client.liquidity_requirement        ? { liquidity_requirement: normalizeRangeValue(client.liquidity_requirement) }               : {}),
             ...(client.risk_profile                 ? { risk_profile: client.risk_profile }                                 : {}),
             ...(client.advisory_needs?.length > 0   ? { advisory_needs: client.advisory_needs }                             : {}),
             loa_uploaded:                    client.loa_uploaded                    || prev.loa_uploaded,
@@ -419,8 +425,8 @@ export default function ClientOnboarding() {
     let txScore = 0;
     const surplus = formData.monthly_investable_surplus || '';
     if (surplus === 'Over R50,000') txScore = 15;
-    else if (surplus === 'R15,000 – R50,000') txScore = 10;
-    else if (surplus === 'R5,000 – R15,000') txScore = 5;
+    else if (surplus === 'R15,000 - R50,000') txScore = 10;
+    else if (surplus === 'R5,000 - R15,000') txScore = 5;
 
     let behavScore = 0;
     if (ficaChecks?.home_affairs_id?.status !== 'pass') behavScore += 10;
@@ -507,7 +513,7 @@ export default function ClientOnboarding() {
         payload: { name: formData.first_name + ' ' + formData.last_name, entity: 0, country: 'za', dataset: 'all' },
       });
       const amlMatch = amlResult?.data?.data?.totalHits > 0 || amlResult?.data?.data?.results?.length > 0 || false;
-      setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match — EDD required' : '' } }));
+      setFicaChecks(prev => ({ ...prev, aml_pep_screen: { ...prev.aml_pep_screen, status: amlMatch ? 'flag' : 'pass', note: amlMatch ? 'PEP/sanctions match - EDD required' : '' } }));
 
       setFicaChecks(prev => ({ ...prev, consumer_trace: { ...prev.consumer_trace, status: 'running' } }));
       const traceResult = await base44.functions.invoke('ficaVerify', {
@@ -543,7 +549,7 @@ export default function ClientOnboarding() {
       const docStatus = docVerification.Status || docVerification.status || docResult?.data?.data?.Status || docResult?.data?.data?.status;
       const docReason = docVerification.Reason || docVerification.reason || '';
       const docIsForgery = ['Failed', 'Rejected', 'Declined'].includes(docStatus) && /Forgery|Tampered|Fraud/i.test(docReason);
-      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending — manual review' } }));
+      setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: docIsForgery ? 'fail' : 'skipped', note: docIsForgery ? 'Document authentication failed' : 'Document auth pending - manual review' } }));
       const docAuthenticated = ['Success', 'Approved'].includes(docStatus);
       if (docAuthenticated) {
         setFicaChecks(prev => ({ ...prev, document_auth: { ...prev.document_auth, status: 'pass', note: 'ID document OCR completed' } }));
@@ -555,7 +561,7 @@ export default function ClientOnboarding() {
         const facePass = (faceResult?.data?.confidence_score || 0) >= 80;
         setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: facePass ? 'pass' : 'fail', note: faceResult?.data?.confidence_score ? 'Confidence: ' + faceResult.data.confidence_score + '%' : '' } }));
       } else {
-        setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'skipped', note: 'No selfie — manual review required' } }));
+        setFicaChecks(prev => ({ ...prev, face_match: { ...prev.face_match, status: 'skipped', note: 'No selfie - manual review required' } }));
       }
 
       setFicaChecks(prev => ({ ...prev, avs_bank: { ...prev.avs_bank, status: 'skipped', note: 'Captured at proposal stage' } }));
@@ -602,10 +608,10 @@ export default function ClientOnboarding() {
       await base44.entities.Clients.update(clientId, updateData);
 
       if (rmcpResult.band === 'Prohibited' || rmcpResult.band === 'High' || ficaStatus !== 'Approved') {
-        const scoreSummary = `Client Factor: ${rmcpResult.breakdown.client_factor} / 30\nGeography Factor: ${rmcpResult.breakdown.geography_factor} / 25\nProduct Factor: ${rmcpResult.breakdown.product_factor} / 20\nTransaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15\nBehaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10\nTOTAL RMCP SCORE: ${rmcpResult.score} / 100 → ${rmcpResult.band} RISK`;
-        const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT — Prohibited client: ${formData.first_name} ${formData.last_name}` :
-                            rmcpResult.band === 'High' ? `EDD Required — High risk client: ${formData.first_name} ${formData.last_name}` :
-                            `FICA ${ficaStatus} — ${formData.first_name} ${formData.last_name}`;
+        const scoreSummary = `Client Factor: ${rmcpResult.breakdown.client_factor} / 30\nGeography Factor: ${rmcpResult.breakdown.geography_factor} / 25\nProduct Factor: ${rmcpResult.breakdown.product_factor} / 20\nTransaction Factor: ${rmcpResult.breakdown.transaction_factor} / 15\nBehaviour Factor: ${rmcpResult.breakdown.behaviour_factor} / 10\nTOTAL RMCP SCORE: ${rmcpResult.score} / 100 Ã¢â€ â€™ ${rmcpResult.band} RISK`;
+        const emailSubject = rmcpResult.band === 'Prohibited' ? `URGENT - Prohibited client: ${formData.first_name} ${formData.last_name}` :
+                            rmcpResult.band === 'High' ? `EDD Required - High risk client: ${formData.first_name} ${formData.last_name}` :
+                            `FICA ${ficaStatus} - ${formData.first_name} ${formData.last_name}`;
         const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}\n\nFICA Status: ${ficaStatus}\nFICA Reference: ${ficaRef}\nRMCP Risk Band: ${rmcpResult.band}\n\nRISK SCORE BREAKDOWN:\n${scoreSummary}\n\nCLIENT DETAILS:\nID: ${formData.sa_id_number || 'N/A'}\nPEP Status: ${formData.pep_status}\nFATCA US Person: ${formData.us_person_fatca}\nTax Residency: ${formData.tax_residency}\nMonthly Investable: ${formData.monthly_investable_surplus}\nAdvisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}\n\n${rmcpResult.band === 'Prohibited' ? 'ACTION: Manual compliance review required before internal approval.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}\n\nLog in to the WealthWorks Advisor Portal to manage this client.`;
         await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: emailSubject, body: emailBody });
       }
@@ -711,10 +717,10 @@ export default function ClientOnboarding() {
       };
     } else if (currentStep === 5) {
       stepData = {
-        gross_annual_income_band: formData.gross_annual_income_band,
-        monthly_investable_surplus: formData.monthly_investable_surplus,
-        net_worth_band: formData.net_worth_band,
-        total_liabilities: formData.total_liabilities,
+        gross_annual_income_band: normalizeRangeValue(formData.gross_annual_income_band),
+        monthly_investable_surplus: normalizeRangeValue(formData.monthly_investable_surplus),
+        net_worth_band: normalizeRangeValue(formData.net_worth_band),
+        total_liabilities: normalizeRangeValue(formData.total_liabilities),
         will_in_place: formData.will_in_place,
         dependants: formData.dependants,
       };
@@ -733,8 +739,8 @@ export default function ClientOnboarding() {
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: formData.time_horizon,
-        liquidity_requirement: formData.liquidity_requirement,
+        time_horizon: normalizeRangeValue(formData.time_horizon),
+        liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
@@ -812,9 +818,9 @@ export default function ClientOnboarding() {
       };
     } else if (currentStep === 5) {
       stepData = {
-        gross_annual_income_band: formData.gross_annual_income_band,
-        monthly_investable_surplus: formData.monthly_investable_surplus,
-        net_worth_band: formData.net_worth_band, total_liabilities: formData.total_liabilities,
+        gross_annual_income_band: normalizeRangeValue(formData.gross_annual_income_band),
+        monthly_investable_surplus: normalizeRangeValue(formData.monthly_investable_surplus),
+        net_worth_band: normalizeRangeValue(formData.net_worth_band), total_liabilities: normalizeRangeValue(formData.total_liabilities),
         will_in_place: formData.will_in_place, dependants: formData.dependants,
       };
     } else if (currentStep === 6) {
@@ -826,7 +832,7 @@ export default function ClientOnboarding() {
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: formData.time_horizon, liquidity_requirement: formData.liquidity_requirement,
+        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
@@ -861,16 +867,16 @@ export default function ClientOnboarding() {
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
       const clientIdNumber = formData.sa_id_number || formData.passport_number || 'N/A';
       const submittedDocs = [
-        formData.identity_document_uploaded && '✓ Identity Document\n',
-        formData.proof_of_address_uploaded && '✓ Proof of Address\n',
-        formData.income_proof_uploaded && '✓ Income / Source of Funds\n',
-        formData.existing_policies_uploaded && '✓ Existing Policies\n',
+        formData.identity_document_uploaded && 'Ã¢Å“â€œ Identity Document\n',
+        formData.proof_of_address_uploaded && 'Ã¢Å“â€œ Proof of Address\n',
+        formData.income_proof_uploaded && 'Ã¢Å“â€œ Income / Source of Funds\n',
+        formData.existing_policies_uploaded && 'Ã¢Å“â€œ Existing Policies\n',
       ].filter(Boolean).join('');
 
       await base44.integrations.Core.SendEmail({
         from_name: 'Wealthworks',
         to: 'tfine1969@gmail.com',
-        subject: `New Client Documents Submitted — ${clientFullName}`,
+        subject: `New Client Documents Submitted - ${clientFullName}`,
         body: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${new Date().toLocaleString('en-ZA')}\n\nDocuments submitted:\n${submittedDocs}`,
       });
 
@@ -1010,7 +1016,7 @@ export default function ClientOnboarding() {
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
                   isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'
                 }`}>
-                  {isComplete ? '✓' : step.number}
+                  {isComplete ? 'Ã¢Å“â€œ' : step.number}
                 </span>
                 {step.label}
               </button>
@@ -1037,15 +1043,15 @@ export default function ClientOnboarding() {
               {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
               {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}
               {currentStep === 3 && 'Employment, source of funds, and tax/PEP declaration as required under FICA.'}
-              {currentStep === 4 && 'Automated identity verification via VerifyNow — Home Affairs, AML/PEP, and document authentication.'}
-              {currentStep === 5 && 'Your income, assets and liabilities — required for the financial needs analysis under FAIS GCC Section 8.'}
+              {currentStep === 4 && 'Automated identity verification via VerifyNow - Home Affairs, AML/PEP, and document authentication.'}
+              {currentStep === 5 && 'Your income, assets and liabilities - required for the financial needs analysis under FAIS GCC Section 8.'}
               {currentStep === 6 && 'Your existing financial products and letter of authority.'}
               {currentStep === 7 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
               {currentStep === 8 && 'Your onboarding is complete. Your WealthWorks advisor has been notified.'}
             </p>
           </div>
 
-          {/* ── STEP 1: Personal Information ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 1: Personal Information Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 1 && (
             <div className="space-y-2">
               <div className="grid grid-cols-3 gap-2">
@@ -1136,7 +1142,7 @@ export default function ClientOnboarding() {
               </div>
 
               <div className="border-t border-border pt-2">
-                <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">RESIDENTIAL ADDRESS — FICA REQUIRES A PHYSICAL ADDRESS</p>
+                <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">RESIDENTIAL ADDRESS - FICA REQUIRES A PHYSICAL ADDRESS</p>
                 <div className="space-y-2">
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">STREET ADDRESS *</Label>
@@ -1168,7 +1174,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 2: Document Upload ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 2: Document Upload Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 2 && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -1247,7 +1253,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 3: KYC Declaration ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: KYC Declaration Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 3 && (
             <div className="space-y-1.5">
               <div className="border border-border rounded p-1.5">
@@ -1339,126 +1345,48 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 4: FICA Verification ── */}
+          {/* STEP 4: FICA Verification */}
           {currentStep === 4 && (
             <div className="space-y-3">
-              <div className="border border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">BIOMETRIC SELFIE</h3>
-                  <span className="text-[10px] text-muted-foreground">OPTIONAL — IMPROVES FICA SCORE</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-2">Used for face match against your Home Affairs photograph.</p>
-                {selfieBase64 ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal/10 border border-teal flex items-center justify-center text-teal text-xs font-bold">✓</div>
-                    <div>
-                      <p className="text-xs font-medium text-teal">Selfie captured</p>
-                      <button type="button" onClick={() => setSelfieBase64(null)} className="text-[10px] text-muted-foreground hover:text-red-500">Remove</button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="block cursor-pointer">
-                    <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                      <p className="text-xs font-medium text-navy">Take or upload a selfie</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">JPEG or PNG · max 2 MB · face clearly visible</p>
-                      <p className="text-[10px] text-ocean mt-1">Click to upload</p>
-                    </div>
-                    <input type="file" accept="image/jpeg,image/png" capture="user" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (!file) return; if (file.size > 2097152) { toast.error('Selfie must be under 2 MB'); return; } const reader = new FileReader(); reader.onload = (ev) => setSelfieBase64(ev.target.result.split(',')[1]); reader.readAsDataURL(file); toast.success('Selfie captured'); }} />
-                  </label>
-                )}
-              </div>
-
               <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
-                    <h3 className="font-semibold text-navy text-sm">FICA / AML Automated Verification</h3>
-                    <p className="text-[10px] text-muted-foreground">Powered by VerifyNow · FICA-aligned · POPIA compliant · 7-year audit trail</p>
+                    <h3 className="font-semibold text-navy text-sm">FICA verification</h3>
+                    <p className="text-xs text-muted-foreground">We will run the required checks securely in the background. Any items that need attention are handled internally by your advisor.</p>
                   </div>
                   {!ficaRunning && (
                     <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
-                      {ficaResult ? '↺ Re-verify' : '⊕ Verify with VerifyNow'}
+                      {ficaResult ? 'Re-submit verification' : 'Submit verification'}
                     </button>
                   )}
-                  {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Verifying…</span>}
+                  {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Submitting...</span>}
                 </div>
-                {(ficaRunning || ficaResult) && (
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {[
-                      { key: 'home_affairs_id', label: 'Home Affairs ID', sub: 'HANIS real-time lookup' },
-                      { key: 'aml_pep_screen', label: 'AML / PEP / Sanctions', sub: '190+ country screening' },
-                      { key: 'document_auth', label: 'Document authentication', sub: 'OCR + fraud signals' },
-                      { key: 'face_match', label: 'Liveness & face match', sub: 'Biometric selfie check' },
-                      { key: 'avs_bank', label: 'Bank account (AVS)', sub: 'Verified at proposal stage' },
-                      { key: 'risk_score', label: 'Risk classification', sub: 'CDD risk band' },
-                    ].map(({ key, label, sub }) => {
-                      const check = ficaChecks[key] || { status: 'pending' };
-                      const s = { running: 'bg-ocean animate-pulse', pass: 'bg-teal', fail: 'bg-red-500', flag: 'bg-amber-500', skipped: 'bg-border', pending: 'bg-border' }[check.status] || 'bg-border';
-                      const b = { running: 'bg-ocean/10 text-ocean border-ocean/20', pass: 'bg-teal/10 text-teal border-teal/20', fail: 'bg-red-50 text-red-700 border-red-200', flag: 'bg-amber-50 text-amber-700 border-amber-200', skipped: 'bg-secondary text-muted-foreground border-border', pending: 'bg-secondary text-muted-foreground border-border' }[check.status] || 'bg-secondary text-muted-foreground border-border';
-                      const t = { running: 'Running…', pass: 'Verified', fail: 'Failed', flag: 'Flagged — EDD', skipped: 'Skipped', pending: 'Pending' }[check.status] || 'Pending';
-                      return (
-                        <div key={key} className="flex items-center gap-2 p-2 bg-card border border-border rounded text-xs">
-                          <div className={`w-2 h-2 rounded-full shrink-0 ${s}`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-navy truncate">{label}</p>
-                            <p className="text-muted-foreground text-[10px] truncate">{check.note || sub}</p>
-                          </div>
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 ${b}`}>{t}</span>
-                        </div>
-                      );
-                    })}
+
+                <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult?.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult ? 'bg-amber-50 border-amber-200' : 'bg-secondary/50 border-border'}`}>
+                  <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? '?' : ficaResult ? '!' : 'â€¢'}</span>
+                  <div>
+                    <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-amber-700' : 'text-navy'}`}>
+                      {ficaResult?.fica_status === 'Approved' ? 'Verified' : ficaResult ? 'To be completed internally' : 'Ready to submit'}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {ficaResult?.fica_status === 'Approved'
+                        ? 'Your verification has been completed.'
+                        : ficaResult
+                        ? 'We have received your information. No further action is required at this stage unless your advisor contacts you.'
+                        : 'Submit this section and continue with the rest of onboarding.'}
+                    </p>
+                    {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                   </div>
-                )}
-                {ficaResult && ficaResult.fica_status && (
-                  <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult.fica_status === 'Referred' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                    <span className="text-base shrink-0">{ficaResult.fica_status === 'Approved' ? '✓' : ficaResult.fica_status === 'Referred' ? '⚠' : '✕'}</span>
-                    <div className="flex-1">
-                      <p className={`font-semibold text-sm ${ficaResult.fica_status === 'Approved' ? 'text-teal' : ficaResult.fica_status === 'Referred' ? 'text-amber-700' : 'text-red-700'}`}>
-                        {ficaResult.fica_status === 'Approved' ? 'Verification completed' : ficaResult.fica_status === 'Referred' ? 'Referred — Enhanced Due Diligence required' : 'Verification routed for review'}
-                      </p>
-                      {ficaResult.fica_reference && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span> · Risk: <span className="font-semibold">{ficaResult.risk_band}</span> · {new Date(ficaResult.verified_at).toLocaleString('en-ZA')}</p>
-                      )}
-                      {ficaResult.rmcp_score && (
-                        <div className="mt-2 p-2 bg-secondary/50 rounded border border-border text-[10px] text-muted-foreground space-y-1">
-                          <p className="font-semibold text-navy">RMCP Risk Score Breakdown:</p>
-                          <div className="grid grid-cols-2 gap-1">
-                            <p>Client risk: <strong>{ficaResult.rmcp_score.breakdown.client_factor}</strong> / 30 (30%)</p>
-                            <p>Geography risk: <strong>{ficaResult.rmcp_score.breakdown.geography_factor}</strong> / 25 (25%)</p>
-                            <p>Product risk: <strong>{ficaResult.rmcp_score.breakdown.product_factor}</strong> / 20 (20%)</p>
-                            <p>Transaction risk: <strong>{ficaResult.rmcp_score.breakdown.transaction_factor}</strong> / 15 (15%)</p>
-                            <p>Behaviour risk: <strong>{ficaResult.rmcp_score.breakdown.behaviour_factor}</strong> / 10 (10%)</p>
-                            <p className="font-semibold text-navy col-span-2">Total RMCP: <strong>{ficaResult.rmcp_score.score}</strong> / 100 — <strong>{ficaResult.rmcp_score.band}</strong></p>
-                          </div>
-                        </div>
-                      )}
-                      {ficaResult.fica_status === 'Approved' && <p className="text-[10px] text-teal mt-1">All checks passed. Audit trail retained 7 years per FICA Section 23. You may continue to Step 5.</p>}
-                      {ficaResult.fica_status === 'Referred' && <p className="text-[10px] text-amber-700 mt-1">Your information has been received and will be reviewed internally. No further action is required at this stage.</p>}
-                      {false && ficaResult.fica_status === 'Declined' && (
-                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
-                          <p className="text-[10px] font-semibold text-amber-800">Further steps required — your advisor will be in contact to complete the verification process.</p>
-                          <p className="text-[10px] text-amber-700 mt-0.5">You may continue to complete your profile and your advisor will assist with re-verification.</p>
-                        </div>
-                      )}
-                      {ficaResult.failure_reason && <p className="text-[10px] text-red-700 mt-1">{ficaResult.failure_reason}</p>}
-                    </div>
-                  </div>
-                )}
-                {!ficaRunning && !ficaResult && (
-                  <div className="text-center py-3 text-xs text-muted-foreground border border-dashed border-border rounded">
-                    <p>Complete all fields above then click <strong>Verify with VerifyNow</strong></p>
-                    <p className="mt-1">Checks: Home Affairs ID · AML/PEP · Document auth · Face match · Risk classification</p>
-                  </div>
-                )}
+                </div>
               </div>
 
               <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-navy">FICA compliance note: </span>
-                Verification is performed by VerifyNow against Home Affairs HANIS, international AML/PEP/sanctions lists (190+ countries), and the SA FIC register. WealthWorks remains the FICA Accountable Institution under FICA Schedule 1. All records retained minimum 5 years under FICA Section 23. Processed under POPIA-compliant consent.
+                <span className="font-semibold text-navy">Privacy note: </span>
+                Verification results, AML screening and risk ratings are retained for WealthWorks internal compliance review and are not displayed as client-facing pass/fail decisions.
               </div>
             </div>
           )}
-
-          {/* ── STEP 5: Income & Assets ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 5: Income & Assets Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 5 && (
             <div className="space-y-2">
               <div className="border border-border rounded p-2.5">
@@ -1468,28 +1396,28 @@ export default function ClientOnboarding() {
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">GROSS ANNUAL INCOME BAND</Label>
                     <Select value={formData.gross_annual_income_band || undefined} onValueChange={v => handleChange('gross_annual_income_band', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Under R150,000', 'R150,000 – R350,000', 'R350,000 – R750,000', 'R750,000 – R1.5m', 'R1.5m – R3m', 'Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['Under R150,000', 'R150,000 - R350,000', 'R350,000 - R750,000', 'R750,000 - R1.5m', 'R1.5m - R3m', 'Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MONTHLY INVESTABLE SURPLUS</Label>
                     <Select value={formData.monthly_investable_surplus || undefined} onValueChange={v => handleChange('monthly_investable_surplus', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Under R2,000', 'R2,000 – R5,000', 'R5,000 – R15,000', 'R15,000 – R50,000', 'Over R50,000'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['Under R2,000', 'R2,000 - R5,000', 'R5,000 - R15,000', 'R15,000 - R50,000', 'Over R50,000'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">NET WORTH BAND</Label>
                     <Select value={formData.net_worth_band || undefined} onValueChange={v => handleChange('net_worth_band', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Under R500,000', 'R500k – R2m', 'R2m – R5m', 'R5m – R10m', 'R10m – R20m', 'Over R20m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['Under R500,000', 'R500k - R2m', 'R2m - R5m', 'R5m - R10m', 'R10m - R20m', 'Over R20m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL LIABILITIES</Label>
                     <Select value={formData.total_liabilities || undefined} onValueChange={v => handleChange('total_liabilities', v)}>
                       <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['None', 'Under R500,000', 'R500k – R1m', 'R1m – R3m', 'Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['None', 'Under R500,000', 'R500k - R1m', 'R1m - R3m', 'Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
@@ -1511,7 +1439,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 6: Existing Products ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 6: Existing Products Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 6 && (
             <div className="space-y-2">
               <div className="border border-border rounded p-2.5">
@@ -1585,7 +1513,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 7: Risk Profile & Objectives ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 7: Risk Profile & Objectives Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 7 && (
             <div className="space-y-1">
               <div className="border border-border rounded p-1.5">
@@ -1596,9 +1524,9 @@ export default function ClientOnboarding() {
                     <Select value={formData.portfolio_drop_response} onValueChange={v => handleChange('portfolio_drop_response', v)}>
                       <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select your response" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Sell immediately">Sell immediately — protect what's left</SelectItem>
-                        <SelectItem value="Hold">Hold — wait for recovery</SelectItem>
-                        <SelectItem value="Buy more">Buy more — take the opportunity</SelectItem>
+                        <SelectItem value="Sell immediately">Sell immediately - protect what's left</SelectItem>
+                        <SelectItem value="Hold">Hold - wait for recovery</SelectItem>
+                        <SelectItem value="Buy more">Buy more - take the opportunity</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1613,14 +1541,14 @@ export default function ClientOnboarding() {
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TIME HORIZON</Label>
                     <Select value={formData.time_horizon} onValueChange={v => handleChange('time_horizon', v)}>
                       <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Less than 1 year', '1–3 years', '3–5 years', '5–10 years', '10+ years'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['Less than 1 year', '1-3 years', '3-5 years', '5-10 years', '10+ years'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">LIQUIDITY REQUIREMENT</Label>
                     <Select value={formData.liquidity_requirement} onValueChange={v => handleChange('liquidity_requirement', v)}>
                       <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Immediate access required', 'Access within 1 year', 'Access within 3 years', 'Long-term — no immediate need'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      <SelectContent>{['Immediate access required', 'Access within 1 year', 'Access within 3 years', 'Long-term - no immediate need'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 </div>
@@ -1634,7 +1562,7 @@ export default function ClientOnboarding() {
                     <div className="w-full bg-border rounded-full h-1.5 my-0.5">
                       <div className="h-1.5 rounded-full bg-ocean transition-all" style={{ width: `${riskScore * 10}%` }} />
                     </div>
-                    <p className="text-[8px] text-muted-foreground leading-tight">Based on your answers — auto-selecting <strong>{scoreToProfile(riskScore)}</strong></p>
+                    <p className="text-[8px] text-muted-foreground leading-tight">Based on your answers - auto-selecting <strong>{scoreToProfile(riskScore)}</strong></p>
                   </div>
                 )}
 
@@ -1663,7 +1591,7 @@ export default function ClientOnboarding() {
                     ))}
                   </div>
                   {profileOverridden && (
-                    <p className="text-[8px] text-warn mt-0.5">⚠ Profile overridden — suggests <strong>{scoreToProfile(riskScore)}</strong></p>
+                    <p className="text-[8px] text-warn mt-0.5">Ã¢Å¡Â  Profile overridden - suggests <strong>{scoreToProfile(riskScore)}</strong></p>
                   )}
                 </div>
               </div>
@@ -1685,7 +1613,7 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── STEP 8: Review & Submit ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 8: Review & Submit Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 8 && (
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
@@ -1698,7 +1626,7 @@ export default function ClientOnboarding() {
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: 'CLIENT NAME', value: `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name },
-                  { label: 'RISK PROFILE', value: formData.risk_profile || '—' },
+                  { label: 'RISK PROFILE', value: formData.risk_profile || '-' },
                   { label: 'DOCUMENTS UPLOADED', value: ['identity_document_uploaded', 'proof_of_address_uploaded', 'income_proof_uploaded', 'existing_policies_uploaded'].filter(k => formData[k]).length + ' of 4' },
                   { label: 'ADVISOR', value: 'Trevor Fine' },
                 ].map(stat => (
@@ -1714,12 +1642,12 @@ export default function ClientOnboarding() {
             </div>
           )}
 
-          {/* ── Navigation ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ Navigation Ã¢â€â‚¬Ã¢â€â‚¬ */}
           <div className="pt-5 border-t border-border mt-5">
             <div className="flex gap-3">
               {currentStep > 1 && currentStep < 8 && (
                 <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">
-                  ← Back
+                  Ã¢â€ Â Back
                 </Button>
               )}
               <div className="flex-1" />
@@ -1736,17 +1664,17 @@ export default function ClientOnboarding() {
               )}
               {currentStep < 7 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue →'}
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue Ã¢â€ â€™'}
                 </Button>
               )}
               {currentStep === 7 && (
                 <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
-                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit →'}
+                  {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit Ã¢â€ â€™'}
                 </Button>
               )}
               {currentStep === 8 && (
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
-                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done →'}
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done Ã¢â€ â€™'}
                 </Button>
               )}
             </div>
