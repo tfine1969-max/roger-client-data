@@ -21,30 +21,26 @@ const sendOtpEmail = async ({ email, otp }) => {
 export default function ClientLogin() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const [email, setEmail] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email) {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail) {
       toast.error('Please enter your email address');
       return;
     }
+
     setIsLoading(true);
     try {
       const clients = await base44.entities.Clients.list();
-      const client = clients.find(c => c.email === formData.email);
+      const client = clients.find(c => (c.email || '').toLowerCase().trim() === normalizedEmail);
       if (!client) {
         toast.error('No account found with this email address');
         return;
       }
+
       const otp = generateOtp();
       await base44.entities.Clients.update(client.id, {
         otp_code: otp,
@@ -55,6 +51,7 @@ export default function ClientLogin() {
 
       sessionStorage.setItem('pending_client_id', client.id);
       sessionStorage.setItem('pending_client_email', client.email);
+      sessionStorage.removeItem('client_session_verified');
       sessionStorage.setItem('pending_onboarding_route', client.onboarding_complete === true ? '/client-dashboard' : '/client-onboarding');
       toast.success('Verification code sent');
       navigate('/client-otp', { replace: true });
@@ -67,7 +64,6 @@ export default function ClientLogin() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-card border-b border-border px-6 py-4">
         <button
           onClick={() => navigate('/')}
@@ -89,15 +85,15 @@ export default function ClientLogin() {
                 <Label className="text-sm font-semibold text-navy">Email Address</Label>
                 <Input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
                   className="mt-1.5 rounded-sm"
                 />
               </div>
-<Button
+
+              <Button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-navy text-white py-3 rounded-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"

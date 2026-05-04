@@ -31,16 +31,18 @@ import AdvisorDashboard from '@/pages/AdvisorDashboard';
 import ComplianceReview from '@/pages/ComplianceReview';
 import ComplianceClientReview from '@/pages/ComplianceClientReview';
 
+const LoadingScreen = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+  </div>
+);
+
 // Protected route wrapper for advisor-only pages
 const ProtectedAdvisorRoute = ({ element }) => {
   const { isAuthenticated, userType, isLoadingAuth } = useAuth();
 
   if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated || userType !== 'advisor') {
@@ -50,8 +52,8 @@ const ProtectedAdvisorRoute = ({ element }) => {
   return element;
 };
 
-// Protected route wrapper for pre-auth client onboarding flow
-// No authentication required—checks only for pending client context
+// Protected route wrapper for pre-auth client onboarding flow.
+// This flow is intentionally OTP based, so it only requires pending client context.
 const ProtectedClientInitRoute = ({ element }) => {
   const hasPendingFlow = !!sessionStorage.getItem('pending_client_id');
 
@@ -62,16 +64,25 @@ const ProtectedClientInitRoute = ({ element }) => {
   return element;
 };
 
+// Protected route wrapper for client dashboard access after OTP verification.
+const ProtectedClientSessionRoute = ({ element }) => {
+  const hasVerifiedClientSession =
+    !!sessionStorage.getItem('pending_client_id') &&
+    sessionStorage.getItem('client_session_verified') === 'true';
+
+  if (!hasVerifiedClientSession) {
+    return <Navigate to="/client-login" replace />;
+  }
+
+  return element;
+};
+
 // Protected route wrapper for fully authenticated client pages
 const ProtectedClientRoute = ({ element }) => {
   const { isAuthenticated, userType, isLoadingAuth } = useAuth();
 
   if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated || userType !== 'client') {
@@ -85,11 +96,7 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (authError) {
@@ -115,7 +122,7 @@ const AuthenticatedApp = () => {
       <Route path="/client-onboarding-trust" element={<ProtectedClientInitRoute element={<ClientOnboardingTrust />} />} />
       <Route path="/client-onboarding-company" element={<ProtectedClientInitRoute element={<ClientOnboardingCompany />} />} />
       <Route path="/client-confirmation" element={<ProtectedClientInitRoute element={<ClientOnboardingConfirmation />} />} />
-      <Route path="/client-dashboard" element={<ProtectedClientInitRoute element={<ClientDashboard />} />} />
+      <Route path="/client-dashboard" element={<ProtectedClientSessionRoute element={<ClientDashboard />} />} />
 
       <Route path="/advisor-dashboard" element={<ProtectedAdvisorRoute element={<AdvisorDashboard />} />} />
       <Route path="/proposals" element={<ProtectedAdvisorRoute element={<Inbox />} />} />
