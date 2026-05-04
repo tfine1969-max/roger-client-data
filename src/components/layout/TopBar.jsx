@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 
 export default function TopBar({ advisorName, clientName }) {
   const navigate = useNavigate();

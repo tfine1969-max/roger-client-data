@@ -1,7 +1,5 @@
 import React from 'react';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { REC_CATEGORIES, REC_PROVIDERS } from '@/lib/constants';
 
 const variants = {

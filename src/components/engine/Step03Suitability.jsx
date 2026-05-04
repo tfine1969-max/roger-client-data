@@ -5,7 +5,6 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
 import PhraseLibrary, { LibraryButton } from '@/components/engine/PhraseLibrary';
-import ReasonChecklist from '@/components/engine/ReasonChecklist';
 import ProductReplacement from '@/components/engine/ProductReplacement';
 import { toast } from 'sonner';
 

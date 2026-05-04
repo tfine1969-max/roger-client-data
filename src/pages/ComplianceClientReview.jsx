@@ -8,7 +8,7 @@ import {
   Lock, Send, History, Upload, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { isComplianceAuthorised, resolvedFicaLabel, writeAuditLog, canApproveClient } from '@/lib/complianceHelpers';
+import { isComplianceAuthorised, resolvedFicaLabel, writeAuditLog } from '@/lib/complianceHelpers';
 
 const formatDate = (val) => {
   if (!val) return '—';

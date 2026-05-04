@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,7 @@ export default function CreateProposal() {
   const createProposalMutation = useMutation({
     mutationFn: async ({ clientId, advisorName }) => {
       const reference = `WW-P-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000) + 1000}`;
-      return base44.entities.Proposals.create({
+      return base44.entities.Proposal.create({
         client_id: clientId,
         advisor_name: advisorName,
         reference,

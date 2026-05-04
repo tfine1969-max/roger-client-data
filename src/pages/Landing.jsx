@@ -7,7 +7,7 @@ import { Users, Briefcase } from 'lucide-react';
 export default function Landing() {
   const navigate = useNavigate();
   const [isCreatingTestData, setIsCreatingTestData] = useState(false);
-  const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === 'app.base44.com');
+  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   const createTestData = async () => {
     setIsCreatingTestData(true);
@@ -32,7 +32,7 @@ export default function Landing() {
         client_status: 'Onboarded',
         onboarding_complete: true,
       });
-      await base44.entities.Proposals.create({
+      await base44.entities.Proposal.create({
         client_id: client.id,
         advisor_name: 'Trevor Fine',
         reference: `WW-P-2026-${Math.floor(1000 + Math.random() * 9000)}`,

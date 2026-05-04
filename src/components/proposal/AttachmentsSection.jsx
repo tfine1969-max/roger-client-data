@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileText } from 'lucide-react';
 
 export default function AttachmentsSection({ attachments, proposalId }) {
   const quoteRef = useRef(null);

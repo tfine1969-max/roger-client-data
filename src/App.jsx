@@ -126,7 +126,7 @@ const AuthenticatedApp = () => {
       <Route path="/proposal/:id/add-risk-product" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/risk-product/:riskProductId" element={<ProtectedAdvisorRoute element={<AddEditRiskProduct />} />} />
       <Route path="/proposal/:id/engine" element={<ProtectedAdvisorRoute element={<ProposalEngine />} />} />
-      <Route path="/project-tracker" element={<ProjectTracker />} />
+      <Route path="/project-tracker" element={<ProtectedAdvisorRoute element={<ProjectTracker />} />} />
       <Route path="/compliance-review" element={<ProtectedAdvisorRoute element={<ComplianceReview />} />} />
       <Route path="/compliance-review/:clientId" element={<ProtectedAdvisorRoute element={<ComplianceClientReview />} />} />
 

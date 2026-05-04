@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Download, FileText, Upload, AlertTriangle, RefreshCw, Clock } from 'lucide-react';
+import { CheckCircle2, Download, FileText, Upload, AlertTriangle, RefreshCw } from 'lucide-react';
 import SignaturePad from '@/components/engine/SignaturePad';
 import SendForSignature from '@/components/SendForSignature';
 import { base44 } from '@/api/base44Client';

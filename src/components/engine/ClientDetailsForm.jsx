@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { NEEDS_OPTIONS, RISK_COVER_TYPES } from '@/lib/constants';
+import { NEEDS_OPTIONS } from '@/lib/constants';
 import { ChevronRight } from 'lucide-react';
 
 const LIQUIDITY_OPTIONS = ['Immediate access required', 'Within 1 year', '1–3 years', '3+ years', 'No liquidity requirements'];

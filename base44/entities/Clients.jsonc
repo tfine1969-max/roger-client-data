@@ -226,6 +226,14 @@
     "otp_verified": {
       "type": "boolean"
     },
+    "otp_code": {
+      "type": "string",
+      "description": "Temporary onboarding OTP code"
+    },
+    "otp_expires_at": {
+      "type": "string",
+      "description": "ISO timestamp when onboarding OTP expires"
+    },
     "onboarding_complete": {
       "type": "boolean"
     },

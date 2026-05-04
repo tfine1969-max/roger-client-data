@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
-import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 
 const extractDOBFromID = (idNumber) => {

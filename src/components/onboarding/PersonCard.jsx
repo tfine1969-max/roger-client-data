@@ -3,7 +3,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePickerField from '@/components/ui/date-picker-field';
-import { Trash2 } from 'lucide-react';
 
 const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
 const COUNTRIES = ['South Africa','Zimbabwe','Mozambique','Botswana','Namibia','Zambia','Malawi','United Kingdom','United States','Australia','Other'];

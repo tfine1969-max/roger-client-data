@@ -9,8 +9,19 @@ import { toast } from 'sonner';
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ðŸ§ª TEST MODE - Set to false before go-live
-const TEST_MODE = true;
+const TEST_MODE = false;
 const TEST_DATA_VERSION = 'Test data v2';
+
+const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
+
+const sendOtpEmail = async ({ email, otp }) => {
+  await base44.integrations.Core.SendEmail({
+    from_name: 'WealthWorks',
+    to: email,
+    subject: 'Your WealthWorks onboarding verification code',
+    body: `Your WealthWorks onboarding verification code is ${otp}.\n\nThis code expires in 15 minutes.\n\nIf you did not request this code, please ignore this email.`,
+  });
+};
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const testDocUrl = (slug, doc) => `https://wealthworks.test/documents/${slug}/${doc}.pdf`;
@@ -305,7 +316,7 @@ const TEST_PROFILES = [
   },
   {
     label: 'Alpha Investments',
-    sub: '(Pty) Ltd Â· 2 directors',
+    sub: '(Pty) Ltd - 2 directors',
     email: 'alpha.company@test.co.za',
     mobile: '0821234567',
     onboarding: {
@@ -332,7 +343,7 @@ const TEST_PROFILES = [
   },
   {
     label: 'Beta Holdings',
-    sub: '(Pty) Ltd Â· 3 directors',
+    sub: '(Pty) Ltd - 3 directors',
     email: 'beta.company@test.co.za',
     mobile: '0821234567',
     onboarding: {
@@ -669,6 +680,13 @@ export default function ClientRegistration() {
         navigate(onboardingRoute, { replace: true });
       } else {
         toast.success('Account created. Verify your OTP to continue.');
+        const otp = generateOtp();
+        await base44.entities.Clients.update(clientId, {
+          otp_code: otp,
+          otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          otp_verified: false,
+        });
+        await sendOtpEmail({ email: formData.email, otp });
         // Store destination so OTP page knows where to redirect
         sessionStorage.setItem('pending_onboarding_route', onboardingRoute);
         navigate('/client-otp', { replace: true });
@@ -780,7 +798,7 @@ export default function ClientRegistration() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="Password"
                   required
                   className="mt-1.5 rounded-sm"
                 />
@@ -793,7 +811,7 @@ export default function ClientRegistration() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="Confirm password"
                   required
                   className="mt-1.5 rounded-sm"
                 />

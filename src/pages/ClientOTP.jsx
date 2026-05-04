@@ -42,16 +42,24 @@ export default function ClientOTP() {
     setIsLoading(true);
 
     try {
-      // Test OTP code for development: 123456
-      if (otp !== '123456') {
+      const clients = await base44.entities.Clients.list();
+      const client = clients.find(c => c.id === pendingClientId);
+      if (!client?.otp_code || client.otp_code !== otp.trim()) {
         toast.error('Invalid OTP code');
+        setIsLoading(false);
+        return;
+      }
+      if (client.otp_expires_at && new Date(client.otp_expires_at).getTime() < Date.now()) {
+        toast.error('OTP code has expired. Please register or log in again to request a new code.');
         setIsLoading(false);
         return;
       }
 
       // Update client record to mark OTP verified
       await base44.entities.Clients.update(pendingClientId, {
-        otp_verified: true
+        otp_verified: true,
+        otp_code: '',
+        otp_expires_at: '',
       });
 
       toast.success('OTP verified successfully');
@@ -105,9 +113,6 @@ export default function ClientOTP() {
                 maxLength="6"
                 className="rounded-sm text-center text-2xl letter-spacing-2 font-mono"
               />
-              <p className="text-xs text-muted-foreground mt-2">
-                (Test code: 123456)
-              </p>
             </div>
 
             {/* Verify Button */}
@@ -121,12 +126,6 @@ export default function ClientOTP() {
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-white/70 text-sm">
-            Use test code <span className="font-mono font-bold">123456</span> for development
-          </p>
-        </div>
       </div>
     </div>
   );

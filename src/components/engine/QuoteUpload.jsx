@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Upload, FileText, Check, Loader2 } from 'lucide-react';
+import { Upload, Check, Loader2 } from 'lucide-react';
 
 function UploadBox({ label, subtitle, existingUrl, onFileUploaded }) {
   const fileRef = useRef(null);

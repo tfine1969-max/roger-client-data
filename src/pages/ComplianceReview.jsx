@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, XCircle, FileText, Lock } from 'lucide-react';
+import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock } from 'lucide-react';
 import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [

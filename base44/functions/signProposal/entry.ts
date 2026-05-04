@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
   // Use service role so unauthenticated clients can read/update proposals
   const allProposals = await base44.asServiceRole.entities.Proposal.list();
-  const proposal = allProposals.find(p => p.id === proposalId);
+  const proposal = allProposals.find(p => p.signing_token === proposalId);
 
   if (!proposal) {
     return Response.json({ error: 'Proposal not found' }, { status: 404 });
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
   if (action === 'load') {
     // Also mark as Awaiting Client Signature if not already signed
     if (proposal.status !== 'Signed') {
-      await base44.asServiceRole.entities.Proposal.update(proposalId, {
+      await base44.asServiceRole.entities.Proposal.update(proposal.id, {
         status: 'Awaiting Client Signature',
       });
       return Response.json({ proposal: { ...proposal, status: 'Awaiting Client Signature' } });
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       updateData.signed_pdf_url = signedPdfUrl;
     }
 
-    await base44.asServiceRole.entities.Proposal.update(proposalId, updateData);
+    await base44.asServiceRole.entities.Proposal.update(proposal.id, updateData);
 
     // Notify advisor (non-blocking — errors don't fail the request)
     try {
@@ -69,8 +69,8 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.RiskProducts.list(),
       base44.asServiceRole.entities.RiskCovers.list(),
     ]);
-    const investments = allInvestments.filter(i => i.proposal_id === proposalId);
-    const riskProductsRaw = allRiskProducts.filter(rp => rp.proposal_id === proposalId);
+    const investments = allInvestments.filter(i => i.proposal_id === proposal.id);
+    const riskProductsRaw = allRiskProducts.filter(rp => rp.proposal_id === proposal.id);
     const riskProducts = riskProductsRaw.map(rp => ({
       ...rp,
       covers: allRiskCovers.filter(c => c.risk_product_id === rp.id),
