@@ -58,7 +58,8 @@ export default function ClientDashboard() {
     sessionStorage.removeItem('pending_client_id');
     sessionStorage.removeItem('pending_client_email');
     sessionStorage.removeItem('pending_entity_type');
-    window.location.href = window.location.origin + '/';
+    sessionStorage.removeItem('client_session_verified');
+    window.location.href = `${window.location.origin}/`;
   };
 
   if (isLoading) {
@@ -84,7 +85,6 @@ export default function ClientDashboard() {
   const fullAddress = [client.street_address, client.suburb, client.city, client.province, client.postal_code]
     .filter(Boolean).join(', ') || '-';
 
-  // Trustees or directors lists
   const personsList = Array.isArray(client.trustees_list)
     ? client.trustees_list
     : Array.isArray(client.directors_list)
@@ -99,7 +99,6 @@ export default function ClientDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> Back to Home
@@ -123,7 +122,6 @@ export default function ClientDashboard() {
           </div>
         </div>
 
-        {/* FICA Verification Card */}
         <div className="bg-card border border-border rounded-lg overflow-hidden mb-4">
           <div className="p-4">
             <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">FICA Verification</h2>
@@ -145,8 +143,6 @@ export default function ClientDashboard() {
           </div>
         </div>
         <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-
-          {/* â”€â”€ ENTITY PROFILE (Trust / Company) â”€â”€ */}
           {isEntity && (
             <>
               <div>
@@ -176,7 +172,6 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {/* Trustees / Directors list */}
               {personsList.length > 0 && (
                 <div className="border-t border-border pt-3">
                   <h2 className="text-xs font-semibold tracking-widest text-ocean uppercase mb-3">{personsLabel}</h2>
@@ -243,7 +238,6 @@ export default function ClientDashboard() {
             </>
           )}
 
-          {/* â”€â”€ INDIVIDUAL PROFILE â”€â”€ */}
           {!isEntity && (
             <>
               <div>
@@ -283,7 +277,6 @@ export default function ClientDashboard() {
             </>
           )}
 
-          {/* Actions */}
           <div className="border-t border-border pt-3">
             <Button
               onClick={() => navigate(onboardingRoute)}
@@ -297,6 +290,3 @@ export default function ClientDashboard() {
     </div>
   );
 }
-
-
-
