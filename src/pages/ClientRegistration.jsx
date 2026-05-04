@@ -10,11 +10,10 @@ import { toast } from 'sonner';
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const sendOtpEmail = async ({ email, otp }) => {
-  await base44.integrations.Core.SendEmail({
-    from_name: 'WealthWorks',
+  await base44.functions.invoke('sendTransactionalEmail', {
     to: email,
-    subject: 'Your WealthWorks onboarding verification code',
-    body: `Your WealthWorks onboarding verification code is ${otp}.\n\nThis code expires in 15 minutes.\n\nIf you did not request this code, please ignore this email.`,
+    subject: 'Your WealthWorks verification code',
+    text: `Your WealthWorks onboarding verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.`,
   });
 };
 
