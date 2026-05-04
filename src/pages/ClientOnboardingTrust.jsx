@@ -99,10 +99,6 @@ export default function ClientOnboardingTrust() {
       if (entityType === 'Company') { navigate('/client-onboarding-company', { replace: true }); return; }
       navigate('/client-onboarding', { replace: true }); return;
     }
-    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) { try { setFormData(prev => ({ ...prev, ...JSON.parse(seedRaw) })); } catch {} sessionStorage.removeItem('test_onboarding_seed'); }
-    const trusteeSeed = sessionStorage.getItem('test_trustees_seed');
-    if (trusteeSeed) { try { const t = JSON.parse(trusteeSeed); if (Array.isArray(t) && t.length > 0) setTrustees(t); } catch {} sessionStorage.removeItem('test_trustees_seed'); }
     base44.entities.Clients.list().then(clients => {
       const c = clients.find(x => x.id === id);
       if (c) {

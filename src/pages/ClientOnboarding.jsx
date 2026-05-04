@@ -230,23 +230,6 @@ export default function ClientOnboarding() {
       navigate('/client-onboarding-company', { replace: true });
       return;
     }
-    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) {
-      try {
-        const seed = JSON.parse(seedRaw);
-        setFormData(prev => ({ ...prev, ...seed }));
-        if (Array.isArray(seed.products_list) && seed.products_list.length > 0) setProductsList(seed.products_list);
-      } catch {}
-      sessionStorage.removeItem('test_onboarding_seed');
-    }
-    const productsSeed = sessionStorage.getItem('test_products_seed');
-    if (productsSeed) {
-      try {
-        const seededProducts = JSON.parse(productsSeed);
-        if (Array.isArray(seededProducts) && seededProducts.length > 0) setProductsList(seededProducts);
-      } catch {}
-      sessionStorage.removeItem('test_products_seed');
-    }
     base44.entities.Clients.list()
       .then(clients => {
         const client = clients.find(c => c.id === id);
