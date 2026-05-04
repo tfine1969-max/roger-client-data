@@ -341,7 +341,7 @@ export default function ClientOnboardingTrust() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, text: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Trust verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
@@ -590,7 +590,7 @@ export default function ClientOnboardingTrust() {
       await base44.functions.invoke('sendTransactionalEmail', {
         to: ADVISOR_NOTIFICATION_EMAIL,
         subject: 'New Trust Onboarding - ' + clientName,
-        body: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+        text: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
       });
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });

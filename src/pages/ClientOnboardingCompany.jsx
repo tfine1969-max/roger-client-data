@@ -368,7 +368,7 @@ export default function ClientOnboardingCompany() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, text: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Entity verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
@@ -611,6 +611,11 @@ export default function ClientOnboardingCompany() {
           advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
         });
       }
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: ADVISOR_NOTIFICATION_EMAIL,
+        subject: 'New Company Onboarding - ' + clientName,
+        text: 'Company ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+      });
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (err) {
