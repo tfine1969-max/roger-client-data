@@ -39,8 +39,7 @@ Deno.serve(async (req) => {
 
     // Send email to client
     const docList = documentTypes.map(d => `• ${d}`).join('\n');
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      from_name: 'WealthWorks',
+    await base44.asServiceRole.functions.invoke('sendTransactionalEmail', {
       to: clientEmail,
       subject: 'Additional Documents Required — WealthWorks',
       body: `Dear ${clientName || 'Client'},\n\nThank you for completing your onboarding with WealthWorks.\n\nAdditional verification may be required. WealthWorks will contact you if further documentation is needed.\n\nYour advisor has requested the following documents to complete your file:\n\n${docList}\n\n${message ? `Additional message from your advisor:\n${message}\n\n` : ''}Please use the secure link below to upload your documents:\n\n${uploadUrl}\n\nThis link is unique to you and expires after use. Please do not share it.\n\nIf you have any questions, please contact your advisor directly.\n\nKind regards,\nThe WealthWorks Team\n\nAuthorised Financial Services Provider FSP no 28337`,
