@@ -14,7 +14,6 @@ export default function ClientOTP() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [pendingClientId, setPendingClientId] = useState(null);
 
-  // Verify pending client context on mount
   useEffect(() => {
     const clientId = sessionStorage.getItem('pending_client_id');
     if (!clientId) {
@@ -55,12 +54,16 @@ export default function ClientOTP() {
         return;
       }
 
-      // Update client record to mark OTP verified
       await base44.entities.Clients.update(pendingClientId, {
         otp_verified: true,
         otp_code: '',
         otp_expires_at: '',
       });
+
+      sessionStorage.setItem('client_session_verified', 'true');
+      if (client.email) {
+        sessionStorage.setItem('pending_client_email', client.email);
+      }
 
       toast.success('OTP verified successfully');
       const dest = sessionStorage.getItem('pending_onboarding_route') || '/client-onboarding';
@@ -84,7 +87,6 @@ export default function ClientOTP() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy to-ocean flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/client-registration')}
@@ -97,10 +99,8 @@ export default function ClientOTP() {
           <p className="text-white/70 mt-2">Enter the verification code sent to your email</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleVerifyOTP} className="bg-white rounded-lg shadow-xl p-8">
           <div className="space-y-6">
-            {/* OTP Input */}
             <div>
               <Label className="text-sm font-semibold text-navy mb-2 block">
                 OTP Code
@@ -115,7 +115,6 @@ export default function ClientOTP() {
               />
             </div>
 
-            {/* Verify Button */}
             <Button
               type="submit"
               disabled={isLoading || !otp.trim()}
@@ -125,7 +124,6 @@ export default function ClientOTP() {
             </Button>
           </div>
         </form>
-
       </div>
     </div>
   );
