@@ -11,6 +11,9 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
 const STEPS = [
   { number: 1, label: 'Trust details' },
@@ -338,7 +341,7 @@ export default function ClientOnboardingTrust() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Trust verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
@@ -586,7 +589,7 @@ export default function ClientOnboardingTrust() {
       }
       await base44.integrations.Core.SendEmail({
         from_name: 'WealthWorks',
-        to: 'tfine1969@gmail.com',
+        to: ADVISOR_NOTIFICATION_EMAIL,
         subject: 'New Trust Onboarding - ' + clientName,
         body: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
       });

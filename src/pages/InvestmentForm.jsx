@@ -99,7 +99,6 @@ export default function InvestmentForm() {
       if (!investmentId) return null;
       const all = await base44.entities.Investments.list();
       const found = all.find(i => i.id === investmentId) || null;
-      console.log('[InvestmentForm] loaded investment:', JSON.stringify(found, null, 2));
       return found;
     },
     enabled: !!investmentId,
@@ -292,8 +291,6 @@ export default function InvestmentForm() {
       income_frequency: incomeRequired === 'Yes' ? (form.income_frequency || '') : '',
       income_notes: incomeRequired === 'Yes' ? (form.income_notes || '') : '',
     };
-
-    console.log('[InvestmentForm] saving:', { annexure: ann, mandate: form.investment_mandate, ...feePayload, ...incomePayload });
 
     const payload = {
       investment_mandate:form.investment_mandate,

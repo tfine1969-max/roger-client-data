@@ -10,6 +10,9 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
 const STEPS = [
   { number: 1, label: 'Company details' },
@@ -365,7 +368,7 @@ export default function ClientOnboardingCompany() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Entity verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');

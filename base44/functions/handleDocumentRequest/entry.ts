@@ -17,7 +17,11 @@ Deno.serve(async (req) => {
 
     // Generate a unique upload token
     const uploadToken = crypto.randomUUID().replace(/-/g, '');
-    const uploadUrl = `${req.headers.get('origin') || 'https://wealth-works-flow.base44.app'}/upload-documents?token=${uploadToken}`;
+    const appBaseUrl = (req.headers.get('origin') || Deno.env.get('APP_BASE_URL') || '').replace(/\/+$/, '');
+    if (!appBaseUrl) {
+      return Response.json({ error: 'APP_BASE_URL not configured' }, { status: 500 });
+    }
+    const uploadUrl = `${appBaseUrl}/upload-documents?token=${uploadToken}`;
 
     // Create the document request record
     const docRequest = await base44.asServiceRole.entities.DocumentRequest.create({

@@ -133,7 +133,6 @@ export default function AddEditInvestment() {
 
   useEffect(() => {
     if (!inv) return;
-    console.log('[AddEditInvestment] inv loaded:', JSON.stringify(inv, null, 2));
     isLoadingRef.current = true;
     setLoaded(false);
 
@@ -276,8 +275,6 @@ export default function AddEditInvestment() {
       feePayload.carry_fee_percent         = parseFloat(form.carry_fee_percent)         || 0;
       feePayload.carry_hurdle_percent      = parseFloat(form.carry_hurdle_percent)      || 0;
     }
-
-    console.log('[Save] fee fields being sent:', { annexure: activeAnn, mandate: form.investment_mandate, ...feePayload });
 
     saveMutation.mutate({
       investment_mandate:        form.investment_mandate,

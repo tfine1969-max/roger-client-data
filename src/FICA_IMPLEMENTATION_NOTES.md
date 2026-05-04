@@ -20,7 +20,7 @@
     - `proof_of_address_uploaded` → `doc_proof_of_address`
     - `income_proof_uploaded` → `doc_source_of_funds`
     - `existing_policies_uploaded` → `doc_existing_policies`
-  - Sends notification email to `tfine1969@gmail.com` with client details and submitted documents list
+  - Sends notification email to the configured WealthWorks advisor address with client details and submitted documents list
 
 ### STEP 3 — ClientDocumentRepository Component Created
 - Created `components/ClientDocumentRepository.jsx`

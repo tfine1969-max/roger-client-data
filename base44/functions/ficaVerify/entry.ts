@@ -1,5 +1,5 @@
 const API_KEY = Deno.env.get('VERIFYNOW_API_KEY');
-const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
+const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE');
 const VERIFYNOW_API_BASE_URL =
   (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
 const VERIFYNOW_VERIFY_URL = Deno.env.get('VERIFYNOW_VERIFY_URL') || `${VERIFYNOW_API_BASE_URL}/verify`;
@@ -147,6 +147,13 @@ Deno.serve(async (req) => {
     if (!API_KEY) {
       return Response.json(
         { data: null, error: 'VERIFYNOW_API_KEY not configured' },
+        { status: 400 }
+      );
+    }
+
+    if (!VERIFYNOW_MODE) {
+      return Response.json(
+        { data: null, error: 'VERIFYNOW_MODE not configured' },
         { status: 400 }
       );
     }
