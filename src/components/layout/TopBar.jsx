@@ -33,7 +33,7 @@ export default function TopBar({ advisorName, clientName }) {
             sessionStorage.removeItem('pending_client_id');
             sessionStorage.removeItem('pending_client_email');
             sessionStorage.removeItem('pending_entity_type');
-            window.location.href = 'https://wealth-works-flow.base44.app';
+            window.location.href = window.location.origin;
           }}
           className="text-white/30 p-2 border border-white/12 hover:text-white/70 transition-colors"
         >

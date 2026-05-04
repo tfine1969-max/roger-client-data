@@ -10,6 +10,9 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
 const STEPS = [
   { number: 1, label: 'Company details' },
@@ -98,10 +101,6 @@ export default function ClientOnboardingCompany() {
       if (entityType === 'Trust') { navigate('/client-onboarding-trust', { replace: true }); return; }
       navigate('/client-onboarding', { replace: true }); return;
     }
-    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) { try { setFormData(prev => ({ ...prev, ...JSON.parse(seedRaw) })); } catch {} sessionStorage.removeItem('test_onboarding_seed'); }
-    const dirSeed = sessionStorage.getItem('test_directors_seed');
-    if (dirSeed) { try { const d = JSON.parse(dirSeed); if (Array.isArray(d) && d.length > 0) setDirectors(d); } catch {} sessionStorage.removeItem('test_directors_seed'); }
     base44.entities.Clients.list().then(clients => {
       const c = clients.find(x => x.id === id);
       if (c) {
@@ -369,7 +368,7 @@ export default function ClientOnboardingCompany() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, text: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Entity verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
@@ -612,6 +611,11 @@ export default function ClientOnboardingCompany() {
           advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
         });
       }
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: ADVISOR_NOTIFICATION_EMAIL,
+        subject: 'New Company Onboarding - ' + clientName,
+        text: 'Company ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+      });
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (err) {

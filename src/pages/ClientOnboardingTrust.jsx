@@ -11,6 +11,9 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
 const STEPS = [
   { number: 1, label: 'Trust details' },
@@ -99,10 +102,6 @@ export default function ClientOnboardingTrust() {
       if (entityType === 'Company') { navigate('/client-onboarding-company', { replace: true }); return; }
       navigate('/client-onboarding', { replace: true }); return;
     }
-    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) { try { setFormData(prev => ({ ...prev, ...JSON.parse(seedRaw) })); } catch {} sessionStorage.removeItem('test_onboarding_seed'); }
-    const trusteeSeed = sessionStorage.getItem('test_trustees_seed');
-    if (trusteeSeed) { try { const t = JSON.parse(trusteeSeed); if (Array.isArray(t) && t.length > 0) setTrustees(t); } catch {} sessionStorage.removeItem('test_trustees_seed'); }
     base44.entities.Clients.list().then(clients => {
       const c = clients.find(x => x.id === id);
       if (c) {
@@ -342,7 +341,7 @@ export default function ClientOnboardingTrust() {
         ...buildRmcpUpdate(rmcpResult),
       });
       if (ficaStatus !== 'Approved') {
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, body: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Trust FICA ' + ficaStatus + ' - ' + formData.entity_name, text: 'FICA verification for trust ' + formData.entity_name + ' (Reg: ' + formData.trust_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nTrustees checked: ' + activeTrustees.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
       }
       if (ficaStatus === 'Approved') toast.success('Trust verification completed - ' + ficaRef);
       else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
@@ -588,11 +587,10 @@ export default function ClientOnboardingTrust() {
           advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
         });
       }
-      await base44.integrations.Core.SendEmail({
-        from_name: 'WealthWorks',
-        to: 'tfine1969@gmail.com',
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: ADVISOR_NOTIFICATION_EMAIL,
         subject: 'New Trust Onboarding - ' + clientName,
-        body: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+        text: 'Trust ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
       });
       toast.success('Onboarding completed successfully');
       navigate('/client-confirmation', { replace: true });

@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
 const extractDOBFromID = (idNumber) => {
   if (!idNumber || idNumber.length < 6) return '';
@@ -229,23 +232,6 @@ export default function ClientOnboarding() {
     if (entityType === 'Company') {
       navigate('/client-onboarding-company', { replace: true });
       return;
-    }
-    const seedRaw = sessionStorage.getItem('test_onboarding_seed');
-    if (seedRaw) {
-      try {
-        const seed = JSON.parse(seedRaw);
-        setFormData(prev => ({ ...prev, ...seed }));
-        if (Array.isArray(seed.products_list) && seed.products_list.length > 0) setProductsList(seed.products_list);
-      } catch {}
-      sessionStorage.removeItem('test_onboarding_seed');
-    }
-    const productsSeed = sessionStorage.getItem('test_products_seed');
-    if (productsSeed) {
-      try {
-        const seededProducts = JSON.parse(productsSeed);
-        if (Array.isArray(seededProducts) && seededProducts.length > 0) setProductsList(seededProducts);
-      } catch {}
-      sessionStorage.removeItem('test_products_seed');
     }
     base44.entities.Clients.list()
       .then(clients => {
@@ -614,7 +600,7 @@ export default function ClientOnboarding() {
                             rmcpResult.band === 'High' ? `EDD Required - High risk client: ${formData.first_name} ${formData.last_name}` :
                             `FICA ${ficaStatus} - ${formData.first_name} ${formData.last_name}`;
         const emailBody = `RMCP Risk Assessment & FICA Outcome for ${formData.first_name} ${formData.last_name}\n\nFICA Status: ${ficaStatus}\nFICA Reference: ${ficaRef}\nRMCP Risk Band: ${rmcpResult.band}\n\nRISK SCORE BREAKDOWN:\n${scoreSummary}\n\nCLIENT DETAILS:\nID: ${formData.sa_id_number || 'N/A'}\nPEP Status: ${formData.pep_status}\nFATCA US Person: ${formData.us_person_fatca}\nTax Residency: ${formData.tax_residency}\nMonthly Investable: ${formData.monthly_investable_surplus}\nAdvisory Needs: ${(formData.advisory_needs || []).join(', ') || 'None'}\n\n${rmcpResult.band === 'Prohibited' ? 'ACTION: Manual compliance review required before internal approval.' : rmcpResult.band === 'High' ? 'ACTION: Apply Enhanced Due Diligence (EDD) per RMCP Section 3.3.' : 'ACTION: Standard CDD applies. Log in to review full details.'}\n\nLog in to the WealthWorks Advisor Portal to manage this client.`;
-        await base44.integrations.Core.SendEmail({ from_name: 'WealthWorks FICA', to: 'tfine1969@gmail.com', subject: emailSubject, body: emailBody });
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: emailSubject, text: emailBody });
       }
 
       if (ficaStatus === 'Approved') toast.success('Verification completed - Reference: ' + ficaRef);
@@ -874,11 +860,10 @@ export default function ClientOnboarding() {
         formData.existing_policies_uploaded && 'Uploaded Existing Policies\n',
       ].filter(Boolean).join('');
 
-      await base44.integrations.Core.SendEmail({
-        from_name: 'Wealthworks',
-        to: 'tfine1969@gmail.com',
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: ADVISOR_NOTIFICATION_EMAIL,
         subject: `New Client Documents Submitted - ${clientFullName}`,
-        body: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${new Date().toLocaleString('en-ZA')}\n\nDocuments submitted:\n${submittedDocs}`,
+        text: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${new Date().toLocaleString('en-ZA')}\n\nDocuments submitted:\n${submittedDocs}`,
       });
 
       const allProposals = await base44.entities.Proposal.list();
