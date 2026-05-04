@@ -6,6 +6,14 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+const clearClientSession = () => {
+  sessionStorage.removeItem('pending_client_id');
+  sessionStorage.removeItem('pending_client_email');
+  sessionStorage.removeItem('pending_entity_type');
+  sessionStorage.removeItem('pending_onboarding_route');
+  sessionStorage.removeItem('client_session_verified');
+};
+
 export default function AdvisorLogin() {
   const navigate = useNavigate();
   const { setAdvisorUserType } = useAuth();
@@ -17,6 +25,7 @@ export default function AdvisorLogin() {
     const redirectIfAdvisor = async () => {
       const currentUser = await base44.auth.me().catch(() => null);
       if (!isMounted || currentUser?.role !== 'admin') return;
+      clearClientSession();
       setAdvisorUserType();
       navigate('/advisor-dashboard', { replace: true });
     };
@@ -30,6 +39,7 @@ export default function AdvisorLogin() {
 
   const handleSignIn = async () => {
     setIsLoading(true);
+    clearClientSession();
 
     try {
       const currentUser = await base44.auth.me();
