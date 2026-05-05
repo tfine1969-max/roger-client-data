@@ -48,10 +48,10 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
   </button>
 );
 
-const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, children }) => (
+const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, actions, children }) => (
   <section className="border border-border bg-card px-4 py-3">
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div className="flex items-start gap-3 min-w-0 max-w-3xl">
+    <div className="grid xl:grid-cols-[320px_minmax(0,1fr)_320px] gap-4 items-center">
+      <div className="flex items-start gap-3 min-w-0">
         <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
           <Icon className="w-4 h-4" />
         </div>
@@ -60,6 +60,10 @@ const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, chil
           <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
         </div>
       </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 min-w-0">
+        {children}
+      </div>
+      <div className="flex flex-wrap items-center justify-start xl:justify-end gap-2">
       <button
         type="button"
         onClick={onClick}
@@ -68,9 +72,8 @@ const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, chil
         {buttonLabel}
         <ArrowRight className="w-3.5 h-3.5" />
       </button>
-    </div>
-    <div className="mt-3">
-      {children}
+        {actions}
+      </div>
     </div>
   </section>
 );
@@ -163,15 +166,8 @@ export default function AdvisorDashboard() {
             description="Registers, RMCP repository, training certificates, regulatory evidence, audit reports and FSCA inspection exports."
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
-          >
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
-                <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
-                <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
-                <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
-              </div>
-              <div className="flex flex-wrap gap-2 lg:justify-end">
+            actions={(
+              <>
                 <button
                   type="button"
                   onClick={() => navigate('/compliance?tab=registers')}
@@ -196,8 +192,13 @@ export default function AdvisorDashboard() {
                   <FileText className="w-4 h-4" />
                   Audit report
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+          >
+            <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
+            <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
+            <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
+            <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
           </PortalCard>
 
           <PortalCard
@@ -206,15 +207,8 @@ export default function AdvisorDashboard() {
             description="Review onboarding submissions, reverify unsuccessful clients, request documents, approve verified clients and move them into proposal phase."
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
-          >
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
-                <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
-                <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
-                <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
-              </div>
-              <div className="flex flex-wrap gap-2 lg:justify-end">
+            actions={(
+              <>
                 <button
                   type="button"
                   onClick={() => navigate('/compliance-review?filter=new')}
@@ -231,8 +225,13 @@ export default function AdvisorDashboard() {
                   <ShieldCheck className="w-4 h-4" />
                   Reverify clients
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+          >
+            <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
+            <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
+            <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
+            <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
           </PortalCard>
 
           <PortalCard
@@ -241,15 +240,8 @@ export default function AdvisorDashboard() {
             description="Build new proposals, continue draft ROAs, manage PDFs, send client packs and monitor signed reports."
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
-          >
-            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Metric label="Awaiting review" value={proposalSummary.awaiting} />
-                <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
-                <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
-                <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
-              </div>
-              <div className="flex flex-wrap gap-2 lg:justify-end">
+            actions={(
+              <>
                 <button
                   type="button"
                   onClick={() => navigate('/create-proposal')}
@@ -266,8 +258,13 @@ export default function AdvisorDashboard() {
                   <FileText className="w-4 h-4" />
                   Proposal inbox
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+          >
+            <Metric label="Awaiting review" value={proposalSummary.awaiting} />
+            <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
+            <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
+            <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
           </PortalCard>
         </div>
       </main>
