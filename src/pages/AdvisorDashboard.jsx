@@ -41,7 +41,7 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`border border-border bg-card px-3 py-2 text-left ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
+    className={`border border-border bg-background px-3 py-2 text-left min-w-[130px] ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
   >
     <p className={`text-xl font-semibold ${tone}`}>{value}</p>
     <p className="text-[9px] font-semibold tracking-[.12em] uppercase text-muted-foreground mt-0.5">{label}</p>
@@ -49,27 +49,29 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
 );
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, children }) => (
-  <section className="border border-border bg-card p-4">
-    <div className="flex items-start justify-between gap-3 mb-4">
+  <section className="border border-border bg-card px-4 py-3">
+    <div className="grid lg:grid-cols-[1fr_2fr_auto] gap-4 items-center">
       <div className="flex items-start gap-3 min-w-0">
         <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
           <h2 className="text-lg font-semibold text-navy tracking-tight">{title}</h2>
-          <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-5 max-w-xl">{description}</p>
         </div>
+      </div>
+      <div className="min-w-0">
+        {children}
       </div>
       <button
         type="button"
         onClick={onClick}
-        className="shrink-0 inline-flex items-center gap-2 bg-navy text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
+        className="justify-self-start lg:justify-self-end shrink-0 inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
       >
         {buttonLabel}
         <ArrowRight className="w-3.5 h-3.5" />
       </button>
     </div>
-    {children}
   </section>
 );
 
@@ -143,16 +145,18 @@ export default function AdvisorDashboard() {
         </button>
       </div>
 
-      <main className="flex-1 p-3 md:p-4 max-w-7xl mx-auto w-full">
-        <div className="mb-3">
-          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Advisor Portal</p>
-          <h1 className="text-2xl font-semibold text-navy tracking-tight mt-1">Workspace index</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Choose the area you need: regulatory registers and audit packs, client FICA review, or proposal work.
+      <main className="flex-1 p-4 md:p-5 max-w-7xl mx-auto w-full">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Advisor Portal</p>
+            <h1 className="text-2xl font-semibold text-navy tracking-tight mt-1">Workspace index</h1>
+          </div>
+          <p className="text-xs text-muted-foreground max-w-xl lg:text-right">
+            Choose regulatory registers and audit packs, client FICA review, or proposal work.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-4 items-start">
+        <div className="space-y-3">
           <PortalCard
             icon={ShieldCheck}
             title="1. Compliance Regulatory Portal"
@@ -160,13 +164,14 @@ export default function AdvisorDashboard() {
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
           >
-            <div className="grid grid-cols-2 gap-2">
-              <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
-              <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
-              <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
-              <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
+                <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
+                <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
+                <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
+              </div>
+              <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/compliance?tab=registers')}
@@ -191,6 +196,7 @@ export default function AdvisorDashboard() {
                 <FileText className="w-4 h-4" />
                 Audit report
               </button>
+              </div>
             </div>
           </PortalCard>
 
@@ -201,13 +207,14 @@ export default function AdvisorDashboard() {
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
           >
-            <div className="grid grid-cols-2 gap-2">
-              <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
-              <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
-              <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
-              <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
+                <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
+                <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
+                <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
+              </div>
+              <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/compliance-review?filter=new')}
@@ -224,6 +231,7 @@ export default function AdvisorDashboard() {
                 <ShieldCheck className="w-4 h-4" />
                 Reverify clients
               </button>
+              </div>
             </div>
           </PortalCard>
 
@@ -234,13 +242,14 @@ export default function AdvisorDashboard() {
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
           >
-            <div className="grid grid-cols-2 gap-2">
-              <Metric label="Awaiting review" value={proposalSummary.awaiting} />
-              <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
-              <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
-              <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                <Metric label="Awaiting review" value={proposalSummary.awaiting} />
+                <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
+                <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
+                <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
+              </div>
+              <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/create-proposal')}
@@ -257,6 +266,7 @@ export default function AdvisorDashboard() {
                 <FileText className="w-4 h-4" />
                 Proposal inbox
               </button>
+              </div>
             </div>
           </PortalCard>
         </div>
