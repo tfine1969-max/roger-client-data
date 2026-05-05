@@ -51,6 +51,54 @@ const OVERSIGHT_TYPES = ['RMCP_Review', 'BRA', 'Audit', 'Compliance_Breach', 'Th
 const STATUS_OPTIONS = ['Open', 'Pending', 'Escalated', 'Closed'];
 const RISK_OPTIONS = ['Low', 'Medium', 'High'];
 
+const REGISTER_FIELD_CONFIG = {
+  CDD: ['Client Name', 'ID / Registration Number', 'Client Type', 'Date Onboarded', 'Verification Method', 'ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'CDD Completed By', 'CDD Completion Date', 'Outstanding Requirements', 'Verification Status'],
+  EDD: ['Linked Client', 'Trigger for EDD', 'PEP Status', 'Sanctions Check Result', 'Source of Wealth Verified', 'Supporting Documents Uploaded', 'Senior Management Approval', 'Approved By', 'Approval Date', 'Monitoring Frequency'],
+  FICA_Exception: ['Linked Client', 'Exception Type', 'Reason for Exception', 'Risk Assessment', 'Interim Measures Taken', 'Approved By (MLCO)', 'Expiry Date', 'Follow-up Required', 'Final Resolution'],
+  STR: ['Linked Client', 'Transaction Description', 'Suspicion Type', 'Date Detected', 'Reported to FIC', 'Report Reference Number', 'Report Date', 'Reported By', 'Internal Notes', 'Outcome / Feedback'],
+  TPR: ['Client Name', 'Third Party Name', 'Third Party FSP / Registration Number', 'Agreement in Place', 'Documents Received', 'Date Received', 'Verified By', 'Risk Assessment', 'Ongoing Monitoring Required'],
+  Sanctions: ['Client Name', 'Screening Date', 'Screening Provider', 'Result', 'Match Details', 'Action Taken', 'Escalated', 'Cleared By'],
+  FICA_Training: ['Employee Name', 'Role', 'Training Type', 'Training Provider', 'Training Date', 'Assessment Score', 'Pass/Fail', 'Next Training Due Date', 'Certificate Uploaded'],
+  RMCP_Review: ['Review Period', 'Review Type', 'Conducted By', 'Key Findings', 'Deficiencies Identified', 'Actions Required', 'Responsible Person', 'Deadline', 'Completion Status'],
+  BRA: ['Risk Category', 'Risk Description', 'Inherent Risk Score', 'Controls in Place', 'Residual Risk Score', 'Risk Owner', 'Review Date', 'Action Required'],
+  Advice: ['Client Name', 'Advisor', 'Date of Advice', 'Type of Advice', 'Products Recommended', 'Risk Profile', 'Needs Analysis Completed', 'ROA Generated', 'Client Signed', 'Replacement Involved'],
+  Product_Replacement: ['Client Name', 'Replaced Product', 'New Product', 'Replacement Reason', 'Replacement Consequences Explained', 'Cost Comparison Done', 'Client Acknowledged', 'Advisor Justification', 'Supporting Documents'],
+  Complaint: ['Complaint ID', 'Client Name', 'Date Received', 'Complaint Type', 'Description', 'Assigned To', 'Resolution Deadline', 'Outcome', 'Reportable to FSCA'],
+  Compliance_Breach: ['Breach Type', 'Description', 'Date Identified', 'Severity', 'Root Cause', 'Immediate Action', 'Remediation Plan', 'Reported to Regulator', 'Closed Date'],
+  Conflict_of_Interest: ['Person Involved', 'Conflict Type', 'Description', 'Date Identified', 'Mitigation Action', 'Approved By', 'Status'],
+  Gift_Register: ['Employee Name', 'Gift Type', 'Provider', 'Value (ZAR)', 'Date Received', 'Within Policy', 'Approved By'],
+  CPD: ['Advisor Name', 'CPD Category', 'Hours Earned', 'Date Completed', 'Provider', 'Total YTD Hours', 'Compliance Status'],
+  Representative: ['Name', 'FSCA Number', 'Status', 'Fit & Proper Status', 'Supervision Status', 'CPD Status', 'Date Appointed'],
+  Debarment: ['Representative Name', 'Date Initiated', 'Reason', 'Investigation Summary', 'Outcome', 'FSCA Notified', 'Date Finalised'],
+  Mandate: ['Client Name', 'Mandate Type', 'Signed', 'Date Signed', 'Expiry Date', 'Linked Proposal', 'Special Instructions'],
+  POPIA_Breach: ['Breach Description', 'Date Detected', 'Data Type Affected', 'Number of Clients Affected', 'Severity', 'Reported to Information Regulator', 'Client Notification Sent', 'Remediation Actions'],
+  Third_Party: ['Name', 'Type', 'Agreement in Place', 'FSP Number', 'Compliance Status', 'Risk Rating', 'Last Review Date'],
+  Audit: ['Audit Type', 'Audit Date', 'Auditor Name', 'Scope', 'Findings', 'Actions Required', 'Status', 'Closure Date'],
+};
+
+const yesNoFields = ['ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'PEP Status', 'Supporting Documents Uploaded', 'Senior Management Approval', 'Follow-up Required', 'Reported to FIC', 'Agreement in Place', 'Documents Received', 'Escalated', 'Needs Analysis Completed', 'ROA Generated', 'Client Signed', 'Replacement Involved', 'Replacement Consequences Explained', 'Cost Comparison Done', 'Client Acknowledged', 'Reportable to FSCA', 'Reported to Regulator', 'Within Policy', 'FSCA Notified', 'Signed', 'Reported to Information Regulator', 'Client Notification Sent'];
+
+const dateFieldNames = ['Date Onboarded', 'CDD Completion Date', 'Approval Date', 'Expiry Date', 'Date Detected', 'Report Date', 'Date Received', 'Screening Date', 'Training Date', 'Next Training Due Date', 'Deadline', 'Review Date', 'Date of Advice', 'Date Received', 'Resolution Deadline', 'Date Identified', 'Date Completed', 'Date Appointed', 'Date Initiated', 'Date Finalised', 'Date Signed', 'Last Review Date', 'Audit Date', 'Closure Date'];
+
+const defaultCustomFields = (type) =>
+  Object.fromEntries((REGISTER_FIELD_CONFIG[type] || []).map(field => [field, '']));
+
+const multilineFieldNames = ['Description', 'Notes', 'Internal Notes', 'Key Findings', 'Deficiencies Identified', 'Actions Required', 'Action Required', 'Reason for Exception', 'Interim Measures Taken', 'Final Resolution', 'Transaction Description', 'Match Details', 'Action Taken', 'Risk Description', 'Products Recommended', 'Advisor Justification', 'Root Cause', 'Immediate Action', 'Remediation Plan', 'Investigation Summary', 'Special Instructions', 'Breach Description', 'Remediation Actions', 'Findings', 'Scope', 'Outcome / Feedback'];
+
+const fieldInputType = (field) => {
+  if (yesNoFields.includes(field)) return 'yesno';
+  if (dateFieldNames.includes(field)) return 'date';
+  if (multilineFieldNames.some(name => field.includes(name))) return 'textarea';
+  return 'text';
+};
+
+const fieldSummary = (customFields = {}) =>
+  Object.entries(customFields)
+    .filter(([, value]) => String(value || '').trim())
+    .slice(0, 4)
+    .map(([field, value]) => `${field}: ${value}`)
+    .join('\n');
+
 const statusClass = {
   Open: 'bg-blue-50 text-blue-700 border-blue-200',
   Pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -190,7 +238,7 @@ const isClientVerificationIssue = (client = {}) => {
   return !!client.email && (needsReview || (client.onboarding_complete && client.verification_status !== 'Verified' && client.fica_status !== 'Approved'));
 };
 
-const RegisterTypeDirectory = ({ entries, setFilters }) => (
+const RegisterTypeDirectory = ({ entries, setFilters, onOpenRegister }) => (
   <section className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-5">
     {REGISTER_TYPES.map(type => {
       const typeEntries = entries.filter(entry => entry.register_type === type);
@@ -199,7 +247,10 @@ const RegisterTypeDirectory = ({ entries, setFilters }) => (
         <button
           type="button"
           key={type}
-          onClick={() => setFilters({ type, status: '', risk: '', advisor: '', category: '' })}
+          onClick={() => {
+            setFilters({ type, status: '', risk: '', advisor: '', category: '' });
+            if (onOpenRegister) onOpenRegister(type);
+          }}
           className="border border-border bg-card p-3 text-left hover:border-navy/40 transition-colors"
         >
           <div className="flex items-center justify-between gap-3">
@@ -213,7 +264,7 @@ const RegisterTypeDirectory = ({ entries, setFilters }) => (
   </section>
 );
 
-const RegisterForm = ({ clients, currentUser, onCreated }) => {
+const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onRequestHandled }) => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     register_type: 'CDD',
@@ -224,28 +275,157 @@ const RegisterForm = ({ clients, currentUser, onCreated }) => {
     description: '',
     action_required: '',
   });
+  const [customFields, setCustomFields] = useState(defaultCustomFields('CDD'));
+  const [supportingFile, setSupportingFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const selectedClient = clients.find(c => c.id === form.linked_client_id);
 
+  const selectRegisterType = (type) => {
+    setForm(prev => ({ ...prev, register_type: type }));
+    setCustomFields(defaultCustomFields(type));
+  };
+
+  useEffect(() => {
+    if (!requestedType) return;
+    selectRegisterType(requestedType);
+    setOpen(true);
+    if (onRequestHandled) onRequestHandled();
+  }, [requestedType, onRequestHandled]);
+
+  const resetForm = (type = form.register_type) => {
+    setForm({
+      register_type: type,
+      linked_client_id: '',
+      linked_advisor: 'Trevor Fine',
+      status: 'Open',
+      risk_level: 'Low',
+      description: '',
+      action_required: '',
+    });
+    setCustomFields(defaultCustomFields(type));
+    setSupportingFile(null);
+  };
+
+  const syncSupportingRegister = async (register, documents) => {
+    const fields = customFields || {};
+    const linkedRegisterId = register?.id;
+    if (!linkedRegisterId) return;
+
+    if (form.register_type === 'FICA_Training' || form.register_type === 'CPD') {
+      const expiry = fields['Next Training Due Date'] || '';
+      await base44.entities.Compliance_Training.create({
+        staff_member: fields['Employee Name'] || fields['Advisor Name'] || form.linked_advisor || 'Trevor Fine',
+        training_type: fields['Training Type'] || fields['CPD Category'] || form.register_type,
+        date_completed: fields['Training Date'] || fields['Date Completed'] || new Date().toISOString().split('T')[0],
+        expiry_date: expiry,
+        certificate_upload: documents[0]?.url || '',
+        status: expiry ? trainingStatus({ expiry_date: expiry }) : 'Valid',
+        linked_register_id: linkedRegisterId,
+      });
+    }
+
+    if (form.register_type === 'Complaint') {
+      await base44.entities.Complaints_Register.create({
+        client_id: form.linked_client_id,
+        client_name: selectedClient ? clientDisplayName(selectedClient) : fields['Client Name'] || '',
+        complaint_date: fields['Date Received'] || new Date().toISOString().split('T')[0],
+        nature_of_complaint: fields['Description'] || form.description || 'Complaint captured in compliance register',
+        status: form.status,
+        advisor: form.linked_advisor,
+        outcome: fields.Outcome || '',
+        linked_register_id: linkedRegisterId,
+      });
+    }
+
+    if (form.register_type === 'Product_Replacement') {
+      const hasRequiredProductFields = form.linked_client_id && fields['Replaced Product'] && fields['New Product'];
+      if (hasRequiredProductFields) {
+        await base44.entities.Product_Replacement_Register.create({
+          client_id: form.linked_client_id,
+          client_name: selectedClient ? clientDisplayName(selectedClient) : fields['Client Name'] || '',
+          existing_product: fields['Replaced Product'] || '',
+          new_product: fields['New Product'] || '',
+          reason: fields['Replacement Reason'] || form.description || 'Product replacement captured in compliance register',
+          disclosure_given: fields['Replacement Consequences Explained'] === 'Yes' && fields['Client Acknowledged'] === 'Yes' ? 'Yes' : 'No',
+          replacement_risk_flag: form.risk_level,
+          advisor: form.linked_advisor,
+          date: new Date().toISOString().split('T')[0],
+          linked_register_id: linkedRegisterId,
+        });
+      }
+    }
+
+    if (form.register_type === 'STR') {
+      if (form.linked_client_id) {
+        await base44.entities.STR_Register.create({
+          client_id: form.linked_client_id,
+          client_name: selectedClient ? clientDisplayName(selectedClient) : fields['Linked Client'] || '',
+          trigger_event: fields['Suspicion Type'] || fields['Transaction Description'] || form.description || 'Suspicious transaction captured',
+          reported_to_FIC: fields['Reported to FIC'] || 'No',
+          report_reference: fields['Report Reference Number'] || '',
+          date_reported: fields['Report Date'] || '',
+          status: form.status,
+          linked_register_id: linkedRegisterId,
+        });
+      }
+    }
+
+    if (documents[0]?.url) {
+      await base44.entities.Compliance_Documents.create({
+        document_type: form.register_type === 'FICA_Training' || form.register_type === 'CPD' ? 'Training Certificate' : 'Register Evidence',
+        title: documents[0].name || `${form.register_type} evidence`,
+        description: `Attached from ${form.register_type} register entry.`,
+        file_url: documents[0].url,
+        file_name: documents[0].name || '',
+        linked_register_id: linkedRegisterId,
+        linked_client_id: form.linked_client_id,
+        staff_member: fields['Employee Name'] || fields['Advisor Name'] || '',
+        uploaded_by: currentUser?.email || 'Compliance',
+        uploaded_at: new Date().toISOString(),
+        expiry_date: fields['Next Training Due Date'] || '',
+        status: 'Current',
+      });
+    }
+  };
+
   const submit = async () => {
-    if (!form.description.trim()) {
-      toast.error('Description is required.');
+    const summary = fieldSummary(customFields);
+    if (!form.description.trim() && !summary) {
+      toast.error('Complete at least one register field.');
       return;
     }
-    await upsertComplianceRegister({
-      ...form,
-      category: CATEGORY_BY_REGISTER[form.register_type] || 'Internal',
-      linked_client_name: selectedClient ? clientDisplayName(selectedClient) : '',
-      source_event: 'Manual register entry',
-    }, currentUser);
-    toast.success('Compliance entry created.');
-    setOpen(false);
-    onCreated();
+    const description = form.description.trim() || summary || `${form.register_type} register entry`;
+    setSubmitting(true);
+    try {
+      let documents = [];
+      if (supportingFile) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: supportingFile });
+        documents = [{ name: supportingFile.name, url: file_url, uploaded_at: new Date().toISOString(), uploaded_by: currentUser?.email || 'Compliance' }];
+      }
+      const register = await upsertComplianceRegister({
+        ...form,
+        description,
+        action_required: form.action_required.trim() || customFields['Action Required'] || customFields['Actions Required'] || '',
+        category: CATEGORY_BY_REGISTER[form.register_type] || 'Internal',
+        linked_client_name: selectedClient ? clientDisplayName(selectedClient) : customFields['Client Name'] || customFields['Linked Client'] || '',
+        documents,
+        custom_fields: customFields,
+        source_event: `Manual ${form.register_type} register entry`,
+      }, currentUser);
+      await syncSupportingRegister(register, documents);
+      toast.success(`${form.register_type} register entry created.`);
+      setOpen(false);
+      resetForm(form.register_type);
+      onCreated();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-xs font-bold uppercase tracking-[.08em]">
+      <button type="button" onClick={() => { resetForm('CDD'); setOpen(true); }} className="inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-xs font-bold uppercase tracking-[.08em]">
         <Plus className="w-4 h-4" />
         New Entry
       </button>
@@ -254,10 +434,17 @@ const RegisterForm = ({ clients, currentUser, onCreated }) => {
 
   return (
     <div className="border border-border bg-card p-4 mb-4">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground font-bold">New register entry</p>
+          <h3 className="text-lg font-semibold text-navy">{form.register_type}</h3>
+        </div>
+        <Badge className="bg-secondary text-muted-foreground border-border">{CATEGORY_BY_REGISTER[form.register_type] || 'Internal'}</Badge>
+      </div>
       <div className="grid md:grid-cols-3 gap-3">
         <label className="text-xs font-semibold text-navy">
           Register Type
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.register_type} onChange={e => setForm({ ...form, register_type: e.target.value })}>
+          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.register_type} onChange={e => selectRegisterType(e.target.value)}>
             {REGISTER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
           </select>
         </label>
@@ -286,18 +473,45 @@ const RegisterForm = ({ clients, currentUser, onCreated }) => {
             {RISK_OPTIONS.map(risk => <option key={risk} value={risk}>{risk}</option>)}
           </select>
         </label>
+      </div>
+      <div className="grid md:grid-cols-2 gap-3 mt-4">
+        {(REGISTER_FIELD_CONFIG[form.register_type] || []).map(field => {
+          const type = fieldInputType(field);
+          return (
+            <label key={field} className={`text-xs font-semibold text-navy ${type === 'textarea' ? 'md:col-span-2' : ''}`}>
+              {field}
+              {type === 'yesno' ? (
+                <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              ) : type === 'textarea' ? (
+                <textarea className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm min-h-20" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })} />
+              ) : (
+                <input type={type} className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })} />
+              )}
+            </label>
+          );
+        })}
+      </div>
+      <div className="grid md:grid-cols-3 gap-3 mt-4">
         <label className="text-xs font-semibold text-navy md:col-span-3">
-          Description
+          General Description
           <textarea className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm min-h-20" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
         </label>
         <label className="text-xs font-semibold text-navy md:col-span-3">
           Action Required
           <textarea className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm min-h-16" value={form.action_required} onChange={e => setForm({ ...form, action_required: e.target.value })} />
         </label>
+        <label className="text-xs font-semibold text-navy md:col-span-3">
+          Supporting Document
+          <input type="file" className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" onChange={e => setSupportingFile(e.target.files?.[0] || null)} />
+        </label>
       </div>
       <div className="flex justify-end gap-2 mt-4">
         <button type="button" onClick={() => setOpen(false)} className="border border-border px-4 py-2 text-xs font-semibold text-navy">Cancel</button>
-        <button type="button" onClick={submit} className="bg-navy text-white px-4 py-2 text-xs font-bold">Create</button>
+        <button type="button" onClick={submit} disabled={submitting} className="bg-navy text-white px-4 py-2 text-xs font-bold disabled:opacity-60">{submitting ? 'Creating...' : 'Create'}</button>
       </div>
     </div>
   );
@@ -310,6 +524,7 @@ const DetailDrawer = ({ entry, clients, currentUser, onClose, onUpdated }) => {
   const client = clients.find(c => c.id === entry.linked_client_id);
   const auditTrail = Array.isArray(entry.audit_trail) ? entry.audit_trail : [];
   const documents = Array.isArray(entry.documents) ? entry.documents : [];
+  const customFieldRows = Object.entries(entry.custom_fields || {}).filter(([, value]) => String(value || '').trim());
 
   const act = async (status, action) => {
     await updateComplianceRegister(entry, {
@@ -367,6 +582,19 @@ const DetailDrawer = ({ entry, clients, currentUser, onClose, onUpdated }) => {
             <p className="text-sm text-navy whitespace-pre-wrap">{entry.description || '-'}</p>
             <p className="text-sm text-muted-foreground mt-3 whitespace-pre-wrap">{entry.action_required || '-'}</p>
           </section>
+          {customFieldRows.length > 0 && (
+            <section>
+              <h4 className="text-xs uppercase tracking-[.12em] text-muted-foreground font-bold mb-2">Register Fields</h4>
+              <div className="border border-border divide-y divide-border">
+                {customFieldRows.map(([field, value]) => (
+                  <div key={field} className="grid grid-cols-[160px_1fr] gap-3 p-3 text-sm">
+                    <p className="text-muted-foreground">{field}</p>
+                    <p className="text-navy whitespace-pre-wrap">{String(value)}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
           {client && (
             <section>
               <h4 className="text-xs uppercase tracking-[.12em] text-muted-foreground font-bold mb-2">Linked Client</h4>
@@ -514,6 +742,7 @@ export default function ComplianceModule() {
   const setActiveTab = (tab) => setSearchParams({ tab });
   const [currentUser, setCurrentUser] = useState(null);
   const [filters, setFilters] = useState({ type: '', status: '', risk: '', advisor: '', category: '' });
+  const [registerFormType, setRegisterFormType] = useState('');
   const [clientId, setClientId] = useState('');
 
   useEffect(() => {
@@ -679,7 +908,13 @@ export default function ComplianceModule() {
         {activeTab === 'registers' && (
           <div>
             <div className="flex flex-wrap gap-3 justify-between mb-4">
-              <RegisterForm clients={clients} currentUser={currentUser} onCreated={refresh} />
+              <RegisterForm
+                clients={clients}
+                currentUser={currentUser}
+                onCreated={refresh}
+                requestedType={registerFormType}
+                onRequestHandled={() => setRegisterFormType('')}
+              />
               <div className="flex gap-2">
                 <button type="button" onClick={() => exportCurrent('compliance-registers')} className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs font-bold text-navy">
                   <Download className="w-4 h-4" />
@@ -691,7 +926,7 @@ export default function ComplianceModule() {
                 </button>
               </div>
             </div>
-            <RegisterTypeDirectory entries={entries} setFilters={setFilters} />
+            <RegisterTypeDirectory entries={entries} setFilters={setFilters} onOpenRegister={setRegisterFormType} />
             <RegistersTable entries={entries} clients={clients} currentUser={currentUser} filters={filters} setFilters={setFilters} onUpdated={refresh} />
           </div>
         )}

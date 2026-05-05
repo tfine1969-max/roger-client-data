@@ -73,6 +73,10 @@
         }
       }
     },
+    "custom_fields": {
+      "type": "object",
+      "description": "Register-specific fields captured from the selected register form"
+    },
     "audit_trail": {
       "type": "array",
       "items": {
