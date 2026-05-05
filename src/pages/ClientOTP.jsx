@@ -11,19 +11,46 @@ export default function ClientOTP() {
   const navigate = useNavigate();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [pendingClientId, setPendingClientId] = useState(null);
+  const [pendingEmail, setPendingEmail] = useState('');
 
   useEffect(() => {
     const clientId = sessionStorage.getItem('pending_client_id');
+    const email = sessionStorage.getItem('pending_client_email') || '';
     if (!clientId) {
       toast.error('Invalid session. Please register first.');
       navigate('/client-registration', { replace: true });
       return;
     }
     setPendingClientId(clientId);
+    setPendingEmail(email);
     setIsInitializing(false);
   }, [navigate]);
+
+  const handleResend = async () => {
+    if (!pendingClientId) return;
+    setIsResending(true);
+    try {
+      const newOtp = String(Math.floor(100000 + Math.random() * 900000));
+      await base44.entities.Clients.update(pendingClientId, {
+        otp_code: newOtp,
+        otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        otp_verified: false,
+      });
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: pendingEmail,
+        subject: 'Your WealthWorks verification code (resent)',
+        text: `Your new WealthWorks verification code is: ${newOtp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.`,
+      });
+      toast.success('A new code has been sent to your email');
+    } catch (err) {
+      toast.error('Failed to resend code. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
@@ -122,6 +149,17 @@ export default function ClientOTP() {
             >
               {isLoading ? 'Verifying...' : 'Verify OTP'}
             </Button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending}
+                className="text-sm text-navy/70 hover:text-navy transition-colors disabled:opacity-50"
+              >
+                {isResending ? 'Sending...' : "Didn't receive a code? Resend"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

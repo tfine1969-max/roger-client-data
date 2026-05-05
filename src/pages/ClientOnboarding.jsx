@@ -845,6 +845,7 @@ export default function ClientOnboarding() {
         onboarding_complete: true,
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
+        verification_status: 'Pending',
         doc_identity: formData.doc_identity || '',
         doc_proof_of_address: formData.doc_proof_of_address || '',
         doc_source_of_funds: formData.doc_source_of_funds || '',
@@ -914,7 +915,13 @@ export default function ClientOnboarding() {
         });
       }
 
-      toast.success('Onboarding completed successfully');
+      // Fire-and-forget background verification — never blocks submission
+      base44.functions.invoke('runBackgroundVerification', {
+        client_id: clientId,
+        client_type: 'Natural Person',
+      }).catch(() => {});
+
+      toast.success('Onboarding submitted successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Failed to complete onboarding');
@@ -1336,38 +1343,20 @@ export default function ClientOnboarding() {
           {currentStep === 4 && (
             <div className="space-y-3">
               <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
-                <div className="flex items-center justify-between gap-3 mb-3">
+                <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
+                <div className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded">
+                  <span className="text-base shrink-0">ℹ️</span>
                   <div>
-                    <h3 className="font-semibold text-navy text-sm">FICA verification</h3>
-                    
-                  </div>
-                  {!ficaRunning && (
-                    <button type="button" onClick={runFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
-                      {ficaResult ? 'Re-submit verification' : 'Submit verification'}
-                    </button>
-                  )}
-                  {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Submitting...</span>}
-                </div>
-
-                <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult?.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult ? 'bg-amber-50 border-amber-200' : 'bg-secondary/50 border-border'}`}>
-                  <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? 'OK' : 'i'}</span>
-                  <div>
-                    <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-navy' : 'text-navy'}`}>
-                          {ficaResult ? 'Verification submitted' : 'Ready for submission'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {ficaResult
-                            ? 'Additional verification may be required. WealthWorks will contact you if further documentation is needed.'
-                            : 'Submit this section so WealthWorks can review the required information.'}
+                    <p className="font-semibold text-sm text-navy">Verification is under review</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      WealthWorks will review your submitted documents and identity information. You will be contacted if anything further is required.
                     </p>
-                    {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                   </div>
                 </div>
               </div>
-
               <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
                 <span className="font-semibold text-navy">Privacy note: </span>
-                Verification results, AML screening and risk ratings are retained for WealthWorks internal compliance review and are not displayed as client-facing pass/fail decisions.
+                Verification results, AML screening and risk ratings are retained for WealthWorks internal compliance review and are not displayed as client-facing outcomes.
               </div>
             </div>
           )}

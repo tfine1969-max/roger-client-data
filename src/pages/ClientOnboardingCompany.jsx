@@ -579,12 +579,9 @@ export default function ClientOnboardingCompany() {
       });
       await base44.entities.Clients.update(clientId, {
         client_status: 'Under Review', onboarding_complete: true,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        fica_risk_band: rmcpResult.band,
-        ...buildRmcpUpdate(rmcpResult),
-        home_affairs_verified: ficaResult?.fica_status === 'Approved',
-        aml_pep_clear: ficaResult?.fica_status === 'Approved',
+        verification_status: 'Pending',
+        doc_status: 'Submitted',
+        doc_submitted_at: new Date().toISOString(),
       });
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);
@@ -614,9 +611,16 @@ export default function ClientOnboardingCompany() {
       await base44.functions.invoke('sendTransactionalEmail', {
         to: ADVISOR_NOTIFICATION_EMAIL,
         subject: 'New Company Onboarding - ' + clientName,
-        text: 'Company ' + clientName + ' has completed onboarding.\n\nFICA Reference: ' + (ficaResult?.fica_reference || 'Not verified') + '\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+        text: 'Company ' + clientName + ' has completed onboarding.\n\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
       });
-      toast.success('Onboarding completed successfully');
+
+      // Fire-and-forget background verification
+      base44.functions.invoke('runBackgroundVerification', {
+        client_id: clientId,
+        client_type: 'Company',
+      }).catch(() => {});
+
+      toast.success('Onboarding submitted successfully');
       navigate('/client-confirmation', { replace: true });
     } catch (err) {
       toast.error(err.message || 'Failed to complete onboarding');
@@ -923,36 +927,20 @@ export default function ClientOnboardingCompany() {
         {currentStep === 5 && (
           <div className="space-y-4">
             <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
-              <div className="flex items-center justify-between gap-3 mb-3">
+              <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
+              <div className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded">
+                <span className="text-base shrink-0">ℹ️</span>
                 <div>
-                  <h3 className="font-semibold text-navy text-sm">Entity verification</h3>
-                  
-                </div>
-                {!ficaRunning && (
-                  <button type="button" onClick={runEntityFicaVerification} className={`h-8 text-xs px-4 rounded font-medium transition-all ${ficaResult ? 'bg-secondary text-navy border border-border' : 'bg-ocean text-white hover:bg-navy'}`}>
-                    {ficaResult ? 'Re-submit verification' : 'Submit verification'}
-                  </button>
-                )}
-                {ficaRunning && <span className="text-xs text-ocean font-medium animate-pulse">Submitting...</span>}
-              </div>
-              <div className={`flex items-start gap-3 p-3 border rounded ${ficaResult?.fica_status === 'Approved' ? 'bg-teal/10 border-teal/20' : ficaResult ? 'bg-amber-50 border-amber-200' : 'bg-secondary/50 border-border'}`}>
-                <span className="text-base shrink-0">{ficaResult?.fica_status === 'Approved' ? 'OK' : 'i'}</span>
-                <div>
-                  <p className={`font-semibold text-sm ${ficaResult?.fica_status === 'Approved' ? 'text-teal' : ficaResult ? 'text-amber-700' : 'text-navy'}`}>
-                    {ficaResult ? 'Verification submitted' : 'Ready for submission'}
-                  </p>
+                  <p className="font-semibold text-sm text-navy">Verification is under review</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {ficaResult
-                      ? 'Additional verification may be required. WealthWorks will contact you if further documentation is needed.'
-                      : 'Submit this section so WealthWorks can review the required information.'}
+                    WealthWorks will review your submitted company documents and director information. You will be contacted if anything further is required.
                   </p>
-                  {ficaResult?.fica_reference && <p className="text-[10px] text-muted-foreground mt-1">Reference: <span className="font-mono font-semibold">{ficaResult.fica_reference}</span></p>}
                 </div>
               </div>
             </div>
             <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
               <span className="font-semibold text-navy">Privacy note: </span>
-              CIPC, director screening, AML and risk results are retained for WealthWorks internal compliance review and are not displayed as client-facing pass/fail decisions.
+              CIPC, director screening, AML and risk results are retained for WealthWorks internal compliance review and are not displayed as client-facing outcomes.
             </div>
           </div>
         )}

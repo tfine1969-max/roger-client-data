@@ -13,9 +13,12 @@ export default function ClientOnboardingConfirmation() {
           <CheckCircle2 className="w-16 h-16 text-white" />
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-3">Welcome!</h1>
-        <p className="text-white/80 mb-8">
-          Your account has been successfully set up. You're all ready to get started.
+        <h1 className="text-3xl font-bold text-white mb-3">Thank you!</h1>
+        <p className="text-white/80 mb-2">
+          Your onboarding documents have been submitted successfully.
+        </p>
+        <p className="text-white/70 text-sm mb-8">
+          Verification is under review. Wealth Works will contact you once your application has been assessed.
         </p>
 
         <Button
