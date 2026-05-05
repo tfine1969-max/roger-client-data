@@ -51,6 +51,49 @@ const OVERSIGHT_TYPES = ['RMCP_Review', 'BRA', 'Audit', 'Compliance_Breach', 'Th
 const STATUS_OPTIONS = ['Open', 'Pending', 'Escalated', 'Closed'];
 const RISK_OPTIONS = ['Low', 'Medium', 'High'];
 const STAFF_MEMBERS = ['Trevor Fine', 'Roger Eskinazi', 'Malcolm Munsamy', 'Gemma De Luca'];
+const CLIENT_TYPE_OPTIONS = ['Natural Person', 'Company', 'Trust', 'Partnership', 'Other'];
+
+const REGISTER_TYPE_LABELS = {
+  CDD: 'Customer Due Diligence',
+  EDD: 'Enhanced Due Diligence',
+  FICA_Exception: 'FICA Exception',
+  STR: 'Suspicious Transaction Report',
+  TPR: 'Third Party Relationship',
+  Sanctions: 'Sanctions Screening',
+  FICA_Training: 'FICA Training',
+  RMCP_Review: 'Risk Management and Compliance Programme Review',
+  Advice: 'Advice Register',
+  Product_Replacement: 'Product Replacement',
+  Complaint: 'Complaint Register',
+  Compliance_Breach: 'Compliance Breach',
+  Conflict_of_Interest: 'Conflict of Interest',
+  Gift_Register: 'Gift Register',
+  CPD: 'Continuous Professional Development',
+  Representative: 'Representative Register',
+  Debarment: 'Debarment Register',
+  POPIA_Breach: 'Protection of Personal Information Act Breach',
+  Mandate: 'Mandate Register',
+  Third_Party: 'Third Party Register',
+  Audit: 'Audit Register',
+  BRA: 'Business Risk Assessment',
+};
+
+const FIELD_LABELS = {
+  'ID / Registration Number': 'Identity or Registration Number',
+  'CDD Completed By': 'Customer Due Diligence Completed By',
+  'CDD Completion Date': 'Customer Due Diligence Completion Date',
+  'Trigger for EDD': 'Trigger for Enhanced Due Diligence',
+  'PEP Status': 'Politically Exposed Person Status',
+  'Reported to FIC': 'Reported to Financial Intelligence Centre',
+  'Third Party FSP / Registration Number': 'Third Party Financial Services Provider or Registration Number',
+  'ROA Generated': 'Record of Advice Generated',
+  'Reportable to FSCA': 'Reportable to Financial Sector Conduct Authority',
+  'FSCA Number': 'Financial Sector Conduct Authority Number',
+  'FSCA Notified': 'Financial Sector Conduct Authority Notified',
+};
+
+const registerTypeLabel = (type) => REGISTER_TYPE_LABELS[type] || String(type || '').replace(/_/g, ' ');
+const fieldLabel = (field) => FIELD_LABELS[field] || field;
 
 const REGISTER_FIELD_CONFIG = {
   CDD: ['Client Name', 'ID / Registration Number', 'Client Type', 'Date Onboarded', 'Verification Method', 'ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'CDD Completed By', 'CDD Completion Date', 'Outstanding Requirements', 'Verification Status'],
@@ -97,8 +140,13 @@ const DUPLICATE_REGISTER_FIELDS = [
   'Status',
 ];
 
+const isDuplicateRegisterField = (field = '') => {
+  const normalized = field.toLowerCase().replace(/\s+/g, ' ').trim();
+  return DUPLICATE_REGISTER_FIELDS.map(item => item.toLowerCase()).includes(normalized) || normalized === 'linked client' || normalized === 'client name';
+};
+
 const visibleRegisterFields = (type) =>
-  (REGISTER_FIELD_CONFIG[type] || []).filter(field => !DUPLICATE_REGISTER_FIELDS.includes(field));
+  (REGISTER_FIELD_CONFIG[type] || []).filter(field => !isDuplicateRegisterField(field));
 
 const clientTypeLabel = (client = {}) =>
   client.client_type || client.entity_type || (client.trust_name || client.trust_number ? 'Trust' : client.entity_name || client.registration_number ? 'Company' : client.full_name || client.first_name || client.last_name ? 'Natural Person' : '');
@@ -118,7 +166,7 @@ function fieldOptions(field) {
   if (field === 'Training Type') return ['FICA', 'AML', 'RMCP', 'FAIS', 'CPD', 'Product', 'Supervision'];
   if (field === 'Pass/Fail') return ['Pass', 'Fail'];
   if (field === 'Role') return ['Advisor', 'Compliance Officer', 'Key Individual', 'Representative', 'Admin'];
-  if (field === 'Client Type') return ['Individual', 'Company', 'Trust', 'Partnership', 'Other'];
+  if (field === 'Client Type') return CLIENT_TYPE_OPTIONS;
   if (field === 'Verification Method') return ['VerifyNow', 'Manual document review', 'Certified copy', 'Bank confirmation', 'Other'];
   if (field === 'Verification Status') return ['Pending', 'Verified', 'Failed', 'Exception', 'Reverification required'];
   if (field === 'Trigger for EDD') return ['High risk client', 'PEP', 'Sanctions match', 'Adverse media', 'Complex structure', 'Geography risk', 'Other'];
@@ -151,7 +199,7 @@ const fieldSummary = (customFields = {}) =>
   Object.entries(customFields)
     .filter(([, value]) => String(value || '').trim())
     .slice(0, 4)
-    .map(([field, value]) => `${field}: ${value}`)
+    .map(([field, value]) => `${fieldLabel(field)}: ${value}`)
     .join('\n');
 
 const statusClass = {
@@ -309,7 +357,7 @@ const RegisterTypeDirectory = ({ entries, setFilters, onOpenRegister }) => (
           className="border border-border bg-card p-3 text-left hover:border-navy/40 transition-colors"
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-navy">{type}</p>
+            <p className="text-sm font-semibold text-navy">{registerTypeLabel(type)}</p>
             <Badge className={openCount ? statusClass.Open : statusClass.Closed}>{openCount} open</Badge>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">{CATEGORY_BY_REGISTER[type] || 'Internal'} register</p>
@@ -335,7 +383,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
   const [submitting, setSubmitting] = useState(false);
 
   const selectedClient = clients.find(c => c.id === form.linked_client_id);
-  const selectedClientType = clientTypeLabel(selectedClient);
+  const selectedClientType = customFields['Client Type'] || clientTypeLabel(selectedClient);
 
   const selectRegisterType = (type) => {
     setForm(prev => ({ ...prev, register_type: type }));
@@ -348,6 +396,11 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
     setOpen(true);
     if (onRequestHandled) onRequestHandled();
   }, [requestedType, onRequestHandled]);
+
+  useEffect(() => {
+    const onboardingType = clientTypeLabel(selectedClient);
+    setCustomFields(prev => ({ ...prev, 'Client Type': onboardingType || '' }));
+  }, [form.linked_client_id, selectedClient]);
 
   const resetForm = (type = form.register_type) => {
     setForm({
@@ -448,7 +501,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
   const submit = async () => {
     const enteredFields = Object.fromEntries(
       Object.entries(customFields || {})
-        .filter(([field, value]) => !DUPLICATE_REGISTER_FIELDS.includes(field) && String(value || '').trim())
+        .filter(([field, value]) => !isDuplicateRegisterField(field) && String(value || '').trim())
     );
     const savedCustomFields = selectedClientType ? { ...enteredFields, 'Client Type': selectedClientType } : enteredFields;
     const summary = fieldSummary(enteredFields);
@@ -506,7 +559,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground font-bold">New register entry</p>
-          <h3 className="text-lg font-semibold text-navy">{form.register_type}</h3>
+          <h3 className="text-lg font-semibold text-navy">{registerTypeLabel(form.register_type)}</h3>
         </div>
         <Badge className="bg-secondary text-muted-foreground border-border">{CATEGORY_BY_REGISTER[form.register_type] || 'Internal'}</Badge>
       </div>
@@ -514,7 +567,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         <label className="text-xs font-semibold text-navy">
           Register Type
           <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.register_type} onChange={e => selectRegisterType(e.target.value)}>
-            {REGISTER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+            {REGISTER_TYPES.map(type => <option key={type} value={type}>{registerTypeLabel(type)}</option>)}
           </select>
         </label>
         <label className="text-xs font-semibold text-navy">
@@ -526,7 +579,10 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         </label>
         <label className="text-xs font-semibold text-navy">
           Client Type
-          <input className="mt-1 w-full border border-border bg-muted px-3 py-2 text-sm text-muted-foreground" value={selectedClientType || 'Select a client'} readOnly />
+          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={selectedClientType || ''} onChange={e => setCustomFields({ ...customFields, 'Client Type': e.target.value })}>
+            <option value="">{selectedClient ? 'Select client type' : 'Select a client first'}</option>
+            {CLIENT_TYPE_OPTIONS.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
         </label>
         <label className="text-xs font-semibold text-navy">
           Staff Member
@@ -553,7 +609,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
           const options = fieldOptions(field);
           return (
             <label key={field} className={`text-xs font-semibold text-navy ${type === 'textarea' ? 'md:col-span-2' : ''}`}>
-              {field}
+              {fieldLabel(field)}
               {type === 'select' ? (
                 <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
                   <option value="">Select</option>
@@ -641,7 +697,7 @@ const DetailDrawer = ({ entry, clients, currentUser, onClose, onUpdated }) => {
       <aside className="w-full max-w-xl h-full bg-card border-l border-border overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border px-5 py-4 flex justify-between items-center">
           <div>
-            <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground font-bold">{entry.register_type}</p>
+            <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground font-bold">{registerTypeLabel(entry.register_type)}</p>
             <h3 className="text-lg font-semibold text-navy">{entry.linked_client_name || 'Register entry'}</h3>
           </div>
           <button type="button" onClick={onClose} className="p-2 border border-border text-navy"><X className="w-4 h-4" /></button>
@@ -667,7 +723,7 @@ const DetailDrawer = ({ entry, clients, currentUser, onClose, onUpdated }) => {
               <div className="border border-border divide-y divide-border">
                 {customFieldRows.map(([field, value]) => (
                   <div key={field} className="grid grid-cols-[160px_1fr] gap-3 p-3 text-sm">
-                    <p className="text-muted-foreground">{field}</p>
+                    <p className="text-muted-foreground">{fieldLabel(field)}</p>
                     <p className="text-navy whitespace-pre-wrap">{String(value)}</p>
                   </div>
                 ))}
@@ -742,7 +798,7 @@ const RegistersTable = ({ entries, clients, currentUser, filters, setFilters, on
             Type
             <select className="mt-1 w-full border border-border bg-background px-2 py-2" value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
               <option value="">All</option>
-              {REGISTER_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+              {REGISTER_TYPES.map(type => <option key={type} value={type}>{registerTypeLabel(type)}</option>)}
             </select>
           </label>
           <label className="text-xs font-semibold text-navy">
@@ -793,7 +849,7 @@ const RegistersTable = ({ entries, clients, currentUser, filters, setFilters, on
             {filtered.map(entry => (
               <tr key={entry.id} className="border-t border-border hover:bg-secondary/40">
                 <td className="p-3 text-muted-foreground">{dateFmt(entry.created_date)}</td>
-                <td className="p-3 font-semibold text-navy">{entry.register_type}</td>
+                <td className="p-3 font-semibold text-navy">{registerTypeLabel(entry.register_type)}</td>
                 <td className="p-3">{entry.linked_client_name || '-'}</td>
                 <td className="p-3">{entry.linked_advisor || '-'}</td>
                 <td className="p-3"><Badge className={statusClass[entry.status] || statusClass.Open}>{entry.status}</Badge></td>
@@ -949,7 +1005,7 @@ export default function ComplianceModule() {
                 <div className="divide-y divide-border">
                   {immediate.map(entry => (
                     <div key={entry.id} className="p-4 grid grid-cols-[1fr_1fr_70px_90px] gap-3 items-center text-sm">
-                      <div><p className="font-semibold text-navy">{entry.register_type}</p><p className="text-xs text-muted-foreground">{entry.description}</p></div>
+                      <div><p className="font-semibold text-navy">{registerTypeLabel(entry.register_type)}</p><p className="text-xs text-muted-foreground">{entry.description}</p></div>
                       <p>{entry.linked_client_name || '-'}</p>
                       <p className="text-red-700 font-semibold">{daysOpen(entry)} days</p>
                       <Badge className={statusClass[entry.status] || statusClass.Open}>{entry.status}</Badge>
@@ -964,7 +1020,7 @@ export default function ComplianceModule() {
                   {recent.map(entry => (
                     <div key={entry.id} className="p-4 grid grid-cols-[90px_1fr_1fr_90px] gap-3 items-center text-sm">
                       <p className="text-muted-foreground">{dateFmt(entry.created_date)}</p>
-                      <p className="font-semibold text-navy">{entry.register_type}</p>
+                      <p className="font-semibold text-navy">{registerTypeLabel(entry.register_type)}</p>
                       <p>{entry.linked_advisor || '-'}</p>
                       <Badge className={statusClass[entry.status] || statusClass.Open}>{entry.status}</Badge>
                     </div>
@@ -1332,7 +1388,7 @@ const ModuleTabs = ({ tabs, entries, clients, currentUser, onUpdated, onExport, 
         <div className="flex flex-wrap gap-2">
           {['All', ...tabs].map(tab => (
             <button key={tab} type="button" onClick={() => setActive(tab)} className={`px-3 py-2 text-xs font-bold border ${active === tab ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border'}`}>
-              {tab}
+              {tab === 'All' ? 'All' : registerTypeLabel(tab)}
             </button>
           ))}
         </div>
