@@ -202,6 +202,11 @@ const fieldSummary = (customFields = {}) =>
     .map(([field, value]) => `${fieldLabel(field)}: ${value}`)
     .join('\n');
 
+const rmcpDocumentTimestampFields = (timestamp) => timestamp ? {
+  'Most Recent RMCP Document Uploaded At': timestamp,
+  'Most Recent RMCP Document Updated At': timestamp,
+} : {};
+
 const statusClass = {
   Open: 'bg-blue-50 text-blue-700 border-blue-200',
   Pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -492,6 +497,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         staff_member: fields['Employee Name'] || fields['Advisor Name'] || form.linked_advisor || '',
         uploaded_by: currentUser?.email || 'Compliance',
         uploaded_at: new Date().toISOString(),
+        review_date: fields['Most Recent RMCP Document Updated At'] || '',
         expiry_date: fields['Next Training Due Date'] || '',
         status: 'Current',
       });
@@ -513,10 +519,15 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
     setSubmitting(true);
     try {
       let documents = [];
+      let documentTimestamp = '';
       if (supportingFile) {
+        documentTimestamp = new Date().toISOString();
         const { file_url } = await base44.integrations.Core.UploadFile({ file: supportingFile });
-        documents = [{ name: supportingFile.name, url: file_url, uploaded_at: new Date().toISOString(), uploaded_by: currentUser?.email || 'Compliance' }];
+        documents = [{ name: supportingFile.name, url: file_url, uploaded_at: documentTimestamp, updated_at: documentTimestamp, uploaded_by: currentUser?.email || 'Compliance' }];
       }
+      const finalCustomFields = form.register_type === 'RMCP_Review'
+        ? { ...savedCustomFields, ...rmcpDocumentTimestampFields(documentTimestamp) }
+        : savedCustomFields;
       const register = await upsertComplianceRegister({
         ...form,
         description,
@@ -524,11 +535,11 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         category: CATEGORY_BY_REGISTER[form.register_type] || 'Internal',
         linked_client_name: selectedClient ? clientDisplayName(selectedClient) : '',
         documents,
-        custom_fields: savedCustomFields,
+        custom_fields: finalCustomFields,
         source_event: `Manual ${form.register_type} register entry`,
       }, currentUser);
       try {
-        await syncSupportingRegister(register, documents, savedCustomFields);
+        await syncSupportingRegister(register, documents, finalCustomFields);
       } catch (supportingError) {
         console.error('Supporting register sync failed', supportingError);
         toast.warning('Register saved. A supporting register or document sync needs review.');
@@ -642,6 +653,11 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         <label className="text-xs font-semibold text-navy md:col-span-3">
           Supporting Document
           <input type="file" className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" onChange={e => setSupportingFile(e.target.files?.[0] || null)} />
+          {form.register_type === 'RMCP_Review' && supportingFile && (
+            <span className="block mt-1 text-[11px] text-muted-foreground">
+              The RMCP Review will stamp this upload and latest document update time automatically when created.
+            </span>
+          )}
         </label>
       </div>
       <div className="flex justify-end gap-2 mt-4">
@@ -1233,15 +1249,32 @@ const DocumentRepository = ({ documents, entries, clients, currentUser, refresh 
     }
     setUploading(true);
     try {
+      const timestamp = new Date().toISOString();
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.entities.Compliance_Documents.create({
         ...form,
         file_url,
         file_name: file.name,
         uploaded_by: currentUser?.email || currentUser?.full_name || 'Compliance',
-        uploaded_at: new Date().toISOString(),
+        uploaded_at: timestamp,
+        review_date: form.document_type === 'RMCP' ? timestamp : form.expiry_date,
         status: 'Current',
       });
+      const linkedRegister = entries.find(entry => entry.id === form.linked_register_id);
+      if (form.document_type === 'RMCP' && linkedRegister?.register_type === 'RMCP_Review') {
+        const existingDocuments = Array.isArray(linkedRegister.documents) ? linkedRegister.documents : [];
+        await updateComplianceRegister(linkedRegister, {
+          documents: [
+            ...existingDocuments,
+            { name: file.name, url: file_url, uploaded_at: timestamp, updated_at: timestamp, uploaded_by: currentUser?.email || currentUser?.full_name || 'Compliance' },
+          ],
+          custom_fields: {
+            ...(linkedRegister.custom_fields || {}),
+            ...rmcpDocumentTimestampFields(timestamp),
+          },
+          audit_action: 'RMCP document uploaded',
+        }, currentUser, file.name);
+      }
       if (form.document_type === 'Training Certificate') {
         await base44.entities.Compliance_Training.create({
           staff_member: form.staff_member || form.title,
