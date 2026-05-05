@@ -11,6 +11,7 @@ import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
 import { ADVISORS } from '@/lib/constants';
+import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
@@ -612,6 +613,19 @@ export default function ClientOnboardingCompany() {
         to: ADVISOR_NOTIFICATION_EMAIL,
         subject: 'New Company Onboarding - ' + clientName,
         text: 'Company ' + clientName + ' has completed onboarding.\n\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+      });
+
+      await createOnboardingComplianceEntries({
+        ...formData,
+        id: clientId,
+        client_type: 'Company',
+        entity_name: clientName,
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_risk_band: rmcpResult.band,
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
+        aml_pep_clear: ficaResult?.fica_status === 'Approved',
       });
 
       // Fire-and-forget background verification

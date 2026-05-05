@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 import { ADVISORS } from '@/lib/constants';
+import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
@@ -915,7 +916,19 @@ export default function ClientOnboarding() {
         });
       }
 
-      // Fire-and-forget background verification — never blocks submission
+      await createOnboardingComplianceEntries({
+        ...latestClient,
+        ...formData,
+        id: clientId,
+        full_name: clientName,
+        fica_status: proposalFicaData.fica_status,
+        fica_risk_band: proposalFicaData.fica_risk_band,
+        rmcp_risk_score: proposalFicaData.rmcp_risk_score,
+        rmcp_risk_band: proposalFicaData.rmcp_risk_band,
+        aml_pep_clear: proposalFicaData.aml_pep_clear,
+      });
+
+      // Fire-and-forget background verification - never blocks submission
       base44.functions.invoke('runBackgroundVerification', {
         client_id: clientId,
         client_type: 'Natural Person',

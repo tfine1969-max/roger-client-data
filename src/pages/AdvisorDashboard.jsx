@@ -131,9 +131,9 @@ export default function AdvisorDashboard() {
           <PortalCard
             icon={ShieldCheck}
             title="1. Compliance"
-            description="Review client onboarding submissions, FICA status, document gaps, manual review items and approval readiness."
+            description="Open the unified compliance engine for FICA, FAIS, registers, training, oversight, audit trails and inspection exports."
             buttonLabel="Open compliance"
-            onClick={() => navigate('/compliance-review')}
+            onClick={() => navigate('/compliance')}
           >
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" />

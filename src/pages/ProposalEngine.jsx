@@ -14,6 +14,7 @@ import generateProposalPdf from '@/lib/generateProposalPdf';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
+import { createAdviceComplianceEntry, createProductReplacementComplianceEntries } from '@/lib/complianceEngine';
 
 export default function ProposalEngine() {
   const { id } = useParams();
@@ -246,6 +247,9 @@ export default function ProposalEngine() {
     };
     if (localData.aml_pep_clear !== undefined) ficaSnapshot.aml_pep_clear = localData.aml_pep_clear;
     await base44.entities.Proposal.update(id, { proposal_pdf_url: file_url, ...ficaSnapshot });
+    const complianceProposal = { ...localData, id, proposal_pdf_url: file_url, ...ficaSnapshot };
+    await createAdviceComplianceEntry({ proposal: complianceProposal, client: clientObj });
+    await createProductReplacementComplianceEntries({ proposal: complianceProposal, client: clientObj });
     setLocalData(prev => ({ ...prev, proposal_pdf_url: file_url }));
     queryClient.invalidateQueries({ queryKey: ['proposal', id] });
     toast.success('PDF generated');

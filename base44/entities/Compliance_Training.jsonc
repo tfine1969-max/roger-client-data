@@ -1,0 +1,14 @@
+{
+  "name": "Compliance_Training",
+  "type": "object",
+  "properties": {
+    "staff_member": { "type": "string" },
+    "training_type": { "type": "string" },
+    "date_completed": { "type": "string", "format": "date" },
+    "expiry_date": { "type": "string", "format": "date" },
+    "certificate_upload": { "type": "string" },
+    "status": { "type": "string", "enum": ["Valid", "Expired", "Due soon"], "default": "Valid" },
+    "linked_register_id": { "type": "string" }
+  },
+  "required": ["staff_member", "training_type", "status"]
+}
