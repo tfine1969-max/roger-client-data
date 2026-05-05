@@ -11,6 +11,7 @@ import {
   LogOut,
   Plus,
   ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 
 const getProposalCount = (proposals, category) =>
@@ -36,11 +37,15 @@ const countCompliance = (clients, key) => {
   return onboarded.filter(c => getVerificationStatus(c) === key).length;
 };
 
-const Metric = ({ label, value, tone = 'text-navy' }) => (
-  <div className="border border-border bg-card px-4 py-3">
+const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`border border-border bg-card px-4 py-3 text-left ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
+  >
     <p className={`text-2xl font-semibold ${tone}`}>{value}</p>
     <p className="text-[9px] font-semibold tracking-[.14em] uppercase text-muted-foreground mt-1">{label}</p>
-  </div>
+  </button>
 );
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, children }) => (
@@ -86,6 +91,16 @@ export default function AdvisorDashboard() {
     queryFn: () => base44.entities.Clients.list(),
   });
 
+  const { data: complianceEntries = [] } = useQuery({
+    queryKey: ['compliance-registers-dashboard'],
+    queryFn: () => base44.entities.Compliance_Registers.list('-created_date', 300),
+  });
+
+  const { data: complianceDocuments = [] } = useQuery({
+    queryKey: ['compliance-documents-dashboard'],
+    queryFn: () => base44.entities.Compliance_Documents.list('-created_date', 100),
+  });
+
   const advisorKey = user?.advisor_key || 'trevor';
   const advisor = ADVISORS[advisorKey] || ADVISORS.trevor;
 
@@ -102,6 +117,16 @@ export default function AdvisorDashboard() {
     awaitingDocuments: countCompliance(clients, 'awaiting_documents'),
     ready: countCompliance(clients, 'ready'),
   }), [clients]);
+
+  const regulatorySummary = useMemo(() => {
+    const open = complianceEntries.filter(e => e.status !== 'Closed');
+    return {
+      entries: complianceEntries.length,
+      escalated: open.filter(e => e.status === 'Escalated' || e.risk_level === 'High').length,
+      documents: complianceDocuments.length,
+      auditReady: complianceEntries.length > 0 || complianceDocuments.length > 0 ? 'Ready' : 'Build',
+    };
+  }, [complianceEntries, complianceDocuments]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -123,29 +148,88 @@ export default function AdvisorDashboard() {
           <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Advisor Portal</p>
           <h1 className="text-3xl font-semibold text-navy tracking-tight mt-2">Workspace index</h1>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Start with compliance review or proposal work. Each section keeps its own queue so the landing page stays clean.
+            Choose the area you need: regulatory registers and audit packs, client FICA review, or proposal work.
           </p>
         </div>
 
         <div className="grid gap-5">
           <PortalCard
             icon={ShieldCheck}
-            title="1. Compliance"
-            description="Open the unified compliance engine for FICA, FAIS, registers, training, oversight, audit trails and inspection exports."
-            buttonLabel="Open compliance"
+            title="1. Compliance Regulatory Portal"
+            description="Registers, RMCP repository, training certificates, regulatory evidence, audit reports and FSCA inspection exports."
+            buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
           >
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" />
-              <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" />
-              <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" />
-              <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" />
+              <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
+              <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
+              <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
+              <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/compliance?tab=registers')}
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Registers
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/compliance?tab=documents')}
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Document repository
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/compliance?tab=audit')}
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Audit report
+              </button>
+            </div>
+          </PortalCard>
+
+          <PortalCard
+            icon={UserCheck}
+            title="2. Client Compliance"
+            description="Review onboarding submissions, reverify unsuccessful clients, request documents, approve verified clients and move them into proposal phase."
+            buttonLabel="Open client compliance"
+            onClick={() => navigate('/compliance-review')}
+          >
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
+              <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
+              <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
+              <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/compliance-review?filter=new')}
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+              >
+                <UserCheck className="w-4 h-4" />
+                New submissions
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/compliance?tab=verification')}
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Reverify clients
+              </button>
             </div>
           </PortalCard>
 
           <PortalCard
             icon={FolderKanban}
-            title="2. Proposals"
+            title="3. Proposals"
             description="Build new proposals, continue draft ROAs, manage PDFs, send client packs and monitor signed reports."
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
