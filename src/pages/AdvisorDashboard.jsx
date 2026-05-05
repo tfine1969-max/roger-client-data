@@ -41,32 +41,32 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`border border-border bg-card px-4 py-3 text-left ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
+    className={`border border-border bg-card px-3 py-2 text-left ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
   >
-    <p className={`text-2xl font-semibold ${tone}`}>{value}</p>
-    <p className="text-[9px] font-semibold tracking-[.14em] uppercase text-muted-foreground mt-1">{label}</p>
+    <p className={`text-xl font-semibold ${tone}`}>{value}</p>
+    <p className="text-[9px] font-semibold tracking-[.12em] uppercase text-muted-foreground mt-0.5">{label}</p>
   </button>
 );
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, children }) => (
-  <section className="border border-border bg-card p-6">
-    <div className="flex items-start justify-between gap-4 mb-6">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean">
-          <Icon className="w-5 h-5" />
+  <section className="border border-border bg-card p-4">
+    <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start gap-3 min-w-0">
+        <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
+          <Icon className="w-4 h-4" />
         </div>
-        <div>
-          <h2 className="text-xl font-semibold text-navy tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">{description}</p>
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-navy tracking-tight">{title}</h2>
+          <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
         </div>
       </div>
       <button
         type="button"
         onClick={onClick}
-        className="shrink-0 inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
+        className="shrink-0 inline-flex items-center gap-2 bg-navy text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
       >
         {buttonLabel}
-        <ArrowRight className="w-4 h-4" />
+        <ArrowRight className="w-3.5 h-3.5" />
       </button>
     </div>
     {children}
@@ -143,16 +143,16 @@ export default function AdvisorDashboard() {
         </button>
       </div>
 
-      <main className="flex-1 p-4 md:p-7 max-w-7xl mx-auto w-full">
-        <div className="mb-7">
-          <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Advisor Portal</p>
-          <h1 className="text-3xl font-semibold text-navy tracking-tight mt-2">Workspace index</h1>
-          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+      <main className="flex-1 p-3 md:p-4 max-w-7xl mx-auto w-full">
+        <div className="mb-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Advisor Portal</p>
+          <h1 className="text-2xl font-semibold text-navy tracking-tight mt-1">Workspace index</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
             Choose the area you need: regulatory registers and audit packs, client FICA review, or proposal work.
           </p>
         </div>
 
-        <div className="grid gap-5">
+        <div className="grid lg:grid-cols-3 gap-4 items-start">
           <PortalCard
             icon={ShieldCheck}
             title="1. Compliance Regulatory Portal"
@@ -160,17 +160,17 @@ export default function AdvisorDashboard() {
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
           >
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
               <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
               <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
               <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/compliance?tab=registers')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Registers
@@ -178,7 +178,7 @@ export default function AdvisorDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/compliance?tab=documents')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Document repository
@@ -186,7 +186,7 @@ export default function AdvisorDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/compliance?tab=audit')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Audit report
@@ -201,17 +201,17 @@ export default function AdvisorDashboard() {
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
           >
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
               <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
               <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
               <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/compliance-review?filter=new')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <UserCheck className="w-4 h-4" />
                 New submissions
@@ -219,7 +219,7 @@ export default function AdvisorDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/compliance?tab=verification')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <ShieldCheck className="w-4 h-4" />
                 Reverify clients
@@ -234,17 +234,17 @@ export default function AdvisorDashboard() {
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
           >
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <Metric label="Awaiting review" value={proposalSummary.awaiting} />
               <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
               <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
               <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => navigate('/create-proposal')}
-                className="inline-flex items-center gap-2 border border-gold bg-gold text-white px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:bg-gold/90 transition-colors"
+                className="inline-flex items-center gap-2 border border-gold bg-gold text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-gold/90 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 New proposal
@@ -252,7 +252,7 @@ export default function AdvisorDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/proposals')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-4 py-2 text-xs font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Proposal inbox

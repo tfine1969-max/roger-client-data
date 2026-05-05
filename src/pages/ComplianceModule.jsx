@@ -84,7 +84,18 @@ const dateFieldNames = ['Date Onboarded', 'CDD Completion Date', 'Approval Date'
 const defaultCustomFields = (type) =>
   Object.fromEntries((REGISTER_FIELD_CONFIG[type] || []).map(field => [field, '']));
 
-const DUPLICATE_REGISTER_FIELDS = ['Client Name', 'Linked Client', 'Client Type', 'Advisor', 'Advisor Name', 'Employee Name'];
+const DUPLICATE_REGISTER_FIELDS = [
+  'Client Name',
+  'Linked Client',
+  'Client Type',
+  'Advisor',
+  'Advisor Name',
+  'Employee Name',
+  'Reported By',
+  'Person Involved',
+  'Assigned To',
+  'Status',
+];
 
 const visibleRegisterFields = (type) =>
   (REGISTER_FIELD_CONFIG[type] || []).filter(field => !DUPLICATE_REGISTER_FIELDS.includes(field));
