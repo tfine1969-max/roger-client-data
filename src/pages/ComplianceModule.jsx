@@ -50,6 +50,7 @@ const OVERSIGHT_TYPES = ['RMCP_Review', 'BRA', 'Audit', 'Compliance_Breach', 'Th
 
 const STATUS_OPTIONS = ['Open', 'Pending', 'Escalated', 'Closed'];
 const RISK_OPTIONS = ['Low', 'Medium', 'High'];
+const STAFF_MEMBERS = ['Trevor Fine', 'Roger Eskinazi', 'Malcolm Munsamy', 'Gemma De Luca'];
 
 const REGISTER_FIELD_CONFIG = {
   CDD: ['Client Name', 'ID / Registration Number', 'Client Type', 'Date Onboarded', 'Verification Method', 'ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'CDD Completed By', 'CDD Completion Date', 'Outstanding Requirements', 'Verification Status'],
@@ -76,7 +77,7 @@ const REGISTER_FIELD_CONFIG = {
   Audit: ['Audit Type', 'Audit Date', 'Auditor Name', 'Scope', 'Findings', 'Actions Required', 'Status', 'Closure Date'],
 };
 
-const yesNoFields = ['ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'PEP Status', 'Supporting Documents Uploaded', 'Senior Management Approval', 'Follow-up Required', 'Reported to FIC', 'Agreement in Place', 'Documents Received', 'Escalated', 'Needs Analysis Completed', 'ROA Generated', 'Client Signed', 'Replacement Involved', 'Replacement Consequences Explained', 'Cost Comparison Done', 'Client Acknowledged', 'Reportable to FSCA', 'Reported to Regulator', 'Within Policy', 'FSCA Notified', 'Signed', 'Reported to Information Regulator', 'Client Notification Sent'];
+const yesNoFields = ['ID Verified', 'Address Verified', 'Bank Account Verified', 'Source of Funds Obtained', 'PEP Status', 'Source of Wealth Verified', 'Supporting Documents Uploaded', 'Senior Management Approval', 'Follow-up Required', 'Reported to FIC', 'Agreement in Place', 'Documents Received', 'Ongoing Monitoring Required', 'Escalated', 'Certificate Uploaded', 'Needs Analysis Completed', 'ROA Generated', 'Client Signed', 'Replacement Involved', 'Replacement Consequences Explained', 'Cost Comparison Done', 'Client Acknowledged', 'Reportable to FSCA', 'Reported to Regulator', 'Within Policy', 'FSCA Notified', 'Signed', 'Reported to Information Regulator', 'Client Notification Sent'];
 
 const dateFieldNames = ['Date Onboarded', 'CDD Completion Date', 'Approval Date', 'Expiry Date', 'Date Detected', 'Report Date', 'Date Received', 'Screening Date', 'Training Date', 'Next Training Due Date', 'Deadline', 'Review Date', 'Date of Advice', 'Date Received', 'Resolution Deadline', 'Date Identified', 'Date Completed', 'Date Appointed', 'Date Initiated', 'Date Finalised', 'Date Signed', 'Last Review Date', 'Audit Date', 'Closure Date'];
 
@@ -86,11 +87,46 @@ const defaultCustomFields = (type) =>
 const multilineFieldNames = ['Description', 'Notes', 'Internal Notes', 'Key Findings', 'Deficiencies Identified', 'Actions Required', 'Action Required', 'Reason for Exception', 'Interim Measures Taken', 'Final Resolution', 'Transaction Description', 'Match Details', 'Action Taken', 'Risk Description', 'Products Recommended', 'Advisor Justification', 'Root Cause', 'Immediate Action', 'Remediation Plan', 'Investigation Summary', 'Special Instructions', 'Breach Description', 'Remediation Actions', 'Findings', 'Scope', 'Outcome / Feedback'];
 
 const fieldInputType = (field) => {
+  if (fieldOptions(field).length) return 'select';
   if (yesNoFields.includes(field)) return 'yesno';
   if (dateFieldNames.includes(field)) return 'date';
   if (multilineFieldNames.some(name => field.includes(name))) return 'textarea';
   return 'text';
 };
+
+function fieldOptions(field) {
+  if (['Employee Name', 'Advisor Name', 'Advisor', 'Staff Member', 'CDD Completed By', 'Approved By', 'Approved By (MLCO)', 'Conducted By', 'Responsible Person', 'Risk Owner', 'Assigned To', 'Person Involved', 'Verified By', 'Cleared By', 'Reported By', 'Auditor Name'].includes(field)) return STAFF_MEMBERS;
+  if (field === 'Training Type') return ['FICA', 'AML', 'RMCP', 'FAIS', 'CPD', 'Product', 'Supervision'];
+  if (field === 'Pass/Fail') return ['Pass', 'Fail'];
+  if (field === 'Role') return ['Advisor', 'Compliance Officer', 'Key Individual', 'Representative', 'Admin'];
+  if (field === 'Client Type') return ['Individual', 'Company', 'Trust', 'Partnership', 'Other'];
+  if (field === 'Verification Method') return ['VerifyNow', 'Manual document review', 'Certified copy', 'Bank confirmation', 'Other'];
+  if (field === 'Verification Status') return ['Pending', 'Verified', 'Failed', 'Exception', 'Reverification required'];
+  if (field === 'Trigger for EDD') return ['High risk client', 'PEP', 'Sanctions match', 'Adverse media', 'Complex structure', 'Geography risk', 'Other'];
+  if (field === 'Sanctions Check Result' || field === 'Result') return ['Clear', 'Possible Match', 'Match', 'Failed'];
+  if (field === 'Screening Provider') return ['VerifyNow', 'Manual', 'Other'];
+  if (field === 'Suspicion Type') return ['Unusual transaction', 'Source of funds concern', 'Identity concern', 'Sanctions concern', 'Structuring', 'Other'];
+  if (field === 'Review Type') return ['Annual', 'Ad Hoc', 'Trigger event', 'Regulatory update'];
+  if (field === 'Completion Status') return ['Not started', 'In progress', 'Completed', 'Overdue'];
+  if (field === 'Risk Category') return ['Client', 'Product', 'Geography', 'Channel', 'Transaction', 'Third party'];
+  if (field === 'Risk Profile' || field === 'Risk Assessment' || field === 'Risk Rating') return RISK_OPTIONS;
+  if (field === 'Type of Advice') return ['Investment', 'Risk', 'Retirement', 'Replacement', 'Estate planning', 'Other'];
+  if (field === 'Replacement Reason') return ['Cost', 'Performance', 'Benefit improvement', 'Client objective change', 'Provider change', 'Advice review', 'Other'];
+  if (field === 'Complaint Type') return ['Advice', 'Service', 'Product', 'Administration', 'Fees', 'Communication', 'Other'];
+  if (field === 'Breach Type') return ['FAIS', 'FICA', 'POPIA', 'Internal'];
+  if (field === 'Severity') return ['Low', 'Medium', 'High', 'Critical'];
+  if (field === 'Conflict Type') return ['Financial interest', 'Ownership interest', 'Relationship', 'Outside business interest', 'Other'];
+  if (field === 'Gift Type') return ['Gift', 'Entertainment', 'Hospitality', 'Travel', 'Other'];
+  if (field === 'CPD Category') return ['Technical', 'Ethics', 'Regulatory', 'Product', 'Practice management'];
+  if (field === 'Compliance Status' || field === 'Fit & Proper Status' || field === 'CPD Status') return ['Compliant', 'Non-compliant', 'Valid', 'Expired', 'Due soon', 'Under review'];
+  if (field === 'Supervision Status') return ['Under supervision', 'Supervision complete', 'Not applicable'];
+  if (field === 'Status') return STATUS_OPTIONS;
+  if (field === 'Mandate Type') return ['Discretionary', 'Non-discretionary', 'Advice only', 'Ongoing service'];
+  if (field === 'Data Type Affected') return ['Personal information', 'Special personal information', 'Financial information', 'Identity documents', 'Contact details', 'Other'];
+  if (field === 'Type') return ['Introducer', 'Provider', 'Vendor', 'Outsourced service provider', 'Other'];
+  if (field === 'Audit Type') return ['Internal', 'FSCA', 'External', 'Compliance monitoring', 'File review'];
+  return [];
+}
 
 const fieldSummary = (customFields = {}) =>
   Object.entries(customFields)
@@ -413,11 +449,19 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         custom_fields: customFields,
         source_event: `Manual ${form.register_type} register entry`,
       }, currentUser);
-      await syncSupportingRegister(register, documents);
+      try {
+        await syncSupportingRegister(register, documents);
+      } catch (supportingError) {
+        console.error('Supporting register sync failed', supportingError);
+        toast.warning('Register saved. A supporting register or document sync needs review.');
+      }
       toast.success(`${form.register_type} register entry created.`);
       setOpen(false);
       resetForm(form.register_type);
       onCreated();
+    } catch (error) {
+      console.error('Compliance register create failed', error);
+      toast.error(error?.message || 'Could not create the register entry.');
     } finally {
       setSubmitting(false);
     }
@@ -456,9 +500,9 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
           </select>
         </label>
         <label className="text-xs font-semibold text-navy">
-          Advisor
+          Staff Member
           <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.linked_advisor} onChange={e => setForm({ ...form, linked_advisor: e.target.value })}>
-            {Object.values(ADVISORS).map(advisor => <option key={advisor.email} value={advisor.name}>{advisor.name}</option>)}
+            {STAFF_MEMBERS.map(staff => <option key={staff} value={staff}>{staff}</option>)}
           </select>
         </label>
         <label className="text-xs font-semibold text-navy">
@@ -477,10 +521,16 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
       <div className="grid md:grid-cols-2 gap-3 mt-4">
         {(REGISTER_FIELD_CONFIG[form.register_type] || []).map(field => {
           const type = fieldInputType(field);
+          const options = fieldOptions(field);
           return (
             <label key={field} className={`text-xs font-semibold text-navy ${type === 'textarea' ? 'md:col-span-2' : ''}`}>
               {field}
-              {type === 'yesno' ? (
+              {type === 'select' ? (
+                <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
+                  <option value="">Select</option>
+                  {options.map(option => <option key={option} value={option}>{option}</option>)}
+                </select>
+              ) : type === 'yesno' ? (
                 <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
