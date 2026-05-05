@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -16,11 +16,13 @@ const ADVISORS = [
 
 export default function CreateProposal() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preselectedClientId = searchParams.get('client') || '';
   const [clientMode, setClientMode] = useState('existing');
   const [formData, setFormData] = useState({
     advisor_name: '',
     mandate_included: 'No',
-    client_id: '',
+    client_id: preselectedClientId,
     searchQuery: ''
   });
   const [newClientData, setNewClientData] = useState({

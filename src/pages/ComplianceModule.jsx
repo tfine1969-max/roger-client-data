@@ -32,8 +32,11 @@ import {
 import { ADVISORS } from '@/lib/constants';
 
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'dashboard', label: 'Compliance Portal', icon: LayoutDashboard },
   { key: 'registers', label: 'Registers', icon: FileText },
+  { key: 'verification', label: 'Client Verification', icon: ShieldCheck },
+  { key: 'documents', label: 'Document Repository', icon: Upload },
+  { key: 'audit', label: 'Audit Report', icon: Download },
   { key: 'fica', label: 'FICA', icon: ShieldCheck },
   { key: 'fais', label: 'FAIS', icon: Scale },
   { key: 'training', label: 'Training', icon: GraduationCap },
@@ -162,6 +165,52 @@ const HealthBar = ({ label, value }) => (
       <div className={`h-full ${value >= 90 ? 'bg-teal' : value >= 70 ? 'bg-amber-500' : 'bg-red-600'}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
     </div>
   </div>
+);
+
+const PortalTile = ({ icon: Icon, title, description, meta, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="text-left border border-border bg-card p-5 hover:border-navy/40 hover:bg-secondary/30 transition-colors"
+  >
+    <div className="flex items-start justify-between gap-4">
+      <div className="w-10 h-10 border border-border bg-background flex items-center justify-center text-ocean">
+        <Icon className="w-5 h-5" />
+      </div>
+      {meta && <Badge className="bg-secondary text-muted-foreground border-border">{meta}</Badge>}
+    </div>
+    <h3 className="text-lg font-semibold text-navy mt-4">{title}</h3>
+    <p className="text-sm text-muted-foreground mt-2 leading-6">{description}</p>
+  </button>
+);
+
+const isClientVerificationIssue = (client = {}) => {
+  const status = String(client.fica_status || client.verification_status || client.review_status || '').toLowerCase();
+  const needsReview = client.advisor_review_required || status.includes('referred') || status.includes('declined') || status.includes('manual') || status.includes('awaiting') || status.includes('pending');
+  return !!client.email && (needsReview || (client.onboarding_complete && client.verification_status !== 'Verified' && client.fica_status !== 'Approved'));
+};
+
+const RegisterTypeDirectory = ({ entries, setFilters }) => (
+  <section className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-5">
+    {REGISTER_TYPES.map(type => {
+      const typeEntries = entries.filter(entry => entry.register_type === type);
+      const openCount = typeEntries.filter(entry => entry.status !== 'Closed').length;
+      return (
+        <button
+          type="button"
+          key={type}
+          onClick={() => setFilters({ type, status: '', risk: '', advisor: '', category: '' })}
+          className="border border-border bg-card p-3 text-left hover:border-navy/40 transition-colors"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-navy">{type}</p>
+            <Badge className={openCount ? statusClass.Open : statusClass.Closed}>{openCount} open</Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">{CATEGORY_BY_REGISTER[type] || 'Internal'} register</p>
+        </button>
+      );
+    })}
+  </section>
 );
 
 const RegisterForm = ({ clients, currentUser, onCreated }) => {
@@ -486,9 +535,15 @@ export default function ComplianceModule() {
     queryFn: () => base44.entities.Compliance_Training.list('-created_date', 200),
   });
 
+  const { data: documents = [] } = useQuery({
+    queryKey: ['compliance-documents'],
+    queryFn: () => base44.entities.Compliance_Documents.list('-created_date', 300),
+  });
+
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['compliance-registers'] });
     queryClient.invalidateQueries({ queryKey: ['compliance-training'] });
+    queryClient.invalidateQueries({ queryKey: ['compliance-documents'] });
   };
 
   const metrics = useMemo(() => {
@@ -517,6 +572,7 @@ export default function ComplianceModule() {
     .slice(0, 8);
 
   const recent = entries.slice(0, 8);
+  const verificationClients = clients.filter(isClientVerificationIssue);
   const selectedClient = clients.find(c => c.id === clientId) || clients[0];
   const selectedClientEntries = selectedClient ? entries.filter(e => e.linked_client_id === selectedClient.id) : [];
 
@@ -542,6 +598,37 @@ export default function ComplianceModule() {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
+            <section className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <PortalTile
+                icon={FileText}
+                title="Compliance Registers"
+                description="Open every FICA, FAIS, POPIA and internal register. Empty registers are still visible and clickable for inspection readiness."
+                meta={`${entries.length} entries`}
+                onClick={() => setActiveTab('registers')}
+              />
+              <PortalTile
+                icon={ShieldCheck}
+                title="Client Verification"
+                description="Review or reverify clients whose FICA, sanctions or document checks were not successful, then move verified clients into proposal work."
+                meta={`${verificationClients.length} to review`}
+                onClick={() => setActiveTab('verification')}
+              />
+              <PortalTile
+                icon={Upload}
+                title="Document Repository"
+                description="Store and access the RMCP, training certificates, policies and evidence documents used during compliance audits."
+                meta={`${documents.length} docs`}
+                onClick={() => setActiveTab('documents')}
+              />
+              <PortalTile
+                icon={Download}
+                title="Audit Report"
+                description="Generate an audit-ready export containing all registers, documents, training records, outstanding items and audit trail evidence."
+                meta="FSCA pack"
+                onClick={() => setActiveTab('audit')}
+              />
+            </section>
+
             <div className="grid md:grid-cols-4 gap-4">
               <KpiCard label="Outstanding FICA" value={metrics.outstandingFica} critical={metrics.outstandingFica > 5} />
               <KpiCard label="High Risk Clients" value={metrics.highRiskClients} critical={metrics.highRiskClients > 0} />
@@ -604,8 +691,21 @@ export default function ComplianceModule() {
                 </button>
               </div>
             </div>
+            <RegisterTypeDirectory entries={entries} setFilters={setFilters} />
             <RegistersTable entries={entries} clients={clients} currentUser={currentUser} filters={filters} setFilters={setFilters} onUpdated={refresh} />
           </div>
+        )}
+
+        {activeTab === 'verification' && (
+          <VerificationQueue clients={verificationClients} entries={entries} refresh={refresh} />
+        )}
+
+        {activeTab === 'documents' && (
+          <DocumentRepository documents={documents} entries={entries} clients={clients} currentUser={currentUser} refresh={refresh} />
+        )}
+
+        {activeTab === 'audit' && (
+          <AuditReport entries={entries} documents={documents} training={training} clients={clients} exportCurrent={exportCurrent} />
         )}
 
         {activeTab === 'fica' && (
@@ -682,6 +782,232 @@ const Info = ({ label, value }) => (
     <p className="text-lg font-semibold text-navy mt-1">{value}</p>
   </div>
 );
+
+const VerificationQueue = ({ clients, entries, refresh }) => {
+  const navigate = useNavigate();
+
+  const runReverify = async (client) => {
+    await base44.functions.invoke('runBackgroundVerification', {
+      client_id: client.id,
+      client_type: client.client_type || 'Natural Person',
+    });
+    toast.success('Reverification started.');
+  };
+
+  const markVerified = async (client) => {
+    await base44.entities.Clients.update(client.id, {
+      verification_status: 'Verified',
+      fica_status: 'Approved',
+      review_status: 'Approved',
+      advisor_review_required: false,
+      client_status: 'Active',
+      review_decision_at: new Date().toISOString(),
+    });
+    const related = entries.filter(entry => entry.linked_client_id === client.id && ['FICA_Exception', 'EDD', 'Sanctions', 'CDD', 'RMCP_Review'].includes(entry.register_type));
+    await Promise.all(related.map(entry => updateComplianceRegister(entry, { status: 'Closed', audit_action: 'Client verified' }, 'Compliance', 'Client verified and ready for proposal phase')));
+    toast.success('Client verified and ready for proposal phase.');
+    refresh();
+  };
+
+  return (
+    <div className="space-y-4">
+      <section className="border border-border bg-card p-5">
+        <h3 className="text-xl font-semibold text-navy">Client Verification & Reverification</h3>
+        <p className="text-sm text-muted-foreground mt-2 max-w-3xl">
+          Clients listed here have unsuccessful, pending, referred, declined or manual-review verification outcomes. Once verified, they can be sent through to proposal creation.
+        </p>
+      </section>
+      <div className="border border-border bg-card overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead className="bg-muted text-[10px] uppercase tracking-[.12em] text-muted-foreground">
+            <tr><th className="p-3 text-left">Client</th><th className="p-3 text-left">FICA</th><th className="p-3 text-left">Risk</th><th className="p-3 text-left">Documents</th><th className="p-3 text-left">Issue</th><th className="p-3 text-left">Actions</th></tr>
+          </thead>
+          <tbody>
+            {clients.map(client => {
+              const related = entries.filter(entry => entry.linked_client_id === client.id && entry.status !== 'Closed');
+              return (
+                <tr key={client.id} className="border-t border-border">
+                  <td className="p-3"><p className="font-semibold text-navy">{clientDisplayName(client)}</p><p className="text-xs text-muted-foreground">{client.email}</p></td>
+                  <td className="p-3">{client.fica_status || client.verification_status || '-'}</td>
+                  <td className="p-3"><Badge className={riskClass[normalizeRisk(client.rmcp_risk_band || client.fica_risk_band)]}>{normalizeRisk(client.rmcp_risk_band || client.fica_risk_band)}</Badge></td>
+                  <td className="p-3">{client.doc_status || '-'}</td>
+                  <td className="p-3 text-muted-foreground">{related[0]?.description || 'Verification requires review'}</td>
+                  <td className="p-3">
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => runReverify(client)} className="border border-border px-3 py-1.5 text-xs font-bold text-navy">Reverify</button>
+                      <button type="button" onClick={() => markVerified(client)} className="bg-teal text-white px-3 py-1.5 text-xs font-bold">Mark Verified</button>
+                      <button type="button" onClick={() => navigate(`/create-proposal?client=${client.id}`)} className="bg-navy text-white px-3 py-1.5 text-xs font-bold">Proposal</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {clients.length === 0 && <tr><td colSpan="6" className="p-8 text-center text-muted-foreground">No unsuccessful verification items right now.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const DocumentRepository = ({ documents, entries, clients, currentUser, refresh }) => {
+  const [form, setForm] = useState({ document_type: 'RMCP', title: 'WealthWorks RMCP', description: '', linked_register_id: '', linked_client_id: '', staff_member: '', expiry_date: '' });
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!form.title.trim()) {
+      toast.error('Document title is required.');
+      return;
+    }
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.Compliance_Documents.create({
+        ...form,
+        file_url,
+        file_name: file.name,
+        uploaded_by: currentUser?.email || currentUser?.full_name || 'Compliance',
+        uploaded_at: new Date().toISOString(),
+        status: 'Current',
+      });
+      if (form.document_type === 'Training Certificate') {
+        await base44.entities.Compliance_Training.create({
+          staff_member: form.staff_member || form.title,
+          training_type: form.title,
+          certificate_upload: file_url,
+          expiry_date: form.expiry_date,
+          status: trainingStatus({ expiry_date: form.expiry_date }),
+        });
+      }
+      toast.success('Document uploaded to compliance repository.');
+      refresh();
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  };
+
+  const rmcpDocs = documents.filter(doc => doc.document_type === 'RMCP');
+
+  return (
+    <div className="space-y-5">
+      <section className="border border-border bg-card p-5">
+        <h3 className="text-xl font-semibold text-navy">Compliance Document Repository</h3>
+        <p className="text-sm text-muted-foreground mt-2">Upload RMCP versions, training certificates, register evidence, policies and audit evidence. Your RMCP PDF should be uploaded here as type RMCP.</p>
+        {rmcpDocs.length > 0 && (
+          <div className="mt-4 border border-teal/20 bg-teal/5 p-3">
+            <p className="text-xs font-bold uppercase tracking-[.12em] text-teal mb-2">Current RMCP access</p>
+            {rmcpDocs.map(doc => <a key={doc.id} href={doc.file_url} target="_blank" rel="noreferrer" className="block text-sm text-ocean hover:underline">{doc.title} - {doc.file_name}</a>)}
+          </div>
+        )}
+      </section>
+
+      <section className="border border-border bg-card p-4 grid md:grid-cols-3 gap-3">
+        <label className="text-xs font-semibold text-navy">
+          Type
+          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.document_type} onChange={e => setForm({ ...form, document_type: e.target.value })}>
+            {['RMCP', 'Training Certificate', 'Policy', 'Audit Evidence', 'Register Evidence', 'Other'].map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-semibold text-navy">
+          Title
+          <input className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+        </label>
+        <label className="text-xs font-semibold text-navy">
+          Link Register
+          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.linked_register_id} onChange={e => setForm({ ...form, linked_register_id: e.target.value })}>
+            <option value="">None</option>
+            {entries.map(entry => <option key={entry.id} value={entry.id}>{entry.register_type} - {entry.linked_client_name || entry.description}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-semibold text-navy">
+          Link Client
+          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.linked_client_id} onChange={e => setForm({ ...form, linked_client_id: e.target.value })}>
+            <option value="">None</option>
+            {clients.map(client => <option key={client.id} value={client.id}>{clientDisplayName(client)}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-semibold text-navy">
+          Staff / Owner
+          <input className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.staff_member} onChange={e => setForm({ ...form, staff_member: e.target.value })} />
+        </label>
+        <label className="text-xs font-semibold text-navy">
+          Expiry
+          <input type="date" className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.expiry_date} onChange={e => setForm({ ...form, expiry_date: e.target.value })} />
+        </label>
+        <label className="text-xs font-semibold text-navy md:col-span-3">
+          Description
+          <textarea className="mt-1 w-full border border-border bg-background px-3 py-2 min-h-16" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+        </label>
+        <div className="md:col-span-3">
+          <label className="inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-xs font-bold uppercase tracking-[.08em] cursor-pointer">
+            <Upload className="w-4 h-4" />
+            {uploading ? 'Uploading...' : 'Upload Document'}
+            <input type="file" className="hidden" onChange={upload} />
+          </label>
+        </div>
+      </section>
+
+      <div className="border border-border bg-card overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead className="bg-muted text-[10px] uppercase tracking-[.12em] text-muted-foreground">
+            <tr><th className="p-3 text-left">Type</th><th className="p-3 text-left">Title</th><th className="p-3 text-left">File</th><th className="p-3 text-left">Owner</th><th className="p-3 text-left">Uploaded</th><th className="p-3 text-left">Status</th></tr>
+          </thead>
+          <tbody>
+            {documents.map(doc => (
+              <tr key={doc.id} className="border-t border-border">
+                <td className="p-3 font-semibold text-navy">{doc.document_type}</td>
+                <td className="p-3">{doc.title}</td>
+                <td className="p-3"><a href={doc.file_url} target="_blank" rel="noreferrer" className="text-ocean hover:underline">{doc.file_name || 'Open'}</a></td>
+                <td className="p-3">{doc.staff_member || doc.uploaded_by || '-'}</td>
+                <td className="p-3 text-muted-foreground">{dateFmt(doc.uploaded_at || doc.created_date)}</td>
+                <td className="p-3"><Badge className={doc.status === 'Current' ? riskClass.Low : riskClass.Medium}>{doc.status || 'Current'}</Badge></td>
+              </tr>
+            ))}
+            {documents.length === 0 && <tr><td colSpan="6" className="p-8 text-center text-muted-foreground">No compliance documents uploaded yet. Upload the WealthWorks RMCP first.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const AuditReport = ({ entries, documents, training, clients, exportCurrent }) => {
+  const generateHtmlReport = () => {
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>WealthWorks Compliance Audit Report</title><style>body{font-family:Arial,sans-serif;color:#1e3a5f;padding:32px}h1,h2{margin-bottom:4px}table{border-collapse:collapse;width:100%;margin:16px 0 28px}th,td{border:1px solid #d9e2ec;padding:8px;font-size:12px;text-align:left}th{background:#eef2f6}.meta{color:#64748b;font-size:12px}.red{color:#b91c1c}.green{color:#047857}</style></head><body><h1>WealthWorks Compliance Audit Report</h1><p class="meta">Generated ${new Date().toLocaleString('en-ZA')} | Registers: ${entries.length} | Clients: ${clients.length} | Documents: ${documents.length}</p><h2>Register Summary</h2><table><thead><tr><th>Register</th><th>Total</th><th>Open</th><th>Escalated</th><th>Closed</th></tr></thead><tbody>${REGISTER_TYPES.map(type => { const rows = entries.filter(e => e.register_type === type); return `<tr><td>${type}</td><td>${rows.length}</td><td>${rows.filter(e => e.status === 'Open').length}</td><td class="red">${rows.filter(e => e.status === 'Escalated').length}</td><td class="green">${rows.filter(e => e.status === 'Closed').length}</td></tr>`; }).join('')}</tbody></table><h2>All Register Entries</h2><table><thead><tr><th>Date</th><th>Type</th><th>Client</th><th>Advisor</th><th>Status</th><th>Risk</th><th>Description</th></tr></thead><tbody>${entries.map(e => `<tr><td>${dateFmt(e.created_date)}</td><td>${e.register_type}</td><td>${e.linked_client_name || ''}</td><td>${e.linked_advisor || ''}</td><td>${e.status}</td><td>${e.risk_level}</td><td>${e.description || ''}</td></tr>`).join('')}</tbody></table><h2>Document Repository</h2><table><thead><tr><th>Type</th><th>Title</th><th>File</th><th>Status</th></tr></thead><tbody>${documents.map(d => `<tr><td>${d.document_type}</td><td>${d.title}</td><td>${d.file_name || ''}</td><td>${d.status || 'Current'}</td></tr>`).join('')}</tbody></table><h2>Training Register</h2><table><thead><tr><th>Staff</th><th>Training</th><th>Completed</th><th>Expiry</th><th>Status</th></tr></thead><tbody>${training.map(t => `<tr><td>${t.staff_member || ''}</td><td>${t.training_type || ''}</td><td>${dateFmt(t.date_completed)}</td><td>${dateFmt(t.expiry_date)}</td><td>${trainingStatus(t)}</td></tr>`).join('')}</tbody></table></body></html>`;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `wealthworks-compliance-audit-report-${new Date().toISOString().slice(0, 10)}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-5">
+      <section className="border border-border bg-card p-5">
+        <h3 className="text-xl font-semibold text-navy">Audit-Ready Report Pack</h3>
+        <p className="text-sm text-muted-foreground mt-2 max-w-3xl">Generate evidence for inspection: all registers, open/escalated counts, RMCP/document repository, training certificates and audit-trail source data.</p>
+        <div className="flex flex-wrap gap-3 mt-5">
+          <button type="button" onClick={generateHtmlReport} className="inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-xs font-bold uppercase tracking-[.08em]">
+            <Download className="w-4 h-4" />
+            Generate Audit Report
+          </button>
+          <button type="button" onClick={() => exportCurrent('all-compliance-registers', entries)} className="inline-flex items-center gap-2 border border-border text-navy px-4 py-2 text-xs font-bold uppercase tracking-[.08em]">
+            <Download className="w-4 h-4" />
+            Export Registers CSV
+          </button>
+        </div>
+      </section>
+      <RegisterTypeDirectory entries={entries} setFilters={() => {}} />
+    </div>
+  );
+};
 
 const ModuleTabs = ({ tabs, entries, clients, currentUser, onUpdated, onExport, showComplaintSla = false }) => {
   const [active, setActive] = useState('All');

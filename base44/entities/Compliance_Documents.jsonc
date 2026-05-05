@@ -1,0 +1,27 @@
+{
+  "name": "Compliance_Documents",
+  "type": "object",
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "enum": ["RMCP", "Training Certificate", "Policy", "Audit Evidence", "Register Evidence", "Other"]
+    },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "file_url": { "type": "string" },
+    "file_name": { "type": "string" },
+    "linked_register_id": { "type": "string" },
+    "linked_client_id": { "type": "string" },
+    "staff_member": { "type": "string" },
+    "uploaded_by": { "type": "string" },
+    "uploaded_at": { "type": "string" },
+    "review_date": { "type": "string" },
+    "expiry_date": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["Current", "Expired", "Archived"],
+      "default": "Current"
+    }
+  },
+  "required": ["document_type", "title", "file_url"]
+}
