@@ -41,7 +41,7 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`border border-border bg-background px-3 py-2 text-left min-w-[130px] ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
+    className={`border border-border bg-background px-3 py-2 text-left min-h-[58px] ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
   >
     <p className={`text-xl font-semibold ${tone}`}>{value}</p>
     <p className="text-[9px] font-semibold tracking-[.12em] uppercase text-muted-foreground mt-0.5">{label}</p>
@@ -50,27 +50,27 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, children }) => (
   <section className="border border-border bg-card px-4 py-3">
-    <div className="grid lg:grid-cols-[1fr_2fr_auto] gap-4 items-center">
-      <div className="flex items-start gap-3 min-w-0">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex items-start gap-3 min-w-0 max-w-3xl">
         <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
           <h2 className="text-lg font-semibold text-navy tracking-tight">{title}</h2>
-          <p className="text-xs text-muted-foreground mt-1 leading-5 max-w-xl">{description}</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
         </div>
-      </div>
-      <div className="min-w-0">
-        {children}
       </div>
       <button
         type="button"
         onClick={onClick}
-        className="justify-self-start lg:justify-self-end shrink-0 inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
+        className="shrink-0 inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
       >
         {buttonLabel}
         <ArrowRight className="w-3.5 h-3.5" />
       </button>
+    </div>
+    <div className="mt-3">
+      {children}
     </div>
   </section>
 );
@@ -164,38 +164,38 @@ export default function AdvisorDashboard() {
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
           >
-            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
-              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
                 <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
                 <Metric label="Repository docs" value={regulatorySummary.documents} tone="text-ocean" onClick={() => navigate('/compliance?tab=documents')} />
                 <Metric label="Audit pack" value={regulatorySummary.auditReady} tone="text-teal" onClick={() => navigate('/compliance?tab=audit')} />
               </div>
-              <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/compliance?tab=registers')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Registers
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/compliance?tab=documents')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Document repository
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/compliance?tab=audit')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Audit report
-              </button>
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/compliance?tab=registers')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  Registers
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/compliance?tab=documents')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  Document repository
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/compliance?tab=audit')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  Audit report
+                </button>
               </div>
             </div>
           </PortalCard>
@@ -207,30 +207,30 @@ export default function AdvisorDashboard() {
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
           >
-            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
-              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
                 <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
                 <Metric label="Awaiting documents" value={complianceSummary.awaitingDocuments} tone="text-orange-700" onClick={() => navigate('/compliance-review?filter=awaiting_documents')} />
                 <Metric label="Ready for approval" value={complianceSummary.ready} tone="text-teal" onClick={() => navigate('/compliance-review?filter=ready')} />
               </div>
-              <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/compliance-review?filter=new')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <UserCheck className="w-4 h-4" />
-                New submissions
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/compliance?tab=verification')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Reverify clients
-              </button>
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/compliance-review?filter=new')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  New submissions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/compliance?tab=verification')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Reverify clients
+                </button>
               </div>
             </div>
           </PortalCard>
@@ -242,30 +242,30 @@ export default function AdvisorDashboard() {
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
           >
-            <div className="grid xl:grid-cols-[1fr_auto] gap-3 items-center">
-              <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-2">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <Metric label="Awaiting review" value={proposalSummary.awaiting} />
                 <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
                 <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
                 <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
               </div>
-              <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/create-proposal')}
-                className="inline-flex items-center gap-2 border border-gold bg-gold text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-gold/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                New proposal
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/proposals')}
-                className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-              >
-                <FileText className="w-4 h-4" />
-                Proposal inbox
-              </button>
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/create-proposal')}
+                  className="inline-flex items-center gap-2 border border-gold bg-gold text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-gold/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  New proposal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/proposals')}
+                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  Proposal inbox
+                </button>
               </div>
             </div>
           </PortalCard>
