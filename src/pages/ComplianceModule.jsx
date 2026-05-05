@@ -84,6 +84,14 @@ const dateFieldNames = ['Date Onboarded', 'CDD Completion Date', 'Approval Date'
 const defaultCustomFields = (type) =>
   Object.fromEntries((REGISTER_FIELD_CONFIG[type] || []).map(field => [field, '']));
 
+const DUPLICATE_REGISTER_FIELDS = ['Client Name', 'Linked Client', 'Client Type', 'Advisor', 'Advisor Name', 'Employee Name'];
+
+const visibleRegisterFields = (type) =>
+  (REGISTER_FIELD_CONFIG[type] || []).filter(field => !DUPLICATE_REGISTER_FIELDS.includes(field));
+
+const clientTypeLabel = (client = {}) =>
+  client.client_type || client.entity_type || (client.trust_name || client.trust_number ? 'Trust' : client.entity_name || client.registration_number ? 'Company' : client.full_name || client.first_name || client.last_name ? 'Natural Person' : '');
+
 const multilineFieldNames = ['Description', 'Notes', 'Internal Notes', 'Key Findings', 'Deficiencies Identified', 'Actions Required', 'Action Required', 'Reason for Exception', 'Interim Measures Taken', 'Final Resolution', 'Transaction Description', 'Match Details', 'Action Taken', 'Risk Description', 'Products Recommended', 'Advisor Justification', 'Root Cause', 'Immediate Action', 'Remediation Plan', 'Investigation Summary', 'Special Instructions', 'Breach Description', 'Remediation Actions', 'Findings', 'Scope', 'Outcome / Feedback'];
 
 const fieldInputType = (field) => {
@@ -316,6 +324,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
   const [submitting, setSubmitting] = useState(false);
 
   const selectedClient = clients.find(c => c.id === form.linked_client_id);
+  const selectedClientType = clientTypeLabel(selectedClient);
 
   const selectRegisterType = (type) => {
     setForm(prev => ({ ...prev, register_type: type }));
@@ -343,8 +352,8 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
     setSupportingFile(null);
   };
 
-  const syncSupportingRegister = async (register, documents) => {
-    const fields = customFields || {};
+  const syncSupportingRegister = async (register, documents, savedFields) => {
+    const fields = savedFields || {};
     const linkedRegisterId = register?.id;
     if (!linkedRegisterId) return;
 
@@ -416,7 +425,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         file_name: documents[0].name || '',
         linked_register_id: linkedRegisterId,
         linked_client_id: form.linked_client_id,
-        staff_member: fields['Employee Name'] || fields['Advisor Name'] || '',
+        staff_member: fields['Employee Name'] || fields['Advisor Name'] || form.linked_advisor || '',
         uploaded_by: currentUser?.email || 'Compliance',
         uploaded_at: new Date().toISOString(),
         expiry_date: fields['Next Training Due Date'] || '',
@@ -426,7 +435,12 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
   };
 
   const submit = async () => {
-    const summary = fieldSummary(customFields);
+    const enteredFields = Object.fromEntries(
+      Object.entries(customFields || {})
+        .filter(([field, value]) => !DUPLICATE_REGISTER_FIELDS.includes(field) && String(value || '').trim())
+    );
+    const savedCustomFields = selectedClientType ? { ...enteredFields, 'Client Type': selectedClientType } : enteredFields;
+    const summary = fieldSummary(enteredFields);
     if (!form.description.trim() && !summary) {
       toast.error('Complete at least one register field.');
       return;
@@ -444,13 +458,13 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         description,
         action_required: form.action_required.trim() || customFields['Action Required'] || customFields['Actions Required'] || '',
         category: CATEGORY_BY_REGISTER[form.register_type] || 'Internal',
-        linked_client_name: selectedClient ? clientDisplayName(selectedClient) : customFields['Client Name'] || customFields['Linked Client'] || '',
+        linked_client_name: selectedClient ? clientDisplayName(selectedClient) : '',
         documents,
-        custom_fields: customFields,
+        custom_fields: savedCustomFields,
         source_event: `Manual ${form.register_type} register entry`,
       }, currentUser);
       try {
-        await syncSupportingRegister(register, documents);
+        await syncSupportingRegister(register, documents, savedCustomFields);
       } catch (supportingError) {
         console.error('Supporting register sync failed', supportingError);
         toast.warning('Register saved. A supporting register or document sync needs review.');
@@ -500,6 +514,10 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
           </select>
         </label>
         <label className="text-xs font-semibold text-navy">
+          Client Type
+          <input className="mt-1 w-full border border-border bg-muted px-3 py-2 text-sm text-muted-foreground" value={selectedClientType || 'Select a client'} readOnly />
+        </label>
+        <label className="text-xs font-semibold text-navy">
           Staff Member
           <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.linked_advisor} onChange={e => setForm({ ...form, linked_advisor: e.target.value })}>
             {STAFF_MEMBERS.map(staff => <option key={staff} value={staff}>{staff}</option>)}
@@ -519,7 +537,7 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         </label>
       </div>
       <div className="grid md:grid-cols-2 gap-3 mt-4">
-        {(REGISTER_FIELD_CONFIG[form.register_type] || []).map(field => {
+        {visibleRegisterFields(form.register_type).map(field => {
           const type = fieldInputType(field);
           const options = fieldOptions(field);
           return (
@@ -1333,7 +1351,7 @@ const trainingStatus = (record = {}) => {
 
 const TrainingView = ({ training, refresh, exportCurrent }) => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ staff_member: '', training_type: 'FICA Training', date_completed: '', expiry_date: '' });
+  const [form, setForm] = useState({ staff_member: '', training_type: 'FICA', date_completed: '', expiry_date: '' });
 
   const create = async () => {
     if (!form.staff_member || !form.training_type) {
@@ -1360,8 +1378,13 @@ const TrainingView = ({ training, refresh, exportCurrent }) => {
       </div>
       {open && (
         <div className="border border-border bg-card p-4 mb-4 grid md:grid-cols-4 gap-3">
-          <input className="border border-border px-3 py-2" placeholder="Staff member" value={form.staff_member} onChange={e => setForm({ ...form, staff_member: e.target.value })} />
-          <input className="border border-border px-3 py-2" placeholder="Training type" value={form.training_type} onChange={e => setForm({ ...form, training_type: e.target.value })} />
+          <select className="border border-border px-3 py-2 bg-background" value={form.staff_member} onChange={e => setForm({ ...form, staff_member: e.target.value })}>
+            <option value="">Staff member</option>
+            {STAFF_MEMBERS.map(staff => <option key={staff} value={staff}>{staff}</option>)}
+          </select>
+          <select className="border border-border px-3 py-2 bg-background" value={form.training_type} onChange={e => setForm({ ...form, training_type: e.target.value })}>
+            {fieldOptions('Training Type').map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
           <input className="border border-border px-3 py-2" type="date" value={form.date_completed} onChange={e => setForm({ ...form, date_completed: e.target.value })} />
           <input className="border border-border px-3 py-2" type="date" value={form.expiry_date} onChange={e => setForm({ ...form, expiry_date: e.target.value })} />
           <div className="md:col-span-4 flex justify-end gap-2">
