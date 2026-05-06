@@ -24,7 +24,7 @@ async function postVerify(endpoint, body) {
     const text = await res.text();
     let json = {};
     try { json = JSON.parse(text); } catch (_e) { json = { raw: text }; }
-    console.log(`[bgVerify] ${endpoint} status=${res.status}`);
+    console.log(`[bgVerify] ${endpoint} status=${res.status} url=${url} body=${text.slice(0, 300)}`);
     return { ok: res.ok, status: res.status, data: json };
   } catch (err) {
     console.error(`[bgVerify] ${endpoint} network error:`, err.message);
@@ -208,6 +208,17 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const client_id = body.client_id;
     const client_type = body.client_type;
+
+    // Allow diagnostic ping without auth
+    if (client_id === '__ping__') {
+      return Response.json({
+        pong: true,
+        mode: VERIFYNOW_MODE,
+        api_key_set: !!VERIFYNOW_API_KEY,
+        api_key_prefix: VERIFYNOW_API_KEY ? VERIFYNOW_API_KEY.substring(0, 10) : 'NOT_SET',
+        base_url: VERIFYNOW_API_BASE,
+      });
+    }
 
     if (!client_id) {
       return Response.json({ error: 'client_id required' }, { status: 400 });
