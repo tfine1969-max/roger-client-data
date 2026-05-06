@@ -58,14 +58,14 @@ async function verifyIndividual(client) {
   // SA ID verification — POST /verify
   if (client.sa_id_number) {
     const r = await post('verify', {
-      bundle: 'id_verification',
+      reportType: 'said_verification',
       idNumber: client.sa_id_number,
       firstName: client.first_name,
       lastName: client.last_name,
       dateOfBirth: client.date_of_birth,
     });
     checks.said_verification = {
-      status: r.ok ? (r.data?.data?.status || r.data?.status || 'Unknown') : 'Error',
+      status: r.ok ? (r.data?.results?.said_verification?.Status || r.data?.data?.status || 'Unknown') : 'Error',
       timestamp: now,
     };
   }
@@ -163,13 +163,13 @@ async function verifyEntity(client, clientType) {
     const personResult = { name: `${person.first_name} ${person.last_name}` };
 
     const idR = await post('verify', {
-      bundle: 'id_verification',
+      reportType: 'said_verification',
       idNumber: person.id_number,
       firstName: person.first_name,
       lastName: person.last_name,
       dateOfBirth: person.date_of_birth,
     });
-    const idStatus = idR.data?.data?.status || idR.data?.status || 'Unknown';
+    const idStatus = idR.data?.results?.said_verification?.Status || idR.data?.data?.status || 'Unknown';
     personResult.said_verification = { status: idR.ok ? idStatus : 'Error', timestamp: now };
 
     const amlR = await post('aml-screening', {

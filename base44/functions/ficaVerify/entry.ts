@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
     // POST /verify — SA ID verification
     if (action === 'verifyId') {
       const result = await post('verify', {
-        bundle: 'id_verification',
+        reportType: 'said_verification',
         idNumber: normalizeId(payload),
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
     // POST /verify with reportType consumer_trace — address + employment trace
     if (action === 'consumerTrace') {
       const result = await post('verify', {
-        bundle: 'consumer_trace',
+        reportType: 'consumer_trace',
         idNumber: normalizeId(payload),
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,

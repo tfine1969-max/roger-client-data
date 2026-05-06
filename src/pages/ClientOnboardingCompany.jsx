@@ -297,7 +297,7 @@ export default function ClientOnboardingCompany() {
         const dir = activeDirs[i];
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: 'running' } : c));
         const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: dir.id_number, first_name: dir.first_name, last_name: dir.last_name, date_of_birth: dir.date_of_birth } });
-        const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
+        const idPass = idResult?.data?.results?.said_verification?.Status === 'Success';
         setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
         if (!idPass) allPass = false;
 

@@ -271,7 +271,7 @@ export default function ClientOnboardingTrust() {
         const trustee = activeTrustees[i];
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: 'running' } : c));
         const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: trustee.id_number, first_name: trustee.first_name, last_name: trustee.last_name, date_of_birth: trustee.date_of_birth } });
-        const idPass = idResult?.data?.data?.results?.said_verification?.Status === 'Success';
+        const idPass = idResult?.data?.results?.said_verification?.Status === 'Success';
         setTrusteeChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
         if (!idPass) allPass = false;
 
