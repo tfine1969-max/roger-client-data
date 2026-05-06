@@ -90,7 +90,7 @@ async function verifyIndividual(client) {
 
   // AML/PEP screening — POST /aml-pep
   if (client.first_name && client.last_name) {
-    const r = await post('aml-pep', {
+    const r = await post('aml-screening', {
       name: `${client.first_name} ${client.last_name}`,
       entity: 0,
       country: 'za',
@@ -172,7 +172,7 @@ async function verifyEntity(client, clientType) {
     const idStatus = idR.data?.data?.status || idR.data?.status || 'Unknown';
     personResult.said_verification = { status: idR.ok ? idStatus : 'Error', timestamp: now };
 
-    const amlR = await post('aml-pep', {
+    const amlR = await post('aml-screening', {
       name: `${person.first_name} ${person.last_name}`,
       entity: 0,
       country: 'za',

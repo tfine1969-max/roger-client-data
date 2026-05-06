@@ -90,10 +90,10 @@ Deno.serve(async (req) => {
           base: BASE,
           endpoints: {
             verify: `${BASE}/verify`,
-            consumer_trace: `${BASE}/consumer-trace`,
-            aml_pep: `${BASE}/aml-pep`,
-            verify_document: `${BASE}/verify-document`,
-            face_match: `${BASE}/face-match`,
+            consumer_trace: `${BASE}/verify (bundle: consumer_trace)`,
+            aml_screening: `${BASE}/aml-screening`,
+            id_document_verify: `${BASE}/id-document-verify`,
+            facematch: `${BASE}/facematch`,
             cipc_company: `${BASE}/cipc/company`,
           },
         },
@@ -117,9 +117,10 @@ Deno.serve(async (req) => {
       return Response.json(result);
     }
 
-    // POST /consumer-trace — address + employment trace
+    // POST /verify with reportType consumer_trace — address + employment trace
     if (action === 'consumerTrace') {
-      const result = await post('consumer-trace', {
+      const result = await post('verify', {
+        bundle: 'consumer_trace',
         idNumber: normalizeId(payload),
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
@@ -132,9 +133,9 @@ Deno.serve(async (req) => {
       return Response.json(result);
     }
 
-    // POST /aml-pep — AML/PEP/sanctions screening
+    // POST /aml-screening — AML/PEP/sanctions screening
     if (action === 'screenAml') {
-      const result = await post('aml-pep', {
+      const result = await post('aml-screening', {
         name: payload.name,
         entity: payload.entity ?? 0,
         country: payload.country || 'za',
@@ -145,7 +146,7 @@ Deno.serve(async (req) => {
       return Response.json(result);
     }
 
-    // POST /verify-document — ID document OCR + fraud signals
+    // POST /id-document-verify — ID document OCR + fraud signals
     if (action === 'authenticateDoc') {
       const frontImageBase64 = await getImageBase64(payload, 'document_url', 'front_image_base64');
       if (!frontImageBase64) {
@@ -156,7 +157,7 @@ Deno.serve(async (req) => {
         : (payload.back_image_base64 ? normalizeBase64(payload.back_image_base64) : undefined);
 
       const docType = String(payload.document_type || '').toLowerCase().includes('passport') ? 'Passport' : 'Identity Card';
-      const result = await post('verify-document', {
+      const result = await post('id-document-verify', {
         frontImageBase64,
         backImageBase64: backImageBase64 || undefined,
         documentType: docType,
@@ -166,13 +167,13 @@ Deno.serve(async (req) => {
       return Response.json(result);
     }
 
-    // POST /face-match — selfie-to-ID biometric match
+    // POST /facematch — selfie-to-ID biometric match
     if (action === 'faceMatch') {
       const selfieBase64 = normalizeBase64(payload.selfie_image || payload.selfie_image_base64 || '');
       if (!selfieBase64) {
         return Response.json({ data: null, error: 'Selfie image required' }, { status: 400 });
       }
-      const result = await post('face-match', {
+      const result = await post('facematch', {
         selfieBase64,
         idNumber: normalizeId(payload) || undefined,
       });
