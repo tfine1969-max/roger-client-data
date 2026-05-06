@@ -1,5 +1,7 @@
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const FROM_ADDRESS = `${Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'Trevor Fine'} <${Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'trevor@wealthworks.co.za'}>`;
+const FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'WealthWorks';
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'onboarding@wealthworks.co.za';
+const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 Deno.serve(async (req) => {
   try {
@@ -24,12 +26,10 @@ Deno.serve(async (req) => {
       subject,
     };
 
-    // Detect HTML vs plain text
     const trimmed = content.trim();
     if (trimmed.startsWith('<') || trimmed.includes('</') || trimmed.includes('<br')) {
       emailPayload.html = content;
     } else {
-      // Plain text — wrap in minimal HTML for better deliverability
       emailPayload.html = `<pre style="font-family:Arial,sans-serif;font-size:14px;white-space:pre-wrap;">${content}</pre>`;
       emailPayload.text = content;
     }
@@ -47,10 +47,15 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       console.error('[Resend Error]:', JSON.stringify(result));
-      return Response.json({ error: 'Failed to send email', details: result.message || result.name || 'Unknown error' }, { status: response.status });
+      return Response.json({
+        error: 'Failed to send email',
+        details: result.message || result.name || 'Unknown error',
+        status: response.status,
+        from: FROM_ADDRESS,
+      }, { status: response.status });
     }
 
-    console.log(`[sendTransactionalEmail] Sent to ${Array.isArray(to) ? to.join(', ') : to} — id: ${result.id}`);
+    console.log(`[sendTransactionalEmail] Sent to ${Array.isArray(to) ? to.join(', ') : to} - id: ${result.id}`);
     return Response.json({ success: true, id: result.id });
   } catch (err) {
     console.error('[sendTransactionalEmail Error]:', err.message);
