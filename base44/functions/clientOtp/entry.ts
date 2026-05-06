@@ -1,14 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const OTP_SECRET = Deno.env.get('OTP_SECRET') || RESEND_API_KEY || 'wealthworks-otp-fallback';
 const FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'Trevor Fine';
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'trevor@wealthworks.co.za';
 const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
-const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
-
 const normalizeEmail = (email = '') => email.toLowerCase().trim();
 const normalizeOtp = (otp = '') => String(otp).replace(/\D/g, '').trim();
+const otpBucket = (offset = 0) => Math.floor(Date.now() / (15 * 60 * 1000)) + offset;
 
 const clientTypeMap = {
   Individual: 'Natural Person',
@@ -21,6 +21,30 @@ const getOnboardingRoute = (entityType: string) => {
   if (entityType === 'Company') return '/client-onboarding-company';
   return '/client-onboarding';
 };
+
+async function generateOtp(email: string, offset = 0) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(OTP_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(`${normalizeEmail(email)}:${otpBucket(offset)}`));
+  const bytes = new Uint8Array(signature);
+  const value = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+  return String(100000 + (value % 900000));
+}
+
+async function isValidOtp(email: string, otp: string) {
+  const normalizedOtp = normalizeOtp(otp);
+  const validCodes = await Promise.all([
+    generateOtp(email, 0),
+    generateOtp(email, -1),
+  ]);
+  return validCodes.includes(normalizedOtp);
+}
 
 async function sendOtpEmail(email: string, otp: string, mode = 'onboarding') {
   if (!RESEND_API_KEY) {
@@ -98,13 +122,12 @@ Deno.serve(async (req) => {
 
       const allClients = await base44.asServiceRole.entities.Clients.list();
       const existing = allClients.find((c: any) => normalizeEmail(c.email || c.client_email) === email);
-      const otp = generateOtp();
+      const otp = await generateOtp(email);
       const updateData = {
         email,
         mobile_number: mobile,
         client_type: clientTypeMap[entityType as keyof typeof clientTypeMap] || 'Natural Person',
         client_status: existing?.client_status || 'Draft',
-        otp_code: otp,
         otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         otp_verified: false,
       };
@@ -137,9 +160,8 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'No account found with this email address' }, { status: 404 });
       }
 
-      const otp = generateOtp();
+      const otp = await generateOtp(email);
       await base44.asServiceRole.entities.Clients.update(client.id, {
-        otp_code: otp,
         otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         otp_verified: false,
       });
@@ -170,9 +192,8 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Client session not found. Please register or log in again.' }, { status: 404 });
       }
 
-      const otp = generateOtp();
+      const otp = await generateOtp(email);
       await base44.asServiceRole.entities.Clients.update(client.id, {
-        otp_code: otp,
         otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         otp_verified: false,
       });
@@ -195,8 +216,13 @@ Deno.serve(async (req) => {
         (clientId && c.id === clientId) || (email && normalizeEmail(c.email || c.client_email) === email)
       );
 
-      const client = candidates.find((c: any) => normalizeOtp(c.otp_code || '') === otp);
+      const client = candidates.find((c: any) => normalizeEmail(c.email || c.client_email) === email) || candidates[0];
       if (!client) {
+        return Response.json({ error: 'Client session not found. Please register or log in again.' }, { status: 404 });
+      }
+
+      const verifyEmail = normalizeEmail(client.email || client.client_email || email);
+      if (!await isValidOtp(verifyEmail, otp)) {
         return Response.json({ error: 'Invalid OTP code' }, { status: 400 });
       }
 
@@ -204,7 +230,7 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'OTP code has expired. Please request a new code.' }, { status: 400 });
       }
 
-      await base44.asServiceRole.entities.Clients.update(clientId, {
+      await base44.asServiceRole.entities.Clients.update(client.id, {
         otp_verified: true,
         otp_code: '',
         otp_expires_at: '',
