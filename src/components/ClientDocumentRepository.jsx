@@ -27,6 +27,8 @@ const DEFAULT_DOCUMENT_INDEX = [
     label: 'Identity Document',
     description: 'SA ID / Smart Card / Passport — front & back',
     required: true,
+    backKey: 'doc_identity_back',
+    backLabel: 'SA ID Back',
   },
   {
     key: 'doc_proof_of_address',
@@ -47,6 +49,13 @@ const DEFAULT_DOCUMENT_INDEX = [
     index: '04',
     label: 'Existing Policies',
     description: 'Current policy documents or statements',
+    required: false,
+  },
+  {
+    key: 'doc_banking_proof',
+    index: '05',
+    label: 'Proof of Banking Details',
+    description: 'Bank-stamped letter or 3 months bank statements',
     required: false,
   },
 ];
@@ -355,6 +364,7 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
           {/* FICA rows */}
           {documentIndex.map((doc, i) => {
             const fileUrl = client?.[doc.key];
+            const backUrl = doc.backKey ? client?.[doc.backKey] : null;
             const uploaded = !!fileUrl;
             return (
               <tr key={doc.key} style={{
@@ -370,12 +380,12 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                   </p>
                   {client?.[`${doc.key}_name`] && (
                     <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
-                      {client[`${doc.key}_name`]}
+                      Front: {client[`${doc.key}_name`]}
                     </p>
                   )}
-                  {doc.key === 'doc_identity' && client?.doc_identity_back_name && (
+                  {doc.backKey && client?.[`${doc.backKey}_name`] && (
                     <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
-                      Back: {client.doc_identity_back_name}
+                      Back: {client[`${doc.backKey}_name`]}
                     </p>
                   )}
                   <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
@@ -395,9 +405,16 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
                 </td>
                 <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   {uploaded ? (
-                    <button onClick={() => window.open(fileUrl, '_blank')} style={btnDownload}>
-                      View / Download
-                    </button>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <button onClick={() => window.open(fileUrl, '_blank')} style={btnDownload}>
+                        {backUrl ? 'View Front' : 'View / Download'}
+                      </button>
+                      {backUrl && (
+                        <button onClick={() => window.open(backUrl, '_blank')} style={btnDownload}>
+                          View Back
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <span style={{ fontSize: 11, color: '#cbd5e1' }}>Not uploaded</span>
                   )}
@@ -592,5 +609,3 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     </div>
   );
 }
-
-

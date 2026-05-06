@@ -369,7 +369,12 @@ export default function ClientOnboarding() {
       banking_proof_uploaded: 'doc_banking_proof',
     };
     const repoField = map[fieldKey];
-    return formData[`${fieldKey}_name`] || (repoField ? formData[`${repoField}_name`] : '') || '';
+    // Prefer the explicit field name stored during upload, then the repo field name
+    return (
+      formData[`${fieldKey}_name`] ||
+      (repoField ? formData[`${repoField}_name`] : '') ||
+      ''
+    );
   };
 
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
@@ -848,9 +853,17 @@ export default function ClientOnboarding() {
         doc_status: 'Submitted',
         verification_status: 'Pending',
         doc_identity: formData.doc_identity || '',
+        doc_identity_name: formData.doc_identity_name || '',
+        doc_identity_back: formData.doc_identity_back || '',
+        doc_identity_back_name: formData.doc_identity_back_name || '',
         doc_proof_of_address: formData.doc_proof_of_address || '',
+        doc_proof_of_address_name: formData.doc_proof_of_address_name || '',
         doc_source_of_funds: formData.doc_source_of_funds || '',
+        doc_source_of_funds_name: formData.doc_source_of_funds_name || '',
         doc_existing_policies: formData.doc_existing_policies || '',
+        doc_existing_policies_name: formData.doc_existing_policies_name || '',
+        doc_banking_proof: formData.doc_banking_proof || '',
+        doc_banking_proof_name: formData.doc_banking_proof_name || '',
       });
 
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';

@@ -5,6 +5,7 @@ export const DOCUMENT_FIELD_MAP = {
   proof_of_address_uploaded: 'doc_proof_of_address',
   income_proof_uploaded: 'doc_source_of_funds',
   existing_policies_uploaded: 'doc_existing_policies',
+  banking_proof_uploaded: 'doc_banking_proof',
   identity_document_front_uploaded: 'doc_identity',
   identity_document_back_uploaded: 'doc_identity_back',
   cipc_registration_uploaded: 'doc_identity',

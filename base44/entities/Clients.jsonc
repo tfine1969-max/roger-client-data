@@ -196,6 +196,12 @@
     "identity_document_uploaded": {
       "type": "boolean"
     },
+    "identity_document_front_uploaded": {
+      "type": "boolean"
+    },
+    "identity_document_back_uploaded": {
+      "type": "boolean"
+    },
     "proof_of_address_uploaded": {
       "type": "boolean"
     },
@@ -204,6 +210,61 @@
     },
     "existing_policies_uploaded": {
       "type": "boolean"
+    },
+    "banking_proof_uploaded": {
+      "type": "boolean"
+    },
+    "doc_identity": {
+      "type": "string",
+      "description": "URL of identity document front"
+    },
+    "doc_identity_name": {
+      "type": "string"
+    },
+    "doc_identity_back": {
+      "type": "string",
+      "description": "URL of SA ID back image"
+    },
+    "doc_identity_back_name": {
+      "type": "string"
+    },
+    "doc_proof_of_address": {
+      "type": "string"
+    },
+    "doc_proof_of_address_name": {
+      "type": "string"
+    },
+    "doc_source_of_funds": {
+      "type": "string"
+    },
+    "doc_source_of_funds_name": {
+      "type": "string"
+    },
+    "doc_existing_policies": {
+      "type": "string"
+    },
+    "doc_existing_policies_name": {
+      "type": "string"
+    },
+    "doc_banking_proof": {
+      "type": "string",
+      "description": "URL of bank statement or banking proof document"
+    },
+    "doc_banking_proof_name": {
+      "type": "string"
+    },
+    "doc_submitted_at": {
+      "type": "string"
+    },
+    "doc_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Submitted",
+        "Verified",
+        "Incomplete"
+      ],
+      "default": "Pending"
     },
     "client_signature_name": {
       "type": "string"
@@ -226,14 +287,6 @@
     "otp_verified": {
       "type": "boolean"
     },
-    "otp_code": {
-      "type": "string",
-      "description": "Temporary onboarding OTP code"
-    },
-    "otp_expires_at": {
-      "type": "string",
-      "description": "ISO timestamp when onboarding OTP expires"
-    },
     "onboarding_complete": {
       "type": "boolean"
     },
@@ -245,31 +298,6 @@
         "Active"
       ],
       "default": "Draft"
-    },
-    "doc_identity": {
-      "type": "string"
-    },
-    "doc_proof_of_address": {
-      "type": "string"
-    },
-    "doc_source_of_funds": {
-      "type": "string"
-    },
-    "doc_existing_policies": {
-      "type": "string"
-    },
-    "doc_submitted_at": {
-      "type": "string"
-    },
-    "doc_status": {
-      "type": "string",
-      "enum": [
-        "Pending",
-        "Submitted",
-        "Verified",
-        "Incomplete"
-      ],
-      "default": "Pending"
     },
     "fica_status": {
       "type": "string",
