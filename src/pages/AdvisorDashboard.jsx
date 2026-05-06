@@ -10,6 +10,7 @@ import {
   FolderKanban,
   LogOut,
   Plus,
+  RefreshCw,
   ShieldCheck,
   UserCheck,
 } from 'lucide-react';
@@ -37,41 +38,59 @@ const countCompliance = (clients, key) => {
   return onboarded.filter(c => getVerificationStatus(c) === key).length;
 };
 
-const Metric = ({ label, value, tone = 'text-navy', onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`border border-border bg-background px-3 py-2 text-left min-h-[58px] ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors cursor-pointer' : 'cursor-default'}`}
-  >
-    <p className={`text-xl font-semibold ${tone}`}>{value}</p>
-    <p className="text-[9px] font-semibold tracking-[.12em] uppercase text-muted-foreground mt-0.5">{label}</p>
-  </button>
-);
+const Metric = ({ label, value, tone = 'text-navy', onClick }) => {
+  const Comp = onClick ? 'button' : 'div';
+
+  return (
+    <Comp
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      className={`border border-border bg-background px-4 py-4 min-h-[88px] flex flex-col items-center justify-center text-center ${onClick ? 'hover:border-navy/40 hover:bg-secondary/40 transition-colors' : ''}`}
+    >
+      <p className={`text-2xl font-semibold ${tone}`}>{value}</p>
+      <p className="text-[9px] font-semibold tracking-[.12em] uppercase text-muted-foreground mt-1">{label}</p>
+    </Comp>
+  );
+};
+
+const ActionButton = ({ icon: Icon, label, onClick, variant = 'secondary' }) => {
+  const styles = variant === 'primary'
+    ? 'border-navy bg-navy text-white hover:bg-ocean hover:border-ocean'
+    : variant === 'gold'
+      ? 'border-gold bg-gold text-white hover:bg-gold/90'
+      : 'border-border bg-card text-navy hover:border-navy/40 hover:bg-secondary/40';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-11 w-full inline-flex items-center justify-center gap-2 border px-4 text-[11px] font-semibold uppercase tracking-[.08em] transition-colors ${styles}`}
+    >
+      {Icon && <Icon className="w-4 h-4 shrink-0" />}
+      <span className="truncate">{label}</span>
+    </button>
+  );
+};
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, actions, children }) => (
-  <section className="border border-border bg-card px-4 py-3">
-    <div className="grid xl:grid-cols-[320px_minmax(0,1fr)_320px] gap-4 items-center">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
-          <Icon className="w-4 h-4" />
+  <section className="border border-border bg-card p-5 md:p-6">
+    <div className="grid gap-5 xl:grid-cols-[minmax(250px,340px)_minmax(0,1fr)_minmax(260px,360px)] xl:items-center">
+      <div className="flex items-start gap-4 min-w-0">
+        <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
+          <Icon className="w-5 h-5" />
         </div>
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-navy tracking-tight">{title}</h2>
-          <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
+          <h2 className="text-xl font-semibold text-navy tracking-tight">{title}</h2>
+          <p className="text-sm text-muted-foreground mt-1 leading-6">{description}</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 min-w-0">
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-3 min-w-0">
         {children}
       </div>
-      <div className="flex flex-wrap items-center justify-start xl:justify-end gap-2">
-      <button
-        type="button"
-        onClick={onClick}
-        className="shrink-0 inline-flex items-center gap-2 bg-navy text-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-ocean transition-colors"
-      >
-        {buttonLabel}
-        <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+        <ActionButton icon={ArrowRight} label={buttonLabel} onClick={onClick} variant="primary" />
         {actions}
       </div>
     </div>
@@ -159,7 +178,7 @@ export default function AdvisorDashboard() {
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           <PortalCard
             icon={ShieldCheck}
             title="1. Compliance Regulatory Portal"
@@ -168,30 +187,9 @@ export default function AdvisorDashboard() {
             onClick={() => navigate('/compliance')}
             actions={(
               <>
-                <button
-                  type="button"
-                  onClick={() => navigate('/compliance?tab=registers')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  Registers
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/compliance?tab=documents')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  Document repository
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/compliance?tab=audit')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  Audit report
-                </button>
+                <ActionButton icon={FileText} label="Registers" onClick={() => navigate('/compliance?tab=registers')} />
+                <ActionButton icon={FileText} label="Document repository" onClick={() => navigate('/compliance?tab=documents')} />
+                <ActionButton icon={FileText} label="Audit report" onClick={() => navigate('/compliance?tab=audit')} />
               </>
             )}
           >
@@ -209,22 +207,8 @@ export default function AdvisorDashboard() {
             onClick={() => navigate('/compliance-review')}
             actions={(
               <>
-                <button
-                  type="button"
-                  onClick={() => navigate('/compliance-review?filter=new')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <UserCheck className="w-4 h-4" />
-                  New submissions
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/compliance?tab=verification')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  Reverify clients
-                </button>
+                <ActionButton icon={UserCheck} label="New submissions" onClick={() => navigate('/compliance-review?filter=new')} />
+                <ActionButton icon={RefreshCw} label="Reverify clients" onClick={() => navigate('/compliance?tab=verification')} />
               </>
             )}
           >
@@ -242,22 +226,8 @@ export default function AdvisorDashboard() {
             onClick={() => navigate('/proposals')}
             actions={(
               <>
-                <button
-                  type="button"
-                  onClick={() => navigate('/create-proposal')}
-                  className="inline-flex items-center gap-2 border border-gold bg-gold text-white px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:bg-gold/90 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  New proposal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/proposals')}
-                  className="inline-flex items-center gap-2 border border-border bg-card text-navy px-3 py-2 text-[10px] font-semibold uppercase tracking-[.08em] hover:border-navy/40 transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  Proposal inbox
-                </button>
+                <ActionButton icon={Plus} label="New proposal" onClick={() => navigate('/create-proposal')} variant="gold" />
+                <ActionButton icon={FileText} label="Proposal inbox" onClick={() => navigate('/proposals')} />
               </>
             )}
           >
