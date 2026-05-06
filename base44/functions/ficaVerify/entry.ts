@@ -1,7 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const API_KEY = Deno.env.get('VERIFYNOW_API_KEY');
-const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
+// Map legacy 'live' value to 'production' as required by the VerifyNow API
+const _rawMode = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
+const VERIFYNOW_MODE = _rawMode === 'live' ? 'production' : _rawMode;
 const BASE = (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
 
 function uid() {
