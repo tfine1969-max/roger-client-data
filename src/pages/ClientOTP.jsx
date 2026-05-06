@@ -42,7 +42,8 @@ export default function ClientOTP() {
       if (!data?.success) throw new Error(data?.error || 'Failed to resend code');
       toast.success('A new code has been sent to your email');
     } catch (err) {
-      toast.error(err.message || 'Failed to resend code. Please try again.');
+      const details = err?.response?.data?.details || err?.response?.data?.error || err.message;
+      toast.error(details || 'Failed to resend code. Please try again.');
     } finally {
       setIsResending(false);
     }
@@ -82,7 +83,8 @@ export default function ClientOTP() {
       sessionStorage.removeItem('pending_onboarding_route');
       navigate(dest, { replace: true });
     } catch (error) {
-      toast.error(error.message || 'OTP verification failed');
+      const details = error?.response?.data?.details || error?.response?.data?.error || error.message;
+      toast.error(details || 'OTP verification failed');
     } finally {
       setIsLoading(false);
     }

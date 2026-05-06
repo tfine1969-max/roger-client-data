@@ -56,7 +56,8 @@ export default function ClientRegistration() {
       sessionStorage.setItem('pending_onboarding_route', data.onboarding_route || '/client-onboarding');
       navigate('/client-otp', { replace: true });
     } catch (error) {
-      toast.error(error.message || 'Registration failed');
+      const details = error?.response?.data?.details || error?.response?.data?.error || error.message;
+      toast.error(details || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

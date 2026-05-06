@@ -1,5 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'Trevor Fine';
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'trevor@wealthworks.co.za';
+const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
+
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const normalizeEmail = (email = '') => email.toLowerCase().trim();
@@ -16,7 +21,11 @@ const getOnboardingRoute = (entityType: string) => {
   return '/client-onboarding';
 };
 
-const sendOtpEmail = async (base44: any, email: string, otp: string, mode = 'onboarding') => {
+async function sendOtpEmail(email: string, otp: string, mode = 'onboarding') {
+  if (!RESEND_API_KEY) {
+    return { ok: false, status: 500, error: 'RESEND_API_KEY is not configured' };
+  }
+
   const subject = mode === 'login'
     ? 'Your WealthWorks login verification code'
     : 'Your WealthWorks verification code';
@@ -25,12 +34,51 @@ const sendOtpEmail = async (base44: any, email: string, otp: string, mode = 'onb
     ? `Your WealthWorks verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this code, please ignore this email.`
     : `Your WealthWorks onboarding verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.`;
 
-  return base44.asServiceRole.functions.invoke('sendTransactionalEmail', {
-    to: email,
-    subject,
-    text,
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM_ADDRESS,
+      to: [email],
+      subject,
+      text,
+      html: `<pre style="font-family:Arial,sans-serif;font-size:14px;white-space:pre-wrap;">${text}</pre>`,
+    }),
   });
-};
+
+  const raw = await response.text();
+  let result: any = {};
+  try {
+    result = raw ? JSON.parse(raw) : {};
+  } catch (_err) {
+    result = { raw };
+  }
+
+  if (!response.ok) {
+    console.error('[clientOtp Resend Error]:', JSON.stringify(result));
+    return {
+      ok: false,
+      status: response.status,
+      error: result.message || result.name || result.error || 'Resend rejected the email',
+      details: result,
+      from: FROM_ADDRESS,
+    };
+  }
+
+  return { ok: true, status: response.status, id: result.id };
+}
+
+function emailFailureResponse(emailResult: any) {
+  return Response.json({
+    error: 'Failed to send OTP email',
+    details: emailResult.error || 'Unknown email error',
+    resend_status: emailResult.status,
+    from: emailResult.from || FROM_ADDRESS,
+  }, { status: emailResult.status || 500 });
+}
 
 Deno.serve(async (req) => {
   try {
@@ -64,7 +112,8 @@ Deno.serve(async (req) => {
         ? await base44.asServiceRole.entities.Clients.update(existing.id, updateData)
         : await base44.asServiceRole.entities.Clients.create(updateData);
 
-      await sendOtpEmail(base44, email, otp, 'onboarding');
+      const emailResult = await sendOtpEmail(email, otp, 'onboarding');
+      if (!emailResult.ok) return emailFailureResponse(emailResult);
 
       return Response.json({
         success: true,
@@ -94,7 +143,8 @@ Deno.serve(async (req) => {
         otp_verified: false,
       });
 
-      await sendOtpEmail(base44, email, otp, 'login');
+      const emailResult = await sendOtpEmail(email, otp, 'login');
+      if (!emailResult.ok) return emailFailureResponse(emailResult);
 
       return Response.json({
         success: true,
@@ -118,7 +168,8 @@ Deno.serve(async (req) => {
         otp_verified: false,
       });
 
-      await sendOtpEmail(base44, email, otp, 'login');
+      const emailResult = await sendOtpEmail(email, otp, 'login');
+      if (!emailResult.ok) return emailFailureResponse(emailResult);
       return Response.json({ success: true });
     }
 
@@ -155,6 +206,9 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error) {
     console.error('[clientOtp Error]:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({
+      error: 'Client OTP function failed',
+      details: error.message,
+    }, { status: 500 });
   }
 });

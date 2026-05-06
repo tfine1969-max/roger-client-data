@@ -40,7 +40,8 @@ export default function ClientLogin() {
       toast.success('Verification code sent');
       navigate('/client-otp', { replace: true });
     } catch (error) {
-      toast.error(error.message || 'Login failed');
+      const details = error?.response?.data?.details || error?.response?.data?.error || error.message;
+      toast.error(details || 'Login failed');
     } finally {
       setIsLoading(false);
     }
