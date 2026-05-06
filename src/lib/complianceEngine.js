@@ -81,30 +81,49 @@ const auditEntry = (action, actor, notes = '', previousStatus = '', newStatus = 
   new_status: newStatus,
 });
 
+const isMissingEntityError = (error) => {
+  const message = String(error?.message || error || '').toLowerCase();
+  return message.includes('not found') || message.includes('unknown entity') || message.includes('schema');
+};
+
 export async function upsertComplianceRegister(entry, actor = null) {
-  const now = new Date().toISOString();
-  const sourceKey = entry.source_key;
-  if (sourceKey) {
-    const existing = await base44.entities.Compliance_Registers.filter({ source_key: sourceKey });
-    if (existing?.length) return existing[0];
+  const registersEntity = base44.entities.Compliance_Registers;
+  if (!registersEntity?.create) {
+    console.warn('[Compliance] Compliance_Registers entity is not available in this workspace.');
+    return null;
   }
 
-  const status =
-    entry.status ||
-    (entry.risk_level === 'High' || entry.register_type === 'STR' ? 'Escalated' : 'Open');
+  const now = new Date().toISOString();
+  const sourceKey = entry.source_key;
+  try {
+    if (sourceKey && registersEntity.filter) {
+      const existing = await registersEntity.filter({ source_key: sourceKey });
+      if (existing?.length) return existing[0];
+    }
 
-  return base44.entities.Compliance_Registers.create({
-    ...entry,
-    category: entry.category || CATEGORY_BY_REGISTER[entry.register_type] || 'Internal',
-    status,
-    risk_level: entry.risk_level || 'Low',
-    documents: entry.documents || [],
-    audit_trail: [
-      auditEntry('Created', actor, entry.source_event || 'Compliance register entry created', '', status),
-    ],
-    created_by: actor?.email || entry.created_by || 'System',
-    last_updated: now,
-  });
+    const status =
+      entry.status ||
+      (entry.risk_level === 'High' || entry.register_type === 'STR' ? 'Escalated' : 'Open');
+
+    return await registersEntity.create({
+      ...entry,
+      category: entry.category || CATEGORY_BY_REGISTER[entry.register_type] || 'Internal',
+      status,
+      risk_level: entry.risk_level || 'Low',
+      documents: entry.documents || [],
+      audit_trail: [
+        auditEntry('Created', actor, entry.source_event || 'Compliance register entry created', '', status),
+      ],
+      created_by: actor?.email || entry.created_by || 'System',
+      last_updated: now,
+    });
+  } catch (error) {
+    if (isMissingEntityError(error)) {
+      console.warn('[Compliance] Compliance_Registers entity is missing in the deployed workspace:', error?.message || error);
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function updateComplianceRegister(entry, updates, actor = null, notes = '') {
@@ -120,7 +139,12 @@ export async function updateComplianceRegister(entry, updates, actor = null, not
     ],
   };
   delete next.audit_action;
-  return base44.entities.Compliance_Registers.update(entry.id, next);
+  try {
+    return await base44.entities.Compliance_Registers.update(entry.id, next);
+  } catch (error) {
+    if (isMissingEntityError(error)) return null;
+    throw error;
+  }
 }
 
 export async function createOnboardingComplianceEntries(client, actor = null) {
@@ -196,7 +220,8 @@ export async function createOnboardingComplianceEntries(client, actor = null) {
     });
   }
 
-  return Promise.all(entries.map(entry => upsertComplianceRegister(entry, actor)));
+  const created = await Promise.all(entries.map(entry => upsertComplianceRegister(entry, actor)));
+  return created.filter(Boolean);
 }
 
 export async function createAdviceComplianceEntry({ proposal, client, actor = null }) {
@@ -239,6 +264,7 @@ export async function createProductReplacementComplianceEntries({ proposal, clie
       source_event: 'Product replacement',
       source_key: `proposal:${proposal.id}:Product_Replacement:${index}`,
     }, actor);
+    if (!register?.id) continue;
     created.push(register);
 
     const existing = await base44.entities.Product_Replacement_Register.filter({ linked_register_id: register.id });

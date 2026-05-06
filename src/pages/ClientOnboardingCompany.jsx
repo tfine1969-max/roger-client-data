@@ -53,6 +53,19 @@ const emptyDirector = () => ({
   street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
 
+const buildDirectorDocumentsJson = (items = []) => JSON.stringify(items.map((director, directorIndex) => ({
+  director_index: directorIndex,
+  name: [director.first_name, director.last_name].filter(Boolean).join(' '),
+  id_file_url: director.id_file_url || director.id_front_file_url || '',
+  id_file_name: director.id_file_name || director.id_front_file_name || '',
+  id_front_file_url: director.id_front_file_url || director.id_file_url || '',
+  id_front_file_name: director.id_front_file_name || director.id_file_name || '',
+  id_back_file_url: director.id_back_file_url || '',
+  id_back_file_name: director.id_back_file_name || '',
+  addr_file_url: director.addr_file_url || '',
+  addr_file_name: director.addr_file_name || '',
+})));
+
 export default function ClientOnboardingCompany() {
   const navigate = useNavigate();
   const [clientId, setClientId] = useState(null);
@@ -223,18 +236,7 @@ export default function ClientOnboardingCompany() {
       setFormData(prev => ({ ...prev, [fieldKey]: true }));
       await base44.entities.Clients.update(clientId, {
         directors_list: updatedDirectors,
-        director_documents_json: JSON.stringify(updatedDirectors.map((director, directorIndex) => ({
-          director_index: directorIndex,
-          name: [director.first_name, director.last_name].filter(Boolean).join(' '),
-          id_file_url: director.id_file_url || '',
-          id_file_name: director.id_file_name || '',
-          id_front_file_url: director.id_front_file_url || '',
-          id_front_file_name: director.id_front_file_name || '',
-          id_back_file_url: director.id_back_file_url || '',
-          id_back_file_name: director.id_back_file_name || '',
-          addr_file_url: director.addr_file_url || '',
-          addr_file_name: director.addr_file_name || '',
-        }))),
+        director_documents_json: buildDirectorDocumentsJson(updatedDirectors),
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
       });
@@ -394,7 +396,7 @@ export default function ClientOnboardingCompany() {
       };
     } else if (currentStep === 2) {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
-      data = { directors_list: directors };
+      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
     } else if (currentStep === 3) {
       const directorsWithDocs = directors.map((d, idx) => ({
         ...d,
@@ -419,6 +421,7 @@ export default function ClientOnboardingCompany() {
         proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
         financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
         directors_list: directorsWithDocs,
+        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
       };
     } else if (currentStep === 4) {
       data = {
@@ -492,7 +495,7 @@ export default function ClientOnboardingCompany() {
       };
     } else if (currentStep === 2) {
       if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
-      data = { directors_list: directors };
+      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
     } else if (currentStep === 3) {
       const directorsWithDocs = directors.map((d, idx) => ({
         ...d,
@@ -517,6 +520,7 @@ export default function ClientOnboardingCompany() {
         proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
         financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
         directors_list: directorsWithDocs,
+        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
       };
     } else if (currentStep === 4) {
       data = {
@@ -583,6 +587,8 @@ export default function ClientOnboardingCompany() {
         verification_status: 'Pending',
         doc_status: 'Submitted',
         doc_submitted_at: new Date().toISOString(),
+        directors_list: directors,
+        director_documents_json: buildDirectorDocumentsJson(directors),
       });
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);

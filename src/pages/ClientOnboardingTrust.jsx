@@ -54,6 +54,19 @@ const emptyTrustee = () => ({
   street_address: '', suburb: '', city: '', province: '', postal_code: '',
 });
 
+const buildTrusteeDocumentsJson = (items = []) => JSON.stringify(items.map((trustee, trusteeIndex) => ({
+  trustee_index: trusteeIndex,
+  name: [trustee.first_name, trustee.last_name].filter(Boolean).join(' '),
+  id_file_url: trustee.id_file_url || trustee.id_front_file_url || '',
+  id_file_name: trustee.id_file_name || trustee.id_front_file_name || '',
+  id_front_file_url: trustee.id_front_file_url || trustee.id_file_url || '',
+  id_front_file_name: trustee.id_front_file_name || trustee.id_file_name || '',
+  id_back_file_url: trustee.id_back_file_url || '',
+  id_back_file_name: trustee.id_back_file_name || '',
+  addr_file_url: trustee.addr_file_url || '',
+  addr_file_name: trustee.addr_file_name || '',
+})));
+
 export default function ClientOnboardingTrust() {
   const navigate = useNavigate();
   const [clientId, setClientId] = useState(null);
@@ -221,18 +234,7 @@ export default function ClientOnboardingTrust() {
       setFormData(prev => ({ ...prev, [fieldKey]: true }));
       await base44.entities.Clients.update(clientId, {
         trustees_list: updatedTrustees,
-        trustee_documents_json: JSON.stringify(updatedTrustees.map((trustee, trusteeIndex) => ({
-          trustee_index: trusteeIndex,
-          name: [trustee.first_name, trustee.last_name].filter(Boolean).join(' '),
-          id_file_url: trustee.id_file_url || '',
-          id_file_name: trustee.id_file_name || '',
-          id_front_file_url: trustee.id_front_file_url || '',
-          id_front_file_name: trustee.id_front_file_name || '',
-          id_back_file_url: trustee.id_back_file_url || '',
-          id_back_file_name: trustee.id_back_file_name || '',
-          addr_file_url: trustee.addr_file_url || '',
-          addr_file_name: trustee.addr_file_name || '',
-        }))),
+        trustee_documents_json: buildTrusteeDocumentsJson(updatedTrustees),
         doc_submitted_at: new Date().toISOString(),
         doc_status: 'Submitted',
       });
@@ -369,7 +371,7 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 2) {
       if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
-      data = { trustees_list: trustees };
+      data = { trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees) };
     } else if (currentStep === 3) {
       const perTrusteeDocs = {};
       trustees.forEach((_, idx) => {
@@ -393,6 +395,8 @@ export default function ClientOnboardingTrust() {
         loa_uploaded_name: formData.loa_uploaded_name,
         trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
         trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
+        trustees_list: trustees,
+        trustee_documents_json: buildTrusteeDocumentsJson(trustees),
         ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
@@ -469,7 +473,7 @@ export default function ClientOnboardingTrust() {
       };
     } else if (currentStep === 2) {
       if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
-      data = { trustees_list: trustees };
+      data = { trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees) };
     } else if (currentStep === 3) {
       const perTrusteeDocs = {};
       trustees.forEach((t, idx) => {
@@ -493,6 +497,8 @@ export default function ClientOnboardingTrust() {
         loa_uploaded_name: formData.loa_uploaded_name,
         trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
         trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
+        trustees_list: trustees,
+        trustee_documents_json: buildTrusteeDocumentsJson(trustees),
         ...perTrusteeDocs,
       };
     } else if (currentStep === 4) {
@@ -559,6 +565,8 @@ export default function ClientOnboardingTrust() {
         verification_status: 'Pending',
         doc_status: 'Submitted',
         doc_submitted_at: new Date().toISOString(),
+        trustees_list: trustees,
+        trustee_documents_json: buildTrusteeDocumentsJson(trustees),
       });
       const allProposals = await base44.entities.Proposal.list();
       const existing = allProposals.find(p => p.client_id === clientId);

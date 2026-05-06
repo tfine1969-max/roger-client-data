@@ -38,6 +38,16 @@ const countCompliance = (clients, key) => {
   return onboarded.filter(c => getVerificationStatus(c) === key).length;
 };
 
+const safeEntityList = async (entity, order, limit) => {
+  try {
+    if (!entity?.list) return [];
+    return await entity.list(order, limit);
+  } catch (error) {
+    console.warn('[AdvisorDashboard] Optional compliance entity unavailable:', error?.message || error);
+    return [];
+  }
+};
+
 const Metric = ({ label, value, tone = 'text-navy', onClick }) => {
   const Comp = onClick ? 'button' : 'div';
 
@@ -117,12 +127,12 @@ export default function AdvisorDashboard() {
 
   const { data: complianceEntries = [] } = useQuery({
     queryKey: ['compliance-registers-dashboard'],
-    queryFn: () => base44.entities.Compliance_Registers.list('-created_date', 300),
+    queryFn: () => safeEntityList(base44.entities.Compliance_Registers, '-created_date', 300),
   });
 
   const { data: complianceDocuments = [] } = useQuery({
     queryKey: ['compliance-documents-dashboard'],
-    queryFn: () => base44.entities.Compliance_Documents.list('-created_date', 100),
+    queryFn: () => safeEntityList(base44.entities.Compliance_Documents, '-created_date', 100),
   });
 
   const advisorKey = user?.advisor_key || 'trevor';

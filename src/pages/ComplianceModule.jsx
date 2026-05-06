@@ -44,6 +44,16 @@ const TABS = [
   { key: 'client', label: 'Client View', icon: Eye },
 ];
 
+const safeEntityList = async (entity, order, limit) => {
+  try {
+    if (!entity?.list) return [];
+    return await entity.list(order, limit);
+  } catch (error) {
+    console.warn('[ComplianceModule] Optional compliance entity unavailable:', error?.message || error);
+    return [];
+  }
+};
+
 const FICA_TYPES = ['CDD', 'EDD', 'FICA_Exception', 'STR', 'TPR', 'Sanctions', 'RMCP_Review', 'BRA'];
 const FAIS_TYPES = ['Advice', 'Product_Replacement', 'Complaint', 'Compliance_Breach', 'Conflict_of_Interest', 'Gift_Register', 'CPD', 'Representative', 'Debarment', 'Mandate'];
 const OVERSIGHT_TYPES = ['RMCP_Review', 'BRA', 'Audit', 'Compliance_Breach', 'Third_Party', 'POPIA_Breach'];
@@ -902,7 +912,7 @@ export default function ComplianceModule() {
 
   const { data: entries = [], isLoading: registersLoading } = useQuery({
     queryKey: ['compliance-registers'],
-    queryFn: () => base44.entities.Compliance_Registers.list('-created_date', 500),
+    queryFn: () => safeEntityList(base44.entities.Compliance_Registers, '-created_date', 500),
   });
 
   const { data: clients = [] } = useQuery({
@@ -917,7 +927,7 @@ export default function ComplianceModule() {
 
   const { data: documents = [] } = useQuery({
     queryKey: ['compliance-documents'],
-    queryFn: () => base44.entities.Compliance_Documents.list('-created_date', 300),
+    queryFn: () => safeEntityList(base44.entities.Compliance_Documents, '-created_date', 300),
   });
 
   const refresh = () => {
