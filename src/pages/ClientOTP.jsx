@@ -68,6 +68,7 @@ export default function ClientOTP() {
       const result = await base44.functions.invoke('clientOtp', {
         action: 'verify',
         clientId: pendingClientId,
+        email: pendingEmail,
         otp: otp.trim(),
       });
       const data = result?.data || result;

@@ -8,6 +8,7 @@ const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const normalizeEmail = (email = '') => email.toLowerCase().trim();
+const normalizeOtp = (otp = '') => String(otp).replace(/\D/g, '').trim();
 
 const clientTypeMap = {
   Individual: 'Natural Person',
@@ -161,8 +162,16 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Client ID and email are required' }, { status: 400 });
       }
 
+      const allClients = await base44.asServiceRole.entities.Clients.list();
+      const client = allClients.find((c: any) => c.id === clientId)
+        || allClients.find((c: any) => normalizeEmail(c.email || c.client_email) === email);
+
+      if (!client) {
+        return Response.json({ error: 'Client session not found. Please register or log in again.' }, { status: 404 });
+      }
+
       const otp = generateOtp();
-      await base44.asServiceRole.entities.Clients.update(clientId, {
+      await base44.asServiceRole.entities.Clients.update(client.id, {
         otp_code: otp,
         otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         otp_verified: false,
@@ -175,14 +184,19 @@ Deno.serve(async (req) => {
 
     if (action === 'verify') {
       const clientId = payload.clientId;
-      const otp = String(payload.otp || '').trim();
-      if (!clientId || !otp) {
-        return Response.json({ error: 'Client ID and OTP are required' }, { status: 400 });
+      const email = normalizeEmail(payload.email);
+      const otp = normalizeOtp(payload.otp || '');
+      if ((!clientId && !email) || !otp) {
+        return Response.json({ error: 'Client session and OTP are required' }, { status: 400 });
       }
 
       const allClients = await base44.asServiceRole.entities.Clients.list();
-      const client = allClients.find((c: any) => c.id === clientId);
-      if (!client?.otp_code || client.otp_code !== otp) {
+      const candidates = allClients.filter((c: any) =>
+        (clientId && c.id === clientId) || (email && normalizeEmail(c.email || c.client_email) === email)
+      );
+
+      const client = candidates.find((c: any) => normalizeOtp(c.otp_code || '') === otp);
+      if (!client) {
         return Response.json({ error: 'Invalid OTP code' }, { status: 400 });
       }
 
