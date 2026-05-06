@@ -1,6 +1,6 @@
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'WealthWorks';
-const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'onboarding@wealthworks.co.za';
+const FROM_NAME = Deno.env.get('RESEND_FROM_NAME') || Deno.env.get('ADVISOR_NOTIFICATION_NAME') || 'Trevor Fine';
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || Deno.env.get('ADVISOR_NOTIFICATION_EMAIL') || 'trevor@wealthworks.co.za';
 const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 Deno.serve(async (req) => {
