@@ -7,16 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
-
-const sendOtpEmail = async ({ email, otp }) => {
-  await base44.functions.invoke('sendTransactionalEmail', {
-    to: email,
-    subject: 'Your WealthWorks login verification code',
-    text: `Your WealthWorks verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this code, please ignore this email.`,
-  });
-};
-
 export default function ClientLogin() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,25 +23,20 @@ export default function ClientLogin() {
 
     setIsLoading(true);
     try {
-      const clients = await base44.entities.Clients.list();
-      const client = clients.find(c => (c.email || '').toLowerCase().trim() === normalizedEmail);
-      if (!client) {
-        toast.error('No account found with this email address');
-        return;
+      const result = await base44.functions.invoke('clientOtp', {
+        action: 'login',
+        email: normalizedEmail,
+      });
+
+      const data = result?.data || result;
+      if (!data?.success || !data?.client_id) {
+        throw new Error(data?.error || 'Login failed');
       }
 
-      const otp = generateOtp();
-      await base44.entities.Clients.update(client.id, {
-        otp_code: otp,
-        otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        otp_verified: false,
-      });
-      await sendOtpEmail({ email: client.email, otp });
-
-      sessionStorage.setItem('pending_client_id', client.id);
-      sessionStorage.setItem('pending_client_email', client.email);
+      sessionStorage.setItem('pending_client_id', data.client_id);
+      sessionStorage.setItem('pending_client_email', data.email || normalizedEmail);
       sessionStorage.removeItem('client_session_verified');
-      sessionStorage.setItem('pending_onboarding_route', client.onboarding_complete === true ? '/client-dashboard' : '/client-onboarding');
+      sessionStorage.setItem('pending_onboarding_route', data.onboarding_route || '/client-onboarding');
       toast.success('Verification code sent');
       navigate('/client-otp', { replace: true });
     } catch (error) {

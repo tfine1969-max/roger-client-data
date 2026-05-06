@@ -33,20 +33,16 @@ export default function ClientOTP() {
     if (!pendingClientId) return;
     setIsResending(true);
     try {
-      const newOtp = String(Math.floor(100000 + Math.random() * 900000));
-      await base44.entities.Clients.update(pendingClientId, {
-        otp_code: newOtp,
-        otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        otp_verified: false,
+      const result = await base44.functions.invoke('clientOtp', {
+        action: 'resend',
+        clientId: pendingClientId,
+        email: pendingEmail,
       });
-      await base44.functions.invoke('sendTransactionalEmail', {
-        to: pendingEmail,
-        subject: 'Your WealthWorks verification code (resent)',
-        text: `Your new WealthWorks verification code is: ${newOtp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.`,
-      });
+      const data = result?.data || result;
+      if (!data?.success) throw new Error(data?.error || 'Failed to resend code');
       toast.success('A new code has been sent to your email');
     } catch (err) {
-      toast.error('Failed to resend code. Please try again.');
+      toast.error(err.message || 'Failed to resend code. Please try again.');
     } finally {
       setIsResending(false);
     }
@@ -68,28 +64,17 @@ export default function ClientOTP() {
     setIsLoading(true);
 
     try {
-      const clients = await base44.entities.Clients.list();
-      const client = clients.find(c => c.id === pendingClientId);
-      if (!client?.otp_code || client.otp_code !== otp.trim()) {
-        toast.error('Invalid OTP code');
-        setIsLoading(false);
-        return;
-      }
-      if (client.otp_expires_at && new Date(client.otp_expires_at).getTime() < Date.now()) {
-        toast.error('OTP code has expired. Please register or log in again to request a new code.');
-        setIsLoading(false);
-        return;
-      }
-
-      await base44.entities.Clients.update(pendingClientId, {
-        otp_verified: true,
-        otp_code: '',
-        otp_expires_at: '',
+      const result = await base44.functions.invoke('clientOtp', {
+        action: 'verify',
+        clientId: pendingClientId,
+        otp: otp.trim(),
       });
+      const data = result?.data || result;
+      if (!data?.success) throw new Error(data?.error || 'OTP verification failed');
 
       sessionStorage.setItem('client_session_verified', 'true');
-      if (client.email) {
-        sessionStorage.setItem('pending_client_email', client.email);
+      if (data.email) {
+        sessionStorage.setItem('pending_client_email', data.email);
       }
 
       toast.success('OTP verified successfully');

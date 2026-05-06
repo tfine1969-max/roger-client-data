@@ -7,16 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
-
-const sendOtpEmail = async ({ email, otp }) => {
-  await base44.functions.invoke('sendTransactionalEmail', {
-    to: email,
-    subject: 'Your WealthWorks verification code',
-    text: `Your WealthWorks onboarding verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.`,
-  });
-};
-
 export default function ClientRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,51 +35,25 @@ export default function ClientRegistration() {
     setIsLoading(true);
 
     try {
-      const allClients = await base44.entities.Clients.list();
-      const existing = allClients.find(c => {
-        const clientEmail = (c.email || c.client_email || '').toLowerCase().trim();
-        return clientEmail === email;
+      const result = await base44.functions.invoke('clientOtp', {
+        action: 'register',
+        email,
+        mobile,
+        entityType,
       });
 
-      let clientId;
-
-      if (existing) {
-        clientId = existing.id;
-        toast.success('Welcome back. Continue your onboarding.');
-      } else {
-        const clientRecord = await base44.entities.Clients.create({
-          email,
-          mobile_number: mobile,
-          client_status: 'Draft',
-          otp_verified: false,
-        });
-        clientId = clientRecord.id;
+      const data = result?.data || result;
+      if (!data?.success || !data?.client_id) {
+        throw new Error(data?.error || 'Registration failed');
       }
 
-      sessionStorage.setItem('pending_client_id', clientId);
+      sessionStorage.setItem('pending_client_id', data.client_id);
       sessionStorage.setItem('pending_client_email', email);
       sessionStorage.setItem('pending_entity_type', entityType);
       sessionStorage.removeItem('client_session_verified');
 
-      const clientTypeMap = { Individual: 'Natural Person', Trust: 'Trust', Company: 'Company' };
-      await base44.entities.Clients.update(clientId, {
-        client_type: clientTypeMap[entityType] || 'Natural Person',
-      });
-
-      const onboardingRoute = entityType === 'Trust' ? '/client-onboarding-trust'
-        : entityType === 'Company' ? '/client-onboarding-company'
-        : '/client-onboarding';
-
-      const otp = generateOtp();
-      await base44.entities.Clients.update(clientId, {
-        otp_code: otp,
-        otp_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        otp_verified: false,
-      });
-      await sendOtpEmail({ email, otp });
-
       toast.success('Account created. Verify your OTP to continue.');
-      sessionStorage.setItem('pending_onboarding_route', onboardingRoute);
+      sessionStorage.setItem('pending_onboarding_route', data.onboarding_route || '/client-onboarding');
       navigate('/client-otp', { replace: true });
     } catch (error) {
       toast.error(error.message || 'Registration failed');
