@@ -1,143 +1,98 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
 const API_KEY = Deno.env.get('VERIFYNOW_API_KEY');
-const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE');
-const VERIFYNOW_API_BASE_URL =
-  (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
-const VERIFYNOW_VERIFY_URL = Deno.env.get('VERIFYNOW_VERIFY_URL') || `${VERIFYNOW_API_BASE_URL}/verify`;
-const VERIFYNOW_CIPC_URL = Deno.env.get('VERIFYNOW_CIPC_URL') || `${VERIFYNOW_API_BASE_URL}/cipc`;
-const VERIFYNOW_AML_URL = Deno.env.get('VERIFYNOW_AML_URL') || `${VERIFYNOW_API_BASE_URL}/aml-screening`;
-const VERIFYNOW_DOCUMENT_URL = Deno.env.get('VERIFYNOW_DOCUMENT_URL') || `${VERIFYNOW_API_BASE_URL}/id-document-verify`;
-const VERIFYNOW_LIVENESS_URL = Deno.env.get('VERIFYNOW_LIVENESS_URL') || `${VERIFYNOW_API_BASE_URL}/passive-liveness`;
+const VERIFYNOW_MODE = Deno.env.get('VERIFYNOW_MODE') || 'sandbox';
+const BASE = (Deno.env.get('VERIFYNOW_API_BASE_URL') || 'https://www.verifynow.co.za/api/external').replace(/\/+$/, '');
 
-type VerifyPayload = Record<string, any>;
-
-function idempotencyKey(payload: VerifyPayload = {}) {
-  return payload.reference || `ww-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+function uid() {
+  return `ww-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
 
-function normalizeId(payload: VerifyPayload = {}) {
+function authHeaders() {
+  return {
+    'x-api-key': API_KEY,
+    'Content-Type': 'application/json',
+    'Idempotency-Key': uid(),
+  };
+}
+
+function normalizeId(payload = {}) {
   return payload.id_number || payload.idNumber || payload.sa_id_number || payload.identity_number || '';
 }
 
 function normalizeBase64(value = '') {
   if (!value) return '';
-  const commaIndex = value.indexOf(',');
-  return value.startsWith('data:') && commaIndex >= 0 ? value.slice(commaIndex + 1) : value;
+  const i = value.indexOf(',');
+  return value.startsWith('data:') && i >= 0 ? value.slice(i + 1) : value;
 }
 
-function normalizeDocumentType(value = '') {
-  const normalized = String(value || '').toLowerCase();
-  if (normalized.includes('passport')) return 'Passport';
-  if (normalized.includes('driver')) return "Driver's License";
-  return 'Identity Card';
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer) {
+function arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
-  const chunkSize = 0x8000;
   let binary = '';
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   }
   return btoa(binary);
 }
 
-async function fetchFileAsBase64(fileUrl: string) {
-  if (!fileUrl) return '';
-  const response = await fetch(fileUrl);
-  if (!response.ok) {
-    throw new Error(`Could not fetch uploaded document (${response.status})`);
-  }
-  return arrayBufferToBase64(await response.arrayBuffer());
+async function fetchBase64(url) {
+  if (!url) return '';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Could not fetch document (${res.status})`);
+  return arrayBufferToBase64(await res.arrayBuffer());
 }
 
-async function getDocumentImageBase64(payload: VerifyPayload = {}) {
-  if (payload.front_image_base64) return normalizeBase64(payload.front_image_base64);
+async function getImageBase64(payload, frontKey = 'document_url', base64Key = 'front_image_base64') {
+  if (payload[base64Key]) return normalizeBase64(payload[base64Key]);
   if (payload.image_base64) return normalizeBase64(payload.image_base64);
-  if (payload.document_url) return await fetchFileAsBase64(payload.document_url);
-  if (payload.file_url) return await fetchFileAsBase64(payload.file_url);
+  if (payload[frontKey]) return await fetchBase64(payload[frontKey]);
+  if (payload.file_url) return await fetchBase64(payload.file_url);
   return '';
 }
 
-async function getBackDocumentImageBase64(payload: VerifyPayload = {}) {
-  if (payload.back_image_base64) return normalizeBase64(payload.back_image_base64);
-  if (payload.back_document_url) return await fetchFileAsBase64(payload.back_document_url);
-  if (payload.back_file_url) return await fetchFileAsBase64(payload.back_file_url);
-  return '';
-}
-
-function errorMessage(err: unknown) {
-  return err instanceof Error ? err.message : String(err);
-}
-
-async function postJson(url: string, body: VerifyPayload, payload: VerifyPayload = {}) {
+async function post(endpoint, body) {
+  const url = `${BASE}/${endpoint}`;
+  console.log(`[ficaVerify] POST ${url}`);
   try {
-    const response = await fetch(url, {
+    const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'x-api-key': API_KEY,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': idempotencyKey(payload),
-      },
-      body: JSON.stringify(body),
+      headers: authHeaders(),
+      body: JSON.stringify({ ...body, mode: VERIFYNOW_MODE }),
     });
-
-    const text = await response.text();
+    const text = await res.text();
     let json = {};
-    try {
-      json = JSON.parse(text);
-    } catch {
-      json = { raw: text };
+    try { json = JSON.parse(text); } catch { json = { raw: text }; }
+    if (!res.ok) {
+      console.error(`[ficaVerify] ${endpoint} ${res.status}:`, text.slice(0, 500));
+      return { data: null, error: `VerifyNow ${res.status}: ${text}` };
     }
-
-    if (!response.ok) {
-      console.error(`[VerifyNow ${response.status} ${url}]:`, text);
-      return { data: null, error: `VerifyNow ${response.status}: ${text}` };
-    }
-
+    console.log(`[ficaVerify] ${endpoint} OK`);
     return { data: json, error: null };
   } catch (err) {
-    const message = errorMessage(err);
-    console.error('[VerifyNow Error]:', message);
-    return { data: null, error: `VerifyNow Error: ${message}` };
+    console.error(`[ficaVerify] ${endpoint} network error:`, err.message);
+    return { data: null, error: `Network error: ${err.message}` };
   }
-}
-
-async function callVerify(body: VerifyPayload, payload: VerifyPayload = {}) {
-  return await postJson(VERIFYNOW_VERIFY_URL, body, payload);
-}
-
-async function callAml(body: VerifyPayload, payload: VerifyPayload = {}) {
-  return await postJson(VERIFYNOW_AML_URL, body, payload);
-}
-
-async function callCipc(body: VerifyPayload, payload: VerifyPayload = {}) {
-  return await postJson(VERIFYNOW_CIPC_URL, body, payload);
-}
-
-async function callDocumentOcr(body: VerifyPayload, payload: VerifyPayload = {}) {
-  return await postJson(VERIFYNOW_DOCUMENT_URL, body, payload);
-}
-
-async function callLiveness(body: VerifyPayload, payload: VerifyPayload = {}) {
-  return await postJson(VERIFYNOW_LIVENESS_URL, body, payload);
 }
 
 Deno.serve(async (req) => {
   try {
     const { action, payload = {} } = await req.json();
 
+    // Diagnostic ping - no auth needed
     if (action === 'ping') {
       return Response.json({
         data: {
           pong: true,
           mode: VERIFYNOW_MODE,
           key_prefix: API_KEY ? API_KEY.substring(0, 10) : 'NOT_SET',
+          base: BASE,
           endpoints: {
-            verify: VERIFYNOW_VERIFY_URL,
-            cipc: VERIFYNOW_CIPC_URL,
-            aml: VERIFYNOW_AML_URL,
-            document_ocr: VERIFYNOW_DOCUMENT_URL,
-            liveness: VERIFYNOW_LIVENESS_URL,
+            verify: `${BASE}/verify`,
+            consumer_trace: `${BASE}/consumer-trace`,
+            aml_pep: `${BASE}/aml-pep`,
+            verify_document: `${BASE}/verify-document`,
+            face_match: `${BASE}/face-match`,
+            cipc_company: `${BASE}/cipc/company`,
           },
         },
         error: null,
@@ -145,68 +100,24 @@ Deno.serve(async (req) => {
     }
 
     if (!API_KEY) {
-      return Response.json(
-        { data: null, error: 'VERIFYNOW_API_KEY not configured' },
-        { status: 400 }
-      );
+      return Response.json({ data: null, error: 'VERIFYNOW_API_KEY not configured' }, { status: 400 });
     }
 
-    if (!VERIFYNOW_MODE) {
-      return Response.json(
-        { data: null, error: 'VERIFYNOW_MODE not configured' },
-        { status: 400 }
-      );
-    }
-
-    if (action === 'verifyCipc') {
-      const primaryBody = {
-        reportType: 'cipc_company_match',
-        registration_number: payload.registration_number || payload.registrationNumber,
-        sole_prop_id_number: payload.sole_prop_id_number || payload.solePropIdNumber,
-        mode: VERIFYNOW_MODE,
-      };
-      const result = await callCipc(primaryBody, payload);
-      return Response.json(result);
-    }
-
+    // POST /verify — SA ID verification
     if (action === 'verifyId') {
-      const result = await callVerify({
-        reportType: 'said_verification',
+      const result = await post('verify', {
+        bundle: 'id_verification',
         idNumber: normalizeId(payload),
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
         dateOfBirth: payload.date_of_birth || payload.dateOfBirth,
-        mode: VERIFYNOW_MODE,
-      }, payload);
+      });
       return Response.json(result);
     }
 
-    if (action === 'verifyIdPhoto') {
-      const result = await callVerify({
-        reportType: 'home_affairs_id_photo',
-        idNumber: normalizeId(payload),
-        mode: VERIFYNOW_MODE,
-      }, payload);
-      return Response.json(result);
-    }
-
-    if (action === 'screenAml') {
-      const result = await callAml({
-        mode: VERIFYNOW_MODE,
-        name: payload.name,
-        entity: payload.entity ?? 0,
-        country: payload.country || 'za',
-        dataset: payload.dataset || 'all',
-        idNumber: normalizeId(payload) || undefined,
-        registrationNumber: payload.registration_number || payload.registrationNumber,
-        dateOfBirth: payload.date_of_birth || payload.dateOfBirth,
-      }, payload);
-      return Response.json(result);
-    }
-
+    // POST /consumer-trace — address + employment trace
     if (action === 'consumerTrace') {
-      const result = await callVerify({
-        reportType: 'consumer_trace',
+      const result = await post('consumer-trace', {
         idNumber: normalizeId(payload),
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
@@ -215,96 +126,82 @@ Deno.serve(async (req) => {
         city: payload.city,
         province: payload.province,
         postalCode: payload.postal_code || payload.postalCode,
-        mode: VERIFYNOW_MODE,
-      }, payload);
+      });
       return Response.json(result);
     }
 
-    if (action === 'authenticateDoc') {
-      try {
-        const frontImageBase64 = await getDocumentImageBase64(payload);
-        if (!frontImageBase64) {
-          return Response.json(
-            { data: null, error: 'Uploaded ID document image is required for document OCR/authentication' },
-            { status: 400 }
-          );
-        }
-
-        const result = await callDocumentOcr({
-          bundle: 'id_document_verification',
-          mode: VERIFYNOW_MODE,
-          front_image_base64: frontImageBase64,
-          back_image_base64: await getBackDocumentImageBase64(payload) || undefined,
-          document_type: normalizeDocumentType(payload.document_type || payload.documentType),
-          issuing_country: payload.issuing_country || payload.issuingCountry || 'ZAF',
-        }, payload);
-        return Response.json(result);
-      } catch (err) {
-        const message = errorMessage(err);
-        console.error('[authenticateDoc Error]:', message);
-        return Response.json({
-          data: null,
-          error: `VerifyNow Error: ${message}`,
-        });
-      }
+    // POST /aml-pep — AML/PEP/sanctions screening
+    if (action === 'screenAml') {
+      const result = await post('aml-pep', {
+        name: payload.name,
+        entity: payload.entity ?? 0,
+        country: payload.country || 'za',
+        dataset: payload.dataset || 'all',
+        idNumber: normalizeId(payload) || undefined,
+        dateOfBirth: payload.date_of_birth || payload.dateOfBirth,
+      });
+      return Response.json(result);
     }
 
+    // POST /verify-document — ID document OCR + fraud signals
+    if (action === 'authenticateDoc') {
+      const frontImageBase64 = await getImageBase64(payload, 'document_url', 'front_image_base64');
+      if (!frontImageBase64) {
+        return Response.json({ data: null, error: 'Front document image required' }, { status: 400 });
+      }
+      const backImageBase64 = payload.back_document_url
+        ? await fetchBase64(payload.back_document_url)
+        : (payload.back_image_base64 ? normalizeBase64(payload.back_image_base64) : undefined);
+
+      const docType = String(payload.document_type || '').toLowerCase().includes('passport') ? 'Passport' : 'Identity Card';
+      const result = await post('verify-document', {
+        frontImageBase64,
+        backImageBase64: backImageBase64 || undefined,
+        documentType: docType,
+        issuingCountry: payload.issuing_country || 'ZAF',
+        idNumber: normalizeId(payload) || undefined,
+      });
+      return Response.json(result);
+    }
+
+    // POST /face-match — selfie-to-ID biometric match
     if (action === 'faceMatch') {
       const selfieBase64 = normalizeBase64(payload.selfie_image || payload.selfie_image_base64 || '');
       if (!selfieBase64) {
-        return Response.json(
-          { data: null, error: 'Selfie image is required for face match' },
-          { status: 400 }
-        );
+        return Response.json({ data: null, error: 'Selfie image required' }, { status: 400 });
       }
-      const result = await callLiveness({
-        mode: VERIFYNOW_MODE,
-        image_base64: selfieBase64,
-      }, payload);
-      if (result.data?.results?.liveness?.score != null) {
-        result.data.confidence_score = result.data.results.liveness.score;
-        result.data.liveness_status = result.data.results.liveness.status;
+      const result = await post('face-match', {
+        selfieBase64,
+        idNumber: normalizeId(payload) || undefined,
+      });
+      if (result.data?.confidenceScore != null) {
+        result.data.confidence_score = result.data.confidenceScore;
       }
       return Response.json(result);
     }
 
-    if (action === 'passiveLiveness') {
-      const imageBase64 = normalizeBase64(payload.image_base64 || payload.selfie_image || '');
-      if (!imageBase64) {
-        return Response.json(
-          { data: null, error: 'Image is required for passive liveness' },
-          { status: 400 }
-        );
-      }
-      const result = await callLiveness({
-        mode: VERIFYNOW_MODE,
-        image_base64: imageBase64,
-      }, payload);
+    // POST /cipc/company — company registration check
+    if (action === 'verifyCipc') {
+      const result = await post('cipc/company', {
+        registrationNumber: payload.registration_number || payload.registrationNumber,
+      });
       return Response.json(result);
     }
 
+    // POST /bank-account-verification — AVS
     if (action === 'verifyAvs') {
-      const result = await callVerify({
-        reportType: 'bank_verification',
+      const result = await post('bank-account-verification', {
         idNumber: normalizeId(payload),
         accountNumber: payload.account_number || payload.accountNumber,
         branchCode: payload.branch_code || payload.branchCode,
         accountType: payload.account_type || payload.accountType,
-        mode: VERIFYNOW_MODE,
-      }, payload);
+      });
       return Response.json(result);
     }
 
-    return Response.json(
-      { data: null, error: `Unknown action: ${action}` },
-      { status: 400 }
-    );
+    return Response.json({ data: null, error: `Unknown action: ${action}` }, { status: 400 });
   } catch (err) {
-    const message = errorMessage(err);
-    console.error('[ficaVerify Error]', err);
-    return Response.json(
-      { data: null, error: message || 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('[ficaVerify Error]', err.message);
+    return Response.json({ data: null, error: err.message || 'Internal server error' }, { status: 500 });
   }
 });
