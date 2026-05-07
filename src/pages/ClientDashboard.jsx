@@ -116,10 +116,7 @@ export default function ClientDashboard() {
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">{clientType}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Status:</span>
-            <StatusBadge status={client.client_status} />
-          </div>
+
         </div>
 
         <div className="bg-card border border-border rounded-lg overflow-hidden mb-4">
