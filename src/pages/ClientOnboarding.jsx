@@ -654,7 +654,7 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-      if (formData.identity_type === 'SA ID' && (!formData.identity_document_front_uploaded || !formData.identity_document_back_uploaded)) {
+      if (formData.identity_type === 'SA ID' && (!(formData.identity_document_front_uploaded || formData.doc_identity) || !(formData.identity_document_back_uploaded || formData.doc_identity_back))) {
         toast.error('Please upload both the front and back of the SA ID');
         return;
       }
@@ -768,7 +768,7 @@ export default function ClientOnboarding() {
         residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
       };
     } else if (currentStep === 2) {
-      if (formData.identity_type === 'SA ID' && (!formData.identity_document_front_uploaded || !formData.identity_document_back_uploaded)) {
+      if (formData.identity_type === 'SA ID' && (!(formData.identity_document_front_uploaded || formData.doc_identity) || !(formData.identity_document_back_uploaded || formData.doc_identity_back))) {
         toast.error('Please upload both the front and back of the SA ID');
         return false;
       }
