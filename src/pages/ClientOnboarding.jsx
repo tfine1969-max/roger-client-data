@@ -214,6 +214,9 @@ export default function ClientOnboarding() {
     doc_source_of_funds_name: '',
     doc_existing_policies: '',
     doc_existing_policies_name: '',
+    banking_proof_uploaded: false,
+    doc_banking_proof: '',
+    doc_banking_proof_name: '',
     client_signature_name: '',
     client_signature_date: new Date().toISOString().split('T')[0],
   });
@@ -295,6 +298,9 @@ export default function ClientOnboarding() {
             doc_source_of_funds_name:        client.doc_source_of_funds_name        || prev.doc_source_of_funds_name,
             doc_existing_policies:           client.doc_existing_policies           || prev.doc_existing_policies,
             doc_existing_policies_name:      client.doc_existing_policies_name      || prev.doc_existing_policies_name,
+            banking_proof_uploaded:          client.banking_proof_uploaded          || !!client.doc_banking_proof || prev.banking_proof_uploaded,
+            doc_banking_proof:               client.doc_banking_proof               || prev.doc_banking_proof,
+            doc_banking_proof_name:          client.doc_banking_proof_name          || prev.doc_banking_proof_name,
             client_signature_name:           client.client_signature_name           || prev.client_signature_name,
             client_signature_date:           client.client_signature_date           || prev.client_signature_date,
           }));
