@@ -241,10 +241,10 @@ export default function AdvisorDashboard() {
               </>
             )}
           >
-            <Metric label="Awaiting review" value={proposalSummary.awaiting} />
-            <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" />
-            <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" />
-            <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" />
+            <Metric label="Awaiting review" value={proposalSummary.awaiting} onClick={() => navigate('/proposals?filter=AWAITING REVIEW')} />
+            <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" onClick={() => navigate('/proposals?filter=IN PROGRESS')} />
+            <Metric label="Sent" value={proposalSummary.sent} tone="text-ocean" onClick={() => navigate('/proposals?filter=SENT')} />
+            <Metric label="Finalised" value={proposalSummary.finalised} tone="text-forest" onClick={() => navigate('/proposals?filter=FINALISED')} />
           </PortalCard>
         </div>
       </main>

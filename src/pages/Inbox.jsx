@@ -41,7 +41,8 @@ export default function Inbox() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [statusFilter, setStatusFilter] = useState(null);
+  const urlParams = new URLSearchParams(window.location.search);
+  const [statusFilter, setStatusFilter] = useState(urlParams.get('filter') || null);
   const [ficaFilter, setFicaFilter] = useState('All clients');
 
   useEffect(() => {
