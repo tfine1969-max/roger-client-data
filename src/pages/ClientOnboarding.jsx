@@ -1198,57 +1198,64 @@ export default function ClientOnboarding() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible' },
-                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address' },
-                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted' },
-                  { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis' },
-                  { key: 'banking_proof_uploaded', title: 'PROOF OF BANKING DETAILS', badge: 'OPTIONAL', desc: 'Bank-stamped letter or 3 months bank statements', sub: 'Shows account holder, bank and account number' },
-                ].filter(doc => !(doc.key === 'identity_document_uploaded' && formData.identity_type === 'SA ID')).map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
-                      <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
-                    </div>
-                    {formData[doc.key] ? (
-                      <label className="block cursor-pointer">
-                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
-                          <div className="flex items-center gap-2">
-                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
-                            <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                            {uploadedFileName(doc.key) && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={uploadedFileName(doc.key)}>{uploadedFileName(doc.key)}</span>}
+                  { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible', urlField: 'doc_identity' },
+                  { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address', urlField: 'doc_proof_of_address' },
+                  { key: 'income_proof_uploaded', title: 'INCOME / SOURCE OF FUNDS', badge: 'OPTIONAL', desc: '3 months payslips or 6 months bank statements', sub: 'Multiple files accepted', urlField: 'doc_source_of_funds' },
+                  { key: 'existing_policies_uploaded', title: 'EXISTING POLICIES', badge: 'OPTIONAL', desc: 'Current policy documents or statements', sub: 'Assists with needs analysis', urlField: 'doc_existing_policies' },
+                  { key: 'banking_proof_uploaded', title: 'PROOF OF BANKING DETAILS', badge: 'OPTIONAL', desc: 'Bank-stamped letter or 3 months bank statements', sub: 'Shows account holder, bank and account number', urlField: 'doc_banking_proof' },
+                  ].filter(doc => !(doc.key === 'identity_document_uploaded' && formData.identity_type === 'SA ID')).map(doc => {
+                  const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
+                  const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
+                  return (
+                    <div key={doc.key} className="border border-border rounded p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
+                        <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
+                      </div>
+                      {isUploaded ? (
+                        <label className="block cursor-pointer">
+                          <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                            <div className="flex items-center gap-2">
+                              {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
+                              <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                              {fileName && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={fileName}>{fileName}</span>}
+                            </div>
+                            <span className="text-[10px] text-ocean font-medium">Change document</span>
                           </div>
-                          <span className="text-[10px] text-ocean font-medium">Change document</span>
-                        </div>
-                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
-                      </label>
-                    ) : (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
-                          <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
-                          <p className="text-[10px] text-ocean mt-2">Click to upload</p>
-                        </div>
-                        <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
-                      </label>
-                    )}
-                  </div>
-                ))}
+                          <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                        </label>
+                      ) : (
+                        <label className="block cursor-pointer">
+                          <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
+                            <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
+                            <p className="text-[10px] text-ocean mt-2">Click to upload</p>
+                          </div>
+                          <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                        </label>
+                      )}
+                    </div>
+                  );
+                  })}
                 {formData.identity_type === 'SA ID' && [
-                  { key: 'identity_document_front_uploaded', title: 'SA ID FRONT', desc: 'Front of smart card / green ID' },
-                  { key: 'identity_document_back_uploaded', title: 'SA ID BACK', desc: 'Back of smart card / green ID' },
-                ].map(doc => (
+                  { key: 'identity_document_front_uploaded', title: 'SA ID FRONT', desc: 'Front of smart card / green ID', urlField: 'doc_identity' },
+                  { key: 'identity_document_back_uploaded', title: 'SA ID BACK', desc: 'Back of smart card / green ID', urlField: 'doc_identity_back' },
+                ].map(doc => {
+                  const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
+                  const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
+                  return (
                   <div key={doc.key} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
                       <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
                     </div>
-                    {formData[doc.key] ? (
+                    {isUploaded ? (
                       <label className="block cursor-pointer">
                         <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                           <div className="flex items-center gap-2 min-w-0">
                             {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin shrink-0" /> : <Check className="w-4 h-4 text-teal shrink-0" />}
                             <span className="text-xs text-teal font-medium shrink-0">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                            {uploadedFileName(doc.key) && <span className="text-[10px] text-muted-foreground truncate" title={uploadedFileName(doc.key)}>{uploadedFileName(doc.key)}</span>}
+                            {fileName && <span className="text-[10px] text-muted-foreground truncate" title={fileName}>{fileName}</span>}
                           </div>
                           <span className="text-[10px] text-ocean font-medium shrink-0">Change document</span>
                         </div>
@@ -1264,7 +1271,8 @@ export default function ClientOnboarding() {
                       </label>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="p-3 bg-secondary/50 border border-border rounded text-xs text-muted-foreground">
                 <p className="font-semibold text-navy mb-0.5">Note</p>
