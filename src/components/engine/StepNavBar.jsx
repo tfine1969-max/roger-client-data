@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, ArrowLeft } from 'lucide-react';
 
 const STEPS = [
   { key: 'client_details',  num: '01', label: 'Client Details' },
@@ -10,7 +10,7 @@ const STEPS = [
 
 const STEP_INDEX = { client_details: 1, recommendations: 2, suitability: 3, review: 4 };
 
-export default function StepNavBar({ activeStep, completedSteps = [], onStepClick }) {
+export default function StepNavBar({ activeStep, completedSteps = [], onStepClick, onBackToInbox }) {
   const stepNum = STEP_INDEX[activeStep] || 1;
   const progressPct = stepNum * 25;
 
@@ -29,7 +29,17 @@ export default function StepNavBar({ activeStep, completedSteps = [], onStepClic
 
       {/* Tab navbar */}
       <div className="bg-card border-b border-border px-4 md:px-6">
-        <div className="flex">
+        <div className="flex items-center">
+          {onBackToInbox && (
+            <button
+              onClick={onBackToInbox}
+              className="flex items-center gap-1.5 px-3 py-3 text-[11px] font-semibold tracking-[.08em] uppercase text-muted-foreground hover:text-navy border-b-2 border-transparent whitespace-nowrap shrink-0 mr-2"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to Inbox
+            </button>
+          )}
+          <div className="w-px h-5 bg-border shrink-0 mr-2" />
           {STEPS.map((step) => {
             const isActive = activeStep === step.key;
             const isDone   = completedSteps.includes(step.key);

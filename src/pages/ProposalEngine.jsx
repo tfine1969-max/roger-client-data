@@ -299,18 +299,11 @@ export default function ProposalEngine() {
           activeStep={activeStep}
           completedSteps={completedSteps}
           onStepClick={setActiveStep}
+          onBackToInbox={() => navigate('/proposals')}
         />
       </div>
 
       <div className="flex-1 p-4 md:p-6">
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => navigate('/proposals')}
-            className="border border-border text-muted-foreground px-4 py-2 text-xs font-medium tracking-[.06em] uppercase hover:text-foreground hover:border-foreground/30 transition-colors flex items-center gap-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to inbox
-          </button>
-        </div>
 
         {activeStep === 'client_details' && (
           <>
