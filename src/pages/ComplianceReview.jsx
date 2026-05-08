@@ -185,7 +185,7 @@ export default function ComplianceReview() {
             const Icon = style.icon;
             const name = client.full_name || client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || '—';
             return (
-              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_160px] px-4 py-3 border-b border-border items-center min-w-[820px] hover:bg-secondary/30 transition-colors">
+              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_160px] px-4 py-4 border-b border-border items-center min-w-[820px] hover:bg-secondary/30 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-navy">{name}</p>
                   <p className="text-[10px] text-muted-foreground">{client.client_type || 'Natural Person'}</p>
@@ -200,7 +200,7 @@ export default function ComplianceReview() {
                   <span className="text-[10px] text-muted-foreground">{client.doc_status || 'Pending'}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">{formatDate(client.doc_submitted_at || client.created_date)}</p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => navigate(`/compliance-review/${client.id}`)}
                     className="px-3 py-1.5 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded whitespace-nowrap"
