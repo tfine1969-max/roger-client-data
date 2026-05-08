@@ -162,7 +162,16 @@ export default function ProposalEngine() {
   // ── Mutations ──────────────────────────────────────────────────────────────
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.Proposal.update(id, data),
-    onSuccess: () => {
+    onMutate: async ({ data }) => {
+      await queryClient.cancelQueries({ queryKey: ['proposal', id] });
+      const previous = queryClient.getQueryData(['proposal', id]);
+      queryClient.setQueryData(['proposal', id], old => old ? { ...old, ...data } : old);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['proposal', id], context.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['proposal', id] });
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
     },

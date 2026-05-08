@@ -163,7 +163,6 @@ export default function InvestmentForm() {
       const allInv = await base44.entities.Investments.list();
       const proposalInvestments = allInv.filter(i=>i.proposal_id===proposalId);
       const mi = proposalInvestments.filter(i=>i.investment_mandate==='Yes');
-      // Fetch current proposal to check status
       const allProposals = await base44.entities.Proposal.list();
       const currentProposal = allProposals.find(p=>p.id===proposalId);
       const sentStatuses = ['Sent','Awaiting Client Signature','Signed'];
@@ -177,13 +176,27 @@ export default function InvestmentForm() {
         ...(shouldMarkOutdated ? { status: 'Outdated' } : {}),
       });
     },
+    onMutate: async (data) => {
+      await qc.cancelQueries({ queryKey: ['investments', proposalId] });
+      const previous = qc.getQueryData(['investments', proposalId]);
+      if (investmentId) {
+        qc.setQueryData(['investments', proposalId], old =>
+          (old || []).map(inv => inv.id === investmentId ? { ...inv, ...data } : inv)
+        );
+      } else {
+        const optimisticInv = { ...data, id: `optimistic-${Date.now()}`, proposal_id: proposalId };
+        qc.setQueryData(['investments', proposalId], old => [...(old || []), optimisticInv]);
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) qc.setQueryData(['investments', proposalId], context.previous);
+      setSubmitting(false);
+      toast.error('Investment could not be saved. Please try again.');
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['investments', proposalId] });
       navigate(`/proposal/${proposalId}/engine`, { state: { step: 'recommendations' } });
-    },
-    onError: () => {
-      setSubmitting(false);
-      alert('Investment could not be saved. Please try again.');
     },
   });
 
@@ -363,7 +376,8 @@ export default function InvestmentForm() {
             if (e.target.value === 'Custom') { setShowCustom(true); setF(field, ''); }
             else { setShowCustom(false); setF(field, e.target.value); }
           }}
-          className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2 mb-1"
+          className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2 mb-1"
+          style={{ minHeight: 44 }}
         >
           {FEE_PRESETS.map(o => <option key={o} value={o}>{o}%</option>)}
           <option value="Custom">Custom</option>
@@ -389,7 +403,8 @@ export default function InvestmentForm() {
       <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">{label}</Label>
       {showStatic ? staticBox(value) : (
         <select value={value} onChange={e=>onChange(e.target.value)} disabled={disabled}
-          className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2 disabled:bg-muted disabled:text-muted-foreground">
+          className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2 disabled:bg-muted disabled:text-muted-foreground"
+          style={{ minHeight: 44 }}>
           <option value="">{placeholder||'Select...'}</option>
           {value && !options.includes(value) && <option value={value}>{value}</option>}
           {options.map(o=><option key={o} value={o}>{o}</option>)}
@@ -431,7 +446,8 @@ export default function InvestmentForm() {
                     {ann&&<span className="ml-2 text-[9px] text-green-600 font-normal normal-case">Auto-detected: {ANNEXURE_LABELS[ann]}</span>}
                   </Label>
                   <select value={form.applicable_annexure||ann} onChange={e=>setF('applicable_annexure',e.target.value)}
-                    className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                    className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                    style={{ minHeight: 44 }}>
                     <option value="A">Annexure A — Model / Discretionary Portfolios</option>
                     <option value="B">Annexure B — Collective Investments & Offshore Platforms</option>
                     <option value="C">Annexure C — Alternative Investments & Direct Securities</option>
@@ -460,7 +476,8 @@ export default function InvestmentForm() {
                 {form.jurisdiction==='Local'
                   ? <Input value="ZAR" disabled className="h-8 text-xs rounded-sm bg-muted"/>
                   : <select value={form.currency} onChange={e=>setF('currency',e.target.value)}
-                      className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                      className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                      style={{ minHeight: 44 }}>
                       {CURRENCIES_OFFSHORE.map(c=><option key={c} value={c}>{c}</option>)}
                     </select>
                 }
@@ -494,7 +511,8 @@ export default function InvestmentForm() {
                     <div className="flex-1">
                       {showStatic ? staticBox(row.fund) : (
                         <select value={row.fund} onChange={e=>updateRow(i,'fund',e.target.value)}
-                          className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                          className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                          style={{ minHeight: 44 }}>
                           <option value="">Select fund...</option>
                           {row.fund&&row.fund!=='__custom__'&&!funds.includes(row.fund)&&<option value={row.fund}>{row.fund}</option>}
                           {funds.filter(f=>f===row.fund||!form.fund_rows.some((r,idx)=>idx!==i&&r.fund===f)).map(f=><option key={f} value={f}>{f}</option>)}
@@ -583,7 +601,8 @@ export default function InvestmentForm() {
                 <div>
                   <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Frequency</Label>
                   <select value={form.frequency} onChange={e=>setF('frequency',e.target.value)}
-                    className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                    className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                    style={{ minHeight: 44 }}>
                     <option value="">Select...</option>
                     {FREQUENCIES.map(f=><option key={f} value={f}>{f}</option>)}
                   </select>
@@ -657,7 +676,8 @@ export default function InvestmentForm() {
                   <div>
                     <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Basis</Label>
                     <select value={form.income_type} onChange={e=>setF('income_type',e.target.value)}
-                      className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                      className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                      style={{ minHeight: 44 }}>
                       <option value="">Select...</option>
                       <option value="Percentage">Percentage</option>
                       <option value="Fixed Amount">Fixed Amount</option>
@@ -666,7 +686,8 @@ export default function InvestmentForm() {
                   <div>
                     <Label className="text-[10px] font-semibold text-navy uppercase tracking-wider block mb-1">Income Frequency</Label>
                     <select value={form.income_frequency} onChange={e=>setF('income_frequency',e.target.value)}
-                      className="w-full h-8 text-xs rounded-sm border border-border bg-card text-navy px-2">
+                      className="w-full text-xs rounded-sm border border-border bg-card text-navy px-2"
+                      style={{ minHeight: 44 }}>
                       <option value="">Select...</option>
                       <option value="Monthly">Monthly</option>
                       <option value="Quarterly">Quarterly</option>

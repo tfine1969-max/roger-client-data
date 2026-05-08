@@ -1489,7 +1489,7 @@ export default function ClientOnboarding() {
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TITLE</Label>
                   <Select value={formData.title} onValueChange={v => handleChange('title', v)}>
-                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['Mr', 'Mrs', 'Ms', 'Dr', 'Prof'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -1548,14 +1548,14 @@ export default function ClientOnboarding() {
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MARITAL STATUS</Label>
                   <Select value={formData.marital_status || undefined} onValueChange={v => handleChange('marital_status', v)}>
-                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['Single', 'Married in community', 'Married out of community', 'Divorced', 'Widowed'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DEPENDANTS</Label>
                   <Select value={formData.dependants} onValueChange={v => handleChange('dependants', v)}>
-                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['0', '1', '2', '3', '4', '5+'].map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -1591,7 +1591,7 @@ export default function ClientOnboarding() {
                     <div>
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                       <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
-                        <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>{['Western Cape', 'Gauteng', 'KwaZulu-Natal', 'Eastern Cape', 'Limpopo', 'Mpumalanga', 'North West', 'Free State', 'Northern Cape'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
@@ -1705,7 +1705,7 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
                     <Select value={formData.employment_status} onValueChange={v => handleChange('employment_status', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Employed', 'Self-employed', 'Retired', 'Unemployed', 'Student'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
@@ -1720,7 +1720,7 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
                     <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
@@ -1761,21 +1761,21 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
                     <Select value={formData.tax_residency} onValueChange={v => handleChange('tax_residency', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['South Africa only', 'South Africa + Other', 'Other country only'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">US PERSON (FATCA)?</Label>
                     <Select value={formData.us_person_fatca} onValueChange={v => handleChange('us_person_fatca', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PEP STATUS</Label>
                     <Select value={formData.pep_status} onValueChange={v => handleChange('pep_status', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="No">No</SelectItem>
                         <SelectItem value="Yes">Yes</SelectItem>
