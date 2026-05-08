@@ -60,7 +60,7 @@ const STEPS = [
   { number: 4, label: 'FICA verification' },
   { number: 5, label: 'Income & assets' },
   { number: 6, label: 'Existing products' },
-  { number: 7, label: 'Risk & objectives' },
+  { number: 7, label: 'Objectives & risk profile' },
   { number: 8, label: 'Review & submit' },
 ];
 
@@ -1464,7 +1464,7 @@ export default function ClientOnboarding() {
               {currentStep === 4 && 'FICA verification'}
               {currentStep === 5 && 'Income & assets'}
               {currentStep === 6 && 'Existing products'}
-              {currentStep === 7 && 'Risk profile & objectives'}
+              {currentStep === 7 && 'Objectives & risk profile'}
               {currentStep === 8 && 'Review & submit'}
             </h1>
             <p className="text-xs text-muted-foreground mb-1">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
