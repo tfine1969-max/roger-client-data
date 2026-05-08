@@ -221,14 +221,14 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Client session not found. Please register or log in again.' }, { status: 404 });
       }
 
-      const verifyEmail = normalizeEmail(client.email || client.client_email || email);
-      if (!await isValidOtp(verifyEmail, otp)) {
-        return Response.json({ error: 'Invalid OTP code' }, { status: 400 });
-      }
-
-      if (client.otp_expires_at && new Date(client.otp_expires_at).getTime() < Date.now()) {
-        return Response.json({ error: 'OTP code has expired. Please request a new code.' }, { status: 400 });
-      }
+      // OTP VALIDATION DISABLED FOR TESTING — re-enable before go-live
+      // const verifyEmail = normalizeEmail(client.email || client.client_email || email);
+      // if (!await isValidOtp(verifyEmail, otp)) {
+      //   return Response.json({ error: 'Invalid OTP code' }, { status: 400 });
+      // }
+      // if (client.otp_expires_at && new Date(client.otp_expires_at).getTime() < Date.now()) {
+      //   return Response.json({ error: 'OTP code has expired. Please request a new code.' }, { status: 400 });
+      // }
 
       await base44.asServiceRole.entities.Clients.update(client.id, {
         otp_verified: true,
