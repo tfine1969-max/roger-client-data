@@ -14,11 +14,11 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
 
   const markAsSent = async () => {
     const signingToken = createSigningToken();
-    await base44.entities.Proposal.update(proposal.id, {
-      status: 'Sent',
-      sent_at: new Date().toISOString(),
-      reminder_sent: false,
-      signing_token: signingToken,
+    // Use backend function (service role) to bypass RLS on Proposal entity
+    await base44.functions.invoke('signProposal', {
+      action: 'markSent',
+      proposalId: proposal.id,
+      signingToken,
     });
     if (onStatusUpdate) onStatusUpdate();
     return signingToken;

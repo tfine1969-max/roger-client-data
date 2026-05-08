@@ -19,8 +19,8 @@ Deno.serve(async (req) => {
   let entityName = 'Proposal';
 
   const [allProposalsSingular, allProposalsPlural] = await Promise.all([
-    base44.asServiceRole.entities.Proposal.list(),
-    base44.asServiceRole.entities.Proposals.list(),
+    base44.asServiceRole.entities.Proposal.list('-created_date', 500),
+    base44.asServiceRole.entities.Proposals.list('-created_date', 500),
   ]);
 
   // Search by signing_token first
@@ -95,9 +95,9 @@ Deno.serve(async (req) => {
   // action=getRelated — fetch investments + risk products + risk covers for PDF generation
   if (action === 'getRelated') {
     const [allInvestments, allRiskProducts, allRiskCovers] = await Promise.all([
-      base44.asServiceRole.entities.Investments.list(),
-      base44.asServiceRole.entities.RiskProducts.list(),
-      base44.asServiceRole.entities.RiskCovers.list(),
+      base44.asServiceRole.entities.Investments.list('-created_date', 500),
+      base44.asServiceRole.entities.RiskProducts.list('-created_date', 500),
+      base44.asServiceRole.entities.RiskCovers.list('-created_date', 500),
     ]);
     const investments = allInvestments.filter(i => i.proposal_id === proposal.id);
     const riskProductsRaw = allRiskProducts.filter(rp => rp.proposal_id === proposal.id);
@@ -107,6 +107,21 @@ Deno.serve(async (req) => {
       _covers: allRiskCovers.filter(c => c.risk_product_id === rp.id),
     }));
     return Response.json({ investments, riskProducts });
+  }
+
+  // action=markSent — save signing token + mark as Sent via service role (bypasses RLS)
+  if (action === 'markSent') {
+    const { signingToken } = body;
+    if (!signingToken) {
+      return Response.json({ error: 'signingToken is required' }, { status: 400 });
+    }
+    await updateProposal(proposal.id, {
+      status: 'Sent',
+      sent_at: new Date().toISOString(),
+      reminder_sent: false,
+      signing_token: signingToken,
+    });
+    return Response.json({ success: true, signingToken });
   }
 
   return Response.json({ error: 'Unknown action' }, { status: 400 });
