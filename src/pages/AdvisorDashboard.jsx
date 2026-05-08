@@ -84,22 +84,25 @@ const ActionButton = ({ icon: Icon, label, onClick, variant = 'secondary' }) => 
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, actions, children }) => (
   <section className="border border-border bg-card p-5 md:p-6">
-    <div className="grid gap-5 xl:grid-cols-[minmax(250px,340px)_minmax(0,1fr)_minmax(260px,360px)] xl:items-center">
-      <div className="flex items-start gap-4 min-w-0">
-        <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
-          <Icon className="w-5 h-5" />
+    <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+      {/* Left: title + description + metrics */}
+      <div className="space-y-4">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
+            <Icon className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold text-navy tracking-tight">{title}</h2>
+            <p className="text-sm text-muted-foreground mt-1 leading-6">{description}</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <h2 className="text-xl font-semibold text-navy tracking-tight">{title}</h2>
-          <p className="text-sm text-muted-foreground mt-1 leading-6">{description}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {children}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4 gap-3 min-w-0">
-        {children}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+      {/* Right: action buttons as a vertical column of equal boxes */}
+      <div className="flex flex-col gap-2 lg:w-56 w-full">
         <ActionButton icon={ArrowRight} label={buttonLabel} onClick={onClick} variant="primary" />
         {actions}
       </div>
