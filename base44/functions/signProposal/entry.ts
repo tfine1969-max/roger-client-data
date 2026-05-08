@@ -13,18 +13,34 @@ Deno.serve(async (req) => {
   }
 
   // Use service role so unauthenticated clients can read/update proposals
-  const allProposals = await base44.asServiceRole.entities.Proposal.list();
-  const proposal = allProposals.find(p => p.signing_token === proposalId);
+  // Try Proposal (singular) first, then fall back to Proposals (plural)
+  let proposal = null;
+  let entityName = 'Proposal';
+
+  const allProposalsSingular = await base44.asServiceRole.entities.Proposal.list();
+  proposal = allProposalsSingular.find(p => p.signing_token === proposalId);
+
+  if (!proposal) {
+    const allProposalsPlural = await base44.asServiceRole.entities.Proposals.list();
+    proposal = allProposalsPlural.find(p => p.signing_token === proposalId);
+    if (proposal) entityName = 'Proposals';
+  }
 
   if (!proposal) {
     return Response.json({ error: 'Proposal not found' }, { status: 404 });
   }
 
+  // Helper to update the correct entity
+  const updateProposal = (id, data) =>
+    entityName === 'Proposals'
+      ? base44.asServiceRole.entities.Proposals.update(id, data)
+      : base44.asServiceRole.entities.Proposal.update(id, data);
+
   // action=load — just return the proposal (for initial page load)
   if (action === 'load') {
     // Also mark as Awaiting Client Signature if not already signed
     if (proposal.status !== 'Signed') {
-      await base44.asServiceRole.entities.Proposal.update(proposal.id, {
+      await updateProposal(proposal.id, {
         status: 'Awaiting Client Signature',
       });
       return Response.json({ proposal: { ...proposal, status: 'Awaiting Client Signature' } });
@@ -47,7 +63,7 @@ Deno.serve(async (req) => {
       updateData.signed_pdf_url = signedPdfUrl;
     }
 
-    await base44.asServiceRole.entities.Proposal.update(proposal.id, updateData);
+    await updateProposal(proposal.id, updateData);
 
     // Notify advisor (non-blocking — errors don't fail the request)
     try {
