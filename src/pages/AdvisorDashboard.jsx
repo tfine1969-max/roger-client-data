@@ -85,7 +85,7 @@ const ActionButton = ({ icon: Icon, label, onClick, variant = 'secondary' }) => 
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, actions, children }) => (
   <section className="border border-border bg-card p-5 md:p-6">
-    <div className="grid gap-5 grid-cols-[minmax(250px,340px)_minmax(0,1fr)_minmax(220px,280px)] items-start">
+    <div className="grid gap-5 grid-cols-[minmax(250px,340px)_minmax(0,1fr)_minmax(220px,280px)] items-center">
       <div className="flex items-start gap-4 min-w-0">
         <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
           <Icon className="w-5 h-5" />
@@ -193,7 +193,7 @@ export default function AdvisorDashboard() {
           <PortalCard
             icon={ShieldCheck}
             title="1. Compliance Regulatory Portal"
-            description="Registers, RMCP repository, training certificates, regulatory evidence, audit reports and FSCA inspection exports."
+            description="Compliance registers, RMCP repository, regulatory evidence and audit reports."
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
 
@@ -207,7 +207,7 @@ export default function AdvisorDashboard() {
           <PortalCard
             icon={UserCheck}
             title="2. Client Compliance"
-            description="Review onboarding submissions, reverify unsuccessful clients, request documents, approve verified clients and move them into proposal phase."
+            description="Review onboarding submissions, approve verified clients and manage FICA outcomes."
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
 
@@ -221,7 +221,7 @@ export default function AdvisorDashboard() {
           <PortalCard
             icon={FolderKanban}
             title="3. Proposals"
-            description="Build new proposals, continue draft ROAs, manage PDFs, send client packs and monitor signed reports."
+            description="Build proposals, manage PDFs and send client packs for signature."
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
 
