@@ -1595,7 +1595,7 @@ export default function ClientOnboarding() {
                   const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
                   const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
                   return (
-                    <div key={doc.key} className="border border-border rounded p-3">
+                    <div key={doc.key} className="border-2 border-border rounded p-3">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
                         <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
@@ -1632,11 +1632,11 @@ export default function ClientOnboarding() {
                   const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
                   const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
                   return (
-                  <div key={doc.key} className="border border-border rounded p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
-                      <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
-                    </div>
+                  <div key={doc.key} className="border-2 border-border rounded p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
+                    <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
+                  </div>
                     {isUploaded ? (
                       <label className="block cursor-pointer">
                         <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
@@ -1672,7 +1672,7 @@ export default function ClientOnboarding() {
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: KYC Declaration Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 3 && (
             <div className="space-y-1.5">
-              <div className="border border-border rounded p-1.5">
+              <div className="border-2 border-border rounded p-1.5">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px] mb-1">EMPLOYMENT & OCCUPATION</h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
@@ -1700,7 +1700,7 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-3">
+              <div className="border-2 border-border rounded p-3">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">SOURCE OF FUNDS</h3>
                   <span className="text-[9px] text-muted-foreground">SELECT ALL</span>
@@ -1715,7 +1715,7 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-1.5">
+              <div className="border-2 border-border rounded p-1.5">
                 <div className="flex justify-between items-center mb-1">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">TAX & PEP DECLARATION</h3>
                   <span className="text-[8px] font-semibold text-ocean">FATCA / CRS</span>
