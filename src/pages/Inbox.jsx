@@ -98,9 +98,11 @@ export default function Inbox() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/advisor-dashboard')}
-            className="flex h-10 items-center gap-2 px-4 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-sm font-semibold"
+            className="flex h-10 w-10 items-center justify-center border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+            aria-label="Workspace"
+            title="Workspace"
           >
-            <ArrowLeft className="w-4 h-4" /> Workspace
+            <ArrowLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => base44.auth.logout('/', true)}

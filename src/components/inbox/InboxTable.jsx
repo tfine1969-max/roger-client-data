@@ -166,7 +166,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
             <div className="flex items-center justify-between mt-2">
               <FicaStatusIndicator client={client} />
               <button onClick={(e) => handleDelete(e, p.id)} disabled={deletingId === p.id}
-                className="hit-area text-muted-foreground hover:text-danger transition-colors disabled:opacity-40">
+                className="flex h-10 w-10 items-center justify-center bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40" title="Delete proposal">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -273,14 +273,15 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
               <div className="flex justify-end items-center gap-2">
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(`/proposal/${p.id}/engine`); }}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-navy text-white text-[10px] font-semibold uppercase tracking-wide hover:bg-ocean transition-colors"
+                  className="flex h-10 items-center gap-1 px-4 bg-navy text-white text-[10px] font-semibold uppercase tracking-wide hover:bg-ocean transition-colors rounded"
                 >
                   Build <ChevronRight className="w-3 h-3" />
                 </button>
                 <button
                   onClick={(e) => handleDelete(e, p.id)}
                   disabled={deletingId === p.id}
-                  className="hit-area text-muted-foreground hover:text-danger transition-colors disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40"
+                  title="Delete proposal"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -292,3 +293,4 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
     </div>
   );
 }
+

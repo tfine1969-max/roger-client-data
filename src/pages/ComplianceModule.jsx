@@ -256,17 +256,18 @@ const Shell = ({ activeTab, setActiveTab, children }) => {
         <div className="flex items-center justify-between gap-4 px-4 md:px-7 py-4">
           <div>
             <p className="text-[10px] uppercase tracking-[.18em] text-white/45">Advisor Portal</p>
-            <h1 className="text-2xl font-semibold mt-1">Compliance workspace</h1>
+            <h1 className="text-2xl font-semibold mt-1">Compliance</h1>
             <p className="text-violet-200 text-xs mt-1">Inspection-ready oversight</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate('/advisor-dashboard')}
-              className="inline-flex h-10 items-center gap-2 px-3 text-xs font-semibold border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+              className="inline-flex h-10 w-10 items-center justify-center border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+              aria-label="Workspace"
+              title="Workspace"
             >
               <ArrowLeft className="w-4 h-4" />
-              Workspace
             </button>
             <button
               type="button"

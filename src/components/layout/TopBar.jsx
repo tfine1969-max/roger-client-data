@@ -9,7 +9,7 @@ export default function TopBar({ advisorName, clientName }) {
     <div className="bg-navy px-4 md:px-8 py-3.5 grid grid-cols-3 items-center">
       <div>
         <h3 className="text-sm font-medium text-white tracking-wide">
-          WealthWorks &nbsp;·&nbsp; Proposal workspace
+          WealthWorks &nbsp;·&nbsp; Proposal
         </h3>
         <p className="text-[10px] text-white/35 mt-0.5">
           Advisor view &nbsp;·&nbsp; {advisorName || '—'} &nbsp;·&nbsp; FSP 28337
@@ -28,10 +28,11 @@ export default function TopBar({ advisorName, clientName }) {
       <div className="flex justify-end items-center gap-2">
         <button
           onClick={() => navigate('/advisor-dashboard')}
-          className="flex h-10 items-center gap-1.5 px-3 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-xs font-semibold"
+          className="flex h-10 w-10 items-center justify-center border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+          aria-label="Workspace"
+          title="Workspace"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Workspace
         </button>
         <button
           onClick={() => {

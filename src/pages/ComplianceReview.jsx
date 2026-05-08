@@ -118,16 +118,17 @@ export default function ComplianceReview() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-navy border-b border-border px-6 py-4 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Compliance Review</h1>
+            <h1 className="text-xl font-bold text-white">Compliance</h1>
           <p className="text-white/60 text-xs">Onboarding review queue · Advisor Portal</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/advisor-dashboard')}
-            className="flex h-10 items-center gap-2 px-4 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-sm font-semibold"
+            className="flex h-10 w-10 items-center justify-center border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
+            aria-label="Workspace"
+            title="Workspace"
           >
             <ArrowLeft className="w-4 h-4" />
-            Workspace
           </button>
           <button
             onClick={() => base44.auth.logout('/')}
@@ -190,11 +191,11 @@ export default function ComplianceReview() {
                     <p className="text-[10px] text-muted-foreground">{formatDate(client.doc_submitted_at || client.created_date)}</p>
                     <div className="flex items-center gap-2">
                       <button onClick={() => navigate(`/compliance-review/${client.id}`)}
-                        className="px-3 py-2 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded">
+                        className="flex h-10 items-center px-4 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded">
                         Review →
                       </button>
                       <button onClick={(e) => handleDelete(e, client.id)} disabled={deletingId === client.id}
-                        className="hit-area text-danger hover:text-red-700 transition-colors disabled:opacity-40">
+                        className="flex h-10 w-10 items-center justify-center bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40" title="Delete client">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -247,7 +248,7 @@ export default function ComplianceReview() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => navigate(`/compliance-review/${client.id}`)}
-                    className="px-3 py-1.5 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded whitespace-nowrap"
+                    className="flex h-10 items-center px-4 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded whitespace-nowrap"
                   >
                     Review →
                   </button>
@@ -270,4 +271,5 @@ export default function ComplianceReview() {
     </div>
   );
 }
+
 
