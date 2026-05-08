@@ -1607,14 +1607,10 @@ export default function ClientOnboarding() {
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 2: Document Upload Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 2 && (
-            <div className="space-y-4">
-              <SectionBlock
-                eyebrow="Document upload"
-                title="Certified source documents"
-                description="Upload the certified documents needed before FICA verification can proceed."
-                badge="Step 2"
-              >
-                <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">CERTIFIED SOURCE DOCUMENTS</h3>
+                <div className="grid grid-cols-2 gap-2">
                 {[
                   { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible', urlField: 'doc_identity' },
                   { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address', urlField: 'doc_proof_of_address' },
@@ -1625,29 +1621,28 @@ export default function ClientOnboarding() {
                   const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
                   const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
                   return (
-                    <div key={doc.key} className="border-2 border-border rounded p-3">
-                      <div className="flex justify-between items-start mb-2">
+                    <div key={doc.key} className="border border-border rounded p-2">
+                      <div className="flex justify-between items-center mb-1">
                         <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
                         <span className="text-[10px] font-semibold text-muted-foreground">{doc.badge}</span>
                       </div>
                       {isUploaded ? (
                         <label className="block cursor-pointer">
-                          <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
-                            <div className="flex items-center gap-2">
-                              {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}
-                              <span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                              {fileName && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={fileName}>{fileName}</span>}
+                          <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                            <div className="flex items-center gap-2 min-w-0">
+                              {uploadingDocs[doc.key] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin shrink-0" /> : <Check className="w-3.5 h-3.5 text-teal shrink-0" />}
+                              <span className="text-xs text-teal font-medium shrink-0">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                              {fileName && <span className="text-[10px] text-muted-foreground truncate max-w-[140px]" title={fileName}>{fileName}</span>}
                             </div>
-                            <span className="text-[10px] text-ocean font-medium">Change document</span>
+                            <span className="text-[10px] text-ocean font-medium shrink-0">Change</span>
                           </div>
                           <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                         </label>
                       ) : (
                         <label className="block cursor-pointer">
-                          <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
+                          <div className="border border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
                             <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{doc.sub}</p>
-                            <p className="text-[10px] text-ocean mt-2">Click to upload</p>
+                            <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                           </div>
                           <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                         </label>
@@ -1662,28 +1657,28 @@ export default function ClientOnboarding() {
                   const isUploaded = !!(formData[doc.key] || formData[doc.urlField]);
                   const fileName = uploadedFileName(doc.key) || formData[`${doc.urlField}_name`] || '';
                   return (
-                  <div key={doc.key} className="border-2 border-border rounded p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
-                    <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
-                  </div>
+                  <div key={doc.key} className="border border-border rounded p-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase">{doc.title}</h4>
+                      <span className="text-[10px] font-semibold text-muted-foreground">REQUIRED</span>
+                    </div>
                     {isUploaded ? (
                       <label className="block cursor-pointer">
-                        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                        <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
                           <div className="flex items-center gap-2 min-w-0">
-                            {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin shrink-0" /> : <Check className="w-4 h-4 text-teal shrink-0" />}
+                            {uploadingDocs[doc.key] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin shrink-0" /> : <Check className="w-3.5 h-3.5 text-teal shrink-0" />}
                             <span className="text-xs text-teal font-medium shrink-0">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
-                            {fileName && <span className="text-[10px] text-muted-foreground truncate" title={fileName}>{fileName}</span>}
+                            {fileName && <span className="text-[10px] text-muted-foreground truncate max-w-[140px]" title={fileName}>{fileName}</span>}
                           </div>
-                          <span className="text-[10px] text-ocean font-medium shrink-0">Change document</span>
+                          <span className="text-[10px] text-ocean font-medium shrink-0">Change</span>
                         </div>
                         <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                       </label>
                     ) : (
                       <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-4 text-center hover:border-ocean/50 transition-colors">
+                        <div className="border border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
                           <p className="text-xs font-medium text-navy">{doc.desc}</p>
-                          <p className="text-[10px] text-ocean mt-2">Click to upload</p>
+                          <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
                         </div>
                         <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
                       </label>
@@ -1692,11 +1687,8 @@ export default function ClientOnboarding() {
                   );
                 })}
                 </div>
-              </SectionBlock>
-              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="font-semibold text-navy mb-0.5">Note</p>
-                Documents are required before you can proceed to FICA verification in the next step.
               </div>
+              <p className="text-[10px] text-muted-foreground px-1">Documents are required before you can proceed to FICA verification in the next step.</p>
             </div>
           )}
 
