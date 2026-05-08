@@ -16,6 +16,7 @@ import {
   Plus,
   Scale,
   ShieldCheck,
+  LogOut,
   Upload,
   X,
 } from 'lucide-react';
@@ -252,27 +253,28 @@ const Shell = ({ activeTab, setActiveTab, children }) => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 border-b border-border bg-navy text-white">
-        <div className="flex items-start justify-between gap-4 px-4 md:px-7 py-4">
+        <div className="flex items-center justify-between gap-4 px-4 md:px-7 py-4">
           <div>
             <p className="text-[10px] uppercase tracking-[.18em] text-white/45">Advisor Portal</p>
             <h1 className="text-2xl font-semibold mt-1">Compliance workspace</h1>
-            <p className="text-white/60 text-xs mt-1">Inspection-ready oversight</p>
+            <p className="text-violet-200 text-xs mt-1">Inspection-ready oversight</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate('/advisor-dashboard')}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold border border-white/15 bg-white/10 hover:bg-white/15 transition-colors"
+              className="inline-flex h-10 items-center gap-2 px-3 text-xs font-semibold border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Workspace
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('dashboard')}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold border border-white/15 bg-white/10 hover:bg-white/15 transition-colors"
+              onClick={() => base44.auth.logout('/', true)}
+              className="inline-flex h-10 items-center gap-2 px-3 text-xs font-semibold border border-white/15 bg-white/10 hover:bg-white/15 transition-colors"
             >
-              Compliance portal
+              <LogOut className="w-4 h-4" />
+              Logout
             </button>
           </div>
         </div>
@@ -288,7 +290,7 @@ const Shell = ({ activeTab, setActiveTab, children }) => {
                     key={tab.key}
                     type="button"
                     onClick={() => setActiveTab(tab.key)}
-                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-navy'}`}
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-violet-600 text-violet-700' : 'border-transparent text-muted-foreground hover:text-violet-700'}`}
                   >
                     <Icon className="w-4 h-4" />
                     {tab.label}
@@ -305,7 +307,7 @@ const Shell = ({ activeTab, setActiveTab, children }) => {
                     key={tab.key}
                     type="button"
                     onClick={() => setActiveTab(tab.key)}
-                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-ocean text-navy' : 'border-transparent text-muted-foreground hover:text-navy'}`}
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-violet-600 text-violet-700' : 'border-transparent text-muted-foreground hover:text-violet-700'}`}
                   >
                     <Icon className="w-4 h-4" />
                     {tab.label}

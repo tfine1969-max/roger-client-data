@@ -4,7 +4,7 @@ import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, ShieldCheck, Trash2 } from 'lucide-react';
+import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, Trash2 } from 'lucide-react';
 import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [
@@ -116,27 +116,22 @@ export default function ComplianceReview() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/advisor-dashboard')} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
-            <ArrowLeft className="w-4 h-4" />
-            Workspace
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-white">Compliance Review</h1>
-            <p className="text-white/60 text-xs">Onboarding review queue · Advisor Portal</p>
-          </div>
+      <div className="sticky top-0 z-20 bg-navy border-b border-border px-6 py-4 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-white">Compliance Review</h1>
+          <p className="text-white/60 text-xs">Onboarding review queue · Advisor Portal</p>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate('/compliance')}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+            onClick={() => navigate('/advisor-dashboard')}
+            className="flex h-10 items-center gap-2 px-4 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-sm font-semibold"
           >
-            <ShieldCheck className="w-4 h-4" /> Compliance
+            <ArrowLeft className="w-4 h-4" />
+            Workspace
           </button>
           <button
             onClick={() => base44.auth.logout('/')}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+            className="flex h-10 items-center gap-2 px-4 border border-white/12 bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
           >
             <LogOut className="w-4 h-4" /> Logout
           </button>
@@ -275,3 +270,4 @@ export default function ComplianceReview() {
     </div>
   );
 }
+

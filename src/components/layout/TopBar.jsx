@@ -28,16 +28,10 @@ export default function TopBar({ advisorName, clientName }) {
       <div className="flex justify-end items-center gap-2">
         <button
           onClick={() => navigate('/advisor-dashboard')}
-          className="flex items-center gap-1.5 px-3 py-2 border border-white/12 text-white/80 hover:text-white hover:bg-white/10 transition-colors text-xs"
+          className="flex h-10 items-center gap-1.5 px-3 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-xs font-semibold"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Workspace
-        </button>
-        <button
-          onClick={() => navigate('/proposals')}
-          className="px-3 py-2 border border-white/12 text-white/80 hover:text-white hover:bg-white/10 transition-colors text-xs"
-        >
-          Proposals
         </button>
         <button
           onClick={() => {
@@ -46,9 +40,10 @@ export default function TopBar({ advisorName, clientName }) {
             sessionStorage.removeItem('pending_entity_type');
             window.location.href = window.location.origin;
           }}
-          className="text-white/30 p-2 border border-white/12 hover:text-white/70 transition-colors"
+          className="flex h-10 items-center justify-center px-3 border border-white/12 text-white/80 hover:text-white hover:bg-white/10 transition-colors text-xs"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-3.5 h-3.5 mr-1.5" />
+          Logout
         </button>
       </div>
     </div>

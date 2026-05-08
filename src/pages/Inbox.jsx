@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import InboxMetrics from '@/components/inbox/InboxMetrics';
 import InboxTable from '@/components/inbox/InboxTable';
 import NewProposalModal from '@/components/inbox/NewProposalModal';
-import { ArrowLeft, Plus, LogOut, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Plus, LogOut } from 'lucide-react';
 import { ADVISORS } from '@/lib/constants';
 import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -98,19 +98,13 @@ export default function Inbox() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/advisor-dashboard')}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white text-navy font-semibold hover:bg-white/90 transition-colors text-sm"
+            className="flex h-10 items-center gap-2 px-4 border border-violet-400/40 bg-violet-600 text-white hover:bg-violet-500 transition-colors text-sm font-semibold"
           >
             <ArrowLeft className="w-4 h-4" /> Workspace
           </button>
           <button
-            onClick={() => navigate('/compliance-review')}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
-          >
-            <ShieldCheck className="w-4 h-4" /> Compliance
-          </button>
-          <button
             onClick={() => base44.auth.logout('/', true)}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+            className="flex h-10 items-center gap-2 px-4 border border-white/12 bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
           >
             <LogOut className="w-4 h-4" /> Logout
           </button>
@@ -166,3 +160,4 @@ export default function Inbox() {
     </div>
   );
 }
+
