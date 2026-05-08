@@ -196,13 +196,7 @@ export default function AdvisorDashboard() {
             description="Registers, RMCP repository, training certificates, regulatory evidence, audit reports and FSCA inspection exports."
             buttonLabel="Open regulatory portal"
             onClick={() => navigate('/compliance')}
-            actions={(
-              <>
-                <ActionButton icon={FileText} label="Registers" onClick={() => navigate('/compliance?tab=registers')} />
-                <ActionButton icon={FileText} label="Document repository" onClick={() => navigate('/compliance?tab=documents')} />
-                <ActionButton icon={FileText} label="Audit report" onClick={() => navigate('/compliance?tab=audit')} />
-              </>
-            )}
+
           >
             <Metric label="Register entries" value={regulatorySummary.entries} tone="text-navy" onClick={() => navigate('/compliance?tab=registers')} />
             <Metric label="Escalated / high risk" value={regulatorySummary.escalated} tone="text-red-700" onClick={() => navigate('/compliance?tab=registers')} />
@@ -216,12 +210,7 @@ export default function AdvisorDashboard() {
             description="Review onboarding submissions, reverify unsuccessful clients, request documents, approve verified clients and move them into proposal phase."
             buttonLabel="Open client compliance"
             onClick={() => navigate('/compliance-review')}
-            actions={(
-              <>
-                <ActionButton icon={UserCheck} label="New submissions" onClick={() => navigate('/compliance-review?filter=new')} />
-                <ActionButton icon={RefreshCw} label="Reverify clients" onClick={() => navigate('/compliance?tab=verification')} />
-              </>
-            )}
+
           >
             <Metric label="New submissions" value={complianceSummary.new} tone="text-blue-700" onClick={() => navigate('/compliance-review?filter=new')} />
             <Metric label="Manual review" value={complianceSummary.manualReview} tone="text-amber-700" onClick={() => navigate('/compliance-review?filter=manual_review')} />
@@ -235,12 +224,7 @@ export default function AdvisorDashboard() {
             description="Build new proposals, continue draft ROAs, manage PDFs, send client packs and monitor signed reports."
             buttonLabel="Open proposals"
             onClick={() => navigate('/proposals')}
-            actions={(
-              <>
-                <ActionButton icon={Plus} label="New proposal" onClick={() => navigate('/create-proposal')} variant="gold" />
-                <ActionButton icon={FileText} label="Proposal inbox" onClick={() => navigate('/proposals')} />
-              </>
-            )}
+
           >
             <Metric label="Awaiting review" value={proposalSummary.awaiting} onClick={() => navigate('/proposals?filter=AWAITING REVIEW')} />
             <Metric label="In progress" value={proposalSummary.inProgress} tone="text-gold" onClick={() => navigate('/proposals?filter=IN PROGRESS')} />
