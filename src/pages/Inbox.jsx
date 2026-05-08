@@ -100,7 +100,7 @@ export default function Inbox() {
             onClick={() => navigate('/advisor-dashboard')}
             className="flex items-center gap-2 px-4 py-2 rounded bg-white text-navy font-semibold hover:bg-white/90 transition-colors text-sm"
           >
-            <ArrowLeft className="w-4 h-4" /> Advisor Dashboard
+            <ArrowLeft className="w-4 h-4" /> Workspace
           </button>
           <button
             onClick={() => navigate('/compliance-review')}

@@ -4,7 +4,7 @@ import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, Trash2 } from 'lucide-react';
+import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, ShieldCheck, Trash2 } from 'lucide-react';
 import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [
@@ -120,18 +120,27 @@ export default function ComplianceReview() {
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/advisor-dashboard')} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" />
+            Workspace
           </button>
           <div>
             <h1 className="text-xl font-bold text-white">Compliance Review</h1>
-            <p className="text-white/60 text-xs">Onboarding Review Queue · Advisor Portal</p>
+            <p className="text-white/60 text-xs">Onboarding review queue · Advisor Portal</p>
           </div>
         </div>
-        <button
-          onClick={() => base44.auth.logout('/')}
-          className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
-        >
-          <LogOut className="w-4 h-4" /> Logout
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/compliance')}
+            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+          >
+            <ShieldCheck className="w-4 h-4" /> Compliance
+          </button>
+          <button
+            onClick={() => base44.auth.logout('/')}
+            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+          >
+            <LogOut className="w-4 h-4" /> Logout
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 p-4 md:p-7 max-w-7xl mx-auto w-full">

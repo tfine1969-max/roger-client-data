@@ -36,7 +36,7 @@ export default function StepNavBar({ activeStep, completedSteps = [], onStepClic
               className="flex items-center gap-1.5 px-3 py-3 text-[11px] font-semibold tracking-[.08em] uppercase text-muted-foreground hover:text-navy border-b-2 border-transparent whitespace-nowrap shrink-0 mr-2"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Inbox
+              Back to Proposals
             </button>
           )}
           <div className="w-px h-5 bg-border shrink-0 mr-2" />

@@ -45,6 +45,9 @@ const TABS = [
   { key: 'client', label: 'Client View', icon: Eye },
 ];
 
+const PRIMARY_TABS = ['dashboard', 'registers', 'verification', 'documents', 'audit'];
+const SECONDARY_TABS = ['fica', 'fais', 'training', 'oversight', 'client'];
+
 const safeEntityList = async (entity, order, limit) => {
   try {
     if (!entity?.list) return [];
@@ -247,65 +250,73 @@ const Badge = ({ children, className = '' }) => (
 const Shell = ({ activeTab, setActiveTab, children }) => {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-background flex">
-      <aside className="hidden lg:flex w-64 shrink-0 bg-navy text-white flex-col">
-        <div className="p-6 border-b border-white/10">
-          <p className="text-[10px] uppercase tracking-[.18em] text-white/45">Advisor Portal</p>
-          <h1 className="text-xl font-semibold mt-1">Compliance</h1>
-        </div>
-        <nav className="p-3 space-y-1">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors ${activeTab === tab.key ? 'bg-white text-navy' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-        <button
-          type="button"
-          onClick={() => navigate('/advisor-dashboard')}
-          className="mt-auto m-3 flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Advisor dashboard
-        </button>
-      </aside>
-      <main className="flex-1 min-w-0">
-        <div className="bg-card border-b border-border px-4 md:px-7 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] uppercase tracking-[.18em] text-muted-foreground font-bold">Unified compliance engine</p>
-              <h2 className="text-2xl font-semibold text-navy mt-1">Inspection-ready oversight</h2>
-            </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="sticky top-0 z-30 border-b border-border bg-navy text-white">
+        <div className="flex items-start justify-between gap-4 px-4 md:px-7 py-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[.18em] text-white/45">Advisor Portal</p>
+            <h1 className="text-2xl font-semibold mt-1">Compliance workspace</h1>
+            <p className="text-white/60 text-xs mt-1">Inspection-ready oversight</p>
+          </div>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => navigate('/advisor-dashboard')}
-              className="lg:hidden border border-border px-3 py-2 text-xs font-semibold text-navy"
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold border border-white/15 bg-white/10 hover:bg-white/15 transition-colors"
             >
-              Back
+              <ArrowLeft className="w-4 h-4" />
+              Workspace
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('dashboard')}
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold border border-white/15 bg-white/10 hover:bg-white/15 transition-colors"
+            >
+              Compliance portal
             </button>
           </div>
-          <div className="lg:hidden flex gap-2 overflow-x-auto mt-4 pb-1">
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`shrink-0 px-3 py-2 text-xs font-semibold border ${activeTab === tab.key ? 'bg-navy text-white border-navy' : 'bg-card text-navy border-border'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
         </div>
+        <div className="border-t border-white/10 bg-card text-navy">
+          <nav className="px-4 md:px-7">
+            <div className="flex items-center gap-1 overflow-x-auto py-2 min-w-max">
+              {PRIMARY_TABS.map(key => {
+                const tab = TABS.find(item => item.key === key);
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-navy text-navy' : 'border-transparent text-muted-foreground hover:text-navy'}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+              <div className="mx-2 h-5 w-px bg-border shrink-0" />
+              {SECONDARY_TABS.map(key => {
+                const tab = TABS.find(item => item.key === key);
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-[.08em] border-b-2 whitespace-nowrap transition-colors ${isActive ? 'border-ocean text-navy' : 'border-transparent text-muted-foreground hover:text-navy'}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
+      </header>
+      <main className="flex-1 min-w-0">
         {children}
       </main>
     </div>
