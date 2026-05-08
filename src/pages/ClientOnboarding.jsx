@@ -1700,15 +1700,15 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-1.5">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">SOURCE OF FUNDS</h3>
-                  <span className="text-[8px] text-muted-foreground">SELECT ALL</span>
+              <div className="border border-border rounded p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">SOURCE OF FUNDS</h3>
+                  <span className="text-[9px] text-muted-foreground">SELECT ALL</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1">
+                <div className="grid grid-cols-2 gap-2">
                   {['Salary / employment income', 'Business income / dividends', 'Investment returns', 'Inheritance / gift', 'Retirement / pension fund', 'Sale of property / assets'].map(item => (
-                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1 border border-border rounded hover:bg-secondary/50 text-[9px]">
-                      <input type="checkbox" checked={formData.source_of_funds.includes(item)} onChange={() => toggleArrayItem('source_of_funds', item)} className="w-3.5 h-3.5 accent-ocean" />
+                    <label key={item} className="flex items-center gap-2 cursor-pointer p-2.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                      <input type="checkbox" checked={formData.source_of_funds.includes(item)} onChange={() => toggleArrayItem('source_of_funds', item)} className="w-4 h-4 accent-ocean" />
                       {item}
                     </label>
                   ))}
