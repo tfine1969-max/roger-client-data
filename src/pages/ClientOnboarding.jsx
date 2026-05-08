@@ -564,23 +564,6 @@ export default function ClientOnboarding() {
     const pdfFile = blobToPdfFile(blob, fileName);
     const timestamp = new Date().toISOString();
     const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-    const documentRecord = await base44.entities.Compliance_Documents.create({
-      document_type: 'Letter of Authority',
-      title: loaDocumentName(),
-      description: `Source: ${source}; Signature Method: ${signatureMethod}; Authority Granted: Yes; Astute Authority Included: Yes`,
-      file_url: fileUrl,
-      file_name: fileName,
-      linked_client_id: clientId,
-      staff_member: 'Client',
-      uploaded_by: 'Client',
-      uploaded_at: timestamp,
-      review_date: timestamp,
-      status: 'Current',
-      source,
-      signature_method: signatureMethod,
-      authority_granted: true,
-      astute_authority_included: true,
-    });
     const updateData = {
       loa_uploaded: true,
       existing_policies_uploaded: true,
@@ -590,7 +573,7 @@ export default function ClientOnboarding() {
       loa_source: source,
       loa_status: source === 'Electronic Signature' ? LOA_STATUS.signed : LOA_STATUS.uploaded,
       loa_document_saved: true,
-      loa_document_record_id: documentRecord?.id || '',
+      loa_document_record_id: '',
       loa_authority_granted: true,
       loa_astute_authority_included: true,
       loa_generated_at: timestamp,
@@ -692,23 +675,6 @@ export default function ClientOnboarding() {
     try {
       const timestamp = new Date().toISOString();
       const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
-      const documentRecord = await base44.entities.Compliance_Documents.create({
-        document_type: 'Letter of Authority',
-        title: loaDocumentName(),
-        description: 'Source: Manual Upload; Signature Method: Manual; Authority Granted: Yes; Astute Authority Included: Yes',
-        file_url: fileUrl,
-        file_name: file.name,
-        linked_client_id: clientId,
-        staff_member: 'Client',
-        uploaded_by: 'Client',
-        uploaded_at: timestamp,
-        review_date: timestamp,
-        status: 'Current',
-        source: 'Manual Upload',
-        signature_method: 'Manual',
-        authority_granted: true,
-        astute_authority_included: true,
-      });
       const updateData = {
         loa_uploaded: true,
         existing_policies_uploaded: true,
@@ -719,7 +685,7 @@ export default function ClientOnboarding() {
         loa_source: 'Manual Upload',
         loa_status: LOA_STATUS.uploaded,
         loa_document_saved: true,
-        loa_document_record_id: documentRecord?.id || '',
+        loa_document_record_id: '',
         loa_authority_granted: true,
         loa_astute_authority_included: true,
         loa_generated_at: timestamp,
