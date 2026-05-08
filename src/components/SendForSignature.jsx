@@ -25,7 +25,7 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
   };
 
   const getSigningUrl = (signingToken) =>
-    `${window.location.origin}/sign-proposal/${signingToken}`;
+    `${window.location.origin}/sign-proposal/${signingToken || proposal.id}`;
 
   const handleCopyLink = async () => {
     if (!proposal.pdf_generated_at) {

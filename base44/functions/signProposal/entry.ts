@@ -14,15 +14,28 @@ Deno.serve(async (req) => {
 
   // Use service role so unauthenticated clients can read/update proposals
   // Try Proposal (singular) first, then fall back to Proposals (plural)
+  // Match by signing_token OR by direct record id (fallback for tokens not yet saved)
   let proposal = null;
   let entityName = 'Proposal';
 
-  const allProposalsSingular = await base44.asServiceRole.entities.Proposal.list();
-  proposal = allProposalsSingular.find(p => p.signing_token === proposalId);
+  const [allProposalsSingular, allProposalsPlural] = await Promise.all([
+    base44.asServiceRole.entities.Proposal.list(),
+    base44.asServiceRole.entities.Proposals.list(),
+  ]);
 
+  // Search by signing_token first
+  proposal = allProposalsSingular.find(p => p.signing_token === proposalId);
   if (!proposal) {
-    const allProposalsPlural = await base44.asServiceRole.entities.Proposals.list();
     proposal = allProposalsPlural.find(p => p.signing_token === proposalId);
+    if (proposal) entityName = 'Proposals';
+  }
+
+  // Fall back: match by record id directly
+  if (!proposal) {
+    proposal = allProposalsSingular.find(p => p.id === proposalId);
+  }
+  if (!proposal) {
+    proposal = allProposalsPlural.find(p => p.id === proposalId);
     if (proposal) entityName = 'Proposals';
   }
 
