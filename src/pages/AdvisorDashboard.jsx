@@ -7,11 +7,8 @@ import { ADVISORS } from '@/lib/constants';
 import { STATUS_MAP } from '@/components/inbox/InboxMetrics';
 import {
   ArrowRight,
-  FileText,
   FolderKanban,
   LogOut,
-  Plus,
-  RefreshCw,
   ShieldCheck,
   UserCheck,
 } from 'lucide-react';
