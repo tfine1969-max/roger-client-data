@@ -1087,31 +1087,35 @@ export default function ClientOnboarding() {
         doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 7) {
-      if (!formData.portfolio_drop_response) {
-        toast.error('Please answer: If your portfolio fell 20% in 3 months');
-        return;
-      }
-      if (!formData.primary_investment_objective) {
-        toast.error('Please select a primary investment objective');
-        return;
-      }
-      if (!formData.time_horizon) {
-        toast.error('Please select a time horizon');
-        return;
-      }
-      if (!formData.liquidity_requirement) {
-        toast.error('Please select a liquidity requirement');
-        return;
-      }
-      if (!formData.risk_profile) {
-        toast.error('Please select a risk profile');
-        return;
+      const investmentNeeds = ['Local and offshore investments', 'Retirement planning', 'Education planning'];
+      const hasInvestmentNeed = (formData.advisory_needs || []).some(n => investmentNeeds.includes(n));
+      if (hasInvestmentNeed) {
+        if (!formData.portfolio_drop_response) {
+          toast.error('Please answer: If your portfolio fell 20% in 3 months');
+          return;
+        }
+        if (!formData.primary_investment_objective) {
+          toast.error('Please select a primary investment objective');
+          return;
+        }
+        if (!formData.time_horizon) {
+          toast.error('Please select a time horizon');
+          return;
+        }
+        if (!formData.liquidity_requirement) {
+          toast.error('Please select a liquidity requirement');
+          return;
+        }
+        if (!formData.risk_profile) {
+          toast.error('Please select a risk profile');
+          return;
+        }
       }
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
         time_horizon: normalizeRangeValue(formData.time_horizon),
-        liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
@@ -1220,7 +1224,8 @@ export default function ClientOnboarding() {
       stepData = {
         portfolio_drop_response: formData.portfolio_drop_response,
         primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        time_horizon: normalizeRangeValue(formData.time_horizon),
+        liquidity_requirement: formData.liquidity_requirement,
         risk_profile: formData.risk_profile,
         calculated_risk_score: calcRiskScore(formData),
         calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
