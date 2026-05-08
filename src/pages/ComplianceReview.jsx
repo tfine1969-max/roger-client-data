@@ -163,8 +163,8 @@ export default function ComplianceReview() {
 
         {/* Table */}
         <div className="border border-border bg-card overflow-x-auto">
-          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px_56px] px-4 py-2.5 bg-muted border-b border-border min-w-[880px]">
-            {['Client', 'Email', 'FICA Status', 'Doc Status', 'Submitted', 'Action', ''].map(h => (
+          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_160px] px-4 py-2.5 bg-muted border-b border-border min-w-[820px]">
+            {['Client', 'Email', 'FICA Status', 'Doc Status', 'Submitted', 'Actions'].map(h => (
               <div key={h} className="text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">{h}</div>
             ))}
           </div>
@@ -185,7 +185,7 @@ export default function ComplianceReview() {
             const Icon = style.icon;
             const name = client.full_name || client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || '—';
             return (
-              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px_56px] px-4 py-3 border-b border-border items-center min-w-[880px] hover:bg-secondary/30 transition-colors">
+              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_160px] px-4 py-3 border-b border-border items-center min-w-[820px] hover:bg-secondary/30 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-navy">{name}</p>
                   <p className="text-[10px] text-muted-foreground">{client.client_type || 'Natural Person'}</p>
@@ -200,20 +200,22 @@ export default function ComplianceReview() {
                   <span className="text-[10px] text-muted-foreground">{client.doc_status || 'Pending'}</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">{formatDate(client.doc_submitted_at || client.created_date)}</p>
-                <button
-                  onClick={() => navigate(`/compliance-review/${client.id}`)}
-                  className="px-3 py-1.5 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded"
-                >
-                  Review →
-                </button>
-                <button
-                  onClick={(e) => handleDelete(e, client.id)}
-                  disabled={deletingId === client.id}
-                  className="px-2.5 py-1.5 bg-danger text-white text-[10px] font-bold uppercase tracking-wide hover:bg-red-700 transition-colors rounded disabled:opacity-40 flex items-center gap-1"
-                  title="Delete client"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/compliance-review/${client.id}`)}
+                    className="px-3 py-1.5 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded whitespace-nowrap"
+                  >
+                    Review →
+                  </button>
+                  <button
+                    onClick={(e) => handleDelete(e, client.id)}
+                    disabled={deletingId === client.id}
+                    className="p-1.5 bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40"
+                    title="Delete client"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             );
           })}
