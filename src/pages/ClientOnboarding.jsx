@@ -13,6 +13,8 @@ import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 import { ADVISORS } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
+import LoaSection from '@/components/onboarding/LoaSection';
+import RiskProfileStep from '@/components/onboarding/RiskProfileStep';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
@@ -48,11 +50,6 @@ const LOA_STATUS = {
   completed: 'Completed',
   review: 'Requires review',
 };
-
-const ADVISORY_NEEDS = [
-  'Local and offshore investments', 'Retirement planning', 'Life & risk cover',
-  'Estate planning', 'Tax planning', 'Business assurance', 'Education planning'
-];
 
 const STEPS = [
   { number: 1, label: 'Personal details' },
@@ -95,65 +92,6 @@ const normalizeRangeValue = (value) => (
 const todayISO = () => new Date().toISOString().split('T')[0];
 
 const blobToPdfFile = (blob, fileName) => new File([blob], fileName, { type: 'application/pdf' });
-
-const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuthPassed, faceMatchPassed) => {
-  const breakdown = {
-    client_factor: 0,
-    geography_factor: 0,
-    product_factor: 0,
-    transaction_factor: 0,
-    behaviour_factor: 0,
-  };
-  if (formData.pep_status === 'Yes') breakdown.client_factor = 30;
-  else if (formData.pep_status === 'Related to PEP') breakdown.client_factor = 20;
-  else if (amlMatch) breakdown.client_factor = 25;
-  else if (formData.us_person_fatca === 'Yes') breakdown.client_factor = 10;
-  else breakdown.client_factor = 0;
-
-  if (formData.advisory_needs?.includes('Local and offshore investments') || formData.advisory_needs?.includes('Offshore investment')) {
-    breakdown.geography_factor = 25;
-  } else if (formData.tax_residency === 'Other country only') {
-    breakdown.geography_factor = 20;
-  } else if (formData.tax_residency === 'South Africa + Other') {
-    breakdown.geography_factor = 10;
-  } else {
-    breakdown.geography_factor = 0;
-  }
-
-  if (formData.advisory_needs?.includes('Tax planning')) {
-    breakdown.product_factor = 20;
-  } else if (formData.advisory_needs?.includes('Estate planning')) {
-    breakdown.product_factor = 10;
-  } else if (formData.advisory_needs?.includes('Local and offshore investments')) {
-    breakdown.product_factor = 15;
-  } else {
-    breakdown.product_factor = 5;
-  }
-
-  if (formData.monthly_investable_surplus === 'Over R50,000') {
-    breakdown.transaction_factor = 15;
-  } else if (formData.monthly_investable_surplus === 'R15,000 - R50,000') {
-    breakdown.transaction_factor = 10;
-  } else if (formData.monthly_investable_surplus === 'R5,000 - R15,000') {
-    breakdown.transaction_factor = 5;
-  } else {
-    breakdown.transaction_factor = 0;
-  }
-
-  if (!homeAffairsVerified) breakdown.behaviour_factor = 10;
-  else if (!docAuthPassed) breakdown.behaviour_factor = 5;
-  else if (!faceMatchPassed) breakdown.behaviour_factor = 3;
-  else breakdown.behaviour_factor = 0;
-
-  const totalScore = breakdown.client_factor + breakdown.geography_factor + breakdown.product_factor + breakdown.transaction_factor + breakdown.behaviour_factor;
-  let rmcpBand = 'Low';
-  if (totalScore >= 81) rmcpBand = 'Prohibited';
-  else if (totalScore >= 61) rmcpBand = 'High';
-  else if (totalScore >= 31) rmcpBand = 'Medium';
-  else rmcpBand = 'Low';
-
-  return { totalScore, rmcpBand, breakdown };
-};
 
 export default function ClientOnboarding() {
   const navigate = useNavigate();
@@ -843,57 +781,6 @@ export default function ClientOnboarding() {
     } finally {
       setIsSavingStep(false);
     }
-  };
-
-  const calculateRmcpScore = (formData, ficaChecks, amlMatch) => {
-    let clientScore = 0;
-    if (formData.pep_status === 'Yes') clientScore = 30;
-    else if (formData.pep_status === 'Related to PEP') clientScore = 20;
-    else if (amlMatch) clientScore = 25;
-    else if (formData.us_person_fatca === 'Yes') clientScore = 10;
-
-    let geoScore = 0;
-    const advisoryNeeds = formData.advisory_needs || [];
-    if (advisoryNeeds.includes('Local and offshore investments')) geoScore = 25;
-    else if (formData.tax_residency === 'Other country only') geoScore = 20;
-    else if (formData.tax_residency === 'South Africa + Other') geoScore = 10;
-
-    let productScore = 0;
-    if (advisoryNeeds.includes('Tax planning')) productScore = Math.max(productScore, 20);
-    if (advisoryNeeds.includes('Local and offshore investments')) productScore = Math.max(productScore, 15);
-    if (advisoryNeeds.includes('Estate planning')) productScore = Math.max(productScore, 10);
-    if (productScore === 0) productScore = 5;
-
-    let txScore = 0;
-    const surplus = formData.monthly_investable_surplus || '';
-    if (surplus === 'Over R50,000') txScore = 15;
-    else if (surplus === 'R15,000 - R50,000') txScore = 10;
-    else if (surplus === 'R5,000 - R15,000') txScore = 5;
-
-    let behavScore = 0;
-    if (ficaChecks?.home_affairs_id?.status !== 'pass') behavScore += 10;
-    else if (ficaChecks?.document_auth?.status === 'fail') behavScore += 5;
-    else if (ficaChecks?.face_match?.status === 'skipped') behavScore += 3;
-    behavScore = Math.min(behavScore, 10);
-
-    const totalScore = clientScore + geoScore + productScore + txScore + behavScore;
-    let band = 'Low';
-    if (totalScore >= 81) band = 'Prohibited';
-    else if (totalScore >= 61) band = 'High';
-    else if (totalScore >= 31) band = 'Medium';
-
-    return {
-      score: totalScore,
-      band,
-      breakdown: {
-        client_factor: clientScore,
-        geography_factor: geoScore,
-        product_factor: productScore,
-        transaction_factor: txScore,
-        behaviour_factor: behavScore,
-      },
-      scoredAt: new Date().toISOString(),
-    };
   };
 
   const runFicaVerification = async () => {
@@ -1995,288 +1882,41 @@ export default function ClientOnboarding() {
                 </div>
               </div>
 
-              <div className="border border-border rounded p-2.5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">LETTER OF AUTHORITY</h3>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                    formData.loa_document_saved ? 'bg-teal/10 text-teal border-teal/20' : 'bg-secondary text-muted-foreground border-border'
-                  }`}>{formData.loa_status || LOA_STATUS.notStarted}</span>
-                </div>
-
-                {formData.loa_pdf_url && (
-                  <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Check className="w-4 h-4 text-teal shrink-0" />
-                      <span className="text-xs text-teal font-medium truncate">{formData.loa_pdf_name || 'Letter of Authority saved'}</span>
-                    </div>
-                    <a href={formData.loa_pdf_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-ocean font-bold hover:underline shrink-0">
-                      View
-                    </a>
-                  </div>
-                )}
-
-                <div className="mb-3">
-                  <p className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1.5">How would you like to complete the Letter of Authority?</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { value: 'electronic', label: 'Sign electronically', helper: 'Complete and sign in this step.' },
-                      { value: 'manual', label: 'Download and upload signed form', helper: 'Download, sign manually, then upload.' },
-                    ].map(option => (
-                      <label key={option.value} className={`cursor-pointer border rounded p-2 transition-colors ${formData.loa_completion_method === option.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            name="loa_completion_method"
-                            checked={formData.loa_completion_method === option.value}
-                            onChange={() => setLoaCompletionMethod(option.value)}
-                            className="w-3.5 h-3.5 accent-ocean"
-                          />
-                          <span className="text-xs font-semibold text-navy">{option.label}</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-1 ml-5">{option.helper}</p>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {formData.loa_completion_method === 'electronic' && (
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-2 cursor-pointer p-2 border border-border rounded">
-                      <input
-                        type="checkbox"
-                        checked={formData.loa_authorised}
-                        onChange={e => handleChange('loa_authorised', e.target.checked)}
-                        className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0"
-                      />
-                      <span className="text-xs text-muted-foreground leading-relaxed">{LOA_AUTHORITY_WORDING}</span>
-                    </label>
-
-                    <div className="border border-border rounded p-2 bg-secondary/30">
-                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Auto-populated Letter of Authority preview</p>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        {loaPreviewDetails.map(([label, value]) => (
-                          <div key={label}>
-                            <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
-                            <p className="text-xs text-navy">{value || '-'}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground leading-relaxed space-y-1">
-                        <p className="font-bold text-navy">WEALTH WORKS (PTY) LTD | FSP No. 28337 | LETTER OF AUTHORITY</p>
-                        <p><strong>Sections:</strong> Client Details; Appointment of Wealth Works; Authority to Obtain Information; Astute Authorisation; Consent and Acknowledgements; Client Signature.</p>
-                      </div>
-                    </div>
-
-                    {formData.loa_authorised && (
-                      <div className="border border-border rounded p-2">
-                        <p className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1.5">Signature method</p>
-                        <div className="grid grid-cols-3 gap-1.5 mb-2">
-                          {[
-                            { value: 'drawn', label: 'Draw signature', icon: PenLine },
-                            { value: 'typed', label: 'Type signature', icon: Type },
-                            { value: 'uploaded', label: 'Upload signature image', icon: ImageIcon },
-                          ].map(option => {
-                            const Icon = option.icon;
-                            return (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => setLoaSignatureMethod(option.value)}
-                                className={`flex items-center justify-center gap-1 border rounded px-2 py-1.5 text-[10px] font-semibold transition-colors ${formData.loa_signature_method === option.value ? 'border-ocean bg-ocean/10 text-ocean' : 'border-border text-navy hover:border-ocean/50'}`}
-                                title={option.label}
-                              >
-                                <Icon className="w-3.5 h-3.5" /> {option.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {formData.loa_signature_method === 'drawn' && (
-                          <div className="space-y-2">
-                            <canvas
-                              ref={signatureCanvasRef}
-                              width={900}
-                              height={160}
-                              onMouseDown={startSignatureDrawing}
-                              onMouseMove={drawSignature}
-                              onMouseUp={endSignatureDrawing}
-                              onMouseLeave={endSignatureDrawing}
-                              onTouchStart={startSignatureDrawing}
-                              onTouchMove={drawSignature}
-                              onTouchEnd={endSignatureDrawing}
-                              className="block w-full h-28 bg-white border border-border rounded cursor-crosshair touch-none"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Button type="button" variant="outline" onClick={clearDrawnSignature} className="h-8 px-3 text-xs">Clear</Button>
-                              <Button type="button" onClick={saveDrawnSignature} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">Save Signature</Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {formData.loa_signature_method === 'typed' && (
-                          <div>
-                            <Input
-                              className="h-8 text-xs"
-                              placeholder="Type your full name"
-                              value={formData.loa_typed_signature_name}
-                              onChange={e => handleTypedSignature(e.target.value)}
-                            />
-                            {formData.loa_typed_signature_name && (
-                              <div className="mt-2 border border-border rounded bg-white px-3 py-2 font-serif italic text-xl text-navy">
-                                {formData.loa_typed_signature_name}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {formData.loa_signature_method === 'uploaded' && (
-                          <div className="space-y-2">
-                            <label className="block cursor-pointer">
-                              <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                                <Upload className="w-4 h-4 text-ocean mx-auto mb-1" />
-                                <p className="text-xs font-medium text-navy">{uploadedSignatureName || 'Upload PNG, JPG or JPEG signature image'}</p>
-                              </div>
-                              <input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" className="hidden" onChange={e => handleUploadSignatureImage(e.target.files?.[0])} />
-                            </label>
-                            {formData.loa_signature_data?.startsWith('data:image') && (
-                              <img src={formData.loa_signature_data} alt="Signature preview" className="max-h-20 border border-border rounded bg-white p-2" />
-                            )}
-                          </div>
-                        )}
-
-                        {formData.loa_signature_method && (
-                          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
-                            <p className="text-[10px] text-muted-foreground">Date signed: {formData.loa_date_signed || todayISO()}</p>
-                            <Button type="button" onClick={handleGenerateSignedLoa} disabled={isLoaGenerating} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">
-                              {isLoaGenerating ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />Generating...</> : <><FileSignature className="w-3.5 h-3.5 mr-1" /> Generate signed LOA</>}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {formData.loa_completion_method === 'manual' && (
-                  <div className="space-y-3">
-                    <Button type="button" onClick={handleDownloadManualLoa} disabled={isLoaGenerating} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">
-                      {isLoaGenerating ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />Preparing...</> : <><Download className="w-3.5 h-3.5 mr-1" /> Download Letter of Authority</>}
-                    </Button>
-                    {formData.loa_downloaded && (
-                      <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                          <Upload className="w-4 h-4 text-ocean mx-auto mb-1" />
-                          <p className="text-xs font-medium text-navy">Upload signed Letter of Authority</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">Accepted: PDF, JPG, JPEG, PNG</p>
-                          {isLoaUploading && <p className="text-[10px] text-ocean mt-1">Uploading...</p>}
-                        </div>
-                        <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" className="hidden" onChange={e => handleManualLoaUpload(e.target.files?.[0])} />
-                      </label>
-                    )}
-                  </div>
-                )}
-              </div>
+              <LoaSection
+                formData={formData}
+                handleChange={handleChange}
+                loaPreviewDetails={loaPreviewDetails}
+                signatureCanvasRef={signatureCanvasRef}
+                startSignatureDrawing={startSignatureDrawing}
+                drawSignature={drawSignature}
+                endSignatureDrawing={endSignatureDrawing}
+                saveDrawnSignature={saveDrawnSignature}
+                clearDrawnSignature={clearDrawnSignature}
+                handleTypedSignature={handleTypedSignature}
+                handleUploadSignatureImage={handleUploadSignatureImage}
+                uploadedSignatureName={uploadedSignatureName}
+                setLoaCompletionMethod={setLoaCompletionMethod}
+                setLoaSignatureMethod={setLoaSignatureMethod}
+                handleGenerateSignedLoa={handleGenerateSignedLoa}
+                handleDownloadManualLoa={handleDownloadManualLoa}
+                handleManualLoaUpload={handleManualLoaUpload}
+                isLoaGenerating={isLoaGenerating}
+                isLoaUploading={isLoaUploading}
+                todayISO={todayISO}
+              />
             </div>
           )}
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 7: Risk Profile & Objectives Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 7 && (
-            <div className="space-y-1">
-              <div className="border border-border rounded p-1.5">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px] mb-1">RISK TOLERANCE QUESTIONNAIRE</h3>
-                <div className="grid grid-cols-2 gap-1">
-                  <div>
-                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">IF YOUR PORTFOLIO FELL 20% IN 3 MONTHS</Label>
-                    <Select value={formData.portfolio_drop_response} onValueChange={v => handleChange('portfolio_drop_response', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select your response" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Sell immediately">Sell immediately - protect what's left</SelectItem>
-                        <SelectItem value="Hold">Hold - wait for recovery</SelectItem>
-                        <SelectItem value="Buy more">Buy more - take the opportunity</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PRIMARY INVESTMENT OBJECTIVE</Label>
-                    <Select value={formData.primary_investment_objective} onValueChange={v => handleChange('primary_investment_objective', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Capital preservation', 'Income generation', 'Moderate growth', 'Aggressive growth', 'Speculation'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TIME HORIZON</Label>
-                    <Select value={formData.time_horizon} onValueChange={v => handleChange('time_horizon', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Less than 1 year', '1-3 years', '3-5 years', '5-10 years', '10+ years'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">LIQUIDITY REQUIREMENT</Label>
-                    <Select value={formData.liquidity_requirement} onValueChange={v => handleChange('liquidity_requirement', v)}>
-                      <SelectTrigger className="mt-0.5 h-7 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{['Immediate access required', 'Access within 1 year', 'Access within 3 years', 'Long-term - no immediate need'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
-                  <div className="mt-1 p-1 bg-ocean/5 border border-ocean/20 rounded">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[9px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
-                      <span className="text-xs font-bold text-ocean">{riskScore} / 10</span>
-                    </div>
-                    <div className="w-full bg-border rounded-full h-1.5 my-0.5">
-                      <div className="h-1.5 rounded-full bg-ocean transition-all" style={{ width: `${riskScore * 10}%` }} />
-                    </div>
-                    <p className="text-[8px] text-muted-foreground leading-tight">Based on your answers - auto-selecting <strong>{scoreToProfile(riskScore)}</strong></p>
-                  </div>
-                )}
-
-                <div className="mt-1">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
-                    {profileOverridden && (
-                      <button type="button" onClick={() => { setProfileOverridden(false); }} className="text-[8px] text-ocean hover:underline">Reset</button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-5 gap-0.5">
-                    {[
-                      { value: 'Conservative', sub: 'Capital protection.' },
-                      { value: 'Cautious', sub: 'Low risk.' },
-                      { value: 'Moderate', sub: 'Balanced.' },
-                      { value: 'Growth', sub: 'Long-term.' },
-                      { value: 'Aggressive', sub: 'Max growth.' },
-                    ].map(opt => (
-                      <button key={opt.value} type="button"
-                        onClick={() => { setProfileOverridden(true); handleChange('risk_profile', opt.value); }}
-                        className={`p-1 border rounded text-left transition-all ${formData.risk_profile === opt.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
-                        <p className={`text-[9px] font-semibold ${formData.risk_profile === opt.value ? 'text-ocean' : 'text-navy'}`}>{opt.value}</p>
-                        <p className="text-[8px] text-muted-foreground mt-0">{opt.sub}</p>
-                        {formData.risk_profile === opt.value && <div className="h-0.5 bg-ocean mt-0 rounded" />}
-                      </button>
-                    ))}
-                  </div>
-                  {profileOverridden && (
-                    <p className="text-[8px] text-warn mt-0.5">Profile overridden - suggests <strong>{scoreToProfile(riskScore)}</strong></p>
-                  )}
-                </div>
-              </div>
-
-              <div className="border border-border rounded p-1.5">
-                <div className="flex justify-between items-center mb-0.5">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">ADVISORY NEEDS</h3>
-                  <span className="text-[8px] text-muted-foreground">SELECT ALL</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {ADVISORY_NEEDS.map(item => (
-                    <label key={item} className="flex items-center gap-2 cursor-pointer p-1 border border-border rounded hover:bg-secondary/50 text-[9px]">
-                      <input type="checkbox" checked={formData.advisory_needs.includes(item)} onChange={() => toggleArrayItem('advisory_needs', item)} className="w-3.5 h-3.5 accent-ocean" />
-                      {item}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <RiskProfileStep
+              formData={formData}
+              handleChange={handleChange}
+              toggleArrayItem={toggleArrayItem}
+              riskScore={riskScore}
+              profileOverridden={profileOverridden}
+              setProfileOverridden={setProfileOverridden}
+            />
           )}
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 8: Review & Submit Ã¢â€â‚¬Ã¢â€â‚¬ */}
