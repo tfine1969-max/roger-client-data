@@ -398,10 +398,10 @@ export default function ClientOnboarding() {
     ['Date signed', formData.loa_date_signed || todayISO()],
   ];
 
-  const drawPdfLine = (doc, text, x, y, maxWidth = 170, lineHeight = 5) => {
+  const drawPdfLine = (doc, text, x, y, maxWidth = 170) => {
     const lines = doc.splitTextToSize(text || '-', maxWidth);
     doc.text(lines, x, y);
-    return y + (lines.length * lineHeight);
+    return y + lines.length * 5;
   };
 
   const buildLetterOfAuthorityPdf = ({ manual = false } = {}) => {
@@ -442,12 +442,16 @@ export default function ClientOnboarding() {
 
     section('Client Details');
     loaPreviewDetails.forEach(([label, value]) => {
+      if (y > 265) { doc.addPage(); y = 18; }
       doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
       doc.text(`${label}:`, margin, y);
       doc.setFont('helvetica', 'normal');
-      y = drawPdfLine(doc, value || '-', margin + 48, y, 122, 5);
+      const valLines = doc.splitTextToSize(value || '-', 108);
+      doc.text(valLines, margin + 68, y);
+      y += Math.max(6, valLines.length * 5.5);
     });
-    y += 3;
+    y += 4;
 
     section('Appointment of Wealth Works');
     y = drawPdfLine(doc, 'I appoint Wealth Works (Pty) Ltd, FSP No. 28337, and its authorised representatives to assist me with financial planning, advice, administration, compliance and ongoing servicing relating to my financial products.', margin, y);
@@ -1326,7 +1330,6 @@ export default function ClientOnboarding() {
         aml_pep_clear: proposalFicaData.aml_pep_clear,
       });
 
-      // Fire-and-forget background verification - never blocks submission
       base44.functions.invoke('runBackgroundVerification', {
         client_id: clientId,
         client_type: 'Natural Person',
