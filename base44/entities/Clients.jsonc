@@ -171,63 +171,50 @@
     },
     "loa_completion_method": {
       "type": "string",
-      "enum": [
-        "electronic",
-        "manual"
-      ]
+      "description": "electronic or manual"
     },
     "loa_signature_method": {
       "type": "string",
-      "enum": [
-        "drawn",
-        "typed",
-        "uploaded",
-        "manual"
-      ]
+      "description": "drawn, typed, uploaded, or manual"
     },
     "loa_signature_data": {
-      "type": "string"
+      "type": "string",
+      "description": "base64 signature or typed name"
     },
     "loa_typed_signature_name": {
       "type": "string"
     },
     "loa_signature_timestamp": {
-      "type": "string"
+      "type": "string",
+      "description": "ISO timestamp when signature was captured"
     },
     "loa_date_signed": {
       "type": "string",
-      "format": "date"
+      "description": "Date the LOA was signed"
     },
     "loa_pdf_url": {
-      "type": "string"
+      "type": "string",
+      "description": "URL of the generated/uploaded LOA PDF"
     },
     "loa_pdf_name": {
-      "type": "string"
+      "type": "string",
+      "description": "Filename of the LOA PDF"
     },
     "loa_source": {
       "type": "string",
-      "enum": [
-        "Electronic Signature",
-        "Manual Upload"
-      ]
+      "description": "Electronic Signature or Manual Upload"
     },
     "loa_status": {
       "type": "string",
-      "enum": [
-        "Not started",
-        "Pending signature",
-        "Uploaded manually",
-        "Electronically signed",
-        "Completed",
-        "Requires review"
-      ],
-      "default": "Not started"
+      "description": "LOA completion status"
     },
     "loa_downloaded": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the manual LOA was downloaded"
     },
     "loa_document_saved": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the LOA has been generated and saved to storage"
     },
     "loa_document_record_id": {
       "type": "string"

@@ -1087,6 +1087,22 @@ export default function ClientOnboarding() {
         doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 7) {
+      if (!formData.portfolio_drop_response) {
+        toast.error('Please answer: If your portfolio fell 20% in 3 months');
+        return;
+      }
+      if (!formData.primary_investment_objective) {
+        toast.error('Please select a primary investment objective');
+        return;
+      }
+      if (!formData.time_horizon) {
+        toast.error('Please select a time horizon');
+        return;
+      }
+      if (!formData.liquidity_requirement) {
+        toast.error('Please select a liquidity requirement');
+        return;
+      }
       if (!formData.risk_profile) {
         toast.error('Please select a risk profile');
         return;
