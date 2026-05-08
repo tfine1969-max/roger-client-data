@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Activity,
   AlertTriangle,
@@ -585,43 +586,53 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
         <Badge className="bg-secondary text-muted-foreground border-border">{CATEGORY_BY_REGISTER[form.register_type] || 'Internal'}</Badge>
       </div>
       <div className="grid md:grid-cols-3 gap-3">
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Register Type
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.register_type} onChange={e => selectRegisterType(e.target.value)}>
-            {REGISTER_TYPES.map(type => <option key={type} value={type}>{registerTypeLabel(type)}</option>)}
-          </select>
+          <Select value={form.register_type} onValueChange={v => selectRegisterType(v)}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{REGISTER_TYPES.map(type => <SelectItem key={type} value={type}>{registerTypeLabel(type)}</SelectItem>)}</SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Client
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.linked_client_id} onChange={e => setForm({ ...form, linked_client_id: e.target.value })}>
-            <option value="">No linked client</option>
-            {clients.map(client => <option key={client.id} value={client.id}>{clientDisplayName(client)}</option>)}
-          </select>
+          <Select value={form.linked_client_id || '__none__'} onValueChange={v => setForm({ ...form, linked_client_id: v === '__none__' ? '' : v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder="No linked client" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">No linked client</SelectItem>
+              {clients.map(client => <SelectItem key={client.id} value={client.id}>{clientDisplayName(client)}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Client Type
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={selectedClientType || ''} onChange={e => setCustomFields({ ...customFields, 'Client Type': e.target.value })}>
-            <option value="">{selectedClient ? 'Select client type' : 'Select a client first'}</option>
-            {CLIENT_TYPE_OPTIONS.map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
+          <Select value={selectedClientType || '__none__'} onValueChange={v => setCustomFields({ ...customFields, 'Client Type': v === '__none__' ? '' : v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder={selectedClient ? 'Select client type' : 'Select a client first'} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">{selectedClient ? 'Select client type' : 'Select a client first'}</SelectItem>
+              {CLIENT_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Staff Member
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.linked_advisor} onChange={e => setForm({ ...form, linked_advisor: e.target.value })}>
-            {STAFF_MEMBERS.map(staff => <option key={staff} value={staff}>{staff}</option>)}
-          </select>
+          <Select value={form.linked_advisor} onValueChange={v => setForm({ ...form, linked_advisor: v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{STAFF_MEMBERS.map(staff => <SelectItem key={staff} value={staff}>{staff}</SelectItem>)}</SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Status
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
-            {STATUS_OPTIONS.map(status => <option key={status} value={status}>{status}</option>)}
-          </select>
+          <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Risk
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={form.risk_level} onChange={e => setForm({ ...form, risk_level: e.target.value })}>
-            {RISK_OPTIONS.map(risk => <option key={risk} value={risk}>{risk}</option>)}
-          </select>
+          <Select value={form.risk_level} onValueChange={v => setForm({ ...form, risk_level: v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{RISK_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+          </Select>
         </label>
       </div>
       <div className="grid md:grid-cols-2 gap-3 mt-4">
@@ -632,16 +643,22 @@ const RegisterForm = ({ clients, currentUser, onCreated, requestedType, onReques
             <label key={field} className={`text-xs font-semibold text-navy ${type === 'textarea' ? 'md:col-span-2' : ''}`}>
               {fieldLabel(field)}
               {type === 'select' ? (
-                <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
-                  <option value="">Select</option>
-                  {options.map(option => <option key={option} value={option}>{option}</option>)}
-                </select>
+                <Select value={customFields[field] || '__none__'} onValueChange={v => setCustomFields({ ...customFields, [field]: v === '__none__' ? '' : v })}>
+                  <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Select</SelectItem>
+                    {options.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               ) : type === 'yesno' ? (
-                <select className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })}>
-                  <option value="">Select</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
+                <Select value={customFields[field] || '__none__'} onValueChange={v => setCustomFields({ ...customFields, [field]: v === '__none__' ? '' : v })}>
+                  <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Select</SelectItem>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
               ) : type === 'textarea' ? (
                 <textarea className="mt-1 w-full border border-border bg-background px-3 py-2 text-sm min-h-20" value={customFields[field] || ''} onChange={e => setCustomFields({ ...customFields, [field]: e.target.value })} />
               ) : (
@@ -820,33 +837,45 @@ const RegistersTable = ({ entries, clients, currentUser, filters, setFilters, on
     <>
       {showFilters && (
         <div className="border border-border bg-card p-3 mb-4 grid md:grid-cols-5 gap-3">
-          <label className="text-xs font-semibold text-navy">
+          <label className="text-xs font-semibold text-navy block">
             Type
-            <select className="mt-1 w-full border border-border bg-background px-2 py-2" value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
-              <option value="">All</option>
-              {REGISTER_TYPES.map(type => <option key={type} value={type}>{registerTypeLabel(type)}</option>)}
-            </select>
+            <Select value={filters.type || '__all__'} onValueChange={v => setFilters({ ...filters, type: v === '__all__' ? '' : v })}>
+              <SelectTrigger className="mt-1 h-8 text-xs w-full"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                {REGISTER_TYPES.map(type => <SelectItem key={type} value={type}>{registerTypeLabel(type)}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </label>
-          <label className="text-xs font-semibold text-navy">
+          <label className="text-xs font-semibold text-navy block">
             Status
-            <select className="mt-1 w-full border border-border bg-background px-2 py-2" value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })}>
-              <option value="">All</option>
-              {STATUS_OPTIONS.map(status => <option key={status} value={status}>{status}</option>)}
-            </select>
+            <Select value={filters.status || '__all__'} onValueChange={v => setFilters({ ...filters, status: v === '__all__' ? '' : v })}>
+              <SelectTrigger className="mt-1 h-8 text-xs w-full"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </label>
-          <label className="text-xs font-semibold text-navy">
+          <label className="text-xs font-semibold text-navy block">
             Risk
-            <select className="mt-1 w-full border border-border bg-background px-2 py-2" value={filters.risk} onChange={e => setFilters({ ...filters, risk: e.target.value })}>
-              <option value="">All</option>
-              {RISK_OPTIONS.map(risk => <option key={risk} value={risk}>{risk}</option>)}
-            </select>
+            <Select value={filters.risk || '__all__'} onValueChange={v => setFilters({ ...filters, risk: v === '__all__' ? '' : v })}>
+              <SelectTrigger className="mt-1 h-8 text-xs w-full"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                {RISK_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </label>
-          <label className="text-xs font-semibold text-navy">
+          <label className="text-xs font-semibold text-navy block">
             Advisor
-            <select className="mt-1 w-full border border-border bg-background px-2 py-2" value={filters.advisor} onChange={e => setFilters({ ...filters, advisor: e.target.value })}>
-              <option value="">All</option>
-              {Object.values(ADVISORS).map(advisor => <option key={advisor.email} value={advisor.name}>{advisor.name}</option>)}
-            </select>
+            <Select value={filters.advisor || '__all__'} onValueChange={v => setFilters({ ...filters, advisor: v === '__all__' ? '' : v })}>
+              <SelectTrigger className="mt-1 h-8 text-xs w-full"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                {Object.values(ADVISORS).map(a => <SelectItem key={a.email} value={a.name}>{a.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </label>
           <div className="flex items-end gap-2">
             <button type="button" onClick={() => setFilters({ type: '', status: '', risk: '', advisor: '', category: filters.category || '' })} className="w-full border border-border px-3 py-2 text-xs font-bold text-navy">
@@ -1145,11 +1174,12 @@ export default function ComplianceModule() {
         {activeTab === 'client' && (
           <div className="space-y-5">
             <div className="border border-border bg-card p-4">
-              <label className="text-xs font-semibold text-navy">
+              <label className="text-xs font-semibold text-navy block">
                 Select Client
-                <select className="mt-1 block w-full max-w-md border border-border bg-background px-3 py-2 text-sm" value={selectedClient?.id || ''} onChange={e => setClientId(e.target.value)}>
-                  {clients.map(client => <option key={client.id} value={client.id}>{clientDisplayName(client)}</option>)}
-                </select>
+                <Select value={selectedClient?.id || ''} onValueChange={v => setClientId(v)}>
+                  <SelectTrigger className="mt-1 h-9 text-sm w-full max-w-md"><SelectValue placeholder="Select client" /></SelectTrigger>
+                  <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{clientDisplayName(c)}</SelectItem>)}</SelectContent>
+                </Select>
               </label>
             </div>
             {selectedClient && (
@@ -1318,29 +1348,36 @@ const DocumentRepository = ({ documents, entries, clients, currentUser, refresh 
       </section>
 
       <section className="border border-border bg-card p-4 grid md:grid-cols-3 gap-3">
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Type
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.document_type} onChange={e => setForm({ ...form, document_type: e.target.value })}>
-            {['RMCP', 'Training Certificate', 'Policy', 'Audit Evidence', 'Register Evidence', 'Letter of Authority', 'Other'].map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
+          <Select value={form.document_type} onValueChange={v => setForm({ ...form, document_type: v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{['RMCP','Training Certificate','Policy','Audit Evidence','Register Evidence','Letter of Authority','Other'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+          </Select>
         </label>
         <label className="text-xs font-semibold text-navy">
           Title
           <input className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Link Register
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.linked_register_id} onChange={e => setForm({ ...form, linked_register_id: e.target.value })}>
-            <option value="">None</option>
-            {entries.map(entry => <option key={entry.id} value={entry.id}>{entry.register_type} - {entry.linked_client_name || entry.description}</option>)}
-          </select>
+          <Select value={form.linked_register_id || '__none__'} onValueChange={v => setForm({ ...form, linked_register_id: v === '__none__' ? '' : v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder="None" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {entries.map(e => <SelectItem key={e.id} value={e.id}>{e.register_type} - {e.linked_client_name || e.description}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </label>
-        <label className="text-xs font-semibold text-navy">
+        <label className="text-xs font-semibold text-navy block">
           Link Client
-          <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.linked_client_id} onChange={e => setForm({ ...form, linked_client_id: e.target.value })}>
-            <option value="">None</option>
-            {clients.map(client => <option key={client.id} value={client.id}>{clientDisplayName(client)}</option>)}
-          </select>
+          <Select value={form.linked_client_id || '__none__'} onValueChange={v => setForm({ ...form, linked_client_id: v === '__none__' ? '' : v })}>
+            <SelectTrigger className="mt-1 h-9 text-sm w-full"><SelectValue placeholder="None" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {clients.map(c => <SelectItem key={c.id} value={c.id}>{clientDisplayName(c)}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </label>
         <label className="text-xs font-semibold text-navy">
           Staff / Owner
@@ -1488,13 +1525,17 @@ const TrainingView = ({ training, refresh, exportCurrent }) => {
       </div>
       {open && (
         <div className="border border-border bg-card p-4 mb-4 grid md:grid-cols-4 gap-3">
-          <select className="border border-border px-3 py-2 bg-background" value={form.staff_member} onChange={e => setForm({ ...form, staff_member: e.target.value })}>
-            <option value="">Staff member</option>
-            {STAFF_MEMBERS.map(staff => <option key={staff} value={staff}>{staff}</option>)}
-          </select>
-          <select className="border border-border px-3 py-2 bg-background" value={form.training_type} onChange={e => setForm({ ...form, training_type: e.target.value })}>
-            {fieldOptions('Training Type').map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
+          <Select value={form.staff_member || '__none__'} onValueChange={v => setForm({ ...form, staff_member: v === '__none__' ? '' : v })}>
+            <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Staff member" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Staff member</SelectItem>
+              {STAFF_MEMBERS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={form.training_type} onValueChange={v => setForm({ ...form, training_type: v })}>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>{fieldOptions('Training Type').map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+          </Select>
           <input className="border border-border px-3 py-2" type="date" value={form.date_completed} onChange={e => setForm({ ...form, date_completed: e.target.value })} />
           <input className="border border-border px-3 py-2" type="date" value={form.expiry_date} onChange={e => setForm({ ...form, expiry_date: e.target.value })} />
           <div className="md:col-span-4 flex justify-end gap-2">

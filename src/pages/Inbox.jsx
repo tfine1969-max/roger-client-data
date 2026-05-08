@@ -2,12 +2,14 @@ import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import InboxMetrics from '@/components/inbox/InboxMetrics';
 import InboxTable from '@/components/inbox/InboxTable';
 import NewProposalModal from '@/components/inbox/NewProposalModal';
 import { ArrowLeft, Plus, LogOut, ShieldCheck } from 'lucide-react';
 import { ADVISORS } from '@/lib/constants';
+import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 async function checkAndSendReminders(proposals, advisor = ADVISORS.trevor) {
   const awaiting = proposals.filter(
@@ -40,11 +42,19 @@ async function checkAndSendReminders(proposals, advisor = ADVISORS.trevor) {
 
 export default function Inbox() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const urlParams = new URLSearchParams(window.location.search);
   const [statusFilter, setStatusFilter] = useState(urlParams.get('filter') || null);
   const [ficaFilter, setFicaFilter] = useState('All clients');
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['proposals'] }),
+      queryClient.invalidateQueries({ queryKey: ['clients'] }),
+    ]);
+  };
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -121,27 +131,29 @@ export default function Inbox() {
         <InboxMetrics proposals={proposals} activeFilter={statusFilter} onFilter={setStatusFilter} />
 
         {/* FICA Filter */}
-        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Filter by FICA Status:</label>
-          <select value={ficaFilter} onChange={(e) => setFicaFilter(e.target.value)} style={{
-            padding: '6px 12px', fontSize: 12, borderRadius: 4, border: '1px solid #d1d5db',
-            background: '#ffffff', color: '#1e3a5f', fontWeight: 500, cursor: 'pointer'
-          }}>
-            <option value="All clients">All clients</option>
-            <option value="Verified only">Verified only</option>
-            <option value="EDD Required">EDD Required</option>
-            <option value="Not Verified">Not Verified</option>
-            <option value="Pending verification">Pending verification</option>
-          </select>
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <label className="text-[11px] font-semibold text-navy uppercase tracking-wide">Filter by FICA:</label>
+          <Select value={ficaFilter} onValueChange={setFicaFilter}>
+            <SelectTrigger className="h-8 w-48 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {['All clients','Verified only','EDD Required','Not Verified','Pending verification'].map(v => (
+                <SelectItem key={v} value={v}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-border border-t-navy rounded-full animate-spin" />
-          </div>
-        ) : (
-          <InboxTable proposals={proposals} clientMap={clientMap} statusFilter={statusFilter} ficaFilter={ficaFilter} onClearFilter={() => setStatusFilter(null)} />
-        )}
+        <PullToRefreshWrapper onRefresh={handleRefresh}>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 border-2 border-border border-t-navy rounded-full animate-spin" />
+            </div>
+          ) : (
+            <InboxTable proposals={proposals} clientMap={clientMap} statusFilter={statusFilter} ficaFilter={ficaFilter} onClearFilter={() => setStatusFilter(null)} />
+          )}
+        </PullToRefreshWrapper>
       </div>
 
       <NewProposalModal

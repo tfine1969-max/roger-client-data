@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formatDateTime = (iso) => {
   if (!iso) return '—';
@@ -7,109 +8,85 @@ const formatDateTime = (iso) => {
   return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 };
 
-const formatDate = (iso) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+const STATUS_CLASSES = {
+  Pending:    { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' },
+  Submitted:  { bg: 'bg-blue-50 dark:bg-blue-950', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-800' },
+  Verified:   { bg: 'bg-green-50 dark:bg-green-950', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-800' },
+  Incomplete: { bg: 'bg-red-50 dark:bg-red-950', text: 'text-red-700 dark:text-red-300', border: 'border-red-200 dark:border-red-800' },
+  Complete:   { bg: 'bg-green-50 dark:bg-green-950', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-800' },
 };
 
-const STATUS_COLOURS = {
-  Pending:    { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' },
-  Submitted:  { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
-  Verified:   { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-  Incomplete: { bg: '#fff1f2', color: '#9f1239', border: '#fecdd3' },
+const TAG_CLASSES = {
+  SIGNED:       'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
+  'PROPOSAL PDF': 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+  'QUOTE PDF':  'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+  'APP FORM':   'bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+  'SUPPORT DOC':'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
 };
 
 const DEFAULT_DOCUMENT_INDEX = [
-  {
-    key: 'doc_identity',
-    index: '01',
-    label: 'Identity Document',
-    description: 'SA ID / Smart Card / Passport — front & back',
-    required: true,
-    backKey: 'doc_identity_back',
-    backLabel: 'SA ID Back',
-  },
-  {
-    key: 'doc_proof_of_address',
-    index: '02',
-    label: 'Proof of Address',
-    description: 'Utility bill or bank statement showing name and address',
-    required: true,
-  },
-  {
-    key: 'doc_source_of_funds',
-    index: '03',
-    label: 'Income / Source of Funds',
-    description: '3 months payslips or 6 months bank statements',
-    required: true,
-  },
-  {
-    key: 'doc_existing_policies',
-    index: '04',
-    label: 'Existing Policies',
-    description: 'Current policy documents or statements',
-    required: false,
-  },
-  {
-    key: 'doc_banking_proof',
-    index: '05',
-    label: 'Proof of Banking Details',
-    description: 'Bank-stamped letter or 3 months bank statements',
-    required: false,
-  },
+  { key: 'doc_identity', index: '01', label: 'Identity Document', description: 'SA ID / Smart Card / Passport — front & back', required: true, backKey: 'doc_identity_back', backLabel: 'SA ID Back' },
+  { key: 'doc_proof_of_address', index: '02', label: 'Proof of Address', description: 'Utility bill or bank statement showing name and address', required: true },
+  { key: 'doc_source_of_funds', index: '03', label: 'Income / Source of Funds', description: '3 months payslips or 6 months bank statements', required: true },
+  { key: 'doc_existing_policies', index: '04', label: 'Existing Policies', description: 'Current policy documents or statements', required: false },
+  { key: 'doc_banking_proof', index: '05', label: 'Proof of Banking Details', description: 'Bank-stamped letter or 3 months bank statements', required: false },
 ];
 
 const getDocumentIndex = (clientType) => {
-  if (clientType === 'Company') {
-    return [
-      { key: 'doc_identity', index: '01', label: 'CIPC Registration Certificate', description: 'CoR14.3 / CoR15.1A or equivalent', required: true },
-      { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
-      { key: 'doc_source_of_funds', index: '03', label: 'Financial Statements', description: 'Most recent audited or management accounts', required: true },
-      { key: 'doc_existing_policies', index: '04', label: 'MOI / Memorandum of Incorporation', description: 'Certified copy of current MOI', required: false },
-    ];
-  }
-
-  if (clientType === 'Trust') {
-    return [
-      { key: 'doc_identity', index: '01', label: 'Trust Deed', description: 'Certified copy of the trust deed', required: true },
-      { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
-      { key: 'doc_source_of_funds', index: '03', label: 'Trust Bank Statement', description: 'Most recent 3 months bank statements', required: true },
-      { key: 'doc_existing_policies', index: '04', label: 'Letter of Authority', description: 'Master of the High Court letter', required: false },
-    ];
-  }
-
+  if (clientType === 'Company') return [
+    { key: 'doc_identity', index: '01', label: 'CIPC Registration Certificate', description: 'CoR14.3 / CoR15.1A or equivalent', required: true },
+    { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
+    { key: 'doc_source_of_funds', index: '03', label: 'Financial Statements', description: 'Most recent audited or management accounts', required: true },
+    { key: 'doc_existing_policies', index: '04', label: 'MOI / Memorandum of Incorporation', description: 'Certified copy of current MOI', required: false },
+  ];
+  if (clientType === 'Trust') return [
+    { key: 'doc_identity', index: '01', label: 'Trust Deed', description: 'Certified copy of the trust deed', required: true },
+    { key: 'doc_proof_of_address', index: '02', label: 'Proof of Registered Address', description: 'Utility bill or bank statement showing registered address', required: true },
+    { key: 'doc_source_of_funds', index: '03', label: 'Trust Bank Statement', description: 'Most recent 3 months bank statements', required: true },
+    { key: 'doc_existing_policies', index: '04', label: 'Letter of Authority', description: 'Master of the High Court letter', required: false },
+  ];
   return DEFAULT_DOCUMENT_INDEX;
 };
 
 const parseDocumentJson = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  try { const p = JSON.parse(value); return Array.isArray(p) ? p : []; } catch { return []; }
 };
+
+const TagBadge = ({ tag }) => (
+  <span className={`inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border ${TAG_CLASSES[tag] || 'bg-muted text-muted-foreground border-border'}`}>
+    {tag}
+  </span>
+);
+
+const StatusBadge = ({ uploaded }) => uploaded
+  ? <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">Uploaded</span>
+  : <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">Missing</span>;
+
+const ViewBtn = ({ url, label = 'View / Download' }) => (
+  <button onClick={() => window.open(url, '_blank')}
+    className="bg-navy text-white text-[11px] font-bold tracking-wide px-3 py-1.5 hover:bg-ocean transition-colors whitespace-nowrap">
+    {label}
+  </button>
+);
+
+const SectionHeader = ({ children }) => (
+  <tr>
+    <td colSpan={5} className="px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border-t-2 border-b border-border">
+      {children}
+    </td>
+  </tr>
+);
 
 export default function ClientDocumentRepository({ client, proposals = [], attachments = [], investments = [], onStatusUpdate }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const documentIndex = getDocumentIndex(client?.client_type);
 
-  // FICA is complete when the three required docs (01, 02, 03) are uploaded — doc 04 is optional
   const ficaComplete = !!(client?.doc_identity && client?.doc_proof_of_address && client?.doc_source_of_funds);
-  const computedFicaStatus = ficaComplete ? 'Complete' : 'Incomplete';
-
-  // Status for badge/dropdown: prefer computed when complete, otherwise fall back to stored doc_status
   const displayStatus = ficaComplete ? 'Complete' : (client?.doc_status || 'Pending');
-  const STATUS_COLOURS_EXT = {
-    ...STATUS_COLOURS,
-    Complete: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
-  };
-  const statusStyle = STATUS_COLOURS_EXT[displayStatus] || STATUS_COLOURS.Pending;
+  const statusStyle = STATUS_CLASSES[displayStatus] || STATUS_CLASSES.Pending;
 
-  // Auto-save Complete to Client entity when all required docs are present
   useEffect(() => {
     if (!client?.id) return;
     if (ficaComplete && client.doc_status !== 'Complete') {
@@ -124,108 +101,54 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
     try {
       await base44.entities.Clients.update(client.id, { doc_status: newStatus });
       if (onStatusUpdate) onStatusUpdate();
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
     setUpdatingStatus(false);
   };
 
-  // Build dynamic proposal rows
+  // Proposal rows
   const proposalRows = [];
   proposals.forEach((proposal, i) => {
-    const baseIndex = 5 + (i * 2);
-
+    const base = 5 + (i * 2);
     if (proposal.pdf_generated_at || proposal.proposal_pdf_url) {
-      proposalRows.push({
-        index: String(baseIndex).padStart(2, '0'),
-        label: `Proposal — ${proposal.reference || 'Draft'}`,
-        description: `Financial Strategy & Recommendation Report · Generated: ${formatDateTime(proposal.pdf_generated_at)}`,
-        fileUrl: proposal.proposal_pdf_url || null,
-        statusOverride: proposal.proposal_pdf_url ? 'uploaded' : 'missing',
-        tag: 'PROPOSAL PDF',
-      });
+      proposalRows.push({ index: String(base).padStart(2,'0'), label: `Proposal — ${proposal.reference || 'Draft'}`, description: `Generated: ${formatDateTime(proposal.pdf_generated_at)}`, fileUrl: proposal.proposal_pdf_url || null, statusOverride: proposal.proposal_pdf_url ? 'uploaded' : 'missing', tag: 'PROPOSAL PDF' });
     }
-
     if (proposal.signed_pdf_url || proposal.status === 'Signed') {
-      proposalRows.push({
-        index: String(baseIndex + 1).padStart(2, '0'),
-        label: `Signed — ${proposal.reference || 'Draft'}`,
-        description: `Signed by client on: ${formatDateTime(proposal.signed_at)}`,
-        fileUrl: proposal.signed_pdf_url || null,
-        statusOverride: proposal.signed_pdf_url ? 'uploaded' : 'missing',
-        tag: 'SIGNED',
-      });
+      proposalRows.push({ index: String(base+1).padStart(2,'0'), label: `Signed — ${proposal.reference || 'Draft'}`, description: `Signed: ${formatDateTime(proposal.signed_at)}`, fileUrl: proposal.signed_pdf_url || null, statusOverride: proposal.signed_pdf_url ? 'uploaded' : 'missing', tag: 'SIGNED' });
     }
   });
 
-  // Build investment attachment docs list
+  // Investment attachment rows
   const attachmentTypes = [
-    { suffix: 'Quote', tag: 'QUOTE PDF', tagBg: '#eff6ff', tagColor: '#1e40af', tagBorder: '#bfdbfe' },
-    { suffix: 'Application Form', tag: 'APP FORM', tagBg: '#fdf4ff', tagColor: '#7e22ce', tagBorder: '#e9d5ff' },
-    { suffix: 'Supporting Doc', tag: 'SUPPORT DOC', tagBg: '#fffbeb', tagColor: '#92400e', tagBorder: '#fde68a' },
+    { suffix: 'Quote', tag: 'QUOTE PDF' },
+    { suffix: 'Application Form', tag: 'APP FORM' },
+    { suffix: 'Supporting Doc', tag: 'SUPPORT DOC' },
   ];
   const invDocs = [];
   investments.forEach(inv => {
     const invLabel = [inv.provider, inv.product_type].filter(Boolean).join(' — ') || 'Investment';
-    attachmentTypes.forEach(({ suffix, tag, tagBg, tagColor, tagBorder }) => {
-      const key = `${suffix}::${inv.id}`;
-      const att = attachments.find(a => a.attachment_type === key);
-      if (att?.file_url) {
-        invDocs.push({ label: invLabel, tag, tagBg, tagColor, tagBorder, url: att.file_url });
-      }
+    attachmentTypes.forEach(({ suffix, tag }) => {
+      const att = attachments.find(a => a.attachment_type === `${suffix}::${inv.id}`);
+      if (att?.file_url) invDocs.push({ label: invLabel, tag, url: att.file_url });
     });
   });
 
-  const personsList = Array.isArray(client?.directors_list)
-    ? client.directors_list
-    : Array.isArray(client?.trustees_list)
-    ? client.trustees_list
-    : [];
+  // Person docs
+  const personsList = Array.isArray(client?.directors_list) ? client.directors_list : Array.isArray(client?.trustees_list) ? client.trustees_list : [];
   const personLabel = client?.client_type === 'Trust' ? 'Trustee' : 'Director';
-  const indexedPersonDocs = client?.client_type === 'Trust'
-    ? parseDocumentJson(client?.trustee_documents_json)
-    : parseDocumentJson(client?.director_documents_json);
+  const indexedPersonDocs = client?.client_type === 'Trust' ? parseDocumentJson(client?.trustee_documents_json) : parseDocumentJson(client?.director_documents_json);
   const personDocSources = indexedPersonDocs.length > 0 ? indexedPersonDocs : personsList;
   const personDocs = [];
   personDocSources.forEach((person, personIndex) => {
     const sourceIndex = person.trustee_index ?? person.director_index ?? personIndex;
     const listPerson = personsList[sourceIndex] || {};
-    const fullName = person.name || [person.first_name || listPerson.first_name, person.last_name || listPerson.last_name].filter(Boolean).join(' ') || `${personLabel} ${sourceIndex + 1}`;
-    if (person.id_file_url && !person.id_front_file_url) {
-      personDocs.push({
-        label: `${personLabel} ${sourceIndex + 1} ID / Passport - ${fullName}`,
-        description: person.id_file_name || 'Certified identity document',
-        fileUrl: person.id_file_url,
-        tag: `${personLabel.toUpperCase()} DOC`,
-      });
-    }
-    if (person.id_front_file_url) {
-      personDocs.push({
-        label: `${personLabel} ${sourceIndex + 1} SA ID Front - ${fullName}`,
-        description: person.id_front_file_name || 'Certified identity document front',
-        fileUrl: person.id_front_file_url,
-        tag: `${personLabel.toUpperCase()} DOC`,
-      });
-    }
-    if (person.id_back_file_url) {
-      personDocs.push({
-        label: `${personLabel} ${sourceIndex + 1} SA ID Back - ${fullName}`,
-        description: person.id_back_file_name || 'Certified identity document back',
-        fileUrl: person.id_back_file_url,
-        tag: `${personLabel.toUpperCase()} DOC`,
-      });
-    }
-    if (person.addr_file_url) {
-      personDocs.push({
-        label: `${personLabel} ${sourceIndex + 1} Proof of Address - ${fullName}`,
-        description: person.addr_file_name || 'Residential address verification document',
-        fileUrl: person.addr_file_url,
-        tag: `${personLabel.toUpperCase()} DOC`,
-      });
-    }
+    const fullName = person.name || [person.first_name || listPerson.first_name, person.last_name || listPerson.last_name].filter(Boolean).join(' ') || `${personLabel} ${sourceIndex+1}`;
+    const tag = `${personLabel.toUpperCase()} DOC`;
+    if (person.id_file_url && !person.id_front_file_url) personDocs.push({ label: `${personLabel} ${sourceIndex+1} ID / Passport - ${fullName}`, description: person.id_file_name || 'Certified identity document', fileUrl: person.id_file_url, tag });
+    if (person.id_front_file_url) personDocs.push({ label: `${personLabel} ${sourceIndex+1} SA ID Front - ${fullName}`, description: person.id_front_file_name || 'Identity document front', fileUrl: person.id_front_file_url, tag });
+    if (person.id_back_file_url) personDocs.push({ label: `${personLabel} ${sourceIndex+1} SA ID Back - ${fullName}`, description: person.id_back_file_name || 'Identity document back', fileUrl: person.id_back_file_url, tag });
+    if (person.addr_file_url) personDocs.push({ label: `${personLabel} ${sourceIndex+1} Proof of Address - ${fullName}`, description: person.addr_file_name || 'Residential address document', fileUrl: person.addr_file_url, tag });
   });
 
-  // Counts
   const ficaUploaded = documentIndex.filter(d => !!client?.[d.key]).length;
   const proposalUploaded = proposalRows.filter(d => d.statusOverride === 'uploaded').length;
   const totalRows = documentIndex.length + personDocs.length + proposalRows.length + invDocs.length;
@@ -233,132 +156,59 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
   const requiredCount = documentIndex.filter(d => d.required).length;
   const requiredUploaded = documentIndex.filter(d => d.required && !!client?.[d.key]).length;
 
-  const badgeUploaded = {
-    background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0',
-    borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
-    whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4,
-  };
-  const badgeMissing = {
-    background: '#fff1f2', color: '#9f1239', border: '1px solid #fecdd3',
-    borderRadius: 20, padding: '3px 10px', fontSize: 11, fontWeight: 700,
-    whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4,
-  };
-  const btnDownload = {
-    background: '#1e3a5f', color: '#ffffff',
-    borderRadius: 6, padding: '6px 14px',
-    fontSize: 11, fontWeight: 700,
-    letterSpacing: '0.5px', whiteSpace: 'nowrap',
-    border: 'none', cursor: 'pointer',
-  };
-
   return (
-    <div style={{
-      background: '#ffffff',
-      border: '1px solid #e2e8f0',
-      borderRadius: 12,
-      padding: '28px 32px',
-      marginTop: 24,
-      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      width: '100%',
-      boxSizing: 'border-box',
-      overflowX: 'auto',
-    }}>
-
+    <div className="bg-card border border-border rounded-xl p-5 mt-6 w-full overflow-x-auto shadow-sm">
       {/* Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between',
-        alignItems: 'flex-start', marginBottom: 20,
-        paddingBottom: 16, borderBottom: '1px solid #e2e8f0',
-      }}>
+      <div className="flex flex-wrap justify-between items-start gap-3 mb-5 pb-4 border-b border-border">
         <div>
-          <p style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: '1.2px',
-            textTransform: 'uppercase', color: '#1e3a5f', margin: '0 0 4px 0'
-          }}>
-            FICA Document Repository
-          </p>
-          <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
-            {totalUploaded} of {totalRows} documents uploaded
-            {' · '}{requiredUploaded} of {requiredCount} required
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy">FICA Document Repository</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {totalUploaded} of {totalRows} documents uploaded · {requiredUploaded} of {requiredCount} required
           </p>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{
-            background: statusStyle.bg, color: statusStyle.color,
-            border: `1px solid ${statusStyle.border}`,
-            borderRadius: 20, padding: '4px 12px',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.5px',
-            textTransform: 'uppercase', whiteSpace: 'nowrap',
-          }}>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wide rounded-full border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
             {displayStatus}
           </span>
-
-          <select
-            value={displayStatus}
-            onChange={e => handleStatusChange(e.target.value)}
-            disabled={updatingStatus}
-            style={{
-              border: '1px solid #e2e8f0', borderRadius: 8,
-              padding: '6px 10px', fontSize: 12, color: '#334155',
-              background: '#f8fafc', cursor: 'pointer',
-            }}
-          >
-            <option value="Complete">Complete</option>
-            <option value="Pending">Pending</option>
-            <option value="Submitted">Submitted</option>
-            <option value="Verified">Verified</option>
-            <option value="Incomplete">Incomplete</option>
-          </select>
+          <Select value={displayStatus} onValueChange={handleStatusChange} disabled={updatingStatus}>
+            <SelectTrigger className="h-8 w-36 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {['Complete','Pending','Submitted','Verified','Incomplete'].map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Submission timestamp */}
+      {/* Submission banner */}
       {client?.doc_submitted_at ? (
-        <div style={{
-          background: '#f0fdf4', border: '1px solid #bbf7d0',
-          borderRadius: 8, padding: '10px 14px', marginBottom: 20,
-          fontSize: 12, color: '#166534',
-        }}>
+        <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded px-3.5 py-2.5 mb-5 text-[11px] text-green-700 dark:text-green-300">
           ✓ Documents submitted by client on {formatDateTime(client.doc_submitted_at)}
         </div>
       ) : (
-        <div style={{
-          background: '#fffbeb', border: '1px solid #fde68a',
-          borderRadius: 8, padding: '10px 14px', marginBottom: 20,
-          fontSize: 12, color: '#92400e',
-        }}>
+        <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded px-3.5 py-2.5 mb-5 text-[11px] text-amber-700 dark:text-amber-300">
           ⏳ Client has not yet submitted documents via onboarding.
         </div>
       )}
 
-      {/* Document index table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 700, tableLayout: 'fixed' }}>
+      {/* Table */}
+      <table className="w-full text-sm border-collapse" style={{ minWidth: 700 }}>
         <colgroup>
           <col style={{ width: 40 }} />
           <col />
           <col style={{ width: 90 }} />
-          <col style={{ width: 120 }} />
+          <col style={{ width: 110 }} />
           <col style={{ width: 170 }} />
         </colgroup>
         <thead>
-        <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: '#94a3b8' }}>#</th>
-          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: '#94a3b8' }}>Document</th>
-          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: '#94a3b8' }}>Required</th>
-          <th style={{ textAlign: 'left', padding: '8px 12px', fontSize: 10,
-            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: '#94a3b8' }}>Status</th>
-          <th style={{ textAlign: 'right', padding: '8px 12px', fontSize: 10,
-            fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: '#94a3b8' }}>Action</th>
-        </tr>
+          <tr className="border-b-2 border-border">
+            {['#','Document','Required','Status','Action'].map((h, i) => (
+              <th key={h} className={`px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground ${i === 4 ? 'text-right' : 'text-left'}`}>{h}</th>
+            ))}
+          </tr>
         </thead>
         <tbody>
           {/* FICA rows */}
@@ -367,243 +217,105 @@ export default function ClientDocumentRepository({ client, proposals = [], attac
             const backUrl = doc.backKey ? client?.[doc.backKey] : null;
             const uploaded = !!fileUrl;
             return (
-              <tr key={doc.key} style={{
-                borderBottom: '1px solid #f1f5f9',
-                background: i % 2 === 0 ? '#ffffff' : '#fafafa',
-              }}>
-                <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
-                  {doc.index}
+              <tr key={doc.key} className={`border-b border-border ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}>
+                <td className="px-3 py-3.5 text-[11px] font-bold text-muted-foreground">{doc.index}</td>
+                <td className="px-3 py-3.5">
+                  <p className="font-semibold text-navy text-[13px] mb-0.5">{doc.label}</p>
+                  {client?.[`${doc.key}_name`] && <p className="text-[11px] text-ocean font-semibold mb-0.5">Front: {client[`${doc.key}_name`]}</p>}
+                  {doc.backKey && client?.[`${doc.backKey}_name`] && <p className="text-[11px] text-ocean font-semibold mb-0.5">Back: {client[`${doc.backKey}_name`]}</p>}
+                  <p className="text-[11px] text-muted-foreground">{doc.description}</p>
                 </td>
-                <td style={{ padding: '14px 12px' }}>
-                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: '0 0 2px 0', fontSize: 13 }}>
-                    {doc.label}
-                  </p>
-                  {client?.[`${doc.key}_name`] && (
-                    <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
-                      Front: {client[`${doc.key}_name`]}
-                    </p>
-                  )}
-                  {doc.backKey && client?.[`${doc.backKey}_name`] && (
-                    <p style={{ fontSize: 11, color: '#0e7490', margin: '0 0 2px 0', fontWeight: 600 }}>
-                      Back: {client[`${doc.backKey}_name`]}
-                    </p>
-                  )}
-                  <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
-                    {doc.description}
-                  </p>
-                </td>
-                <td style={{ padding: '14px 12px' }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: doc.required ? '#9f1239' : '#64748b' }}>
+                <td className="px-3 py-3.5">
+                  <span className={`text-[11px] font-semibold ${doc.required ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'}`}>
                     {doc.required ? 'Required' : 'Optional'}
                   </span>
                 </td>
-                <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                  {uploaded
-                    ? <span style={badgeUploaded}>Uploaded</span>
-                    : <span style={badgeMissing}>Missing</span>
-                  }
-                </td>
-                <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <td className="px-3 py-3.5 whitespace-nowrap"><StatusBadge uploaded={uploaded} /></td>
+                <td className="px-3 py-3.5 text-right whitespace-nowrap">
                   {uploaded ? (
-                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      <button onClick={() => window.open(fileUrl, '_blank')} style={btnDownload}>
-                        {backUrl ? 'View Front' : 'View / Download'}
-                      </button>
-                      {backUrl && (
-                        <button onClick={() => window.open(backUrl, '_blank')} style={btnDownload}>
-                          View Back
-                        </button>
-                      )}
+                    <div className="flex gap-1.5 justify-end flex-wrap">
+                      <ViewBtn url={fileUrl} label={backUrl ? 'View Front' : 'View / Download'} />
+                      {backUrl && <ViewBtn url={backUrl} label="View Back" />}
                     </div>
-                  ) : (
-                    <span style={{ fontSize: 11, color: '#cbd5e1' }}>Not uploaded</span>
-                  )}
+                  ) : <span className="text-[11px] text-muted-foreground">Not uploaded</span>}
                 </td>
               </tr>
             );
           })}
 
+          {/* Person docs */}
           {personDocs.length > 0 && (
-            <tr>
-              <td colSpan={5} style={{
-                padding: '10px 12px 6px',
-                fontSize: 10, fontWeight: 700,
-                letterSpacing: '1.2px', textTransform: 'uppercase',
-                color: '#94a3b8', background: '#f8fafc',
-                borderTop: '2px solid #e2e8f0',
-                borderBottom: '1px solid #e2e8f0',
-              }}>
-                {client?.client_type === 'Trust' ? 'Trustee Documents' : 'Director Documents'}
-              </td>
-            </tr>
+            <>
+              <SectionHeader>{client?.client_type === 'Trust' ? 'Trustee Documents' : 'Director Documents'}</SectionHeader>
+              {personDocs.map((doc, i) => (
+                <tr key={`pd-${i}`} className={`border-b border-border ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}>
+                  <td className="px-3 py-3.5 text-[11px] font-bold text-muted-foreground">{String(documentIndex.length + i + 1).padStart(2,'0')}</td>
+                  <td className="px-3 py-3.5">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="font-semibold text-navy text-[13px] m-0">{doc.label}</p>
+                      <TagBadge tag={doc.tag} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{doc.description}</p>
+                  </td>
+                  <td className="px-3 py-3.5"><span className="text-[11px] font-semibold text-red-700 dark:text-red-400">Required</span></td>
+                  <td className="px-3 py-3.5"><StatusBadge uploaded={true} /></td>
+                  <td className="px-3 py-3.5 text-right"><ViewBtn url={doc.fileUrl} /></td>
+                </tr>
+              ))}
+            </>
           )}
 
-          {personDocs.map((doc, i) => (
-            <tr key={`persondoc-${i}`} style={{
-              borderBottom: '1px solid #f1f5f9',
-              background: i % 2 === 0 ? '#ffffff' : '#fafafa',
-            }}>
-              <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
-                {String(documentIndex.length + i + 1).padStart(2, '0')}
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13 }}>
-                    {doc.label}
-                  </p>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
-                    textTransform: 'uppercase', padding: '2px 7px',
-                    borderRadius: 10, whiteSpace: 'nowrap',
-                    background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0',
-                  }}>
-                    {doc.tag}
-                  </span>
-                </div>
-                <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{doc.description}</p>
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#9f1239' }}>Required</span>
-              </td>
-              <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                <span style={badgeUploaded}>Uploaded</span>
-              </td>
-              <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <button onClick={() => window.open(doc.fileUrl, '_blank')} style={btnDownload}>
-                      View / Download
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {/* Proposal Documents section divider */}
+          {/* Proposal docs */}
           {proposalRows.length > 0 && (
-            <tr>
-              <td colSpan={5} style={{
-                padding: '10px 12px 6px',
-                fontSize: 10, fontWeight: 700,
-                letterSpacing: '1.2px', textTransform: 'uppercase',
-                color: '#94a3b8', background: '#f8fafc',
-                borderTop: '2px solid #e2e8f0',
-                borderBottom: '1px solid #e2e8f0',
-              }}>
-                Proposal Documents
-              </td>
-            </tr>
+            <>
+              <SectionHeader>Proposal Documents</SectionHeader>
+              {proposalRows.map((doc, i) => (
+                <tr key={`pr-${i}`} className={`border-b border-border ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}>
+                  <td className="px-3 py-3.5 text-[11px] font-bold text-muted-foreground">{String(documentIndex.length + personDocs.length + i + 1).padStart(2,'0')}</td>
+                  <td className="px-3 py-3.5">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="font-semibold text-navy text-[13px] m-0 whitespace-nowrap">{doc.label}</p>
+                      <TagBadge tag={doc.tag} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{doc.description}</p>
+                  </td>
+                  <td className="px-3 py-3.5"><span className="text-[11px] text-muted-foreground">Optional</span></td>
+                  <td className="px-3 py-3.5"><StatusBadge uploaded={doc.statusOverride === 'uploaded'} /></td>
+                  <td className="px-3 py-3.5 text-right">
+                    {doc.fileUrl ? <ViewBtn url={doc.fileUrl} /> : <span className="text-[11px] text-muted-foreground">Not available</span>}
+                  </td>
+                </tr>
+              ))}
+            </>
           )}
 
-          {/* Proposal rows */}
-          {proposalRows.map((doc, i) => (
-            <tr key={`proposal-${i}`} style={{
-              borderBottom: '1px solid #f1f5f9',
-              background: i % 2 === 0 ? '#ffffff' : '#fafafa',
-            }}>
-              <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
-                {String(documentIndex.length + personDocs.length + i + 1).padStart(2, '0')}
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                  <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13, whiteSpace: 'nowrap' }}>
-                    {doc.label}
-                  </p>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
-                    textTransform: 'uppercase', padding: '2px 7px',
-                    borderRadius: 10, whiteSpace: 'nowrap',
-                    background: doc.tag === 'SIGNED' ? '#f0fdf4' : '#eff6ff',
-                    color: doc.tag === 'SIGNED' ? '#166534' : '#1e40af',
-                    border: `1px solid ${doc.tag === 'SIGNED' ? '#bbf7d0' : '#bfdbfe'}`,
-                  }}>
-                    {doc.tag}
-                  </span>
-                </div>
-                <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{doc.description}</p>
-              </td>
-              <td style={{ padding: '14px 12px' }}>
-                <span style={{ fontSize: 11, color: '#64748b' }}>Optional</span>
-              </td>
-              <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                {doc.statusOverride === 'uploaded'
-                  ? <span style={badgeUploaded}>Uploaded</span>
-                  : <span style={badgeMissing}>Missing</span>
-                }
-              </td>
-              <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                {doc.fileUrl ? (
-                  <button onClick={() => window.open(doc.fileUrl, '_blank')} style={btnDownload}>
-                      View / Download
-                  </button>
-                ) : (
-                  <span style={{ fontSize: 11, color: '#cbd5e1' }}>Not available</span>
-                )}
-              </td>
-            </tr>
-          ))}
-
-          {/* Investment / Attachment Documents section */}
+          {/* Investment docs */}
           {invDocs.length > 0 && (
             <>
-              <tr>
-                <td colSpan={5} style={{
-                  padding: '10px 12px 6px',
-                  fontSize: 10, fontWeight: 700,
-                  letterSpacing: '1.2px', textTransform: 'uppercase',
-                  color: '#94a3b8', background: '#f8fafc',
-                  borderTop: '2px solid #e2e8f0',
-                  borderBottom: '1px solid #e2e8f0',
-                }}>
-                  Investment Documents
-                </td>
-              </tr>
-              {invDocs.map((doc, i) => {
-                const docNum = String(documentIndex.length + personDocs.length + proposalRows.length + i + 1).padStart(2, '0');
-                return (
-                  <tr key={`invdoc-${i}`} style={{
-                    borderBottom: '1px solid #f1f5f9',
-                    background: i % 2 === 0 ? '#ffffff' : '#fafafa',
-                  }}>
-                    <td style={{ padding: '14px 12px', color: '#94a3b8', fontSize: 11, fontWeight: 700 }}>
-                      {docNum}
-                    </td>
-                    <td style={{ padding: '14px 12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                        <p style={{ fontWeight: 600, color: '#1e3a5f', margin: 0, fontSize: 13, whiteSpace: 'nowrap' }}>{doc.label}</p>
-                        <span style={{
-                          fontSize: 9, fontWeight: 700, letterSpacing: '0.8px',
-                          textTransform: 'uppercase', padding: '2px 7px', borderRadius: 10,
-                          whiteSpace: 'nowrap', flexShrink: 0,
-                          background: doc.tagBg, color: doc.tagColor, border: `1px solid ${doc.tagBorder}`,
-                        }}>{doc.tag}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '14px 12px' }}>
-                      <span style={{ fontSize: 11, color: '#64748b' }}>Optional</span>
-                    </td>
-                    <td style={{ padding: '14px 12px', whiteSpace: 'nowrap' }}>
-                      <span style={badgeUploaded}>Uploaded</span>
-                    </td>
-                    <td style={{ padding: '14px 12px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                      <button onClick={() => window.open(doc.url, '_blank')} style={btnDownload}>
-                      View / Download
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              <SectionHeader>Investment Documents</SectionHeader>
+              {invDocs.map((doc, i) => (
+                <tr key={`id-${i}`} className={`border-b border-border ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}>
+                  <td className="px-3 py-3.5 text-[11px] font-bold text-muted-foreground">{String(documentIndex.length + personDocs.length + proposalRows.length + i + 1).padStart(2,'0')}</td>
+                  <td className="px-3 py-3.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-navy text-[13px] m-0 whitespace-nowrap">{doc.label}</p>
+                      <TagBadge tag={doc.tag} />
+                    </div>
+                  </td>
+                  <td className="px-3 py-3.5"><span className="text-[11px] text-muted-foreground">Optional</span></td>
+                  <td className="px-3 py-3.5"><StatusBadge uploaded={true} /></td>
+                  <td className="px-3 py-3.5 text-right"><ViewBtn url={doc.url} /></td>
+                </tr>
+              ))}
             </>
           )}
         </tbody>
       </table>
 
-      {/* FICA compliance note */}
-      <div style={{
-        marginTop: 20, padding: '12px 16px',
-        background: '#f8fafc', borderRadius: 8,
-        border: '1px solid #e2e8f0',
-        fontSize: 11, color: '#64748b', lineHeight: 1.6,
-      }}>
-        <strong style={{ color: '#334155' }}>Certification requirement:</strong>
-        {' '}All copies must be certified by a Commissioner of Oaths, attorney, bank official, or notary.
+      {/* Footer note */}
+      <div className="mt-5 px-4 py-3 bg-muted border border-border rounded text-[11px] text-muted-foreground leading-relaxed">
+        <strong className="text-foreground">Certification requirement:</strong>{' '}
+        All copies must be certified by a Commissioner of Oaths, attorney, bank official, or notary.
         Documents are stored encrypted in compliance with FICA and POPIA obligations.
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -162,6 +163,7 @@ export default function ComplianceReview() {
           />
         </div>
 
+        <PullToRefreshWrapper onRefresh={() => queryClient.invalidateQueries({ queryKey: ['compliance-clients'] })}>
         {/* Mobile cards */}
         {!isLoading && (
           <div className="md:hidden space-y-2 mb-4">
@@ -258,6 +260,7 @@ export default function ComplianceReview() {
             );
           })}
         </div>
+        </PullToRefreshWrapper>
       </div>
       <MobileBottomNav />
     </div>

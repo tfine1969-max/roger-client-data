@@ -6,7 +6,6 @@ import generateProposalPdf from "@/lib/generateProposalPdf";
 export default function SignProposal() {
   const { proposalId } = useParams();
   const [status, setStatus] = useState("loading");
-  // status: loading | invalid | already_signed | ready | submitting | success | error
   const [proposal, setProposal] = useState(null);
   const [debugInfo, setDebugInfo] = useState('');
   const [initials, setInitials] = useState('');
@@ -16,15 +15,10 @@ export default function SignProposal() {
   const sigPadRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  useEffect(() => {
-    loadProposal();
-  }, [proposalId]);
+  useEffect(() => { loadProposal(); }, [proposalId]);
 
-  // Init signature pad once canvas is visible
   useEffect(() => {
-    if (status === 'ready') {
-      setTimeout(initPad, 100);
-    }
+    if (status === 'ready') setTimeout(initPad, 100);
   }, [status]);
 
   const initPad = () => {
@@ -35,19 +29,18 @@ export default function SignProposal() {
     canvas.height = rect.height * window.devicePixelRatio;
     const ctx = canvas.getContext('2d');
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    ctx.strokeStyle = '#1e3a5f';
+    ctx.strokeStyle = '#0E4166';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
     let drawing = false;
-    let points = [];
     const empty = { current: true };
-    sigPadRef.current = { isEmpty: () => empty.current, clear: () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      empty.current = true;
-      setIsDrawing(false);
-    }, toDataURL: () => canvas.toDataURL('image/png') };
+    sigPadRef.current = {
+      isEmpty: () => empty.current,
+      clear: () => { ctx.clearRect(0, 0, canvas.width, canvas.height); empty.current = true; setIsDrawing(false); },
+      toDataURL: () => canvas.toDataURL('image/png'),
+    };
 
     const pos = (e) => {
       const r = canvas.getBoundingClientRect();
@@ -68,33 +61,15 @@ export default function SignProposal() {
 
   const loadProposal = async () => {
     try {
-      if (!proposalId) {
-        setDebugInfo('No proposalId in URL params');
-        setStatus("invalid");
-        return;
-      }
-
+      if (!proposalId) { setDebugInfo('No proposalId in URL params'); setStatus("invalid"); return; }
       setDebugInfo(`Loading proposal: ${proposalId}`);
       const res = await base44.functions.invoke('signProposal', { action: 'load', proposalId });
       const found = res.data?.proposal;
-
-      if (!found) {
-        setDebugInfo('Proposal not found');
-        setStatus("invalid");
-        return;
-      }
-
+      if (!found) { setDebugInfo('Proposal not found'); setStatus("invalid"); return; }
       setDebugInfo(`Found: ${found.id} — ${found.status}`);
-
-      if (found.status === 'Signed') {
-        setProposal(found);
-        setStatus("already_signed");
-        return;
-      }
-
+      if (found.status === 'Signed') { setProposal(found); setStatus("already_signed"); return; }
       setProposal(found);
       setStatus("ready");
-
     } catch (err) {
       setDebugInfo(`Error: ${err?.message || JSON.stringify(err)}`);
       setStatus("error");
@@ -102,46 +77,23 @@ export default function SignProposal() {
   };
 
   const handleSubmit = async () => {
-    if (!sigPadRef.current || sigPadRef.current.isEmpty()) {
-      alert('Please draw your signature before submitting.');
-      return;
-    }
-    if (!initials.trim()) {
-      alert('Please enter your initials.');
-      return;
-    }
-    if (!agreed) {
-      alert('Please confirm that you have read and accept this document.');
-      return;
-    }
+    if (!sigPadRef.current || sigPadRef.current.isEmpty()) { alert('Please draw your signature before submitting.'); return; }
+    if (!initials.trim()) { alert('Please enter your initials.'); return; }
+    if (!agreed) { alert('Please confirm that you have read and accept this document.'); return; }
 
     setSubmitting(true);
-
-    const timeoutId = setTimeout(() => {
-      setSubmitting(false);
-      alert('Submission timed out. Please check your connection and try again.');
-    }, 60000);
+    const timeoutId = setTimeout(() => { setSubmitting(false); alert('Submission timed out. Please try again.'); }, 60000);
 
     try {
       const signatureBase64 = sigPadRef.current.toDataURL();
       const initialsValue = initials.trim().toUpperCase();
       const signedAt = new Date().toISOString();
+      const signatureData = { clientSignature: signatureBase64, clientInitials: initialsValue, signedAt };
 
-      const signatureData = {
-        clientSignature: signatureBase64,
-        clientInitials: initialsValue,
-        signedAt,
-      };
-
-      // STEP 1 — Generate signed PDF client-side with embedded signature
       let signedPdfUrl = null;
       try {
-        const related = await base44.functions.invoke('signProposal', {
-          action: 'getRelated',
-          proposalId: proposal.id,
-        });
+        const related = await base44.functions.invoke('signProposal', { action: 'getRelated', proposalId: proposal.id });
         const { investments, riskProducts } = related.data;
-
         const doc = await generateProposalPdf(proposal, investments, riskProducts, signatureData);
         const pdfBlob = doc.output('blob');
         const safeName = (proposal.client_name || '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
@@ -149,18 +101,9 @@ export default function SignProposal() {
         const pdfFile = new File([pdfBlob], signedFilename, { type: 'application/pdf' });
         const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
         signedPdfUrl = file_url;
-      } catch (pdfErr) {
-        console.warn('PDF generation failed (non-blocking):', pdfErr);
-      }
+      } catch (pdfErr) { console.warn('PDF generation failed (non-blocking):', pdfErr); }
 
-      // STEP 2 — Save to DB + notify advisor via backend (service role bypasses RLS)
-      await base44.functions.invoke('signProposal', {
-        action: 'submit',
-        proposalId: proposal.id,
-        clientInitials: initialsValue,
-        signedAt,
-        signedPdfUrl,
-      });
+      await base44.functions.invoke('signProposal', { action: 'submit', proposalId: proposal.id, clientInitials: initialsValue, signedAt, signedPdfUrl });
 
       clearTimeout(timeoutId);
       setSubmitting(false);
@@ -173,69 +116,66 @@ export default function SignProposal() {
     }
   };
 
-  // ── States ──────────────────────────────────────────────────────────────────
+  // ── Status pages ────────────────────────────────────────────────────────────
 
   if (status === "loading") return (
-    <div style={pageStyle}>
-      <div style={{ width: 32, height: 32, border: '4px solid #e2e8f0', borderTopColor: '#1e3a5f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 16 }} />
-      <p style={{ color: '#64748b', fontSize: 14 }}>Loading your document...</p>
-      <p style={{ color: '#94a3b8', fontSize: 11, marginTop: 8 }}>{debugInfo}</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-10">
+      <div className="w-8 h-8 border-4 border-border border-t-navy rounded-full animate-spin mb-4" />
+      <p className="text-muted-foreground text-sm">Loading your document...</p>
+      <p className="text-muted-foreground/60 text-[11px] mt-2 font-mono">{debugInfo}</p>
     </div>
   );
 
   if (status === "error") return (
-    <div style={pageStyle}>
-      <p style={{ fontSize: 20, fontWeight: 700, color: '#1e3a5f', marginBottom: 8 }}>Something went wrong</p>
-      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>Please contact your advisor.</p>
-      <p style={{ color: '#94a3b8', fontSize: 11, fontFamily: 'monospace', background: '#f8fafc', padding: '8px 12px', borderRadius: 6, maxWidth: 500, wordBreak: 'break-all' }}>{debugInfo}</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-10">
+      <p className="text-xl font-bold text-navy mb-2">Something went wrong</p>
+      <p className="text-muted-foreground text-sm mb-4">Please contact your advisor.</p>
+      <p className="text-[11px] font-mono bg-muted text-muted-foreground px-3 py-2 rounded max-w-lg break-all">{debugInfo}</p>
     </div>
   );
 
   if (status === "invalid") return (
-    <div style={pageStyle}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-      <p style={{ fontSize: 20, fontWeight: 700, color: '#1e3a5f', marginBottom: 8 }}>Link Invalid or Expired</p>
-      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>This signing link is invalid or has expired. Please contact your advisor.</p>
-      <p style={{ color: '#94a3b8', fontSize: 10, fontFamily: 'monospace', background: '#f8fafc', padding: '8px 12px', borderRadius: 6, maxWidth: 500, wordBreak: 'break-all', textAlign: 'left' }}>
-        Debug: {debugInfo}
-      </p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-10">
+      <div className="text-5xl mb-4">🔒</div>
+      <p className="text-xl font-bold text-navy mb-2">Link Invalid or Expired</p>
+      <p className="text-muted-foreground text-sm mb-4">This signing link is invalid or has expired. Please contact your advisor.</p>
+      <p className="text-[11px] font-mono bg-muted text-muted-foreground px-3 py-2 rounded max-w-lg break-all text-left">{debugInfo}</p>
     </div>
   );
 
   if (status === "already_signed") return (
-    <div style={pageStyle}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-      <p style={{ fontSize: 20, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Document Already Signed</p>
-      <p style={{ color: '#64748b', fontSize: 13 }}>This document has already been signed. Thank you, {proposal?.client_name}.</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-10">
+      <div className="text-5xl mb-4">✅</div>
+      <p className="text-xl font-bold text-green-700 mb-2">Document Already Signed</p>
+      <p className="text-muted-foreground text-sm">This document has already been signed. Thank you, {proposal?.client_name}.</p>
     </div>
   );
 
   if (status === "success") return (
-    <div style={pageStyle}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-      <p style={{ fontSize: 20, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Document Signed Successfully</p>
-      <p style={{ color: '#64748b', fontSize: 13 }}>Thank you, {proposal?.client_name}. Your signed document has been submitted to your advisor.</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-10">
+      <div className="text-5xl mb-4">🎉</div>
+      <p className="text-xl font-bold text-green-700 mb-2">Document Signed Successfully</p>
+      <p className="text-muted-foreground text-sm">Thank you, {proposal?.client_name}. Your signed document has been submitted to your advisor.</p>
     </div>
   );
 
   // ── Ready — signing UI ──────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '40px 20px' }}>
-      <div style={{ maxWidth: 680, margin: '0 auto' }}>
+    <div className="min-h-screen bg-background py-10 px-5">
+      <div className="max-w-2xl mx-auto">
 
         {/* Header */}
-        <div style={{ background: '#1e3a5f', color: '#fff', borderRadius: '12px 12px 0 0', padding: '24px 32px', marginBottom: 2 }}>
-          <p style={{ margin: 0, fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>
+        <div className="bg-navy text-white rounded-t-xl px-6 py-5 mb-0.5">
+          <p className="text-[11px] uppercase tracking-widest text-white/70 mb-1">
             Wealthworks Investments (Pty) Ltd · FSP 45624
           </p>
-          <p style={{ margin: '6px 0 0', fontSize: 18, fontWeight: 700 }}>Financial Strategy &amp; Recommendation Report</p>
-          <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.7 }}>Ref: {proposal?.reference || proposal?.id}</p>
+          <p className="text-lg font-bold">Financial Strategy &amp; Recommendation Report</p>
+          <p className="text-[12px] text-white/70 mt-1">Ref: {proposal?.reference || proposal?.id}</p>
         </div>
 
         {/* Intro */}
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderTop: 'none', padding: '28px 32px', marginBottom: 2 }}>
-          <p style={{ color: '#334155', fontSize: 13, lineHeight: 1.7, margin: 0 }}>
+        <div className="bg-card border border-border border-t-0 px-6 py-5 mb-0.5">
+          <p className="text-foreground text-sm leading-relaxed">
             Dear <strong>{(proposal?.client_name || '').split(' ')[0] || 'Client'}</strong>,<br /><br />
             Please review your Financial Strategy &amp; Recommendation Report. Once you have read it, please sign and initial below to confirm your acceptance.
           </p>
@@ -243,58 +183,56 @@ export default function SignProposal() {
 
         {/* PDF link */}
         {proposal?.proposal_pdf_url && (
-          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderTop: 'none', padding: '16px 32px', marginBottom: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 border-t-0 px-6 py-4 mb-0.5 flex items-center justify-between gap-4">
             <div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1e40af' }}>Your Recommendation Report</p>
-              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#3b82f6' }}>Click to open and read your full report before signing</p>
+              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 m-0">Your Recommendation Report</p>
+              <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5">Click to open and read your full report before signing</p>
             </div>
             <a href={proposal.proposal_pdf_url} target="_blank" rel="noopener noreferrer"
-              style={{ background: '#1e3a5f', color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>
+              className="bg-navy text-white text-[12px] font-bold px-4 py-2 hover:bg-ocean transition-colors whitespace-nowrap">
               Open PDF
             </a>
           </div>
         )}
 
         {/* Signing panel */}
-        <div style={{ background: '#fff', border: '2px solid #1e3a5f', borderRadius: '0 0 12px 12px', padding: '32px' }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#1e3a5f', marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid #e2e8f0' }}>
-            Sign Document
-          </p>
+        <div className="bg-card border-2 border-navy rounded-b-xl px-6 py-7">
+          <p className="text-sm font-bold text-navy mb-5 pb-3 border-b border-border">Sign Document</p>
 
           {/* Signature canvas */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Your Signature</label>
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', background: '#fff', position: 'relative', height: 140 }}>
-              <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none', cursor: 'crosshair' }} />
+          <div className="mb-5">
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Your Signature</label>
+            <div className="border border-border bg-white rounded-lg overflow-hidden relative h-36">
+              <canvas ref={canvasRef} className="w-full h-full block touch-none cursor-crosshair" />
               {!isDrawing && (!sigPadRef.current || sigPadRef.current.isEmpty()) && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                  <span style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>Draw your signature here</span>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-muted-foreground text-sm italic">Draw your signature here</span>
                 </div>
               )}
             </div>
             <button onClick={() => sigPadRef.current?.clear()}
-              style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', marginTop: 4, padding: 0 }}>
+              className="text-muted-foreground text-[11px] mt-1 hover:text-foreground transition-colors bg-transparent border-none cursor-pointer p-0">
               Clear signature
             </button>
           </div>
 
           {/* Initials */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Initials</label>
+          <div className="mb-5">
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Initials</label>
             <input
               type="text"
               value={initials}
               onChange={e => setInitials(e.target.value.toUpperCase())}
               placeholder="e.g. JP"
               maxLength={6}
-              style={{ width: 120, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 16, fontWeight: 700, letterSpacing: '4px', textTransform: 'uppercase', textAlign: 'center' }}
+              className="w-28 px-3 py-2.5 border border-input bg-background text-base font-bold tracking-[4px] text-center uppercase rounded-lg focus:outline-none focus:ring-1 focus:ring-navy"
             />
           </div>
 
-          {/* Confirmation checkbox */}
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#334155', marginBottom: 24, cursor: 'pointer' }}>
+          {/* Checkbox */}
+          <label className="flex items-start gap-3 text-sm text-foreground mb-6 cursor-pointer">
             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
-              style={{ marginTop: 2, accentColor: '#1e3a5f', flexShrink: 0, width: 16, height: 16 }} />
+              className="mt-0.5 w-4 h-4 flex-shrink-0 accent-navy" />
             I confirm that I have read and understood this document and accept the recommendations and terms contained herein.
           </label>
 
@@ -302,34 +240,16 @@ export default function SignProposal() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            style={{
-              background: submitting ? '#94a3b8' : '#1e3a5f',
-              color: '#fff', border: 'none', borderRadius: 8,
-              padding: '14px 24px', fontSize: 13, fontWeight: 700,
-              letterSpacing: '0.8px', textTransform: 'uppercase',
-              width: '100%', cursor: submitting ? 'not-allowed' : 'pointer',
-            }}
+            className="w-full py-3.5 bg-navy text-white text-sm font-bold uppercase tracking-widest hover:bg-ocean transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
           >
             {submitting ? 'SUBMITTING...' : 'SUBMIT SIGNATURE'}
           </button>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 10, color: '#94a3b8', marginTop: 24 }}>
+        <p className="text-center text-[11px] text-muted-foreground mt-6">
           Wealth Works (Pty) Ltd FSP 28337 · Wealthworks Investments (Pty) Ltd FSP 45624
         </p>
       </div>
     </div>
   );
 }
-
-const pageStyle = {
-  minHeight: '100vh', display: 'flex', flexDirection: 'column',
-  alignItems: 'center', justifyContent: 'center',
-  background: '#f8fafc', textAlign: 'center', padding: 40,
-};
-
-const labelStyle = {
-  display: 'block', fontSize: 11, fontWeight: 700,
-  letterSpacing: '1px', textTransform: 'uppercase',
-  color: '#64748b', marginBottom: 8,
-};

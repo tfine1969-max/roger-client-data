@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -93,8 +94,26 @@ const ProtectedClientRoute = ({ element }) => {
   return element;
 };
 
+const pageVariants = {
+  initial: { opacity: 0, x: 12 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+  exit: { opacity: 0, x: -12, transition: { duration: 0.16, ease: 'easeIn' } },
+};
+
+const AnimatedRoutes = ({ children }) => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: '100%' }}>
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <LoadingScreen />;
@@ -110,7 +129,9 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Routes>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: '100%' }}>
+    <Routes location={location}>
       <Route path="/" element={<Landing />} />
       <Route path="/advisor-login" element={<AdvisorLogin />} />
       <Route path="/sign" element={<ClientSign />} />
@@ -141,6 +162,8 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
