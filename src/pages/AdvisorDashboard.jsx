@@ -1,3 +1,4 @@
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -248,6 +249,7 @@ export default function AdvisorDashboard() {
           </PortalCard>
         </div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

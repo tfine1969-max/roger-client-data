@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, LogOut } from 'lucide-react';
+import { ArrowLeft, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Field = ({ label, value }) => (
@@ -25,6 +25,9 @@ export default function ClientDashboard() {
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const clientId = sessionStorage.getItem('pending_client_id');
@@ -53,6 +56,20 @@ export default function ClientDashboard() {
     };
     loadClient();
   }, [navigate]);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      await base44.entities.Clients.delete(client.id);
+      sessionStorage.clear();
+      toast.success('Account deleted.');
+      navigate('/', { replace: true });
+    } catch {
+      toast.error('Failed to delete account.');
+      setIsDeleting(false);
+    }
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem('pending_client_id');
@@ -281,6 +298,46 @@ export default function ClientDashboard() {
             >
               Update my information
             </Button>
+          </div>
+
+          {/* Account Management */}
+          <div className="border-t border-border pt-3">
+            <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Account Management</h2>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-danger border border-danger/30 rounded hover:bg-danger/5 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" /> Delete my account
+              </button>
+            ) : (
+              <div className="border border-danger/30 rounded p-4 bg-red-50/50 space-y-3 max-w-sm">
+                <p className="text-sm font-semibold text-danger">Delete account permanently?</p>
+                <p className="text-xs text-muted-foreground">This will permanently delete your profile and all associated data. Type <strong>DELETE</strong> to confirm.</p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE to confirm"
+                  className="w-full px-3 py-2 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-danger"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                    className="px-4 py-2 bg-danger text-white text-xs font-bold rounded disabled:opacity-40 hover:bg-red-700 transition-colors"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Confirm delete'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                    className="px-4 py-2 text-xs font-semibold border border-border rounded hover:bg-secondary transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

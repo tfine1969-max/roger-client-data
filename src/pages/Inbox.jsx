@@ -1,3 +1,4 @@
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -149,6 +150,7 @@ export default function Inbox() {
         advisorKey={advisorKey}
         advisorName={advisor.name}
       />
+      <MobileBottomNav />
     </div>
   );
 }

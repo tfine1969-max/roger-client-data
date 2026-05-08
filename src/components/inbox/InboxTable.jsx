@@ -137,6 +137,45 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
     });
   }
 
+  // Mobile card layout
+  const MobileCards = () => (
+    <div className="space-y-2">
+      {filtered.length === 0 && (
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          {statusFilter ? 'No proposals match this filter.' : 'No proposals yet.'}
+        </div>
+      )}
+      {filtered.map(p => {
+        const badgeStyle = STATUS_BADGE_STYLES[p.status] || DEFAULT_BADGE;
+        const client = clientMap[p.client_id] || clientMap[p.client] || null;
+        const clientName = client
+          ? client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || client.full_name
+          : p.client_name || '—';
+        return (
+          <div key={p.id} onClick={() => navigate(`/proposal/${p.id}/engine`)}
+            className="bg-card border border-border rounded-lg p-3 cursor-pointer active:bg-secondary/50">
+            <div className="flex justify-between items-start mb-1.5">
+              <div>
+                <p className="text-sm font-semibold text-navy">{clientName}</p>
+                <p className="text-[10px] text-muted-foreground font-mono">{p.reference}</p>
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 600, padding: '3px 8px', borderRadius: 4, background: badgeStyle.bg, color: badgeStyle.color }}>
+                {p.status || 'Draft'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <FicaStatusIndicator client={client} />
+              <button onClick={(e) => handleDelete(e, p.id)} disabled={deletingId === p.id}
+                className="hit-area text-muted-foreground hover:text-danger transition-colors disabled:opacity-40">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div>
       {statusFilter && onClearFilter && (
@@ -153,7 +192,13 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
         </button>
       )}
 
-      <div className="border border-border bg-card overflow-x-auto">
+      {/* Mobile cards */}
+      <div className="md:hidden">
+        <MobileCards />
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block border border-border bg-card overflow-x-auto">
         {/* Header */}
         <div className="grid grid-cols-[1.7fr_1.7fr_1.2fr_1fr_0.9fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[820px]">
           {['Client', 'Needs Identified', 'FICA Status', 'Created / Updated', 'Status', ''].map((h, i) => (
@@ -235,7 +280,7 @@ export default function InboxTable({ proposals, clientMap = {}, statusFilter = n
                 <button
                   onClick={(e) => handleDelete(e, p.id)}
                   disabled={deletingId === p.id}
-                  className="p-1 text-muted-foreground hover:text-danger transition-colors disabled:opacity-40"
+                  className="hit-area text-muted-foreground hover:text-danger transition-colors disabled:opacity-40"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

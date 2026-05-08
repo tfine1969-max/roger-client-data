@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -161,8 +162,45 @@ export default function ComplianceReview() {
           />
         </div>
 
-        {/* Table */}
-        <div className="border border-border bg-card overflow-x-auto">
+        {/* Mobile cards */}
+        {!isLoading && (
+          <div className="md:hidden space-y-2 mb-4">
+            {filtered.map(client => {
+              const vs = getVerificationStatus(client);
+              const style = STATUS_STYLES[vs] || STATUS_STYLES.unknown;
+              const name = client.full_name || client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || '—';
+              return (
+                <div key={client.id} className="bg-card border border-border rounded-lg p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-navy">{name}</p>
+                      <p className="text-[10px] text-muted-foreground">{client.email || '—'}</p>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded border ${style.bg} ${style.text} ${style.border}`}>
+                      {resolvedFicaLabel(client)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground">{formatDate(client.doc_submitted_at || client.created_date)}</p>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => navigate(`/compliance-review/${client.id}`)}
+                        className="px-3 py-2 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded">
+                        Review →
+                      </button>
+                      <button onClick={(e) => handleDelete(e, client.id)} disabled={deletingId === client.id}
+                        className="hit-area text-danger hover:text-red-700 transition-colors disabled:opacity-40">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Desktop Table */}
+        <div className="hidden md:block border border-border bg-card overflow-x-auto">
           <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_160px] px-4 py-2.5 bg-muted border-b border-border min-w-[820px]">
             {['Client', 'Email', 'FICA Status', 'Doc Status', 'Submitted', 'Actions'].map(h => (
               <div key={h} className="text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">{h}</div>
@@ -210,7 +248,7 @@ export default function ComplianceReview() {
                   <button
                     onClick={(e) => handleDelete(e, client.id)}
                     disabled={deletingId === client.id}
-                    className="p-1.5 bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40"
+                    className="hit-area bg-danger text-white hover:bg-red-700 transition-colors rounded disabled:opacity-40"
                     title="Delete client"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -221,6 +259,7 @@ export default function ComplianceReview() {
           })}
         </div>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }
