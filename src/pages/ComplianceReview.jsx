@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, Trash2 } from 'lucide-react';
 import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
 
 const STATUS_FILTERS = [
@@ -54,7 +54,18 @@ export default function ComplianceReview() {
     base44.auth.me().then(u => { setCurrentUser(u); setAuthChecked(true); }).catch(() => setAuthChecked(true));
   }, []);
 
+  const queryClient = useQueryClient();
+  const [deletingId, setDeletingId] = useState(null);
   const authorised = isComplianceAuthorised(currentUser);
+
+  const handleDelete = async (e, clientId) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this client record? This cannot be undone.')) return;
+    setDeletingId(clientId);
+    await base44.entities.Clients.delete(clientId);
+    queryClient.invalidateQueries({ queryKey: ['compliance-clients'] });
+    setDeletingId(null);
+  };
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['compliance-clients'],
@@ -103,7 +114,7 @@ export default function ComplianceReview() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
+      <div className="sticky top-0 z-20 bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/advisor-dashboard')} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" />
@@ -152,8 +163,8 @@ export default function ComplianceReview() {
 
         {/* Table */}
         <div className="border border-border bg-card overflow-x-auto">
-          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px] px-4 py-2.5 bg-muted border-b border-border min-w-[800px]">
-            {['Client', 'Email', 'FICA Status', 'Doc Status', 'Submitted', 'Action'].map(h => (
+          <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px_40px] px-4 py-2.5 bg-muted border-b border-border min-w-[860px]">
+            {['Client', 'Email', 'FICA Status', 'Doc Status', 'Submitted', 'Action', ''].map(h => (
               <div key={h} className="text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">{h}</div>
             ))}
           </div>
@@ -174,7 +185,7 @@ export default function ComplianceReview() {
             const Icon = style.icon;
             const name = client.full_name || client.entity_name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || '—';
             return (
-              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px] px-4 py-3 border-b border-border items-center min-w-[800px] hover:bg-secondary/30 transition-colors">
+              <div key={client.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px_40px] px-4 py-3 border-b border-border items-center min-w-[860px] hover:bg-secondary/30 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-navy">{name}</p>
                   <p className="text-[10px] text-muted-foreground">{client.client_type || 'Natural Person'}</p>
@@ -194,6 +205,14 @@ export default function ComplianceReview() {
                   className="px-3 py-1.5 bg-navy text-white text-[10px] font-bold uppercase tracking-wide hover:bg-ocean transition-colors rounded"
                 >
                   Review →
+                </button>
+                <button
+                  onClick={(e) => handleDelete(e, client.id)}
+                  disabled={deletingId === client.id}
+                  className="p-1 text-muted-foreground hover:text-danger transition-colors disabled:opacity-40"
+                  title="Delete client"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             );

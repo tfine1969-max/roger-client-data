@@ -79,7 +79,7 @@ export default function Inbox() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
+      <div className="sticky top-0 z-20 bg-navy border-b border-border px-6 py-4 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-white">WealthWorks</h1>
           <p className="text-white/60 text-sm">Advisor Portal</p>
