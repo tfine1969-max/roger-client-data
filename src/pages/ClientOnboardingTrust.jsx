@@ -752,7 +752,7 @@ export default function ClientOnboardingTrust() {
                   { key: 'trust_proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
                   { key: 'trust_bank_statement_uploaded', title: 'TRUST BANK STATEMENT', desc: 'Most recent 3 months' },
                 ].map(doc => (
-                  <div key={doc.key} className="border border-border rounded p-3">
+                  <div key={doc.key} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
                     {formData[doc.key] ? (
                       <label className="block cursor-pointer">
@@ -784,14 +784,14 @@ export default function ClientOnboardingTrust() {
                 {trustees.map((t, idx) => {
                   const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || `Trustee ${idx + 1}`;
                   return (
-                    <div key={idx} className="border border-border rounded p-3">
+                    <div key={idx} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} - {name}</p>
                       <div className="grid grid-cols-2 gap-3">
                         {[
                           { key: `trustee_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
                           { key: `trustee_${idx}_addr_uploaded`, title: 'PROOF OF RESIDENTIAL ADDRESS', desc: 'Utility bill / bank statement' },
                         ].map(doc => (
-                          <div key={doc.key} className="border border-border rounded p-2">
+                          <div key={doc.key} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3">
                             <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">{doc.title}</h4>
                             {doc.key.endsWith('_id_uploaded') && t.identity_type === 'SA ID' ? (
                               <div className="grid grid-cols-2 gap-2">
@@ -850,7 +850,7 @@ export default function ClientOnboardingTrust() {
         {/* STEP 4 - KYC Declaration */}
         {currentStep === 4 && (
           <div className="space-y-3">
-            <div className="border border-border rounded p-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TRUST INFORMATION</h3>
               <div className="space-y-3">
                 <div>
@@ -879,7 +879,7 @@ export default function ClientOnboardingTrust() {
                 </div>
               </div>
             </div>
-            <div className="border border-border rounded p-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TAX & COMPLIANCE DECLARATION</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -921,7 +921,7 @@ export default function ClientOnboardingTrust() {
           <div className="space-y-4">
             <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
               <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
-              <div className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded">
+              <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
                 <span className="text-base shrink-0">ℹ️</span>
                 <div>
                   <p className="font-semibold text-sm text-navy">Verification is under review</p>
@@ -931,7 +931,7 @@ export default function ClientOnboardingTrust() {
                 </div>
               </div>
             </div>
-            <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground">
+            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-[10px] text-muted-foreground shadow-sm">
               <span className="font-semibold text-navy">Privacy note: </span>
               Trustee screening, AML and risk results are retained for WealthWorks internal compliance review and are not displayed as client-facing outcomes.
             </div>
@@ -940,7 +940,7 @@ export default function ClientOnboardingTrust() {
         {/* STEP 6 - Financial Profile */}
         {currentStep === 6 && (
           <div className="space-y-3">
-            <div className="border border-border rounded p-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">TRUST FINANCIALS</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -974,7 +974,7 @@ export default function ClientOnboardingTrust() {
                 />
               </div>
             </div>
-            <div className="border border-border rounded p-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
               {formData.entity_loa_uploaded ? (
                 <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">

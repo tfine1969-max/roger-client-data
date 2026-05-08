@@ -40,18 +40,24 @@ export default function PersonCard({ person, idx, role, onUpdate, onRemove, canR
   };
 
   return (
-    <div className="border border-border bg-card rounded p-3 w-full">
-      {/* Card header */}
-      <div className="flex items-center justify-between mb-2.5">
-        <span className="text-[11px] font-bold text-navy uppercase tracking-wider">{role} {idx + 1}</span>
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm w-full">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-[10px] font-semibold uppercase tracking-[.16em] text-ocean">{role}</div>
+          <div className="text-sm font-semibold text-navy">{role} {idx + 1}</div>
+        </div>
         {canRemove && (
-          <button type="button" onClick={() => onRemove(idx)} className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors px-2 py-0.5 border border-red-200 rounded hover:bg-red-50">
+          <button
+            type="button"
+            onClick={() => onRemove(idx)}
+            className="rounded-full border border-red-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.12em] text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+          >
             Delete
           </button>
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3 p-4">
         {/* Row 1: Title | First Name | Surname */}
         <div className="grid grid-cols-[100px_1fr_1fr] gap-2">
           <F label="Title">

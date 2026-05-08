@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus, Trash2, Download, Upload, FileSignature, PenLine, Type, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 import { ADVISORS } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 import LoaSection from '@/components/onboarding/LoaSection';
 import RiskProfileStep from '@/components/onboarding/RiskProfileStep';
+import SectionBlock from '@/components/onboarding/SectionBlock';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
 
@@ -1583,8 +1584,14 @@ export default function ClientOnboarding() {
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 2: Document Upload Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 2 && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
+              <SectionBlock
+                eyebrow="Document upload"
+                title="Certified source documents"
+                description="Upload the certified documents needed before FICA verification can proceed."
+                badge="Step 2"
+              >
+                <div className="grid grid-cols-2 gap-3">
                 {[
                   { key: 'identity_document_uploaded', title: 'IDENTITY DOCUMENT', badge: 'OPTIONAL', desc: 'SA ID / Smart Card / Passport', sub: 'Front & back clearly visible', urlField: 'doc_identity' },
                   { key: 'proof_of_address_uploaded', title: 'PROOF OF ADDRESS', badge: 'OPTIONAL', desc: 'Utility bill / bank statement', sub: 'Must show name and address', urlField: 'doc_proof_of_address' },
@@ -1661,8 +1668,9 @@ export default function ClientOnboarding() {
                   </div>
                   );
                 })}
-              </div>
-              <div className="p-3 bg-secondary/50 border border-border rounded text-xs text-muted-foreground">
+                </div>
+              </SectionBlock>
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <p className="font-semibold text-navy mb-0.5">Note</p>
                 Documents are required before you can proceed to FICA verification in the next step.
               </div>
@@ -1671,9 +1679,13 @@ export default function ClientOnboarding() {
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: KYC Declaration Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 3 && (
-            <div className="space-y-1.5">
-              <div className="border-2 border-border rounded p-1.5">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px] mb-1">EMPLOYMENT & OCCUPATION</h3>
+            <div className="space-y-4">
+              <SectionBlock
+                eyebrow="KYC declaration"
+                title="Employment & occupation"
+                description="Employment details, source of funds and tax/PEP declarations support the FICA record."
+                badge="Step 3"
+              >
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
@@ -1698,12 +1710,15 @@ export default function ClientOnboarding() {
                     </Select>
                   </div>
                 </div>
-              </div>
+              </SectionBlock>
 
-              <div className="border-2 border-border rounded p-3">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">SOURCE OF FUNDS</h3>
-                  <span className="text-[9px] text-muted-foreground">SELECT ALL</span>
+              <SectionBlock
+                title="Source of funds"
+                description="Select all sources that reasonably explain the client's income and asset flow."
+                tone="teal"
+              >
+                <div className="flex justify-end mb-2">
+                  <span className="text-[8px] uppercase tracking-[.14em] text-muted-foreground">Select all that apply</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {['Salary / employment income', 'Business income / dividends', 'Investment returns', 'Inheritance / gift', 'Retirement / pension fund', 'Sale of property / assets'].map(item => (
@@ -1713,12 +1728,15 @@ export default function ClientOnboarding() {
                     </label>
                   ))}
                 </div>
-              </div>
+              </SectionBlock>
 
-              <div className="border-2 border-border rounded p-1.5">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="font-semibold text-navy uppercase tracking-wider text-[10px]">TAX & PEP DECLARATION</h3>
-                  <span className="text-[8px] font-semibold text-ocean">FATCA / CRS</span>
+              <SectionBlock
+                title="Tax & PEP declaration"
+                description="Capture FATCA / CRS indicators and any PEP disclosures."
+                tone="navy"
+              >
+                <div className="flex justify-end mb-2">
+                  <span className="rounded-full bg-ocean/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[.14em] text-ocean">FATCA / CRS</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
@@ -1757,14 +1775,16 @@ export default function ClientOnboarding() {
                     <Input className="mt-0.5 h-7 text-xs" placeholder="Describe the public function" value={formData.pep_explanation} onChange={e => handleChange('pep_explanation', e.target.value)} />
                   </div>
                 )}
-              </div>
+              </SectionBlock>
             </div>
           )}
 
           {/* STEP 4: FICA Verification */}
+
+          {/* STEP 4: FICA Verification */}
           {currentStep === 4 && (
             <div className="space-y-3">
-              <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
                 <div className="flex items-start gap-3 p-3 bg-secondary/50 border border-border rounded">
                   <span className="text-base shrink-0">ℹ️</span>
@@ -1776,7 +1796,7 @@ export default function ClientOnboarding() {
                   </div>
                 </div>
               </div>
-              <div className="p-3 bg-secondary/50 border border-border rounded text-[10px] text-muted-foreground leading-relaxed">
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-[10px] leading-relaxed text-muted-foreground shadow-sm">
                 <span className="font-semibold text-navy">Privacy note: </span>
                 Verification results, AML screening and risk ratings are retained for WealthWorks internal compliance review and are not displayed as client-facing outcomes.
               </div>
@@ -1785,7 +1805,7 @@ export default function ClientOnboarding() {
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 5: Income & Assets Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 5 && (
             <div className="space-y-2">
-              <div className="border border-border rounded p-2.5">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">INCOME & ASSETS</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -1838,7 +1858,7 @@ export default function ClientOnboarding() {
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 6: Existing Products Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 6 && (
             <div className="space-y-2">
-              <div className="border border-border rounded p-2.5">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="flex justify-between items-center mb-1.5">
                   <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">EXISTING FINANCIAL PRODUCTS</h3>
                   <button type="button" onClick={addProduct} className="flex items-center gap-1 text-xs text-ocean hover:text-navy transition-colors font-medium">
@@ -1998,3 +2018,4 @@ export default function ClientOnboarding() {
     </div>
   );
 }
+
