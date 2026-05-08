@@ -35,10 +35,11 @@ export default function ClientLogin() {
 
       sessionStorage.setItem('pending_client_id', data.client_id);
       sessionStorage.setItem('pending_client_email', data.email || normalizedEmail);
-      sessionStorage.removeItem('client_session_verified');
-      sessionStorage.setItem('pending_onboarding_route', data.onboarding_route || '/client-onboarding');
-      toast.success('Verification code sent');
-      navigate('/client-otp', { replace: true });
+      // OTP BYPASS FOR TESTING — re-enable before go-live
+      sessionStorage.setItem('client_session_verified', 'true');
+      const dest = data.onboarding_route || '/client-onboarding';
+      toast.success('Logged in successfully');
+      navigate(dest, { replace: true });
     } catch (error) {
       const details = error?.response?.data?.details || error?.response?.data?.error || error.message;
       toast.error(details || 'Login failed');

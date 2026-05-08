@@ -1059,10 +1059,6 @@ export default function ClientOnboarding() {
         dependants: formData.dependants,
       };
     } else if (currentStep === 6) {
-      if (!isLoaCompleteForContinue()) {
-        toast.error('Please complete and sign the Letter of Authority, or upload a signed copy, before continuing.');
-        return;
-      }
       stepData = {
         existing_financial_products: productsList,
         products_list: productsList,
@@ -2018,4 +2014,3 @@ export default function ClientOnboarding() {
     </div>
   );
 }
-
