@@ -130,10 +130,6 @@ export default function Step04ReviewSend({
       {/* STEP 2 — ADVISOR SIGNATURE */}
       <div className={`bg-white border border-slate-200 rounded-lg p-7 shadow-sm ${stepLocked.signature ? 'opacity-45 pointer-events-none' : ''}`}>
         <h2 className="text-[11px] font-bold text-navy uppercase tracking-widest mb-1 pb-3 border-b border-slate-200">Step 2 — Advisor Signature</h2>
-        <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-5 flex items-start gap-2">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-          <span>Sign to confirm this recommendation is appropriate under FAIS.</span>
-        </p>
 
         <SignaturePad
           advisorKey={data.advisor_key || 'trevor'}
