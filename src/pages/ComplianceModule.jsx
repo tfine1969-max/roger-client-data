@@ -315,9 +315,9 @@ const Shell = ({ activeTab, setActiveTab, children }) => {
 const KpiCard = ({ label, value, critical }) => {
   const tone = value === 0 ? 'border-teal/30 text-teal' : critical ? 'border-red-300 text-red-700' : 'border-amber-300 text-amber-700';
   return (
-    <div className={`bg-card border p-4 ${tone}`}>
-      <p className="text-3xl font-semibold">{value}</p>
-      <p className="text-[10px] uppercase tracking-[.12em] text-muted-foreground font-bold mt-1">{label}</p>
+    <div className={`bg-card border p-3 ${tone}`}>
+      <p className="text-2xl font-semibold">{value}</p>
+      <p className="text-[10px] uppercase tracking-[.12em] text-muted-foreground font-bold mt-0.5">{label}</p>
     </div>
   );
 };
@@ -338,16 +338,16 @@ const PortalTile = ({ icon: Icon, title, description, meta, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className="text-left border border-border bg-card p-5 hover:border-navy/40 hover:bg-secondary/30 transition-colors"
+    className="text-left border border-border bg-card p-3 hover:border-navy/40 hover:bg-secondary/30 transition-colors"
   >
-    <div className="flex items-start justify-between gap-4">
-      <div className="w-10 h-10 border border-border bg-background flex items-center justify-center text-ocean">
-        <Icon className="w-5 h-5" />
+    <div className="flex items-center justify-between gap-2">
+      <div className="w-7 h-7 border border-border bg-background flex items-center justify-center text-ocean shrink-0">
+        <Icon className="w-4 h-4" />
       </div>
       {meta && <Badge className="bg-secondary text-muted-foreground border-border">{meta}</Badge>}
     </div>
-    <h3 className="text-lg font-semibold text-navy mt-4">{title}</h3>
-    <p className="text-sm text-muted-foreground mt-2 leading-6">{description}</p>
+    <h3 className="text-sm font-semibold text-navy mt-2">{title}</h3>
+    <p className="text-xs text-muted-foreground mt-1 leading-5">{description}</p>
   </button>
 );
 
@@ -1016,64 +1016,64 @@ export default function ComplianceModule() {
         {registersLoading && <div className="mb-4 text-sm text-muted-foreground">Loading compliance registers...</div>}
 
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <section className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="space-y-4">
+            <section className="grid md:grid-cols-2 xl:grid-cols-4 gap-3">
               <PortalTile
                 icon={FileText}
                 title="Compliance Registers"
-                description="Open every FICA, FAIS, POPIA and internal register. Empty registers are still visible and clickable for inspection readiness."
+                description="FICA, FAIS, POPIA and internal registers."
                 meta={`${entries.length} entries`}
                 onClick={() => setActiveTab('registers')}
               />
               <PortalTile
                 icon={ShieldCheck}
                 title="Client Verification"
-                description="Review or reverify clients whose FICA, sanctions or document checks were not successful, then move verified clients into proposal work."
+                description="Review and reverify clients with unsuccessful FICA or document checks."
                 meta={`${verificationClients.length} to review`}
                 onClick={() => setActiveTab('verification')}
               />
               <PortalTile
                 icon={Upload}
                 title="Document Repository"
-                description="Store and access the RMCP, training certificates, policies and evidence documents used during compliance audits."
+                description="RMCP, training certificates, policies and audit evidence."
                 meta={`${documents.length} docs`}
                 onClick={() => setActiveTab('documents')}
               />
               <PortalTile
                 icon={Download}
                 title="Audit Report"
-                description="Generate an audit-ready export containing all registers, documents, training records, outstanding items and audit trail evidence."
+                description="Export all registers, documents and training records for FSCA inspection."
                 meta="FSCA pack"
                 onClick={() => setActiveTab('audit')}
               />
             </section>
 
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-4 gap-3">
               <KpiCard label="Outstanding FICA" value={metrics.outstandingFica} critical={metrics.outstandingFica > 5} />
               <KpiCard label="High Risk Clients" value={metrics.highRiskClients} critical={metrics.highRiskClients > 0} />
               <KpiCard label="Open Complaints" value={metrics.openComplaints} critical={metrics.openComplaints > 0} />
               <KpiCard label="Breaches" value={metrics.breaches} critical={metrics.breaches > 0} />
             </div>
-            <div className="grid lg:grid-cols-2 gap-5">
+            <div className="grid lg:grid-cols-2 gap-4">
               <section className="border border-border bg-card">
-                <div className="p-4 border-b border-border"><h3 className="font-semibold text-navy">Immediate Actions</h3></div>
+                <div className="p-3 border-b border-border"><h3 className="text-sm font-semibold text-navy">Immediate Actions</h3></div>
                 <div className="divide-y divide-border">
                   {immediate.map(entry => (
-                    <div key={entry.id} className="p-4 grid grid-cols-[1fr_1fr_70px_90px] gap-3 items-center text-sm">
+                    <div key={entry.id} className="p-3 grid grid-cols-[1fr_1fr_70px_90px] gap-3 items-center text-sm">
                       <div><p className="font-semibold text-navy">{registerTypeLabel(entry.register_type)}</p><p className="text-xs text-muted-foreground">{entry.description}</p></div>
                       <p>{entry.linked_client_name || '-'}</p>
                       <p className="text-red-700 font-semibold">{daysOpen(entry)} days</p>
                       <Badge className={statusClass[entry.status] || statusClass.Open}>{entry.status}</Badge>
                     </div>
                   ))}
-                  {immediate.length === 0 && <p className="p-6 text-sm text-muted-foreground">No immediate compliance actions.</p>}
+                  {immediate.length === 0 && <p className="p-3 text-sm text-muted-foreground">No immediate compliance actions.</p>}
                 </div>
               </section>
               <section className="border border-border bg-card">
-                <div className="p-4 border-b border-border"><h3 className="font-semibold text-navy">Recent Activity</h3></div>
+                <div className="p-3 border-b border-border"><h3 className="text-sm font-semibold text-navy">Recent Activity</h3></div>
                 <div className="divide-y divide-border">
                   {recent.map(entry => (
-                    <div key={entry.id} className="p-4 grid grid-cols-[90px_1fr_1fr_90px] gap-3 items-center text-sm">
+                    <div key={entry.id} className="p-3 grid grid-cols-[90px_1fr_1fr_90px] gap-3 items-center text-sm">
                       <p className="text-muted-foreground">{dateFmt(entry.created_date)}</p>
                       <p className="font-semibold text-navy">{registerTypeLabel(entry.register_type)}</p>
                       <p>{entry.linked_advisor || '-'}</p>
@@ -1083,9 +1083,9 @@ export default function ComplianceModule() {
                 </div>
               </section>
             </div>
-            <section className="border border-border bg-card p-5">
-              <h3 className="font-semibold text-navy mb-4">Compliance Health</h3>
-              <div className="grid md:grid-cols-4 gap-5">
+            <section className="border border-border bg-card p-3">
+              <h3 className="text-sm font-semibold text-navy mb-3">Compliance Health</h3>
+              <div className="grid md:grid-cols-4 gap-4">
                 <HealthBar label="FICA Compliance" value={metrics.ficaCompliance} />
                 <HealthBar label="Training Compliance" value={metrics.trainingCompliance} />
                 <HealthBar label="Complaints SLA" value={metrics.complaintsSla} />
