@@ -1948,7 +1948,7 @@ export default function ClientOnboarding() {
           <div className="pt-5 border-t border-border mt-5">
             <div className="flex gap-3">
               {currentStep > 1 && (
-                <Button type="button" variant="outline" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">
+                <Button type="button" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm text-white" style={{ backgroundColor: '#26547C' }}>
                   Back
                 </Button>
               )}
