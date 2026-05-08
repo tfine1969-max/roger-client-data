@@ -4,7 +4,7 @@
   "properties": {
     "document_type": {
       "type": "string",
-      "enum": ["RMCP", "Training Certificate", "Policy", "Audit Evidence", "Register Evidence", "Other"]
+      "enum": ["RMCP", "Training Certificate", "Policy", "Audit Evidence", "Register Evidence", "Letter of Authority", "Other"]
     },
     "title": { "type": "string" },
     "description": { "type": "string" },
@@ -17,6 +17,10 @@
     "uploaded_at": { "type": "string" },
     "review_date": { "type": "string" },
     "expiry_date": { "type": "string" },
+    "source": { "type": "string" },
+    "signature_method": { "type": "string" },
+    "authority_granted": { "type": "boolean" },
+    "astute_authority_included": { "type": "boolean" },
     "status": {
       "type": "string",
       "enum": ["Current", "Expired", "Archived"],

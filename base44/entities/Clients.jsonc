@@ -169,6 +169,81 @@
     "loa_authorised": {
       "type": "boolean"
     },
+    "loa_completion_method": {
+      "type": "string",
+      "enum": [
+        "electronic",
+        "manual"
+      ]
+    },
+    "loa_signature_method": {
+      "type": "string",
+      "enum": [
+        "drawn",
+        "typed",
+        "uploaded",
+        "manual"
+      ]
+    },
+    "loa_signature_data": {
+      "type": "string"
+    },
+    "loa_typed_signature_name": {
+      "type": "string"
+    },
+    "loa_signature_timestamp": {
+      "type": "string"
+    },
+    "loa_date_signed": {
+      "type": "string",
+      "format": "date"
+    },
+    "loa_pdf_url": {
+      "type": "string"
+    },
+    "loa_pdf_name": {
+      "type": "string"
+    },
+    "loa_source": {
+      "type": "string",
+      "enum": [
+        "Electronic Signature",
+        "Manual Upload"
+      ]
+    },
+    "loa_status": {
+      "type": "string",
+      "enum": [
+        "Not started",
+        "Pending signature",
+        "Uploaded manually",
+        "Electronically signed",
+        "Completed",
+        "Requires review"
+      ],
+      "default": "Not started"
+    },
+    "loa_downloaded": {
+      "type": "boolean"
+    },
+    "loa_document_saved": {
+      "type": "boolean"
+    },
+    "loa_document_record_id": {
+      "type": "string"
+    },
+    "loa_authority_granted": {
+      "type": "boolean"
+    },
+    "loa_astute_authority_included": {
+      "type": "boolean"
+    },
+    "loa_ip_address": {
+      "type": "string"
+    },
+    "loa_generated_at": {
+      "type": "string"
+    },
     "will_in_place": {
       "type": "string"
     },

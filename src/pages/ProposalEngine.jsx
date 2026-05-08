@@ -11,7 +11,6 @@ import Step03Suitability from '@/components/engine/Step03Suitability';
 import Step04ReviewSend from '@/components/engine/Step04ReviewSend';
 import FicaComplianceSummary from '@/components/engine/FicaComplianceSummary';
 import generateProposalPdf from '@/lib/generateProposalPdf';
-import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
 import { createAdviceComplianceEntry, createProductReplacementComplianceEntries } from '@/lib/complianceEngine';

@@ -1321,7 +1321,7 @@ const DocumentRepository = ({ documents, entries, clients, currentUser, refresh 
         <label className="text-xs font-semibold text-navy">
           Type
           <select className="mt-1 w-full border border-border bg-background px-3 py-2" value={form.document_type} onChange={e => setForm({ ...form, document_type: e.target.value })}>
-            {['RMCP', 'Training Certificate', 'Policy', 'Audit Evidence', 'Register Evidence', 'Other'].map(type => <option key={type} value={type}>{type}</option>)}
+            {['RMCP', 'Training Certificate', 'Policy', 'Audit Evidence', 'Register Evidence', 'Letter of Authority', 'Other'].map(type => <option key={type} value={type}>{type}</option>)}
           </select>
         </label>
         <label className="text-xs font-semibold text-navy">

@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import jsPDF from 'jspdf';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePickerField from '@/components/ui/date-picker-field';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, Plus, Trash2, Download, Upload, FileSignature, PenLine, Type, Image as ImageIcon } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
 import { ADVISORS } from '@/lib/constants';
@@ -36,6 +37,17 @@ const PRODUCT_TYPES = [
   'Preservation fund', 'Unit trust / CIS', 'Tax-free savings account',
   'Living annuity', 'Offshore investment', 'Medical aid'
 ];
+
+const LOA_AUTHORITY_WORDING = 'I authorise Wealth Works (Pty) Ltd to obtain information relating to my existing policies, investments, retirement products and financial products from the relevant product providers, insurers, investment platforms, financial institutions and Astute Financial Services Exchange, for purposes of financial planning, advice, administration, compliance and ongoing servicing.';
+const LOA_ELECTRONIC_CONSENT = 'By signing electronically, I confirm that I have read and understood this Letter of Authority and consent to Wealth Works (Pty) Ltd obtaining the information described herein.';
+const LOA_STATUS = {
+  notStarted: 'Not started',
+  pending: 'Pending signature',
+  uploaded: 'Uploaded manually',
+  signed: 'Electronically signed',
+  completed: 'Completed',
+  review: 'Requires review',
+};
 
 const ADVISORY_NEEDS = [
   'Local and offshore investments', 'Retirement planning', 'Life & risk cover',
@@ -79,6 +91,10 @@ const normalizeRangeValue = (value) => (
     ? value.replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“|Ã¢â‚¬â€œ|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
     : value
 );
+
+const todayISO = () => new Date().toISOString().split('T')[0];
+
+const blobToPdfFile = (blob, fileName) => new File([blob], fileName, { type: 'application/pdf' });
 
 const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuthPassed, faceMatchPassed) => {
   const breakdown = {
@@ -141,6 +157,8 @@ const calculateRmcpRiskScore = (formData, homeAffairsVerified, amlMatch, docAuth
 
 export default function ClientOnboarding() {
   const navigate = useNavigate();
+  const signatureCanvasRef = useRef(null);
+  const isDrawingRef = useRef(false);
   const [clientId, setClientId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,6 +172,9 @@ export default function ClientOnboarding() {
   const [ficaRunning, setFicaRunning] = useState(false);
   const [selfieBase64, setSelfieBase64] = useState(null);
   const [productsList, setProductsList] = useState([]);
+  const [isLoaGenerating, setIsLoaGenerating] = useState(false);
+  const [isLoaUploading, setIsLoaUploading] = useState(false);
+  const [uploadedSignatureName, setUploadedSignatureName] = useState('');
 
   const [formData, setFormData] = useState({
     client_type: 'Natural Person',
@@ -193,6 +214,23 @@ export default function ClientOnboarding() {
     existing_financial_products: [],
     loa_uploaded: false,
     loa_authorised: false,
+    loa_completion_method: '',
+    loa_signature_method: '',
+    loa_signature_data: '',
+    loa_typed_signature_name: '',
+    loa_signature_timestamp: '',
+    loa_date_signed: todayISO(),
+    loa_pdf_url: '',
+    loa_pdf_name: '',
+    loa_source: '',
+    loa_status: LOA_STATUS.notStarted,
+    loa_downloaded: false,
+    loa_document_saved: false,
+    loa_document_record_id: '',
+    loa_authority_granted: false,
+    loa_astute_authority_included: false,
+    loa_ip_address: '',
+    loa_generated_at: '',
     will_in_place: '',
     portfolio_drop_response: '',
     primary_investment_objective: '',
@@ -284,6 +322,23 @@ export default function ClientOnboarding() {
             ...(client.advisory_needs?.length > 0   ? { advisory_needs: client.advisory_needs }                             : {}),
             loa_uploaded:                    client.loa_uploaded                    || prev.loa_uploaded,
             loa_authorised:                  client.loa_authorised                  || prev.loa_authorised,
+            loa_completion_method:           client.loa_completion_method           || prev.loa_completion_method,
+            loa_signature_method:            client.loa_signature_method            || prev.loa_signature_method,
+            loa_signature_data:              client.loa_signature_data              || prev.loa_signature_data,
+            loa_typed_signature_name:        client.loa_typed_signature_name        || prev.loa_typed_signature_name,
+            loa_signature_timestamp:         client.loa_signature_timestamp         || prev.loa_signature_timestamp,
+            loa_date_signed:                 client.loa_date_signed                 || prev.loa_date_signed,
+            loa_pdf_url:                     client.loa_pdf_url                     || prev.loa_pdf_url,
+            loa_pdf_name:                    client.loa_pdf_name                    || prev.loa_pdf_name,
+            loa_source:                      client.loa_source                      || prev.loa_source,
+            loa_status:                      client.loa_status                      || prev.loa_status,
+            loa_downloaded:                  client.loa_downloaded                  || prev.loa_downloaded,
+            loa_document_saved:              client.loa_document_saved              || prev.loa_document_saved,
+            loa_document_record_id:          client.loa_document_record_id          || prev.loa_document_record_id,
+            loa_authority_granted:           client.loa_authority_granted           || prev.loa_authority_granted,
+            loa_astute_authority_included:   client.loa_astute_authority_included   || prev.loa_astute_authority_included,
+            loa_ip_address:                  client.loa_ip_address                  || prev.loa_ip_address,
+            loa_generated_at:                client.loa_generated_at                || prev.loa_generated_at,
             identity_document_uploaded:      client.identity_document_uploaded      || !!client.doc_identity || prev.identity_document_uploaded,
             proof_of_address_uploaded:       client.proof_of_address_uploaded       || !!client.doc_proof_of_address || prev.proof_of_address_uploaded,
             income_proof_uploaded:           client.income_proof_uploaded           || !!client.doc_source_of_funds || prev.income_proof_uploaded,
@@ -386,6 +441,428 @@ export default function ClientOnboarding() {
   const addProduct = () => setProductsList(prev => [...prev, { type: '', provider: '', policy_number: '', value: '' }]);
   const removeProduct = (idx) => setProductsList(prev => prev.filter((_, i) => i !== idx));
   const updateProduct = (idx, field, value) => setProductsList(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
+
+  const clientFullName = () => `${formData.first_name || ''} ${formData.last_name || ''}`.trim() || formData.entity_name || 'Client';
+  const clientIdentityNumber = () => formData.sa_id_number || formData.passport_number || '';
+  const clientResidentialAddress = () => (
+    formData.residential_address ||
+    [formData.street_address, formData.suburb, formData.city, formData.province, formData.postal_code].filter(Boolean).join(', ')
+  );
+  const loaDocumentName = () => `Letter of Authority - ${clientFullName()} - ${todayISO()}`;
+
+  const loaPreviewDetails = [
+    ['Full name and surname', clientFullName()],
+    ['ID number or passport number', clientIdentityNumber()],
+    ['Date of birth', formData.date_of_birth],
+    ['Contact number', formData.mobile_number],
+    ['Email address', formData.email],
+    ['Residential address', clientResidentialAddress()],
+    ['Date signed', formData.loa_date_signed || todayISO()],
+  ];
+
+  const drawPdfLine = (doc, text, x, y, maxWidth = 170, lineHeight = 5) => {
+    const lines = doc.splitTextToSize(text || '-', maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * lineHeight);
+  };
+
+  const buildLetterOfAuthorityPdf = ({ manual = false } = {}) => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const margin = 18;
+    let y = 18;
+    const signedAt = formData.loa_signature_timestamp || new Date().toISOString();
+    const signedAtLabel = new Date(signedAt).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(14, 65, 102);
+    doc.setFontSize(15);
+    doc.text('WEALTH WORKS (PTY) LTD', margin, y);
+    doc.setFontSize(9);
+    doc.text('FSP No. 28337', margin, y + 6);
+    doc.setDrawColor(14, 65, 102);
+    doc.line(margin, y + 10, 192, y + 10);
+    y += 20;
+
+    doc.setFontSize(13);
+    doc.text('LETTER OF AUTHORITY', margin, y);
+    y += 10;
+
+    const section = (title) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 18;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(14, 65, 102);
+      doc.text(title, margin, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(35, 45, 58);
+    };
+
+    section('Client Details');
+    loaPreviewDetails.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      y = drawPdfLine(doc, value || '-', margin + 48, y, 122, 5);
+    });
+    y += 3;
+
+    section('Appointment of Wealth Works');
+    y = drawPdfLine(doc, 'I appoint Wealth Works (Pty) Ltd, FSP No. 28337, and its authorised representatives to assist me with financial planning, advice, administration, compliance and ongoing servicing relating to my financial products.', margin, y);
+    y += 3;
+
+    section('Authority to Obtain Information');
+    y = drawPdfLine(doc, LOA_AUTHORITY_WORDING, margin, y);
+    y += 3;
+
+    section('Astute Authorisation');
+    y = drawPdfLine(doc, 'This authority includes permission for Wealth Works (Pty) Ltd to request and receive information through Astute Financial Services Exchange where applicable.', margin, y);
+    y += 3;
+
+    section('Consent and Acknowledgements');
+    y = drawPdfLine(doc, 'I acknowledge that information obtained under this authority will be used for legitimate financial planning, advice, administration, compliance and servicing purposes. I understand that this authority remains valid until withdrawn by me in writing.', margin, y);
+    y += 3;
+
+    section('Client Signature');
+    if (manual) {
+      doc.text('Signature: _______________________________________________', margin, y);
+      y += 10;
+      doc.text('Date: ____________________________', margin, y);
+    } else {
+      doc.text(`Authority checkbox confirmation: ${formData.loa_authorised ? 'Yes' : 'No'}`, margin, y);
+      y += 6;
+      y = drawPdfLine(doc, LOA_ELECTRONIC_CONSENT, margin, y);
+      y += 4;
+      if (formData.loa_signature_method === 'typed') {
+        doc.setFont('times', 'italic');
+        doc.setFontSize(18);
+        doc.text(formData.loa_typed_signature_name || clientFullName(), margin, y + 6);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        y += 14;
+      } else if (formData.loa_signature_data?.startsWith('data:image')) {
+        const imageFormat = formData.loa_signature_data.includes('image/jpeg') ? 'JPEG' : 'PNG';
+        doc.addImage(formData.loa_signature_data, imageFormat, margin, y, 58, 20);
+        y += 25;
+      }
+      doc.text(`Signature method: ${signatureMethodLabel(formData.loa_signature_method)}`, margin, y);
+      y += 6;
+      doc.text(`Date and time signed: ${signedAtLabel}`, margin, y);
+      y += 6;
+      doc.text(`IP address: ${formData.loa_ip_address || 'Not available'}`, margin, y);
+    }
+
+    return doc.output('blob');
+  };
+
+  const uploadLoaPdfAndRecord = async ({ blob, source, signatureMethod }) => {
+    const fileName = `${loaDocumentName()}.pdf`;
+    const pdfFile = blobToPdfFile(blob, fileName);
+    const timestamp = new Date().toISOString();
+    const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+    const documentRecord = await base44.entities.Compliance_Documents.create({
+      document_type: 'Letter of Authority',
+      title: loaDocumentName(),
+      description: `Source: ${source}; Signature Method: ${signatureMethod}; Authority Granted: Yes; Astute Authority Included: Yes`,
+      file_url: fileUrl,
+      file_name: fileName,
+      linked_client_id: clientId,
+      staff_member: 'Client',
+      uploaded_by: 'Client',
+      uploaded_at: timestamp,
+      review_date: timestamp,
+      status: 'Current',
+      source,
+      signature_method: signatureMethod,
+      authority_granted: true,
+      astute_authority_included: true,
+    });
+    const updateData = {
+      loa_uploaded: true,
+      existing_policies_uploaded: true,
+      loa_authorised: true,
+      loa_pdf_url: fileUrl,
+      loa_pdf_name: fileName,
+      loa_source: source,
+      loa_status: source === 'Electronic Signature' ? LOA_STATUS.signed : LOA_STATUS.uploaded,
+      loa_document_saved: true,
+      loa_document_record_id: documentRecord?.id || '',
+      loa_authority_granted: true,
+      loa_astute_authority_included: true,
+      loa_generated_at: timestamp,
+      doc_existing_policies: fileUrl,
+      doc_existing_policies_name: fileName,
+      doc_submitted_at: timestamp,
+      doc_status: 'Submitted',
+    };
+    await base44.entities.Clients.update(clientId, updateData);
+    setFormData(prev => ({ ...prev, ...updateData }));
+    return fileUrl;
+  };
+
+  const signatureMethodLabel = (method) => ({
+    drawn: 'Drawn',
+    typed: 'Typed',
+    uploaded: 'Uploaded',
+    manual: 'Manual',
+  }[method] || 'Not selected');
+
+  const validateElectronicLoa = () => {
+    if (formData.loa_completion_method !== 'electronic') return false;
+    if (!formData.loa_authorised) return false;
+    if (!formData.loa_signature_method) return false;
+    if (formData.loa_signature_method === 'typed') return !!formData.loa_typed_signature_name?.trim();
+    return !!formData.loa_signature_data;
+  };
+
+  const isLoaCompleteForContinue = () => {
+    if (formData.loa_completion_method === 'electronic') {
+      return formData.loa_authorised && formData.loa_signature_method && formData.loa_signature_data && formData.loa_pdf_url && formData.loa_document_saved;
+    }
+    if (formData.loa_completion_method === 'manual') {
+      return formData.loa_downloaded && formData.loa_uploaded && formData.loa_pdf_url && formData.loa_document_saved;
+    }
+    return false;
+  };
+
+  const handleGenerateSignedLoa = async () => {
+    if (!validateElectronicLoa()) {
+      toast.error('Please complete the authority confirmation and signature before generating the Letter of Authority.');
+      return;
+    }
+    setIsLoaGenerating(true);
+    try {
+      const timestamp = new Date().toISOString();
+      const updateData = {
+        loa_date_signed: formData.loa_date_signed || todayISO(),
+        loa_signature_timestamp: formData.loa_signature_timestamp || timestamp,
+        loa_ip_address: formData.loa_ip_address || '',
+      };
+      setFormData(prev => ({ ...prev, ...updateData }));
+      const blob = buildLetterOfAuthorityPdf({ manual: false });
+      await uploadLoaPdfAndRecord({ blob, source: 'Electronic Signature', signatureMethod: signatureMethodLabel(formData.loa_signature_method) });
+      toast.success('Signed Letter of Authority generated and saved.');
+    } catch (error) {
+      toast.error('Could not generate Letter of Authority: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsLoaGenerating(false);
+    }
+  };
+
+  const handleDownloadManualLoa = async () => {
+    setIsLoaGenerating(true);
+    try {
+      const blob = buildLetterOfAuthorityPdf({ manual: true });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${loaDocumentName()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      const updateData = {
+        loa_completion_method: 'manual',
+        loa_downloaded: true,
+        loa_status: LOA_STATUS.pending,
+        loa_date_signed: todayISO(),
+      };
+      await base44.entities.Clients.update(clientId, updateData);
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Pre-populated Letter of Authority downloaded.');
+    } catch (error) {
+      toast.error('Could not download Letter of Authority: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsLoaGenerating(false);
+    }
+  };
+
+  const handleManualLoaUpload = async (file) => {
+    if (!file) return;
+    const allowed = ['application/pdf', 'image/png', 'image/jpeg'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Upload a PDF, JPG, JPEG or PNG file.');
+      return;
+    }
+    setIsLoaUploading(true);
+    try {
+      const timestamp = new Date().toISOString();
+      const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
+      const documentRecord = await base44.entities.Compliance_Documents.create({
+        document_type: 'Letter of Authority',
+        title: loaDocumentName(),
+        description: 'Source: Manual Upload; Signature Method: Manual; Authority Granted: Yes; Astute Authority Included: Yes',
+        file_url: fileUrl,
+        file_name: file.name,
+        linked_client_id: clientId,
+        staff_member: 'Client',
+        uploaded_by: 'Client',
+        uploaded_at: timestamp,
+        review_date: timestamp,
+        status: 'Current',
+        source: 'Manual Upload',
+        signature_method: 'Manual',
+        authority_granted: true,
+        astute_authority_included: true,
+      });
+      const updateData = {
+        loa_uploaded: true,
+        existing_policies_uploaded: true,
+        loa_completion_method: 'manual',
+        loa_signature_method: 'manual',
+        loa_pdf_url: fileUrl,
+        loa_pdf_name: file.name,
+        loa_source: 'Manual Upload',
+        loa_status: LOA_STATUS.uploaded,
+        loa_document_saved: true,
+        loa_document_record_id: documentRecord?.id || '',
+        loa_authority_granted: true,
+        loa_astute_authority_included: true,
+        loa_generated_at: timestamp,
+        doc_existing_policies: fileUrl,
+        doc_existing_policies_name: file.name,
+        doc_submitted_at: timestamp,
+        doc_status: 'Submitted',
+      };
+      await base44.entities.Clients.update(clientId, updateData);
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Signed Letter of Authority uploaded and saved.');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsLoaUploading(false);
+    }
+  };
+
+  const setLoaCompletionMethod = (method) => {
+    setFormData(prev => ({
+      ...prev,
+      loa_completion_method: method,
+      loa_status: method ? LOA_STATUS.pending : LOA_STATUS.notStarted,
+      ...(method === 'electronic' ? { loa_signature_method: prev.loa_signature_method === 'manual' ? '' : prev.loa_signature_method } : {}),
+    }));
+  };
+
+  const setLoaSignatureMethod = (method) => {
+    setFormData(prev => ({
+      ...prev,
+      loa_signature_method: method,
+      loa_signature_data: '',
+      loa_typed_signature_name: '',
+      loa_signature_timestamp: '',
+      loa_pdf_url: '',
+      loa_pdf_name: '',
+      loa_document_saved: false,
+      loa_status: LOA_STATUS.pending,
+      loa_date_signed: prev.loa_date_signed || todayISO(),
+    }));
+    setUploadedSignatureName('');
+    clearSignatureCanvas();
+  };
+
+  const clearSignatureCanvas = () => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const saveDrawnSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const data = canvas.toDataURL('image/png');
+    setFormData(prev => ({
+      ...prev,
+      loa_signature_data: data,
+      loa_signature_timestamp: new Date().toISOString(),
+      loa_date_signed: prev.loa_date_signed || todayISO(),
+      loa_pdf_url: '',
+      loa_document_saved: false,
+      loa_status: LOA_STATUS.pending,
+    }));
+    toast.success('Signature captured.');
+  };
+
+  const clearDrawnSignature = () => {
+    clearSignatureCanvas();
+    setFormData(prev => ({ ...prev, loa_signature_data: '', loa_pdf_url: '', loa_document_saved: false }));
+  };
+
+  const signatureCanvasPos = (event) => {
+    const canvas = signatureCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const point = event.touches?.[0] || event;
+    return {
+      x: (point.clientX - rect.left) * (canvas.width / rect.width),
+      y: (point.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  };
+
+  const startSignatureDrawing = (event) => {
+    if (formData.loa_signature_method !== 'drawn') return;
+    event.preventDefault();
+    isDrawingRef.current = true;
+    const ctx = signatureCanvasRef.current.getContext('2d');
+    const pos = signatureCanvasPos(event);
+    ctx.strokeStyle = '#0E4166';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const drawSignature = (event) => {
+    if (!isDrawingRef.current) return;
+    event.preventDefault();
+    const ctx = signatureCanvasRef.current.getContext('2d');
+    const pos = signatureCanvasPos(event);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  };
+
+  const endSignatureDrawing = () => {
+    isDrawingRef.current = false;
+  };
+
+  const handleTypedSignature = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      loa_typed_signature_name: value,
+      loa_signature_data: value.trim(),
+      loa_signature_timestamp: value.trim() ? new Date().toISOString() : '',
+      loa_date_signed: prev.loa_date_signed || todayISO(),
+      loa_pdf_url: '',
+      loa_document_saved: false,
+      loa_status: LOA_STATUS.pending,
+    }));
+  };
+
+  const handleUploadSignatureImage = (file) => {
+    if (!file) return;
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      toast.error('Upload a PNG, JPG or JPEG signature image.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadedSignatureName(file.name);
+      setFormData(prev => ({
+        ...prev,
+        loa_signature_data: reader.result,
+        loa_signature_timestamp: new Date().toISOString(),
+        loa_date_signed: prev.loa_date_signed || todayISO(),
+        loa_pdf_url: '',
+        loa_document_saved: false,
+        loa_status: LOA_STATUS.pending,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const saveStep = async (stepData) => {
     if (!clientId) { toast.error('Client record not found'); return false; }
@@ -724,11 +1201,32 @@ export default function ClientOnboarding() {
         dependants: formData.dependants,
       };
     } else if (currentStep === 6) {
+      if (!isLoaCompleteForContinue()) {
+        toast.error('Please complete and sign the Letter of Authority, or upload a signed copy, before continuing.');
+        return;
+      }
       stepData = {
         existing_financial_products: productsList,
         products_list: productsList,
         loa_uploaded: formData.loa_uploaded,
         loa_authorised: formData.loa_authorised,
+        loa_completion_method: formData.loa_completion_method,
+        loa_signature_method: formData.loa_signature_method,
+        loa_signature_data: formData.loa_signature_data,
+        loa_typed_signature_name: formData.loa_typed_signature_name,
+        loa_signature_timestamp: formData.loa_signature_timestamp,
+        loa_date_signed: formData.loa_date_signed,
+        loa_pdf_url: formData.loa_pdf_url,
+        loa_pdf_name: formData.loa_pdf_name,
+        loa_source: formData.loa_source,
+        loa_status: LOA_STATUS.completed,
+        loa_downloaded: formData.loa_downloaded,
+        loa_document_saved: formData.loa_document_saved,
+        loa_document_record_id: formData.loa_document_record_id,
+        loa_authority_granted: formData.loa_authority_granted,
+        loa_astute_authority_included: formData.loa_astute_authority_included,
+        doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 7) {
       if (!formData.risk_profile) {
@@ -826,6 +1324,23 @@ export default function ClientOnboarding() {
       stepData = {
         existing_financial_products: productsList, products_list: productsList,
         loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
+        loa_completion_method: formData.loa_completion_method,
+        loa_signature_method: formData.loa_signature_method,
+        loa_signature_data: formData.loa_signature_data,
+        loa_typed_signature_name: formData.loa_typed_signature_name,
+        loa_signature_timestamp: formData.loa_signature_timestamp,
+        loa_date_signed: formData.loa_date_signed,
+        loa_pdf_url: formData.loa_pdf_url,
+        loa_pdf_name: formData.loa_pdf_name,
+        loa_source: formData.loa_source,
+        loa_status: isLoaCompleteForContinue() ? LOA_STATUS.completed : LOA_STATUS.pending,
+        loa_downloaded: formData.loa_downloaded,
+        loa_document_saved: formData.loa_document_saved,
+        loa_document_record_id: formData.loa_document_record_id,
+        loa_authority_granted: formData.loa_authority_granted,
+        loa_astute_authority_included: formData.loa_astute_authority_included,
+        doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
       };
     } else if (currentStep === 7) {
       stepData = {
@@ -870,6 +1385,17 @@ export default function ClientOnboarding() {
         doc_existing_policies_name: formData.doc_existing_policies_name || '',
         doc_banking_proof: formData.doc_banking_proof || '',
         doc_banking_proof_name: formData.doc_banking_proof_name || '',
+        loa_status: isLoaCompleteForContinue() ? LOA_STATUS.completed : (formData.loa_status || LOA_STATUS.pending),
+        loa_completion_method: formData.loa_completion_method,
+        loa_signature_method: formData.loa_signature_method,
+        loa_pdf_url: formData.loa_pdf_url,
+        loa_pdf_name: formData.loa_pdf_name,
+        loa_document_saved: formData.loa_document_saved,
+        loa_source: formData.loa_source,
+        loa_authority_granted: formData.loa_authority_granted,
+        loa_astute_authority_included: formData.loa_astute_authority_included,
+        loa_date_signed: formData.loa_date_signed,
+        loa_signature_timestamp: formData.loa_signature_timestamp,
       });
 
       const clientFullName = `${formData.first_name} ${formData.last_name}`.trim() || formData.entity_name || 'Client';
@@ -1504,25 +2030,185 @@ export default function ClientOnboarding() {
               </div>
 
               <div className="border border-border rounded p-2.5">
-                <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-1.5">LETTER OF AUTHORITY</h3>
-                {formData.loa_uploaded ? (
-                  <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
-                    <Check className="w-4 h-4 text-teal" />
-                    <span className="text-xs text-teal font-medium">LOA uploaded</span>
-                  </div>
-                ) : (
-                  <label className="block cursor-pointer mb-2">
-                    <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
-                      <p className="text-xs font-medium text-navy">Letter of Authority document</p>
-                      <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">LETTER OF AUTHORITY</h3>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                    formData.loa_document_saved ? 'bg-teal/10 text-teal border-teal/20' : 'bg-secondary text-muted-foreground border-border'
+                  }`}>{formData.loa_status || LOA_STATUS.notStarted}</span>
+                </div>
+
+                {formData.loa_pdf_url && (
+                  <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Check className="w-4 h-4 text-teal shrink-0" />
+                      <span className="text-xs text-teal font-medium truncate">{formData.loa_pdf_name || 'Letter of Authority saved'}</span>
                     </div>
-                    <input type="file" className="hidden" onChange={() => handleChange('loa_uploaded', true)} />
-                  </label>
+                    <a href={formData.loa_pdf_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-ocean font-bold hover:underline shrink-0">
+                      View
+                    </a>
+                  </div>
                 )}
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input type="checkbox" checked={formData.loa_authorised} onChange={e => handleChange('loa_authorised', e.target.checked)} className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0" />
-                  <span className="text-xs text-muted-foreground">I authorise WealthWorks to obtain information on my existing policies from the relevant providers.</span>
-                </label>
+
+                <div className="mb-3">
+                  <p className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1.5">How would you like to complete the Letter of Authority?</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'electronic', label: 'Sign electronically', helper: 'Complete and sign in this step.' },
+                      { value: 'manual', label: 'Download and upload signed form', helper: 'Download, sign manually, then upload.' },
+                    ].map(option => (
+                      <label key={option.value} className={`cursor-pointer border rounded p-2 transition-colors ${formData.loa_completion_method === option.value ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="loa_completion_method"
+                            checked={formData.loa_completion_method === option.value}
+                            onChange={() => setLoaCompletionMethod(option.value)}
+                            className="w-3.5 h-3.5 accent-ocean"
+                          />
+                          <span className="text-xs font-semibold text-navy">{option.label}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1 ml-5">{option.helper}</p>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {formData.loa_completion_method === 'electronic' && (
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-2 cursor-pointer p-2 border border-border rounded">
+                      <input
+                        type="checkbox"
+                        checked={formData.loa_authorised}
+                        onChange={e => handleChange('loa_authorised', e.target.checked)}
+                        className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0"
+                      />
+                      <span className="text-xs text-muted-foreground leading-relaxed">{LOA_AUTHORITY_WORDING}</span>
+                    </label>
+
+                    <div className="border border-border rounded p-2 bg-secondary/30">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Auto-populated Letter of Authority preview</p>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        {loaPreviewDetails.map(([label, value]) => (
+                          <div key={label}>
+                            <p className="text-[9px] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
+                            <p className="text-xs text-navy">{value || '-'}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground leading-relaxed space-y-1">
+                        <p className="font-bold text-navy">WEALTH WORKS (PTY) LTD | FSP No. 28337 | LETTER OF AUTHORITY</p>
+                        <p><strong>Sections:</strong> Client Details; Appointment of Wealth Works; Authority to Obtain Information; Astute Authorisation; Consent and Acknowledgements; Client Signature.</p>
+                      </div>
+                    </div>
+
+                    {formData.loa_authorised && (
+                      <div className="border border-border rounded p-2">
+                        <p className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1.5">Signature method</p>
+                        <div className="grid grid-cols-3 gap-1.5 mb-2">
+                          {[
+                            { value: 'drawn', label: 'Draw signature', icon: PenLine },
+                            { value: 'typed', label: 'Type signature', icon: Type },
+                            { value: 'uploaded', label: 'Upload signature image', icon: ImageIcon },
+                          ].map(option => {
+                            const Icon = option.icon;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setLoaSignatureMethod(option.value)}
+                                className={`flex items-center justify-center gap-1 border rounded px-2 py-1.5 text-[10px] font-semibold transition-colors ${formData.loa_signature_method === option.value ? 'border-ocean bg-ocean/10 text-ocean' : 'border-border text-navy hover:border-ocean/50'}`}
+                                title={option.label}
+                              >
+                                <Icon className="w-3.5 h-3.5" /> {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {formData.loa_signature_method === 'drawn' && (
+                          <div className="space-y-2">
+                            <canvas
+                              ref={signatureCanvasRef}
+                              width={900}
+                              height={160}
+                              onMouseDown={startSignatureDrawing}
+                              onMouseMove={drawSignature}
+                              onMouseUp={endSignatureDrawing}
+                              onMouseLeave={endSignatureDrawing}
+                              onTouchStart={startSignatureDrawing}
+                              onTouchMove={drawSignature}
+                              onTouchEnd={endSignatureDrawing}
+                              className="block w-full h-28 bg-white border border-border rounded cursor-crosshair touch-none"
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button type="button" variant="outline" onClick={clearDrawnSignature} className="h-8 px-3 text-xs">Clear</Button>
+                              <Button type="button" onClick={saveDrawnSignature} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">Save Signature</Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {formData.loa_signature_method === 'typed' && (
+                          <div>
+                            <Input
+                              className="h-8 text-xs"
+                              placeholder="Type your full name"
+                              value={formData.loa_typed_signature_name}
+                              onChange={e => handleTypedSignature(e.target.value)}
+                            />
+                            {formData.loa_typed_signature_name && (
+                              <div className="mt-2 border border-border rounded bg-white px-3 py-2 font-serif italic text-xl text-navy">
+                                {formData.loa_typed_signature_name}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {formData.loa_signature_method === 'uploaded' && (
+                          <div className="space-y-2">
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                                <Upload className="w-4 h-4 text-ocean mx-auto mb-1" />
+                                <p className="text-xs font-medium text-navy">{uploadedSignatureName || 'Upload PNG, JPG or JPEG signature image'}</p>
+                              </div>
+                              <input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" className="hidden" onChange={e => handleUploadSignatureImage(e.target.files?.[0])} />
+                            </label>
+                            {formData.loa_signature_data?.startsWith('data:image') && (
+                              <img src={formData.loa_signature_data} alt="Signature preview" className="max-h-20 border border-border rounded bg-white p-2" />
+                            )}
+                          </div>
+                        )}
+
+                        {formData.loa_signature_method && (
+                          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
+                            <p className="text-[10px] text-muted-foreground">Date signed: {formData.loa_date_signed || todayISO()}</p>
+                            <Button type="button" onClick={handleGenerateSignedLoa} disabled={isLoaGenerating} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">
+                              {isLoaGenerating ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />Generating...</> : <><FileSignature className="w-3.5 h-3.5 mr-1" /> Generate signed LOA</>}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {formData.loa_completion_method === 'manual' && (
+                  <div className="space-y-3">
+                    <Button type="button" onClick={handleDownloadManualLoa} disabled={isLoaGenerating} className="h-8 px-3 text-xs bg-navy text-white hover:bg-ocean">
+                      {isLoaGenerating ? <><Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />Preparing...</> : <><Download className="w-3.5 h-3.5 mr-1" /> Download Letter of Authority</>}
+                    </Button>
+                    {formData.loa_downloaded && (
+                      <label className="block cursor-pointer">
+                        <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                          <Upload className="w-4 h-4 text-ocean mx-auto mb-1" />
+                          <p className="text-xs font-medium text-navy">Upload signed Letter of Authority</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">Accepted: PDF, JPG, JPEG, PNG</p>
+                          {isLoaUploading && <p className="text-[10px] text-ocean mt-1">Uploading...</p>}
+                        </div>
+                        <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" className="hidden" onChange={e => handleManualLoaUpload(e.target.files?.[0])} />
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

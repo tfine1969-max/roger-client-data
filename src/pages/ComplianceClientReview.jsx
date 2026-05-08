@@ -116,6 +116,7 @@ export default function ComplianceClientReview() {
   const [selectedDocs, setSelectedDocs] = useState([]);
   const [docRequestMessage, setDocRequestMessage] = useState('');
   const [isSendingRequest, setIsSendingRequest] = useState(false);
+  const [isReplacingLoa, setIsReplacingLoa] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -311,6 +312,75 @@ export default function ComplianceClientReview() {
       toast.error(err.message || 'Failed to send document request.');
     } finally {
       setIsSendingRequest(false);
+    }
+  };
+
+  const handleReplaceLoa = async (file) => {
+    if (!isComplianceAuthorised(currentUser)) {
+      toast.error('Access denied.');
+      return;
+    }
+    if (!file) return;
+    if (!['application/pdf', 'image/png', 'image/jpeg'].includes(file.type)) {
+      toast.error('Upload a PDF, JPG, JPEG or PNG file.');
+      return;
+    }
+    setIsReplacingLoa(true);
+    try {
+      const timestamp = new Date().toISOString();
+      const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
+      const title = `Letter of Authority - ${clientName} - ${timestamp.slice(0, 10)}`;
+      await base44.entities.Compliance_Documents.create({
+        document_type: 'Letter of Authority',
+        title,
+        description: 'Advisor replacement upload; Source: Manual Upload; Signature Method: Manual; Authority Granted: Yes; Astute Authority Included: Yes',
+        file_url: fileUrl,
+        file_name: file.name,
+        linked_client_id: clientId,
+        staff_member: currentUser?.full_name || currentUser?.email || 'Advisor',
+        uploaded_by: currentUser?.email || currentUser?.full_name || 'Advisor',
+        uploaded_at: timestamp,
+        review_date: timestamp,
+        status: 'Current',
+        source: 'Manual Upload',
+        signature_method: 'Manual',
+        authority_granted: true,
+        astute_authority_included: true,
+      });
+      await base44.entities.Clients.update(clientId, {
+        doc_existing_policies: fileUrl,
+        doc_existing_policies_name: file.name,
+        existing_policies_uploaded: true,
+        loa_uploaded: true,
+        loa_completion_method: 'manual',
+        loa_signature_method: 'manual',
+        loa_pdf_url: fileUrl,
+        loa_pdf_name: file.name,
+        loa_source: 'Manual Upload',
+        loa_status: 'Requires review',
+        loa_document_saved: true,
+        loa_authority_granted: true,
+        loa_astute_authority_included: true,
+        doc_submitted_at: timestamp,
+        doc_status: 'Submitted',
+      });
+      await writeAuditLog({
+        clientId,
+        actor: currentUser,
+        action: 'Document Uploaded by Client',
+        previousStatus: client?.loa_status || 'Pending',
+        newStatus: 'Requires review',
+        notes: `Letter of Authority replaced by advisor: ${file.name}`,
+        documentUrl: fileUrl,
+        documentName: file.name,
+      });
+      queryClient.invalidateQueries({ queryKey: ['compliance-client', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['audit-log', clientId] });
+      toast.success('Letter of Authority replaced.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to replace Letter of Authority.');
+    } finally {
+      setIsReplacingLoa(false);
     }
   };
 
@@ -562,6 +632,51 @@ export default function ComplianceClientReview() {
             <DocRow label="Proof of Address" uploaded={client.proof_of_address_uploaded || !!client.doc_proof_of_address} url={client.doc_proof_of_address} onRequest={() => { setSelectedDocs(['Proof of Address']); setShowDocRequest(true); }} />
             <DocRow label="Income / Source of Funds" uploaded={client.income_proof_uploaded || !!client.doc_source_of_funds} url={client.doc_source_of_funds} onRequest={() => { setSelectedDocs(['Income / Source of Funds']); setShowDocRequest(true); }} />
             <DocRow label="Existing Policies" uploaded={client.existing_policies_uploaded || !!client.doc_existing_policies} url={client.doc_existing_policies} onRequest={() => { setSelectedDocs(['Letter of Authority']); setShowDocRequest(true); }} />
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p className="text-[10px] font-bold tracking-wider text-navy uppercase">Letter of Authority</p>
+                <p className="text-xs text-muted-foreground">Authority, signature method and Astute consent details.</p>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                ['Completed', 'Electronically signed', 'Uploaded manually'].includes(client.loa_status)
+                  ? 'bg-teal/10 text-teal border-teal/20'
+                  : client.loa_status === 'Requires review'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-secondary text-muted-foreground border-border'
+              }`}>{client.loa_status || 'Not started'}</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+              <Field label="Signature Method" value={client.loa_signature_method ? client.loa_signature_method.replace(/^\w/, c => c.toUpperCase()) : ''} />
+              <Field label="Date Signed" value={formatDateTime(client.loa_signature_timestamp || client.loa_date_signed)} />
+              <Field label="Astute Included" value={client.loa_astute_authority_included ? 'Yes' : 'No'} />
+              <Field label="Source" value={client.loa_source || (client.loa_uploaded ? 'Manual Upload' : '')} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {(client.loa_pdf_url || client.doc_existing_policies) && (
+                <>
+                  <a href={client.loa_pdf_url || client.doc_existing_policies} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 border border-border text-xs font-semibold text-navy hover:bg-secondary transition-colors rounded">
+                    View completed LOA
+                  </a>
+                  <a href={client.loa_pdf_url || client.doc_existing_policies} download className="px-3 py-1.5 border border-border text-xs font-semibold text-navy hover:bg-secondary transition-colors rounded">
+                    Download PDF
+                  </a>
+                </>
+              )}
+              <label className="px-3 py-1.5 border border-border text-xs font-semibold text-navy hover:bg-secondary transition-colors rounded cursor-pointer">
+                {isReplacingLoa ? 'Replacing...' : 'Replace'}
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" className="hidden" onChange={e => handleReplaceLoa(e.target.files?.[0])} />
+              </label>
+              <button
+                type="button"
+                onClick={() => { setSelectedDocs(['Letter of Authority']); setShowDocRequest(true); }}
+                className="px-3 py-1.5 bg-ocean text-white text-xs font-bold uppercase tracking-wide hover:bg-navy transition-colors rounded"
+              >
+                Request re-signature
+              </button>
+            </div>
           </div>
 
           {/* Previous Document Requests */}
