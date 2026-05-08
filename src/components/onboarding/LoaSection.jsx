@@ -36,6 +36,49 @@ export default function LoaSection({
   isLoaUploading,
   todayISO,
 }) {
+  // If LOA is already completed and saved, show a read-only summary
+  if (formData.loa_document_saved && formData.loa_pdf_url) {
+    return (
+      <div className="border border-teal/30 rounded p-2.5 bg-teal/5">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-navy uppercase tracking-wider text-xs">LETTER OF AUTHORITY</h3>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-teal/10 text-teal border-teal/20">
+            {formData.loa_status || LOA_STATUS.signed}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Check className="w-4 h-4 text-teal shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs text-teal font-medium">Letter of Authority signed and saved</p>
+              {formData.loa_pdf_name && (
+                <p className="text-[10px] text-muted-foreground truncate">{formData.loa_pdf_name}</p>
+              )}
+              {formData.loa_signature_timestamp && (
+                <p className="text-[10px] text-muted-foreground">
+                  Signed: {new Date(formData.loa_signature_timestamp).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}
+                </p>
+              )}
+            </div>
+          </div>
+          <a
+            href={formData.loa_pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+            className="inline-flex items-center gap-1 text-[10px] text-ocean font-bold hover:underline shrink-0"
+          >
+            <Download className="w-3 h-3" /> View / Download
+          </a>
+        </div>
+        <p className="text-[10px] text-muted-foreground">
+          Method: {formData.loa_completion_method === 'electronic' ? 'Electronically signed' : 'Manually uploaded'}
+          {formData.loa_date_signed ? ` · Date: ${formData.loa_date_signed}` : ''}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-border rounded p-2.5">
       <div className="flex items-center justify-between mb-2">
