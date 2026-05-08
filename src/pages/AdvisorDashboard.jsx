@@ -64,56 +64,44 @@ const Metric = ({ label, value, tone = 'text-navy', onClick }) => {
 };
 
 const ActionButton = ({ icon: Icon, label, onClick, variant = 'secondary' }) => {
-  const styles = variant === 'gold'
-    ? 'bg-gold text-white hover:bg-gold/90'
-    : 'bg-card text-navy hover:bg-secondary/60';
+  const styles = variant === 'primary'
+    ? 'border-navy bg-navy text-white hover:bg-ocean hover:border-ocean'
+    : variant === 'gold'
+      ? 'border-gold bg-gold text-white hover:bg-gold/90'
+      : 'border-border bg-card text-navy hover:border-navy/40 hover:bg-secondary/40';
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full h-full flex items-center justify-center gap-2 px-4 text-[11px] font-semibold uppercase tracking-[.08em] transition-colors ${styles}`}
+      className={`h-11 w-full inline-flex items-center justify-center gap-2 border px-4 text-[11px] font-semibold uppercase tracking-[.08em] transition-colors ${styles}`}
     >
-      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+      {Icon && <Icon className="w-4 h-4 shrink-0" />}
       <span className="truncate">{label}</span>
     </button>
   );
 };
 
 const PortalCard = ({ icon: Icon, title, description, buttonLabel, onClick, actions, children }) => (
-  <section className="border border-border bg-card">
-    <div className="flex min-h-[140px]">
-      {/* Left: title + description + metrics */}
-      <div className="flex-1 p-5 md:p-6 space-y-4 min-w-0">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="w-9 h-9 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
-            <Icon className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold text-navy tracking-tight">{title}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5 leading-5">{description}</p>
-          </div>
+  <section className="border border-border bg-card p-5 md:p-6">
+    <div className="grid gap-5 grid-cols-[minmax(250px,340px)_minmax(0,1fr)_minmax(220px,280px)] items-start">
+      <div className="flex items-start gap-4 min-w-0">
+        <div className="w-10 h-10 border border-border bg-secondary flex items-center justify-center text-ocean shrink-0">
+          <Icon className="w-5 h-5" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {children}
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-navy tracking-tight">{title}</h2>
+          <p className="text-sm text-muted-foreground mt-1 leading-6">{description}</p>
         </div>
       </div>
 
-      {/* Right: action buttons stacked vertically, fixed width, separated by left border */}
-      <div className="flex flex-col border-l border-border w-44 shrink-0">
-        <button
-          type="button"
-          onClick={onClick}
-          className="flex-1 flex items-center justify-center gap-2 bg-navy text-white hover:bg-ocean transition-colors px-4 text-[11px] font-semibold uppercase tracking-[.08em] border-b border-navy/40"
-        >
-          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">{buttonLabel}</span>
-        </button>
-        {React.Children.map(actions, (action, i) => (
-          <div key={i} className="flex-1 border-t border-border first:border-t-0">
-            {action}
-          </div>
-        ))}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 min-w-0">
+        {children}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <ActionButton icon={ArrowRight} label={buttonLabel} onClick={onClick} variant="primary" />
+        {actions}
       </div>
     </div>
   </section>
