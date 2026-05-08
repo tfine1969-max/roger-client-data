@@ -1357,11 +1357,11 @@ export default function ClientOnboarding() {
   const clientDisplayName = [formData.first_name, formData.last_name].filter(Boolean).join(' ') || formData.email || 'Client';
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {/* Left Sidebar */}
-      <div className="hidden md:flex flex-col w-52 bg-card border-r border-border p-4 shrink-0">
+      <div className="sticky top-0 hidden h-screen md:flex w-56 shrink-0 flex-col border-r border-border bg-card/95 p-4 backdrop-blur">
         <div className="mb-6">
-          <span className="text-navy font-bold text-base tracking-tight">wealthworks</span>
+          <span className="text-lg font-bold tracking-tight text-navy">wealthworks</span>
         </div>
         <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase mb-2">ONBOARDING</p>
         {STEPS.map(step => {
@@ -1397,9 +1397,9 @@ export default function ClientOnboarding() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Top Bar */}
-        <div className="bg-card border-b border-border px-5 py-2.5 flex items-center justify-between shrink-0">
+        <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/95 px-5 py-2.5 backdrop-blur">
           <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" />
             WEALTHWORKS.CO.ZA
@@ -1408,7 +1408,7 @@ export default function ClientOnboarding() {
         </div>
 
         {/* Step navigation banner */}
-        <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
+        <div className="sticky top-[49px] z-20 flex items-center gap-0 overflow-x-auto border-b border-border bg-card/95 px-5 py-0 backdrop-blur">
           {STEPS.map(step => {
             const isComplete = currentStep > step.number;
             const isCurrent = currentStep === step.number;
@@ -1432,11 +1432,11 @@ export default function ClientOnboarding() {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
           {/* Step Header */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8</p>
-            <h1 className="text-2xl font-bold text-navy mb-1">
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <p className="text-[10px] font-semibold tracking-[.22em] text-ocean uppercase mb-1">STEP {currentStep} OF 8</p>
+            <h1 className="text-[28px] font-semibold leading-tight tracking-[.02em] text-navy mb-1">
               {currentStep === 1 && 'Personal information'}
               {currentStep === 2 && 'Document upload'}
               {currentStep === 3 && 'KYC declaration'}
@@ -1447,7 +1447,7 @@ export default function ClientOnboarding() {
               {currentStep === 8 && 'Review & submit'}
             </h1>
             <p className="text-xs text-muted-foreground mb-1">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
-            <p className="text-muted-foreground text-xs max-w-xl">
+            <p className="text-xs leading-relaxed text-muted-foreground max-w-2xl">
               {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
               {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}
               {currentStep === 3 && 'Employment, source of funds, and tax/PEP declaration as required under FICA.'}

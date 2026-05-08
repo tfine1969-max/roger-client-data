@@ -633,15 +633,15 @@ export default function ClientOnboardingTrust() {
   const clientDisplayName = formData.entity_name || formData.email || 'Trust client';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="bg-card border-b border-border px-5 py-2.5 flex items-center justify-between shrink-0">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/95 px-5 py-2.5 backdrop-blur">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
           <ArrowLeft className="w-4 h-4" /> WEALTHWORKS.CO.ZA
         </button>
         <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 - TRUST</span>
       </div>
 
-      <div className="bg-card border-b border-border px-5 py-0 flex items-center gap-0 overflow-x-auto shrink-0">
+      <div className="sticky top-[49px] z-20 flex items-center gap-0 overflow-x-auto border-b border-border bg-card/95 px-5 py-0 backdrop-blur">
         {STEPS.map(step => {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
@@ -657,10 +657,10 @@ export default function ClientOnboardingTrust() {
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
-        <div className="mb-4">
-          <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-1">STEP {currentStep} OF 8 - TRUST ONBOARDING</p>
-          <h1 className="text-2xl font-bold text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
+      <div className="min-h-0 flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <p className="text-[10px] font-semibold tracking-[.22em] text-ocean uppercase mb-1">STEP {currentStep} OF 8 - TRUST ONBOARDING</p>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[.02em] text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
           <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
         </div>
 
