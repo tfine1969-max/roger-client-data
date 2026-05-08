@@ -98,9 +98,9 @@ export default function Inbox() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/advisor-dashboard')}
-            className="flex items-center gap-2 px-4 py-2 rounded bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded bg-white text-navy font-semibold hover:bg-white/90 transition-colors text-sm"
           >
-            <ArrowLeft className="w-4 h-4" /> Dashboard
+            <ArrowLeft className="w-4 h-4" /> Advisor Dashboard
           </button>
           <button
             onClick={() => navigate('/compliance-review')}
