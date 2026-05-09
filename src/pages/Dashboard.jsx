@@ -73,11 +73,14 @@ export default function Dashboard() {
   }, [feeRows, latestMonth]);
 
   const chartData = useMemo(() => {
-    return [...getSortedMonths(feeRows)].reverse().map(m => ({
-      month: formatMonth(m),
-      total: Math.round(feeRows.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
-      fees: Math.round(feeRows.filter(v => v.upload_month === m).reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
-    }));
+    return [...getSortedMonths(feeRows)].reverse().map(m => {
+      const monthRows = feeRows.filter(v => v.upload_month === m);
+      return {
+        month: formatMonth(m),
+        total: Math.round(monthRows.reduce((s, v) => s + (v.zar_value ?? v.original_currency_value ?? 0), 0)),
+        fees: Math.round(monthRows.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
+      };
+    });
   }, [feeRows]);
 
   const hasData = feeRows.length > 0;
