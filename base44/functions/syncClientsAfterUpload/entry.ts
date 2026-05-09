@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
           id: existing.id,
           payload: {
             account_code: existing.account_code,
-            portfolio_name: existing.portfolio_name,
+            portfolio_name: existing.portfolio_name || existing.name || 'Unknown',
             status: 'Not Present In Latest Upload',
           },
         });
