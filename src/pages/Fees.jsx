@@ -335,12 +335,12 @@ export default function Fees() {
                 <tbody className="divide-y">
                   {providerHistory.map(row => (
                     <tr key={row.month} className="hover:bg-muted/20">
-                      <td className="px-4 py-2.5 font-medium whitespace-nowrap">{formatMonth(row.month)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(row.rebate)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(row.advisory)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(row.total)}</td>
-                      <td className="px-4 py-2.5 text-right">{row.clients}</td>
-                      <td className="px-4 py-2.5 text-right">{row.holdings}</td>
+                      <td className="px-4 py-2.5 font-medium whitespace-nowrap min-w-20">{formatMonth(row.month)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-chart-2 whitespace-nowrap min-w-32">R {fmtNum(row.rebate)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-chart-1 whitespace-nowrap min-w-32">R {fmtNum(row.advisory)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right font-bold whitespace-nowrap min-w-32">R {fmtNum(row.total)}</td>
+                      <td className="px-4 py-2.5 text-right min-w-16">{row.clients}</td>
+                      <td className="px-4 py-2.5 text-right min-w-20">{row.holdings}</td>
                     </tr>
                   ))}
                 </tbody>
