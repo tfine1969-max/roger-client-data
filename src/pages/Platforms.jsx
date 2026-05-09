@@ -46,7 +46,7 @@ export default function Platforms() {
       const changeZar = prevZar !== null ? p.totalZar - prevZar : null;
       const changeZarPct = prevZar ? (changeZar / prevZar) * 100 : null;
       return { ...p, clients: p.clients.size, funds: p.funds.size, prevZar, changeZar, changeZarPct, isNew: prevZar === null };
-    }).sort((a, b) => b.totalZar - a.totalZar);
+    }).sort((a, b) => a.platform.localeCompare(b.platform));
   }, [valuations, latestMonth, prevMonth]);
 
   // Fund detail for selected platform
