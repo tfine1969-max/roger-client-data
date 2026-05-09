@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { fmtNum } from '@/lib/valuation-utils';
 import { Button } from '@/components/ui/button';
-import { Pencil, AlertTriangle } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
 
 export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated, currencyFilter }) {

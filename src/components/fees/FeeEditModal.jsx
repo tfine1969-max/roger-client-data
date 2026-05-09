@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
-import { fmtNum, origVal, zarVal } from '@/lib/valuation-utils';
+import { origVal, zarVal } from '@/lib/valuation-utils';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved }) {
