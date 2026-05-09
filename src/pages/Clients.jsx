@@ -71,7 +71,7 @@ export default function Clients() {
       changeValue: c.prevValue ? c.totalValue - c.prevValue : null,
       changePct: c.prevValue ? ((c.totalValue - c.prevValue) / c.prevValue) * 100 : null,
       isNew: !c.prevValue,
-    })).sort((a, b) => b.totalValue - a.totalValue);
+    })).sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
   }, [valuations, latestMonth, prevMonth]);
 
   const filtered = useMemo(() => {
