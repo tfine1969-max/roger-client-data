@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
@@ -6,17 +6,20 @@ import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Search, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Search, ChevronRight, Pencil, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 import { cn } from '@/lib/utils';
 
 export default function Clients() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterPlatform, setFilterPlatform] = useState('');
   const [filterCurrency, setFilterCurrency] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [needsCorrectionOnly, setNeedsCorrectionOnly] = useState(false);
+  const [editingKey, setEditingKey] = useState(null);
+  const [editingName, setEditingName] = useState('');
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -160,8 +163,31 @@ export default function Clients() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {c.hasUnknown && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
-                      <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
-                      {c.hasUnknown && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800">Needs correction</span>}
+                      {editingKey === c.client_key ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="px-2 py-1 border rounded text-sm font-medium w-48"
+                            autoFocus
+                          />
+                          <button onClick={() => handleSaveName(c.client_key, editingName)} className="p-1 hover:bg-muted rounded">
+                            <Check className="w-4 h-4 text-green-600" />
+                          </button>
+                          <button onClick={() => setEditingKey(null)} className="p-1 hover:bg-muted rounded">
+                            <X className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
+                          <button onClick={() => { setEditingKey(c.client_key); setEditingName(c.portfolio_name || ''); }} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                          {c.hasUnknown && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800">Needs correction</span>}
+                        </>
+                      )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1 text-xs font-mono">
                       {c.account_codes.map(code => (
@@ -185,6 +211,25 @@ export default function Clients() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
+      </div>
+      );
+
+      const handleSaveName = async (key, newName) => {
+      if (!newName.trim() || newName === filtered.find(c => c.client_key === key)?.portfolio_name) {
+      setEditingKey(null);
+      return;
+      }
+
+      const rows = valuations.filter(v => {
+      const k = v.account_code || clientKey(v);
+      return k === key || v.portfolio_name === filtered.find(c => c.client_key === key)?.portfolio_name;
+      });
+
+      for (const row of rows) {
+      await base44.asServiceRole.entities.PortfolioValuation.update(row.id, { portfolio_name: newName });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      setEditingKey(null);
+      };
+      }

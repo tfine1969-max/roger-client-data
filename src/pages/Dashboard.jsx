@@ -105,10 +105,8 @@ export default function Dashboard() {
             <p className="text-3xl font-bold text-foreground">{stats.clients}</p>
             <p className="text-sm text-muted-foreground mt-1">{stats.platforms} platform{stats.platforms !== 1 ? 's' : ''} · {stats.investmentCount} investments</p>
             <div className="mt-4 pt-4 border-t">
-              <p className="text-xs text-muted-foreground">Top client</p>
-              {topClients[0] && (
-                <p className="text-sm font-medium truncate mt-0.5">{topClients[0].name} <span className="text-muted-foreground font-normal">— R {fmtNum(topClients[0].total)}</span></p>
-              )}
+              <p className="text-xs text-muted-foreground">View all clients</p>
+              <p className="text-sm font-medium mt-0.5 text-muted-foreground">Clients overview →</p>
             </div>
           </div>
         </Link>
