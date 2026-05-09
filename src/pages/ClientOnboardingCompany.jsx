@@ -1,0 +1,1146 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
+import PersonCard from '@/components/onboarding/PersonCard';
+import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
+import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
+import { ADVISORS } from '@/lib/constants';
+import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
+
+const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
+
+const STEPS = [
+  { number: 1, label: 'Company details' },
+  { number: 2, label: 'Directors' },
+  { number: 3, label: 'Document upload' },
+  { number: 4, label: 'KYC declaration' },
+  { number: 5, label: 'FICA verification' },
+  { number: 6, label: 'Financial profile' },
+  { number: 7, label: 'Risk & objectives' },
+  { number: 8, label: 'Submit' },
+];
+
+const ADVISORY_NEEDS = ['Local and offshore investments', 'Life & risk cover', 'Tax planning', 'Business assurance'];
+const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
+
+const calcRiskScore = (fd) => {
+  let s = 0;
+  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
+  s += ({ 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
+  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 })[fd.liquidity_requirement] || 0;
+  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
+  return Math.round(Math.min(10, s));
+};
+const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
+
+const normalizeRangeValue = (value) => (
+  typeof value === 'string'
+    ? value.replace(/Ã¢â‚¬â€œ|â€“|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
+    : value
+);
+
+const emptyDirector = () => ({
+  title: '', first_name: '', last_name: '', identity_type: 'SA ID',
+  id_number: '', passport_country: '', date_of_birth: '',
+  gender: '', marital_status: '', nationality: '',
+  email: '', mobile: '',
+  street_address: '', suburb: '', city: '', province: '', postal_code: '',
+});
+
+const buildDirectorDocumentsJson = (items = []) => JSON.stringify(items.map((director, directorIndex) => ({
+  director_index: directorIndex,
+  name: [director.first_name, director.last_name].filter(Boolean).join(' '),
+  id_file_url: director.id_file_url || director.id_front_file_url || '',
+  id_file_name: director.id_file_name || director.id_front_file_name || '',
+  id_front_file_url: director.id_front_file_url || director.id_file_url || '',
+  id_front_file_name: director.id_front_file_name || director.id_file_name || '',
+  id_back_file_url: director.id_back_file_url || '',
+  id_back_file_name: director.id_back_file_name || '',
+  addr_file_url: director.addr_file_url || '',
+  addr_file_name: director.addr_file_name || '',
+})));
+
+export default function ClientOnboardingCompany() {
+  const navigate = useNavigate();
+  const [clientId, setClientId] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingStep, setIsSavingStep] = useState(false);
+  const [uploadingDocs, setUploadingDocs] = useState({});
+  const [currentStep, setCurrentStep] = useState(1);
+  const [profileOverridden, setProfileOverridden] = useState(false);
+  const [profileInitialised, setProfileInitialised] = useState(false);
+  const [ficaRunning, setFicaRunning] = useState(false);
+  const [ficaResult, setFicaResult] = useState(null);
+  const [cipcResult, setCipcResult] = useState(null);
+  const [directorChecks, setDirectorChecks] = useState([]);
+
+  const [formData, setFormData] = useState({
+    entity_name: '', registration_number: '', vat_number: '',
+    street_address: '', suburb: '', city: '', province: '', postal_code: '',
+    email: '', mobile_number: '',
+    // Docs
+    cipc_registration_uploaded: false, moi_uploaded: false,
+    proof_of_address_uploaded: false, financial_statements_uploaded: false,
+    doc_identity: '', doc_identity_name: '',
+    doc_proof_of_address: '', doc_proof_of_address_name: '',
+    doc_source_of_funds: '', doc_source_of_funds_name: '',
+    doc_existing_policies: '', doc_existing_policies_name: '',
+    cipc_registration_uploaded_name: '', moi_uploaded_name: '',
+    proof_of_address_uploaded_name: '', financial_statements_uploaded_name: '',
+    // KYC
+    business_activity: '', entity_source_of_funds: [], ubo_declaration: '',
+    entity_tax_number: '', entity_tax_residency: '', entity_fatca: 'No', entity_pep: 'No',
+    // Financial
+    gross_annual_turnover: '', total_assets_band: '', entity_total_liabilities: '',
+    entity_existing_products: '', existing_products_notes: '', entity_loa_uploaded: false, entity_loa_authorised: false,
+    // Risk
+    portfolio_drop_response: '', primary_investment_objective: '',
+    time_horizon: '', liquidity_requirement: '', risk_profile: '', advisory_needs: [],
+  });
+
+  const [directors, setDirectors] = useState([emptyDirector(), emptyDirector()]);
+
+  useEffect(() => {
+    const id = sessionStorage.getItem('pending_client_id');
+    if (!id) { navigate('/client-registration', { replace: true }); return; }
+    const entityType = sessionStorage.getItem('pending_entity_type');
+    if (entityType && entityType !== 'Company') {
+      if (entityType === 'Trust') { navigate('/client-onboarding-trust', { replace: true }); return; }
+      navigate('/client-onboarding', { replace: true }); return;
+    }
+    base44.entities.Clients.list().then(clients => {
+      const c = clients.find(x => x.id === id);
+      if (c) {
+        setFormData(prev => ({
+          ...prev,
+          entity_name: c.entity_name || prev.entity_name,
+          registration_number: c.registration_number || prev.registration_number,
+          vat_number: c.vat_number || prev.vat_number,
+          street_address: c.street_address || prev.street_address,
+          suburb: c.suburb || prev.suburb, city: c.city || prev.city,
+          province: c.province || prev.province, postal_code: c.postal_code || prev.postal_code,
+          email: c.email || prev.email, mobile_number: c.mobile_number || prev.mobile_number,
+          cipc_registration_uploaded: c.cipc_registration_uploaded || !!c.doc_identity || prev.cipc_registration_uploaded,
+          moi_uploaded: c.moi_uploaded || !!c.doc_existing_policies || prev.moi_uploaded,
+          proof_of_address_uploaded: c.proof_of_address_uploaded || !!c.doc_proof_of_address || prev.proof_of_address_uploaded,
+          financial_statements_uploaded: c.financial_statements_uploaded || !!c.doc_source_of_funds || prev.financial_statements_uploaded,
+          doc_identity: c.doc_identity || prev.doc_identity,
+          doc_identity_name: c.doc_identity_name || prev.doc_identity_name,
+          doc_proof_of_address: c.doc_proof_of_address || prev.doc_proof_of_address,
+          doc_proof_of_address_name: c.doc_proof_of_address_name || prev.doc_proof_of_address_name,
+          doc_source_of_funds: c.doc_source_of_funds || prev.doc_source_of_funds,
+          doc_source_of_funds_name: c.doc_source_of_funds_name || prev.doc_source_of_funds_name,
+          doc_existing_policies: c.doc_existing_policies || prev.doc_existing_policies,
+          doc_existing_policies_name: c.doc_existing_policies_name || prev.doc_existing_policies_name,
+          cipc_registration_uploaded_name: c.cipc_registration_uploaded_name || prev.cipc_registration_uploaded_name,
+          moi_uploaded_name: c.moi_uploaded_name || prev.moi_uploaded_name,
+          proof_of_address_uploaded_name: c.proof_of_address_uploaded_name || prev.proof_of_address_uploaded_name,
+          financial_statements_uploaded_name: c.financial_statements_uploaded_name || prev.financial_statements_uploaded_name,
+          business_activity: c.business_activity || prev.business_activity,
+          entity_source_of_funds: Array.isArray(c.entity_source_of_funds) ? c.entity_source_of_funds : prev.entity_source_of_funds,
+          ubo_declaration: c.ubo_declaration || prev.ubo_declaration,
+          entity_tax_number: c.entity_tax_number || prev.entity_tax_number,
+          entity_tax_residency: c.entity_tax_residency || prev.entity_tax_residency,
+          entity_fatca: c.entity_fatca || prev.entity_fatca,
+          entity_pep: c.entity_pep || prev.entity_pep,
+          gross_annual_turnover: normalizeRangeValue(c.gross_annual_turnover) || prev.gross_annual_turnover,
+          total_assets_band: normalizeRangeValue(c.total_assets_band) || prev.total_assets_band,
+          entity_total_liabilities: normalizeRangeValue(c.entity_total_liabilities) || prev.entity_total_liabilities,
+          existing_products_notes: c.existing_products_notes || prev.existing_products_notes,
+          entity_loa_uploaded: c.entity_loa_uploaded ?? prev.entity_loa_uploaded,
+          entity_loa_authorised: c.entity_loa_authorised ?? prev.entity_loa_authorised,
+          portfolio_drop_response: c.portfolio_drop_response || prev.portfolio_drop_response,
+          primary_investment_objective: c.primary_investment_objective || prev.primary_investment_objective,
+          time_horizon: normalizeRangeValue(c.time_horizon) || prev.time_horizon,
+          liquidity_requirement: normalizeRangeValue(c.liquidity_requirement) || prev.liquidity_requirement,
+          risk_profile: c.risk_profile || prev.risk_profile,
+          advisory_needs: Array.isArray(c.advisory_needs) ? c.advisory_needs.filter(n => ADVISORY_NEEDS.includes(n)) : prev.advisory_needs,
+        }));
+        if (c.risk_profile_overridden) setProfileOverridden(true);
+        if (c.fica_status) {
+          setFicaResult({
+            fica_status: c.fica_status,
+            fica_reference: c.fica_reference || '',
+            verified_at: c.fica_verified_at || '',
+            failure_reason: null,
+          });
+        }
+        if (typeof c.cipc_verified === 'boolean') setCipcResult({ pass: c.cipc_verified });
+        if (Array.isArray(c.directors_list) && c.directors_list.length > 0) setDirectors(c.directors_list);
+      }
+    }).catch(() => {}).finally(() => { setClientId(id); setIsInitializing(false); setProfileInitialised(true); });
+  }, [navigate]);
+
+  const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const toggleSof = (item) => setFormData(prev => ({
+    ...prev,
+    entity_source_of_funds: prev.entity_source_of_funds.includes(item)
+      ? prev.entity_source_of_funds.filter(i => i !== item)
+      : [...prev.entity_source_of_funds, item],
+  }));
+  const toggleNeed = (item) => setFormData(prev => ({
+    ...prev,
+    advisory_needs: prev.advisory_needs.includes(item) ? prev.advisory_needs.filter(i => i !== item) : [...prev.advisory_needs, item],
+  }));
+
+  useEffect(() => {
+    if (!profileInitialised || profileOverridden) return;
+    if (formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) {
+      const suggested = scoreToProfile(calcRiskScore(formData));
+      setFormData(prev => prev.risk_profile === suggested ? prev : { ...prev, risk_profile: suggested });
+    }
+  }, [profileInitialised, profileOverridden, formData.portfolio_drop_response, formData.time_horizon, formData.liquidity_requirement, formData.primary_investment_objective]);
+
+  const updateDirector = (idx, field, value) => setDirectors(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
+  const addDirector = () => setDirectors(prev => [...prev, emptyDirector()]);
+  const removeDirector = (idx) => { if (directors.length > 1) setDirectors(prev => prev.filter((_, i) => i !== idx)); };
+
+  const handleDocumentUpload = async (fieldKey, file) => {
+    if (!file) return;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { updateData } = await uploadOnboardingDocument({ clientId, fieldKey, file });
+      setFormData(prev => ({ ...prev, ...updateData }));
+      toast.success('Document uploaded and sent to advisor portal');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
+
+  const fileNameFor = (person, key) => person?.[`${key}_name`] || '';
+
+  const handleDirectorDocumentUpload = async (idx, docType, file) => {
+    if (!file || !clientId) return;
+    const fieldKey = `director_${idx}_${docType}_uploaded`;
+    setUploadingDocs(prev => ({ ...prev, [fieldKey]: true }));
+    try {
+      const { file_url: fileUrl } = await base44.integrations.Core.UploadFile({ file });
+      const updatedDirectors = directors.map((director, directorIdx) => {
+        if (directorIdx !== idx) return director;
+        if (docType === 'id_front') return { ...director, id_front_uploaded: true, id_front_file_url: fileUrl, id_front_file_name: file.name, id_uploaded: director.id_back_uploaded || director.identity_type !== 'SA ID', id_file_url: fileUrl, id_file_name: file.name };
+        if (docType === 'id_back') return { ...director, id_back_uploaded: true, id_back_file_url: fileUrl, id_back_file_name: file.name, id_uploaded: director.id_front_uploaded || director.identity_type !== 'SA ID' };
+        return docType === 'id'
+          ? { ...director, id_uploaded: true, id_file_url: fileUrl, id_file_name: file.name }
+          : { ...director, addr_uploaded: true, addr_file_url: fileUrl, addr_file_name: file.name };
+      });
+      setDirectors(updatedDirectors);
+      setFormData(prev => ({ ...prev, [fieldKey]: true }));
+      await base44.entities.Clients.update(clientId, {
+        directors_list: updatedDirectors,
+        director_documents_json: buildDirectorDocumentsJson(updatedDirectors),
+        doc_submitted_at: new Date().toISOString(),
+        doc_status: 'Submitted',
+      });
+      toast.success('Director document uploaded and indexed');
+    } catch (error) {
+      toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUploadingDocs(prev => ({ ...prev, [fieldKey]: false }));
+    }
+  };
+
+  const saveStep = async (data) => {
+    if (!clientId) return false;
+    setIsSavingStep(true);
+    try {
+      await base44.entities.Clients.update(clientId, data);
+      toast.success(`Step ${currentStep} saved`);
+      return true;
+    } catch (err) {
+      toast.error('Save failed: ' + (err.message || 'Unknown error'));
+      return false;
+    } finally { setIsSavingStep(false); }
+  };
+
+  const runEntityFicaVerification = async () => {
+    if (!formData.registration_number) { toast.error('Registration number required'); return; }
+    if (directors.filter(d => d.first_name && d.id_number).length === 0) { toast.error('Please complete director details first'); return; }
+    setFicaRunning(true); setFicaResult(null); setCipcResult(null);
+    const activeDirs = directors.filter(d => d.first_name && d.id_number);
+    setDirectorChecks(activeDirs.map(d => ({ name: d.first_name + ' ' + d.last_name, id: 'pending', address: 'pending', doc: 'pending', aml: 'pending' })));
+    try {
+      const cipc = await base44.functions.invoke('ficaVerify', { action: 'verifyCipc', payload: { registration_number: formData.registration_number } });
+      const cipcData = cipc?.data?.data?.results || {};
+      const cipcMatch = cipcData.cipc_company_match || cipcData.cipc_verification || {};
+      const cipcPass = cipcMatch.Status === 'Success' || cipcMatch.Status === 'Active';
+      setCipcResult({ pass: cipcPass, data: cipc?.data?.data });
+      if (!cipcPass) {
+        const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+        const failureReason = 'CIPC registration could not be verified';
+        const rmcpResult = calculateRmcpScore({ formData, clientType: 'company', cipcVerified: false });
+        setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult });
+        await base44.entities.Clients.update(clientId, {
+          fica_status: 'Referred',
+          verification_status: 'Manual Review',
+          advisor_review_required: true,
+          fica_reference: ref,
+          cipc_verified: false,
+          fica_risk_band: rmcpResult.band,
+          fica_failure_reason: failureReason,
+          fica_checks_json: JSON.stringify({ cipc: { status: 'fail', reason: failureReason } }),
+          ...buildRmcpUpdate(rmcpResult),
+        });
+        setFicaRunning(false); toast.info('Verification submitted. Your advisor will review anything that needs attention.'); return;
+      }
+      let allPass = true, anyFlag = false;
+      const updatedChecks = [];
+      for (let i = 0; i < activeDirs.length; i++) {
+        const dir = activeDirs[i];
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: 'running' } : c));
+        const idResult = await base44.functions.invoke('ficaVerify', { action: 'verifyId', payload: { id_number: dir.id_number, first_name: dir.first_name, last_name: dir.last_name, date_of_birth: dir.date_of_birth } });
+        const idPass = idResult?.data?.results?.said_verification?.Status === 'Success';
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, id: idPass ? 'pass' : 'fail' } : c));
+        if (!idPass) allPass = false;
+
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, address: 'running' } : c));
+        const traceResult = await base44.functions.invoke('ficaVerify', {
+          action: 'consumerTrace',
+          payload: {
+            id_number: dir.id_number,
+            first_name: dir.first_name,
+            last_name: dir.last_name,
+            street_address: dir.street_address,
+            suburb: dir.suburb,
+            city: dir.city,
+            province: dir.province,
+            postal_code: dir.postal_code,
+          },
+        });
+        const addressVerified = traceResult?.data?.data?.results?.consumer_trace?.Status === 'Success';
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, address: addressVerified ? 'pass' : 'flag' } : c));
+
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: 'running' } : c));
+        const docResult = (dir.id_front_file_url || dir.id_file_url)
+          ? await base44.functions.invoke('ficaVerify', {
+              action: 'authenticateDoc',
+              payload: {
+                id_number: dir.id_number,
+                document_url: dir.id_front_file_url || dir.id_file_url,
+                back_document_url: dir.id_back_file_url,
+                document_type: dir.identity_type === 'Passport' ? 'passport' : 'sa_id',
+                reference: 'ww-company-' + clientId + '-director-' + i + '-' + Date.now(),
+              },
+            })
+          : { data: null, error: 'No uploaded director ID document available for OCR' };
+        const docVerification = docResult?.data?.data?.results?.document_verification || docResult?.data?.data?.results?.id_verification || {};
+        const docStatus = docVerification.Status || docVerification.status || docResult?.data?.data?.Status || docResult?.data?.data?.status;
+        const docReason = docVerification.Reason || docVerification.reason || '';
+        const docIsForgery = ['Failed', 'Rejected', 'Declined'].includes(docStatus) && /Forgery|Tampered|Fraud/i.test(docReason);
+        const docAuthenticated = ['Success', 'Approved'].includes(docStatus);
+        if (docIsForgery) allPass = false;
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, doc: docIsForgery ? 'fail' : docAuthenticated ? 'pass' : 'flag' } : c));
+
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: 'running' } : c));
+        const amlResult = await base44.functions.invoke('ficaVerify', { action: 'screenAml', payload: { name: dir.first_name + ' ' + dir.last_name, entity: 0, country: 'za', dataset: 'all' } });
+        const amlMatch = amlResult?.data?.data?.totalHits > 0 || false;
+        if (amlMatch) anyFlag = true;
+        setDirectorChecks(prev => prev.map((c, idx) => idx === i ? { ...c, aml: amlMatch ? 'flag' : 'pass' } : c));
+        updatedChecks.push({ ...dir, id_verified: idPass, address_verified: addressVerified, document_authenticated: docAuthenticated, document_issue: !!docIsForgery, aml_clear: !amlMatch });
+      }
+      const ficaStatus = !allPass ? 'Referred' : anyFlag ? 'Referred' : 'Approved';
+      const ficaRef = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      const rmcpResult = calculateRmcpScore({
+        formData,
+        clientType: 'company',
+        amlMatch: anyFlag,
+        cipcVerified: cipcPass,
+        roleChecks: updatedChecks,
+      });
+      const failedDirectors = updatedChecks
+        .filter(d => !d.id_verified || !d.aml_clear)
+        .map(d => `${[d.first_name, d.last_name].filter(Boolean).join(' ') || 'Director'}: ${!d.id_verified ? 'ID verification failed' : 'AML / PEP match detected'}`);
+      const failureReason = failedDirectors.join('; ');
+      const finalResult = { fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, verified_at: new Date().toISOString(), failure_reason: failureReason, rmcp_score: rmcpResult };
+      setFicaResult(finalResult);
+      await base44.entities.Clients.update(clientId, {
+        fica_status: ficaStatus, verification_status: ficaStatus === 'Approved' ? 'Verified' : 'Manual Review', advisor_review_required: ficaStatus !== 'Approved', fica_reference: ficaRef, fica_verified_at: finalResult.verified_at,
+        fica_risk_band: rmcpResult.band,
+        cipc_verified: cipcPass, entity_aml_clear: !anyFlag,
+        directors_json: JSON.stringify(updatedChecks),
+        fica_checks_json: JSON.stringify({ cipc: cipcPass, directors: updatedChecks }),
+        fica_failure_reason: failureReason,
+        ...buildRmcpUpdate(rmcpResult),
+      });
+      if (ficaStatus !== 'Approved') {
+        await base44.functions.invoke('sendTransactionalEmail', { to: ADVISOR_NOTIFICATION_EMAIL, subject: 'Entity FICA ' + ficaStatus + ' - ' + formData.entity_name, text: 'FICA verification for company ' + formData.entity_name + ' (Reg: ' + formData.registration_number + ') returned: ' + ficaStatus + '\n\nReference: ' + ficaRef + '\nCIPC verified: ' + cipcPass + '\nDirectors checked: ' + activeDirs.length + '\n\nLog in to the WealthWorks Advisor Portal to review.' });
+      }
+      if (ficaStatus === 'Approved') toast.success('Entity verification completed - ' + ficaRef);
+      else toast.info('Verification submitted. Your advisor will review anything that needs attention.');
+    } catch (err) {
+      const ref = 'FICA-' + new Date().getFullYear() + '-' + Math.floor(10000 + Math.random() * 90000) + '-ZA';
+      setFicaResult({ fica_status: 'Referred', fica_reference: ref, verified_at: new Date().toISOString(), failure_reason: err.message || 'Verification service unavailable' });
+      toast.info('Verification submitted. Your advisor will review anything that needs attention.');
+    } finally { setFicaRunning(false); }
+  };
+
+  const handleContinue = async () => {
+    let data = {};
+    if (currentStep === 1) {
+      if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
+      data = {
+        client_type: 'Company', identity_type: 'Registration',
+        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
+        email: formData.email, mobile_number: formData.mobile_number,
+        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
+      };
+    } else if (currentStep === 2) {
+      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
+      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
+    } else if (currentStep === 3) {
+      const directorsWithDocs = directors.map((d, idx) => ({
+        ...d,
+        id_uploaded: formData[`director_${idx}_id_uploaded`] || false,
+        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || false,
+      }));
+      data = {
+        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
+        moi_uploaded: formData.moi_uploaded || false,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
+        financial_statements_uploaded: formData.financial_statements_uploaded || false,
+        doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
+        doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
+        cipc_registration_uploaded_name: formData.cipc_registration_uploaded_name,
+        moi_uploaded_name: formData.moi_uploaded_name,
+        proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
+        financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
+        directors_list: directorsWithDocs,
+        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
+      };
+    } else if (currentStep === 4) {
+      data = {
+        business_activity: formData.business_activity,
+        entity_source_of_funds: formData.entity_source_of_funds,
+        ubo_declaration: formData.ubo_declaration,
+        entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca,
+        entity_pep: formData.entity_pep,
+      };
+    } else if (currentStep === 5) {
+      if (!ficaResult) {
+        toast.info('Verification will continue in the background. You can keep completing onboarding.');
+        runEntityFicaVerification();
+      }
+      data = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        cipc_verified: cipcResult?.pass || false,
+        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        directors_json: JSON.stringify(directors),
+      };
+    } else if (currentStep === 6) {
+      data = {
+        gross_annual_turnover: normalizeRangeValue(formData.gross_annual_turnover),
+        total_assets_band: normalizeRangeValue(formData.total_assets_band),
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
+        existing_products_notes: formData.existing_products_notes,
+        entity_loa_uploaded: formData.entity_loa_uploaded,
+        entity_loa_authorised: formData.entity_loa_authorised,
+      };
+    } else if (currentStep === 7) {
+      if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
+      data = {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
+      };
+    }
+    const saved = await saveStep(data);
+    if (saved) setCurrentStep(prev => prev + 1);
+  };
+
+  const handleSaveAndSubmit = async () => {
+    if (currentStep === 8) {
+      await handleSubmit();
+      return;
+    }
+
+    let data = {};
+    if (currentStep === 1) {
+      if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
+      data = {
+        client_type: 'Company', identity_type: 'Registration',
+        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
+        email: formData.email, mobile_number: formData.mobile_number,
+        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
+      };
+    } else if (currentStep === 2) {
+      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
+      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
+    } else if (currentStep === 3) {
+      const directorsWithDocs = directors.map((d, idx) => ({
+        ...d,
+        id_uploaded: formData[`director_${idx}_id_uploaded`] || d.id_uploaded || false,
+        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || d.addr_uploaded || false,
+      }));
+      data = {
+        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
+        moi_uploaded: formData.moi_uploaded || false,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
+        financial_statements_uploaded: formData.financial_statements_uploaded || false,
+        doc_identity: formData.doc_identity,
+        doc_identity_name: formData.doc_identity_name,
+        doc_proof_of_address: formData.doc_proof_of_address,
+        doc_proof_of_address_name: formData.doc_proof_of_address_name,
+        doc_source_of_funds: formData.doc_source_of_funds,
+        doc_source_of_funds_name: formData.doc_source_of_funds_name,
+        doc_existing_policies: formData.doc_existing_policies,
+        doc_existing_policies_name: formData.doc_existing_policies_name,
+        cipc_registration_uploaded_name: formData.cipc_registration_uploaded_name,
+        moi_uploaded_name: formData.moi_uploaded_name,
+        proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
+        financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
+        directors_list: directorsWithDocs,
+        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
+      };
+    } else if (currentStep === 4) {
+      data = {
+        business_activity: formData.business_activity,
+        entity_source_of_funds: formData.entity_source_of_funds,
+        ubo_declaration: formData.ubo_declaration,
+        entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca,
+        entity_pep: formData.entity_pep,
+      };
+    } else if (currentStep === 5) {
+      data = {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        cipc_verified: cipcResult?.pass || false,
+        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
+        directors_json: JSON.stringify(directors),
+      };
+    } else if (currentStep === 6) {
+      data = {
+        gross_annual_turnover: normalizeRangeValue(formData.gross_annual_turnover),
+        total_assets_band: normalizeRangeValue(formData.total_assets_band),
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
+        existing_products_notes: formData.existing_products_notes,
+        entity_loa_uploaded: formData.entity_loa_uploaded,
+        entity_loa_authorised: formData.entity_loa_authorised,
+      };
+    } else if (currentStep === 7) {
+      data = {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData),
+        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden,
+        advisory_needs: formData.advisory_needs,
+      };
+    }
+
+    const saved = await saveStep(data);
+    if (saved) await handleSubmit();
+  };
+
+  const handleSubmit = async () => {
+    if (!clientId) return;
+    setIsSubmitting(true);
+    try {
+      const rmcpResult = ficaResult?.rmcp_score || calculateRmcpScore({
+        formData,
+        clientType: 'company',
+        amlMatch: ficaResult ? ficaResult.fica_status === 'Referred' : false,
+        cipcVerified: cipcResult?.pass !== false,
+        roleChecks: directors,
+      });
+      await base44.entities.Clients.update(clientId, {
+        client_status: 'Under Review', onboarding_complete: true,
+        verification_status: 'Pending',
+        doc_status: 'Submitted',
+        doc_submitted_at: new Date().toISOString(),
+        directors_list: directors,
+        director_documents_json: buildDirectorDocumentsJson(directors),
+      });
+      const allProposals = await base44.entities.Proposal.list();
+      const existing = allProposals.find(p => p.client_id === clientId);
+      const clientName = formData.entity_name || 'Company Client';
+      const proposalData = {
+        client_id: clientId, client_name: clientName, advisory_needs: formData.advisory_needs,
+        status: 'new',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_verified_at: ficaResult?.verified_at || '',
+        fica_risk_band: rmcpResult.band,
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
+        offshore_exposure: (formData.advisory_needs || []).includes('Local and offshore investments'),
+        aml_pep_clear: ficaResult?.fica_status === 'Approved',
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+      };
+      if (existing) {
+        await base44.entities.Proposal.update(existing.id, proposalData);
+      } else {
+        await base44.entities.Proposal.create({
+          ...proposalData,
+          reference: 'WW-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
+          advisor_name: 'Trevor Fine', pdf_status: 'No PDF',
+          advisor_signature_completed: false, client_signature_completed: false, document_version: 1,
+        });
+      }
+      await base44.functions.invoke('sendTransactionalEmail', {
+        to: ADVISOR_NOTIFICATION_EMAIL,
+        subject: 'New Company Onboarding - ' + clientName,
+        text: 'Company ' + clientName + ' has completed onboarding.\n\nAdvisory needs: ' + formData.advisory_needs.join(', ') + '\n\nLog in to the WealthWorks Advisor Portal to review.',
+      });
+
+      await createOnboardingComplianceEntries({
+        ...formData,
+        id: clientId,
+        client_type: 'Company',
+        entity_name: clientName,
+        fica_status: ficaResult?.fica_status || 'Pending',
+        fica_reference: ficaResult?.fica_reference || '',
+        fica_risk_band: rmcpResult.band,
+        rmcp_risk_score: rmcpResult.score,
+        rmcp_risk_band: rmcpResult.band,
+        aml_pep_clear: ficaResult?.fica_status === 'Approved',
+      });
+
+      // Fire-and-forget background verification
+      base44.functions.invoke('runBackgroundVerification', {
+        client_id: clientId,
+        client_type: 'Company',
+      }).catch(() => {});
+
+      toast.success('Onboarding submitted successfully');
+      navigate('/client-confirmation', { replace: true });
+    } catch (err) {
+      toast.error(err.message || 'Failed to complete onboarding');
+    } finally { setIsSubmitting(false); }
+  };
+
+  if (isInitializing) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-navy" />
+    </div>
+  );
+  const clientDisplayName = formData.entity_name || formData.email || 'Company client';
+
+  return (
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card/95 px-5 py-2.5 backdrop-blur">
+        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-navy hover:text-ocean transition-colors text-sm">
+          <ArrowLeft className="w-4 h-4" /> WEALTHWORKS.CO.ZA
+        </button>
+        <span className="text-xs text-muted-foreground font-mono">STEP {currentStep} OF 8 - COMPANY</span>
+      </div>
+
+      <div className="sticky top-[49px] z-20 flex items-center gap-0 overflow-x-auto border-b border-border bg-card/95 px-5 py-0 backdrop-blur">
+        {STEPS.map(step => {
+          const isComplete = currentStep > step.number;
+          const isCurrent = currentStep === step.number;
+          return (
+            <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
+                {isComplete ? 'OK' : step.number}
+              </span>
+              {step.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <p className="text-[10px] font-semibold tracking-[.22em] text-ocean uppercase mb-1">STEP {currentStep} OF 8 - COMPANY ONBOARDING</p>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[.02em] text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
+          <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
+        </div>
+
+        {/* STEP 1 - Company Details */}
+        {currentStep === 1 && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">COMPANY NAME *</Label>
+                <Input className="mt-1 h-8 text-sm" value={formData.entity_name} onChange={e => handleChange('entity_name', e.target.value)} placeholder="e.g. Alpha Investments (Pty) Ltd" />
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">REGISTRATION NUMBER (CIPC) *</Label>
+                <Input className="mt-1 h-8 text-sm" value={formData.registration_number} onChange={e => handleChange('registration_number', e.target.value)} placeholder="e.g. 2015/123456/07" />
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">VAT NUMBER (IF APPLICABLE)</Label>
+                <Input className="mt-1 h-8 text-sm" value={formData.vat_number} onChange={e => handleChange('vat_number', e.target.value)} placeholder="e.g. 4123456789" />
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT EMAIL</Label>
+                <Input type="email" className="mt-1 h-8 text-sm" value={formData.email} onChange={e => handleChange('email', e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CONTACT MOBILE</Label>
+                <Input type="tel" className="mt-1 h-8 text-sm" value={formData.mobile_number} onChange={e => handleChange('mobile_number', e.target.value)} />
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">REGISTERED ADDRESS</p>
+              <div className="space-y-2">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">STREET ADDRESS</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.street_address} onChange={e => handleChange('street_address', e.target.value)} />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <div><Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SUBURB</Label><Input className="mt-1 h-8 text-sm" value={formData.suburb} onChange={e => handleChange('suburb', e.target.value)} /></div>
+                  <div><Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">CITY</Label><Input className="mt-1 h-8 text-sm" value={formData.city} onChange={e => handleChange('city', e.target.value)} /></div>
+                  <div>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
+                    <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
+                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">POSTAL CODE</Label><Input className="mt-1 h-8 text-sm" maxLength="4" value={formData.postal_code} onChange={e => handleChange('postal_code', e.target.value)} /></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2 - Directors */}
+        {currentStep === 2 && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Add all directors of this company. Minimum 2 required.</p>
+            {directors.map((director, idx) => (
+              <PersonCard key={idx} person={director} idx={idx} role="Director" onUpdate={updateDirector} onRemove={removeDirector} canRemove={directors.length > 1} />
+            ))}
+            <button type="button" onClick={addDirector} className="flex items-center gap-1.5 text-xs text-ocean hover:text-navy font-medium transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add director
+            </button>
+          </div>
+        )}
+
+        {/* STEP 3 - Document Upload */}
+        {currentStep === 3 && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">COMPANY DOCUMENTS</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                 { key: 'cipc_registration_uploaded', title: 'CIPC REGISTRATION CERTIFICATE', desc: 'CoR14.3 / CoR15.1A or equivalent' },
+                 { key: 'moi_uploaded', title: 'MOI / MEMORANDUM OF INCORPORATION', desc: 'Certified copy of current MOI' },
+                 { key: 'proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
+                 { key: 'financial_statements_uploaded', title: 'LATEST FINANCIAL STATEMENTS', desc: 'Most recent audited or management accounts' },
+                ].map(doc => (
+                 <div key={doc.key} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                   <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                   {formData[doc.key] ? (
+                     <label className="block cursor-pointer">
+                       <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                         <div className="flex items-center gap-2">
+                           {uploadingDocs[doc.key] ? <Loader2 className="w-4 h-4 text-teal animate-spin" /> : <Check className="w-4 h-4 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[doc.key] ? 'Uploading...' : 'Uploaded'}</span>
+                           {uploadedDocumentName(formData, doc.key) && <span className="text-[10px] text-muted-foreground truncate max-w-[170px]" title={uploadedDocumentName(formData, doc.key)}>{uploadedDocumentName(formData, doc.key)}</span>}
+                         </div>
+                         <span className="text-[10px] text-ocean font-medium">Change document</span>
+                       </div>
+                       <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                     </label>
+                   ) : (
+                     <label className="block cursor-pointer">
+                       <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                         <p className="text-xs font-medium text-navy">{doc.desc}</p>
+                         <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                       </div>
+                       <input type="file" className="hidden" onChange={e => handleDocumentUpload(doc.key, e.target.files?.[0])} />
+                     </label>
+                   )}
+                 </div>
+                ))}
+
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">PER DIRECTOR DOCUMENTS</p>
+              <div className="space-y-3">
+                {directors.map((d, idx) => {
+                  const name = [d.first_name, d.last_name].filter(Boolean).join(' ') || `Director ${idx + 1}`;
+                  return (
+                    <div key={idx} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Director {idx + 1} - {name}</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                          <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">SA ID / PASSPORT</h4>
+                          {d.identity_type === 'SA ID' ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {[{ key: 'id_front', label: 'Front' }, { key: 'id_back', label: 'Back' }].map(part => {
+                                const uploaded = d[`${part.key}_uploaded`];
+                                const uploadKey = `director_${idx}_${part.key}_uploaded`;
+                                return (
+                                  <label key={part.key} className="block cursor-pointer">
+                                    <div className={`p-1.5 rounded border transition-colors ${uploaded ? 'bg-teal/10 border-teal/20 hover:border-ocean/50' : 'border-dashed border-border hover:border-ocean/50 text-center'}`}>
+                                      {uploaded ? (
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          {uploadingDocs[uploadKey] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin shrink-0" /> : <Check className="w-3.5 h-3.5 text-teal shrink-0" />}
+                                          <span className="text-[10px] text-teal font-medium shrink-0">{part.label}</span>
+                                          {fileNameFor(d, `${part.key}_file`) && <span className="text-[10px] text-muted-foreground truncate" title={fileNameFor(d, `${part.key}_file`)}>{fileNameFor(d, `${part.key}_file`)}</span>}
+                                        </div>
+                                      ) : (
+                                        <><p className="text-[10px] font-medium text-navy">{part.label}</p><p className="text-[10px] text-ocean">Upload</p></>
+                                      )}
+                                    </div>
+                                    <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, part.key, e.target.files?.[0])} />
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : formData[`director_${idx}_id_uploaded`] || d.id_uploaded ? (
+                            <label className="block cursor-pointer">
+                              <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  {uploadingDocs[`director_${idx}_id_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_id_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
+                                  {d.id_file_name && <span className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={d.id_file_name}>{d.id_file_name}</span>}
+                                </div>
+                                <span className="text-[10px] text-ocean font-medium">Change</span>
+                              </div>
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'id', e.target.files?.[0])} />
+                            </label>
+                          ) : (
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                <p className="text-[10px] font-medium text-navy">Certified copy of identity document</p>
+                                <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                              </div>
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'id', e.target.files?.[0])} />
+                            </label>
+                          )}
+                        </div>
+                        <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                          <h4 className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-1">PROOF OF RESIDENTIAL ADDRESS</h4>
+                          {formData[`director_${idx}_addr_uploaded`] || d.addr_uploaded ? (
+                            <label className="block cursor-pointer">
+                              <div className="flex items-center justify-between gap-2 p-1.5 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  {uploadingDocs[`director_${idx}_addr_uploaded`] ? <Loader2 className="w-3.5 h-3.5 text-teal animate-spin" /> : <Check className="w-3.5 h-3.5 text-teal" />}<span className="text-xs text-teal font-medium">{uploadingDocs[`director_${idx}_addr_uploaded`] ? 'Uploading...' : 'Uploaded'}</span>
+                                  {d.addr_file_name && <span className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={d.addr_file_name}>{d.addr_file_name}</span>}
+                                </div>
+                                <span className="text-[10px] text-ocean font-medium">Change</span>
+                              </div>
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'addr', e.target.files?.[0])} />
+                            </label>
+                          ) : (
+                            <label className="block cursor-pointer">
+                              <div className="border-2 border-dashed border-border rounded p-2 text-center hover:border-ocean/50 transition-colors">
+                                <p className="text-[10px] font-medium text-navy">Utility bill / bank statement</p>
+                                <p className="text-[10px] text-ocean mt-0.5">Click to upload</p>
+                              </div>
+                              <input type="file" className="hidden" onChange={e => handleDirectorDocumentUpload(idx, 'addr', e.target.files?.[0])} />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 - KYC Declaration */}
+        {currentStep === 4 && (
+          <div className="space-y-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">BUSINESS INFORMATION</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">BUSINESS ACTIVITY / DESCRIPTION *</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.business_activity} onChange={e => handleChange('business_activity', e.target.value)} placeholder="Describe the main business activity" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase mb-2 block">SOURCE OF FUNDS</Label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {['Operational revenue','Investment returns','Capital contributions','Asset sales','Loan funding','Other'].map(item => (
+                      <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                        <input type="checkbox" checked={formData.entity_source_of_funds.includes(item)} onChange={() => toggleSof(item)} className="w-3.5 h-3.5 accent-ocean" />
+                        {item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">UBO DECLARATION</Label>
+                  <p className="text-[10px] text-muted-foreground mb-1">List all beneficial owners with more than 25% shareholding (name and percentage)</p>
+                  <textarea
+                    className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                    value={formData.ubo_declaration} onChange={e => handleChange('ubo_declaration', e.target.value)}
+                    placeholder="e.g. John Smith - 60%, Jane Doe - 40%"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">TAX & COMPLIANCE DECLARATION</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">SA TAX NUMBER</Label>
+                  <Input className="mt-1 h-8 text-sm" value={formData.entity_tax_number} onChange={e => handleChange('entity_tax_number', e.target.value)} placeholder="10-digit SARS number" />
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
+                  <Select value={formData.entity_tax_residency} onValueChange={v => handleChange('entity_tax_residency', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="South Africa only">South Africa only</SelectItem>
+                      <SelectItem value="South Africa + Other">South Africa + Other</SelectItem>
+                      <SelectItem value="Other country only">Other country only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">FATCA (US ENTITY?)</Label>
+                  <Select value={formData.entity_fatca} onValueChange={v => handleChange('entity_fatca', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">ANY DIRECTOR IS A PEP?</Label>
+                  <Select value={formData.entity_pep} onValueChange={v => handleChange('entity_pep', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5 - FICA Verification */}
+        {currentStep === 5 && (
+          <div className="space-y-4">
+            <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
+              <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
+              <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                <span className="text-base shrink-0">ℹ️</span>
+                <div>
+                  <p className="font-semibold text-sm text-navy">Verification is under review</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    WealthWorks will review your submitted company documents and director information. You will be contacted if anything further is required.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-[10px] text-muted-foreground shadow-sm">
+              <span className="font-semibold text-navy">Privacy note: </span>
+              CIPC, director screening, AML and risk results are retained for WealthWorks internal compliance review and are not displayed as client-facing outcomes.
+            </div>
+          </div>
+        )}
+        {/* STEP 6 - Financial Profile */}
+        {currentStep === 6 && (
+          <div className="space-y-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">COMPANY FINANCIALS</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">GROSS ANNUAL TURNOVER</Label>
+                  <Select value={formData.gross_annual_turnover} onValueChange={v => handleChange('gross_annual_turnover', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R1m','R1m - R5m','R5m - R20m','R20m - R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL ASSETS BAND</Label>
+                  <Select value={formData.total_assets_band} onValueChange={v => handleChange('total_assets_band', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['Under R500k','R500k - R2m','R2m - R10m','R10m - R50m','Over R50m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TOTAL LIABILITIES</Label>
+                  <Select value={formData.entity_total_liabilities} onValueChange={v => handleChange('entity_total_liabilities', v)}>
+                    <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>{['None','Under R500,000','R500k - R1m','R1m - R3m','Over R3m'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="mt-3">
+                <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">EXISTING FINANCIAL PRODUCTS / POLICIES</Label>
+                <textarea
+                  className="w-full mt-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px]"
+                  value={formData.existing_products_notes || ''} onChange={e => handleChange('existing_products_notes', e.target.value)}
+                  placeholder="List current policies and investments e.g. Company RA, Group risk cover, Sanlam endowment..."
+                />
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">LETTER OF AUTHORITY</h3>
+              {formData.entity_loa_uploaded ? (
+                <div className="flex items-center gap-2 p-2 bg-teal/10 border border-teal/20 rounded mb-2">
+                  <Check className="w-4 h-4 text-teal" /><span className="text-xs text-teal font-medium">LOA uploaded</span>
+                </div>
+              ) : (
+                <label className="block cursor-pointer mb-2">
+                  <div className="border-2 border-dashed border-border rounded p-3 text-center hover:border-ocean/50 transition-colors">
+                    <p className="text-xs font-medium text-navy">Letter of Authority document</p>
+                    <p className="text-[10px] text-ocean mt-1">Click to upload</p>
+                  </div>
+                  <input type="file" className="hidden" onChange={() => handleChange('entity_loa_uploaded', true)} />
+                </label>
+              )}
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={formData.entity_loa_authorised} onChange={e => handleChange('entity_loa_authorised', e.target.checked)} className="w-3.5 h-3.5 accent-ocean mt-0.5 shrink-0" />
+                <span className="text-xs text-muted-foreground">I authorise WealthWorks to obtain information on existing policies from the relevant providers.</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7 - Risk & Objectives */}
+        {currentStep === 7 && (
+          <div className="space-y-3">
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-3">RISK TOLERANCE</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { field: 'portfolio_drop_response', label: 'IF PORTFOLIO FELL 20%', opts: ['Sell immediately','Hold','Buy more'] },
+                  { field: 'primary_investment_objective', label: 'PRIMARY OBJECTIVE', opts: ['Capital preservation','Income generation','Moderate growth','Aggressive growth','Speculation'] },
+                  { field: 'time_horizon', label: 'TIME HORIZON', opts: ['Less than 1 year','1-3 years','3-5 years','5-10 years','10+ years'] },
+                  { field: 'liquidity_requirement', label: 'LIQUIDITY REQUIREMENT', opts: ['Immediate access required','Access within 1 year','Access within 3 years','Long-term - no immediate need'] },
+                ].map(({ field, label, opts }) => (
+                  <div key={field}>
+                    <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">{label}</Label>
+                    <Select value={formData[field]} onValueChange={v => handleChange(field, v)}>
+                      <SelectTrigger className="mt-1 h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{opts.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+              {(formData.portfolio_drop_response || formData.time_horizon || formData.liquidity_requirement || formData.primary_investment_objective) && (
+                <div className="mt-3 p-3 bg-ocean/5 border border-ocean/20 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] font-semibold tracking-wider text-ocean uppercase">CALCULATED RISK SCORE</span>
+                    <span className="text-sm font-bold text-ocean">{calcRiskScore(formData)} / 10</span>
+                  </div>
+                  <div className="w-full bg-border rounded-full h-2 mb-1">
+                    <div className="h-2 rounded-full bg-ocean transition-all" style={{ width: `${calcRiskScore(formData) * 10}%` }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Auto-selecting <strong>{scoreToProfile(calcRiskScore(formData))}</strong> profile</p>
+                </div>
+              )}
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">RISK PROFILE *</Label>
+                  {profileOverridden && <button type="button" onClick={() => setProfileOverridden(false)} className="text-[10px] text-ocean hover:underline">Reset to calculated</button>}
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {['Conservative','Cautious','Moderate','Growth','Aggressive'].map(v => (
+                    <button key={v} type="button" onClick={() => { setProfileOverridden(true); handleChange('risk_profile', v); }}
+                      className={`p-2 border rounded text-left transition-all ${formData.risk_profile === v ? 'border-ocean bg-ocean/10' : 'border-border hover:border-ocean/50'}`}>
+                      <p className={`text-xs font-semibold ${formData.risk_profile === v ? 'text-ocean' : 'text-navy'}`}>{v}</p>
+                    </button>
+                  ))}
+                </div>
+                {profileOverridden && <p className="text-[10px] text-warn mt-1">Profile manually overridden - calculated score suggests <strong>{scoreToProfile(calcRiskScore(formData))}</strong></p>}
+              </div>
+            </div>
+            <div className="border border-border rounded p-3">
+              <h3 className="font-semibold text-navy uppercase tracking-wider text-xs mb-2">ADVISORY NEEDS</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {ADVISORY_NEEDS.map(item => (
+                  <label key={item} className="flex items-center gap-2 cursor-pointer p-1.5 border border-border rounded hover:bg-secondary/50 text-xs">
+                    <input type="checkbox" checked={formData.advisory_needs.includes(item)} onChange={() => toggleNeed(item)} className="w-3.5 h-3.5 accent-ocean" />
+                    {item}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 8 - Submit */}
+        {currentStep === 8 && (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
+              <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-navy text-sm">Your company onboarding is complete</p>
+                <p className="text-xs text-muted-foreground mt-0.5">A draft proposal has been created. Your WealthWorks advisor has been notified.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'COMPANY NAME', value: formData.entity_name },
+                { label: 'RISK PROFILE', value: formData.risk_profile || '-' },
+                { label: 'DIRECTORS', value: `${directors.filter(d => d.first_name || d.last_name).length} added` },
+                { label: 'ADVISOR', value: 'Trevor Fine' },
+              ].map(s => (
+                <div key={s.label} className="border border-border rounded p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</p>
+                  <p className="text-sm font-bold text-ocean mt-0.5">{s.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="pt-5 border-t border-border mt-5 flex gap-3">
+          {currentStep > 1 && currentStep < 8 && (
+            <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">Back</Button>
+          )}
+          <div className="flex-1" />
+          {currentStep < 8 && (
+            <Button type="button" variant="outline" onClick={handleSaveAndSubmit} disabled={isSavingStep || isSubmitting} className="px-5 h-9 text-sm border-navy text-navy hover:bg-navy hover:text-white">
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Save & submit'}
+            </Button>
+          )}
+          {currentStep < 7 && (
+            <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
+              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Continue'}
+            </Button>
+          )}
+          {currentStep === 7 && (
+            <Button type="button" onClick={handleContinue} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm bg-navy text-white hover:bg-ocean">
+              {isSavingStep ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Review & submit'}
+            </Button>
+          )}
+          {currentStep === 8 && (
+            <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 h-9 text-sm bg-teal text-white hover:bg-teal/90">
+              {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Confirm & done'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

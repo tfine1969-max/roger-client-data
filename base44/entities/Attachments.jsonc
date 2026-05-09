@@ -1,0 +1,26 @@
+{
+  "name": "Attachments",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "attachment_type": {
+      "type": "string",
+      "enum": [
+        "Quote",
+        "Application Form"
+      ],
+      "description": "Type of attachment"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "File upload URL"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "attachment_type"
+  ]
+}

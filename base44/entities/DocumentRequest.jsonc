@@ -1,0 +1,107 @@
+{
+  "name": "DocumentRequest",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Clients entity"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Client email address to send request to"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client display name"
+    },
+    "requested_by_email": {
+      "type": "string",
+      "description": "Advisor email who raised the request"
+    },
+    "requested_by_name": {
+      "type": "string",
+      "description": "Advisor name"
+    },
+    "document_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of document types requested"
+    },
+    "message": {
+      "type": "string",
+      "description": "Advisor message to client"
+    },
+    "upload_token": {
+      "type": "string",
+      "description": "Unique token for secure client upload link"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Uploaded",
+        "Reviewed"
+      ],
+      "default": "Pending",
+      "description": "Request status"
+    },
+    "uploaded_at": {
+      "type": "string",
+      "description": "ISO timestamp of when client uploaded"
+    },
+    "uploaded_doc_url": {
+      "type": "string",
+      "description": "URL of uploaded document"
+    },
+    "uploaded_doc_name": {
+      "type": "string",
+      "description": "Filename of uploaded document"
+    },
+    "sent_at": {
+      "type": "string",
+      "description": "ISO timestamp when request email was sent"
+    }
+  },
+  "required": [
+    "client_id",
+    "client_email"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

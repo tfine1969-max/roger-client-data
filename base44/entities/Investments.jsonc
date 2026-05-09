@@ -1,0 +1,246 @@
+{
+  "name": "Investments",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "jurisdiction": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Offshore"
+      ],
+      "description": "Investment jurisdiction"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "ZAR",
+        "USD",
+        "GBP",
+        "EUR"
+      ],
+      "description": "Currency"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Investment provider"
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Product type"
+    },
+    "underlying_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multi-select underlying funds"
+    },
+    "fund_allocations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Fund rows with fund, allocation, and customFund fields"
+    },
+    "custom_fund": {
+      "type": "string",
+      "description": "Custom fund description or additional notes"
+    },
+    "investment_recommendation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Investment Product Recommendation"
+    },
+    "income_drawdown_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Investment Income Drawdown"
+    },
+    "contribution_type": {
+      "type": "string",
+      "enum": [
+        "Lump Sum",
+        "Recurring",
+        "Both"
+      ],
+      "description": "Contribution type"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Lump sum amount"
+    },
+    "recurring_amount": {
+      "type": "number",
+      "description": "Recurring contribution amount"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "Monthly",
+        "Quarterly",
+        "Annually"
+      ],
+      "description": "Frequency if recurring"
+    },
+    "initial_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Initial fee percentage"
+    },
+    "annual_advice_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual advice fee percentage"
+    },
+    "platform_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Platform fee percentage"
+    },
+    "management_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual management fee % of NAV"
+    },
+    "performance_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance fee % of NAV increase"
+    },
+    "hurdle_rate_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance hurdle rate %"
+    },
+    "structuring_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Initial structuring fee %"
+    },
+    "raising_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Annual raising fee %"
+    },
+    "carry_fee_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Performance / carry fee %"
+    },
+    "carry_hurdle_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Carry hurdle rate %"
+    },
+    "income_required": {
+      "type": "string",
+      "enum": [
+        "No",
+        "Yes"
+      ],
+      "default": "No",
+      "description": "Does the investor require an income from this investment?"
+    },
+    "income_type": {
+      "type": "string",
+      "enum": [
+        "Percentage",
+        "Fixed Amount"
+      ],
+      "description": "Income drawdown basis"
+    },
+    "income_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "Income drawdown as a percentage"
+    },
+    "income_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Income drawdown as a fixed amount"
+    },
+    "income_frequency": {
+      "type": "string",
+      "enum": [
+        "Monthly",
+        "Quarterly",
+        "Annually"
+      ],
+      "description": "Frequency of income drawdown"
+    },
+    "income_notes": {
+      "type": "string",
+      "description": "Additional notes on income drawdown requirements"
+    },
+    "investment_mandate": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "default": "No",
+      "description": "Is this investment subject to a discretionary mandate"
+    },
+    "applicable_annexure": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "description": "Which annexure this investment belongs to"
+    }
+  },
+  "required": [
+    "proposal_id"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "STR_Register",
+  "type": "object",
+  "properties": {
+    "client_id": { "type": "string" },
+    "client_name": { "type": "string" },
+    "trigger_event": { "type": "string" },
+    "reported_to_FIC": { "type": "string", "enum": ["Yes", "No"], "default": "No" },
+    "report_reference": { "type": "string" },
+    "date_reported": { "type": "string", "format": "date" },
+    "status": { "type": "string", "enum": ["Open", "Pending", "Escalated", "Closed"], "default": "Escalated" },
+    "linked_register_id": { "type": "string" }
+  },
+  "required": ["client_id", "trigger_event", "status"]
+}

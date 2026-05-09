@@ -1,0 +1,76 @@
+{
+  "name": "RecommendationReasons",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "Investment",
+        "Risk",
+        "Income",
+        "Personal"
+      ],
+      "description": "High-level category"
+    },
+    "section_context": {
+      "type": "string",
+      "enum": [
+        "Investment Product Recommendation",
+        "Investment Income Drawdown",
+        "Risk Product Recommendation",
+        "Personalised Client Message"
+      ],
+      "description": "The specific section this reason belongs to \u2014 used to filter the library"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "Rationale",
+        "Disclosure",
+        "Warning",
+        "Narrative"
+      ],
+      "description": "Type of message"
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Optional product type filter"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Optional provider filter"
+    },
+    "jurisdiction": {
+      "type": "string",
+      "enum": [
+        "Local",
+        "Offshore"
+      ],
+      "description": "Optional jurisdiction filter"
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Cautious",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Optional risk profile filter"
+    },
+    "text": {
+      "type": "string",
+      "description": "The recommendation statement text"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this reason is active and should appear in the library"
+    }
+  },
+  "required": [
+    "section_context",
+    "text"
+  ]
+}

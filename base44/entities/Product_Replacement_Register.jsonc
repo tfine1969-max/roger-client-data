@@ -1,0 +1,17 @@
+{
+  "name": "Product_Replacement_Register",
+  "type": "object",
+  "properties": {
+    "client_id": { "type": "string" },
+    "client_name": { "type": "string" },
+    "existing_product": { "type": "string" },
+    "new_product": { "type": "string" },
+    "reason": { "type": "string" },
+    "disclosure_given": { "type": "string", "enum": ["Yes", "No"], "default": "No" },
+    "replacement_risk_flag": { "type": "string", "enum": ["Low", "Medium", "High"], "default": "Medium" },
+    "advisor": { "type": "string" },
+    "date": { "type": "string", "format": "date" },
+    "linked_register_id": { "type": "string" }
+  },
+  "required": ["client_id", "existing_product", "new_product", "reason", "date"]
+}

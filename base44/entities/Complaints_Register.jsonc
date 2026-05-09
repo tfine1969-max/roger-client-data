@@ -1,0 +1,16 @@
+{
+  "name": "Complaints_Register",
+  "type": "object",
+  "properties": {
+    "client_id": { "type": "string" },
+    "client_name": { "type": "string" },
+    "complaint_date": { "type": "string", "format": "date" },
+    "nature_of_complaint": { "type": "string" },
+    "status": { "type": "string", "enum": ["Open", "Pending", "Escalated", "Closed"], "default": "Open" },
+    "resolution_date": { "type": "string", "format": "date" },
+    "advisor": { "type": "string" },
+    "outcome": { "type": "string" },
+    "linked_register_id": { "type": "string" }
+  },
+  "required": ["complaint_date", "nature_of_complaint", "status"]
+}

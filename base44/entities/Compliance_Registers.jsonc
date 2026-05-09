@@ -1,0 +1,115 @@
+{
+  "name": "Compliance_Registers",
+  "type": "object",
+  "properties": {
+    "register_type": {
+      "type": "string",
+      "enum": [
+        "CDD",
+        "EDD",
+        "FICA_Exception",
+        "STR",
+        "TPR",
+        "Sanctions",
+        "FICA_Training",
+        "RMCP_Review",
+        "Advice",
+        "Product_Replacement",
+        "Complaint",
+        "Compliance_Breach",
+        "Conflict_of_Interest",
+        "Gift_Register",
+        "CPD",
+        "Representative",
+        "Debarment",
+        "POPIA_Breach",
+        "Mandate",
+        "Third_Party",
+        "Audit",
+        "BRA"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": ["FICA", "FAIS", "POPIA", "Internal"]
+    },
+    "linked_client_id": {
+      "type": "string"
+    },
+    "linked_client_name": {
+      "type": "string"
+    },
+    "linked_proposal_id": {
+      "type": "string"
+    },
+    "linked_advisor": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Open", "Pending", "Escalated", "Closed"],
+      "default": "Open"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High"],
+      "default": "Low"
+    },
+    "description": {
+      "type": "string"
+    },
+    "action_required": {
+      "type": "string"
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "uploaded_at": { "type": "string" },
+          "uploaded_by": { "type": "string" }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Register-specific fields captured from the selected register form"
+    },
+    "audit_trail": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string" },
+          "actor": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "notes": { "type": "string" },
+          "previous_status": { "type": "string" },
+          "new_status": { "type": "string" }
+        }
+      }
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "last_updated": {
+      "type": "string"
+    },
+    "reviewed_by": {
+      "type": "string"
+    },
+    "review_date": {
+      "type": "string"
+    },
+    "source_event": {
+      "type": "string"
+    },
+    "source_key": {
+      "type": "string",
+      "description": "Idempotency key for generated compliance entries"
+    }
+  },
+  "required": ["register_type", "category", "status", "risk_level", "description"]
+}

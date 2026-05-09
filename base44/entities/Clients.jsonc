@@ -1,0 +1,567 @@
+{
+  "name": "Clients",
+  "type": "object",
+  "properties": {
+    "client_source": {
+      "type": "string",
+      "enum": [
+        "Onboarding",
+        "Advisor Manual"
+      ],
+      "description": "How client was added"
+    },
+    "client_type": {
+      "type": "string",
+      "enum": [
+        "Natural Person",
+        "Company",
+        "Trust"
+      ],
+      "description": "Type of client entity"
+    },
+    "identity_type": {
+      "type": "string",
+      "enum": [
+        "SA ID",
+        "Passport",
+        "Registration",
+        "Trust"
+      ],
+      "description": "Type of identification"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "entity_name": {
+      "type": "string"
+    },
+    "sa_id_number": {
+      "type": "string"
+    },
+    "passport_number": {
+      "type": "string"
+    },
+    "passport_country": {
+      "type": "string"
+    },
+    "registration_number": {
+      "type": "string"
+    },
+    "trust_number": {
+      "type": "string"
+    },
+    "trust_type": {
+      "type": "string"
+    },
+    "trust_deed_date": {
+      "type": "string"
+    },
+    "contact_trustee_name": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "mobile_number": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "marital_status": {
+      "type": "string"
+    },
+    "dependants": {
+      "type": "string"
+    },
+    "street_address": {
+      "type": "string"
+    },
+    "suburb": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "province": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "residential_address": {
+      "type": "string"
+    },
+    "employment_status": {
+      "type": "string"
+    },
+    "occupation": {
+      "type": "string"
+    },
+    "employer": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sa_tax_number": {
+      "type": "string"
+    },
+    "tax_residency": {
+      "type": "string"
+    },
+    "us_person_fatca": {
+      "type": "string"
+    },
+    "pep_status": {
+      "type": "string"
+    },
+    "pep_explanation": {
+      "type": "string"
+    },
+    "gross_annual_income_band": {
+      "type": "string"
+    },
+    "monthly_investable_surplus": {
+      "type": "string"
+    },
+    "net_worth_band": {
+      "type": "string"
+    },
+    "total_liabilities": {
+      "type": "string"
+    },
+    "existing_financial_products": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "products_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "existing_products_notes": {
+      "type": "string"
+    },
+    "loa_uploaded": {
+      "type": "boolean"
+    },
+    "loa_authorised": {
+      "type": "boolean"
+    },
+    "loa_completion_method": {
+      "type": "string",
+      "description": "electronic or manual"
+    },
+    "loa_signature_method": {
+      "type": "string",
+      "description": "drawn, typed, uploaded, or manual"
+    },
+    "loa_signature_data": {
+      "type": "string",
+      "description": "base64 signature or typed name"
+    },
+    "loa_typed_signature_name": {
+      "type": "string"
+    },
+    "loa_signature_timestamp": {
+      "type": "string",
+      "description": "ISO timestamp when signature was captured"
+    },
+    "loa_date_signed": {
+      "type": "string",
+      "description": "Date the LOA was signed"
+    },
+    "loa_pdf_url": {
+      "type": "string",
+      "description": "URL of the generated/uploaded LOA PDF"
+    },
+    "loa_pdf_name": {
+      "type": "string",
+      "description": "Filename of the LOA PDF"
+    },
+    "loa_source": {
+      "type": "string",
+      "description": "Electronic Signature or Manual Upload"
+    },
+    "loa_status": {
+      "type": "string",
+      "description": "LOA completion status"
+    },
+    "loa_downloaded": {
+      "type": "boolean",
+      "description": "Whether the manual LOA was downloaded"
+    },
+    "loa_document_saved": {
+      "type": "boolean",
+      "description": "Whether the LOA has been generated and saved to storage"
+    },
+    "loa_document_record_id": {
+      "type": "string"
+    },
+    "loa_authority_granted": {
+      "type": "boolean"
+    },
+    "loa_astute_authority_included": {
+      "type": "boolean"
+    },
+    "loa_ip_address": {
+      "type": "string"
+    },
+    "loa_generated_at": {
+      "type": "string"
+    },
+    "will_in_place": {
+      "type": "string"
+    },
+    "portfolio_drop_response": {
+      "type": "string"
+    },
+    "primary_investment_objective": {
+      "type": "string"
+    },
+    "time_horizon": {
+      "type": "string"
+    },
+    "liquidity_requirement": {
+      "type": "string"
+    },
+    "risk_profile": {
+      "type": "string"
+    },
+    "advisory_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "identity_document_uploaded": {
+      "type": "boolean"
+    },
+    "identity_document_front_uploaded": {
+      "type": "boolean"
+    },
+    "identity_document_back_uploaded": {
+      "type": "boolean"
+    },
+    "proof_of_address_uploaded": {
+      "type": "boolean"
+    },
+    "income_proof_uploaded": {
+      "type": "boolean"
+    },
+    "existing_policies_uploaded": {
+      "type": "boolean"
+    },
+    "banking_proof_uploaded": {
+      "type": "boolean"
+    },
+    "doc_identity": {
+      "type": "string",
+      "description": "URL of identity document front"
+    },
+    "doc_identity_name": {
+      "type": "string"
+    },
+    "doc_identity_back": {
+      "type": "string",
+      "description": "URL of SA ID back image"
+    },
+    "doc_identity_back_name": {
+      "type": "string"
+    },
+    "doc_proof_of_address": {
+      "type": "string"
+    },
+    "doc_proof_of_address_name": {
+      "type": "string"
+    },
+    "doc_source_of_funds": {
+      "type": "string"
+    },
+    "doc_source_of_funds_name": {
+      "type": "string"
+    },
+    "doc_existing_policies": {
+      "type": "string"
+    },
+    "doc_existing_policies_name": {
+      "type": "string"
+    },
+    "doc_banking_proof": {
+      "type": "string",
+      "description": "URL of bank statement or banking proof document"
+    },
+    "doc_banking_proof_name": {
+      "type": "string"
+    },
+    "doc_submitted_at": {
+      "type": "string"
+    },
+    "doc_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Submitted",
+        "Verified",
+        "Incomplete"
+      ],
+      "default": "Pending"
+    },
+    "client_signature_name": {
+      "type": "string"
+    },
+    "client_signature_date": {
+      "type": "string"
+    },
+    "identity_verified": {
+      "type": "boolean"
+    },
+    "proof_of_address_verified": {
+      "type": "boolean"
+    },
+    "source_of_funds_confirmed": {
+      "type": "boolean"
+    },
+    "beneficial_ownership_verified": {
+      "type": "boolean"
+    },
+    "otp_verified": {
+      "type": "boolean"
+    },
+    "onboarding_complete": {
+      "type": "boolean"
+    },
+    "client_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Onboarded",
+        "Active"
+      ],
+      "default": "Draft"
+    },
+    "fica_status": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Referred",
+        "Declined"
+      ],
+      "description": "Raw automated FICA outcome"
+    },
+    "fica_reference": {
+      "type": "string"
+    },
+    "fica_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High"
+      ]
+    },
+    "fica_verified_at": {
+      "type": "string"
+    },
+    "home_affairs_verified": {
+      "type": "boolean"
+    },
+    "aml_pep_clear": {
+      "type": "boolean"
+    },
+    "fica_checks_json": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Verified",
+        "Manual Review"
+      ],
+      "default": "Pending",
+      "description": "Automated verification outcome \u2014 set by system checks only, never by advisor actions"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ],
+      "default": "Pending",
+      "description": "Final advisor decision \u2014 set only by authorised advisors, independent of automated checks"
+    },
+    "review_decision_at": {
+      "type": "string",
+      "description": "ISO timestamp when advisor made their review decision"
+    },
+    "review_decision_by": {
+      "type": "string",
+      "description": "Email of advisor who made the review decision"
+    },
+    "review_rejection_reason": {
+      "type": "string",
+      "description": "Required reason when advisor rejects a client"
+    },
+    "rmcp_risk_score": {
+      "type": "number"
+    },
+    "rmcp_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Prohibited"
+      ]
+    },
+    "rmcp_scored_at": {
+      "type": "string"
+    },
+    "rmcp_score_breakdown": {
+      "type": "string"
+    },
+    "vat_number": {
+      "type": "string"
+    },
+    "business_activity": {
+      "type": "string"
+    },
+    "ubo_declaration": {
+      "type": "string"
+    },
+    "trust_purpose": {
+      "type": "string"
+    },
+    "beneficiary_declaration": {
+      "type": "string"
+    },
+    "entity_aml_clear": {
+      "type": "boolean"
+    },
+    "cipc_verified": {
+      "type": "boolean"
+    },
+    "directors_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "trustees_list": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "directors_json": {
+      "type": "string"
+    },
+    "trustees_json": {
+      "type": "string"
+    },
+    "entity_source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "entity_tax_number": {
+      "type": "string"
+    },
+    "entity_tax_residency": {
+      "type": "string"
+    },
+    "entity_fatca": {
+      "type": "string"
+    },
+    "entity_pep": {
+      "type": "string"
+    },
+    "gross_annual_turnover": {
+      "type": "string"
+    },
+    "total_assets_band": {
+      "type": "string"
+    },
+    "entity_total_liabilities": {
+      "type": "string"
+    },
+    "entity_loa_uploaded": {
+      "type": "boolean"
+    },
+    "entity_loa_authorised": {
+      "type": "boolean"
+    },
+    "cipc_registration_uploaded": {
+      "type": "boolean"
+    },
+    "moi_uploaded": {
+      "type": "boolean"
+    },
+    "financial_statements_uploaded": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "client_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "GeneratedDocuments",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B"
+      ],
+      "description": "Document type (Template A or B)"
+    },
+    "generated_pdf_url": {
+      "type": "string",
+      "description": "Generated PDF file URL"
+    },
+    "is_current": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is the current version"
+    },
+    "document_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Version number"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "document_type"
+  ]
+}

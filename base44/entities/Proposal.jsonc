@@ -1,0 +1,379 @@
+{
+  "name": "Proposal",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Link to Clients"
+    },
+    "advisor_name": {
+      "type": "string",
+      "enum": [
+        "Trevor Fine",
+        "Roger Eskinazi",
+        "Malcolm Munsamy"
+      ],
+      "description": "Advisor name"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Unique proposal reference e.g. WW-P-2026-3821"
+    },
+    "risk_profile": {
+      "type": "string",
+      "enum": [
+        "Conservative",
+        "Cautious",
+        "Moderate",
+        "Growth",
+        "Aggressive"
+      ],
+      "description": "Client risk profile"
+    },
+    "time_horizon": {
+      "type": "string",
+      "enum": [
+        "Under 3 years",
+        "3\u20135 years",
+        "5\u201310 years",
+        "10\u201320 years",
+        "20+ years"
+      ],
+      "description": "Investment time horizon"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "In Progress",
+        "Sent",
+        "Awaiting Client Signature",
+        "Signed",
+        "Outdated",
+        "PDF Ready"
+      ],
+      "default": "In Progress",
+      "description": "Proposal status \u2014 managed automatically"
+    },
+    "signing_token": {
+      "type": "string",
+      "description": "Unique token for client signing URL"
+    },
+    "signed_at": {
+      "type": "string",
+      "description": "ISO timestamp when client signed"
+    },
+    "client_signature": {
+      "type": "string",
+      "description": "Base64 PNG of client signature"
+    },
+    "client_initials": {
+      "type": "string",
+      "description": "Client initials string"
+    },
+    "signed_pdf_url": {
+      "type": "string",
+      "description": "URL of the signed PDF after client signs"
+    },
+    "mandate_included": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "description": "Whether mandate is included"
+    },
+    "output_document_type": {
+      "type": "string",
+      "enum": [
+        "Document A",
+        "Document B"
+      ],
+      "description": "Output document template"
+    },
+    "pdf_status": {
+      "type": "string",
+      "enum": [
+        "No PDF",
+        "Current",
+        "Outdated"
+      ],
+      "default": "No PDF",
+      "description": "PDF generation status"
+    },
+    "proposal_status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Modified",
+        "PDF Generated",
+        "Sent",
+        "Completed"
+      ],
+      "default": "Draft",
+      "description": "Legacy proposal status"
+    },
+    "advisor_signature_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "client_signature_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "client_initials_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "document_version": {
+      "type": "number",
+      "default": 1
+    },
+    "notes": {
+      "type": "string"
+    },
+    "include_annexure_A": {
+      "type": "boolean",
+      "default": false
+    },
+    "include_annexure_B": {
+      "type": "boolean",
+      "default": false
+    },
+    "include_annexure_C": {
+      "type": "boolean",
+      "default": false
+    },
+    "selected_product_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_replacement": {
+      "type": "boolean",
+      "default": false
+    },
+    "replacement_products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "existing_product_provider": {
+            "type": "string"
+          },
+          "existing_product_type": {
+            "type": "string"
+          },
+          "existing_policy_number": {
+            "type": "string"
+          },
+          "replacement_reason": {
+            "type": "string"
+          },
+          "penalties_disclosed": {
+            "type": "boolean"
+          },
+          "waiting_periods_disclosed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "personal_message": {
+      "type": "string",
+      "description": "Legacy personalised message field"
+    },
+    "personalised_client_message": {
+      "type": "string",
+      "description": "Advisor-entered personalised client message"
+    },
+    "personalised_message_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Personalised Client Message"
+    },
+    "advisor_signature_data": {
+      "type": "string"
+    },
+    "advisor_signature_type": {
+      "type": "string",
+      "enum": [
+        "draw",
+        "type"
+      ]
+    },
+    "sign_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "proposal_pdf_url": {
+      "type": "string"
+    },
+    "overall_suitability_rationale": {
+      "type": "string"
+    },
+    "annual_income_band": {
+      "type": "string"
+    },
+    "net_worth_band": {
+      "type": "string"
+    },
+    "liquidity_requirement": {
+      "type": "string"
+    },
+    "tax_residency": {
+      "type": "string"
+    },
+    "source_of_funds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "advisory_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "needs_array": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "client_type": {
+      "type": "string"
+    },
+    "client_id_number": {
+      "type": "string"
+    },
+    "client_dob": {
+      "type": "string",
+      "format": "date"
+    },
+    "client_email": {
+      "type": "string"
+    },
+    "client_mobile": {
+      "type": "string"
+    },
+    "client_tax_residency": {
+      "type": "string"
+    },
+    "identification_type": {
+      "type": "string"
+    },
+    "advisor_key": {
+      "type": "string"
+    },
+    "pdf_generated_at": {
+      "type": "string",
+      "description": "ISO timestamp set every time REGENERATE PDF completes successfully"
+    },
+    "sent_at": {
+      "type": "string",
+      "description": "ISO timestamp set when Copy Link or Email to Client is triggered"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "True after 48-hour reminder has been sent \u2014 reset to false on each new send"
+    },
+    "rmcp_risk_score": {
+      "type": "number",
+      "description": "Client RMCP weighted risk score"
+    },
+    "rmcp_risk_band": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Prohibited"
+      ],
+      "description": "Low, Medium, High, or Prohibited"
+    },
+    "fica_status": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Referred",
+        "Declined",
+        "Pending"
+      ],
+      "description": "FICA verification status copied from the client record"
+    },
+    "fica_risk_band": {
+      "type": "string",
+      "description": "FICA or AML risk rating copied from the client record"
+    },
+    "fica_reference": {
+      "type": "string",
+      "description": "VerifyNow FICA reference number"
+    },
+    "fica_verified_at": {
+      "type": "string",
+      "description": "datetime FICA verification completed"
+    },
+    "aml_pep_clear": {
+      "type": "boolean",
+      "description": "Whether AML and PEP screening passed with no matches"
+    },
+    "offshore_exposure": {
+      "type": "boolean",
+      "description": "whether client has offshore advisory needs"
+    }
+  },
+  "required": [
+    "client_id",
+    "reference",
+    "advisor_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "RiskProducts",
+  "type": "object",
+  "properties": {
+    "proposal_id": {
+      "type": "string",
+      "description": "Link to Proposal"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "PPS",
+        "Momentum",
+        "Discovery",
+        "Hollard",
+        "Brightrock"
+      ],
+      "description": "Risk provider"
+    },
+    "risk_recommendation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of RecommendationReasons where section_context = Risk Product Recommendation"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "provider"
+  ]
+}

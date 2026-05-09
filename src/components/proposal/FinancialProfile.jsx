@@ -1,0 +1,48 @@
+import React, { useEffect, useRef } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+
+const RISK_PROFILES = ['Conservative', 'Cautious', 'Moderate', 'Growth', 'Aggressive'];
+
+export default function FinancialProfile({ proposal, client, onUpdate }) {
+  const hasSynced = useRef(false);
+
+  useEffect(() => {
+    if (hasSynced.current) return;
+    if (!client?.risk_profile) return;
+    if (proposal?.risk_profile) return;
+    hasSynced.current = true;
+    onUpdate('risk_profile', client.risk_profile);
+  });
+
+  const handleUpdate = async (field, value) => {
+    await onUpdate(field, value);
+    toast.success('Saved');
+  };
+
+  const riskValue = proposal?.risk_profile || client?.risk_profile || '';
+
+  return (
+    <div className="bg-card border border-border rounded-lg px-5 py-3">
+      <h2 className="text-sm font-bold text-navy uppercase tracking-wide mb-3">Financial Profile</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label className="text-[10px] font-semibold text-navy uppercase tracking-wide block mb-1">Risk Profile</label>
+          <Select value={riskValue} onValueChange={(v) => handleUpdate('risk_profile', v)}>
+            <SelectTrigger className="h-8 text-xs rounded-sm">
+              <SelectValue placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              {RISK_PROFILES.map(profile => (
+                <SelectItem key={profile} value={profile}>{profile}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {client?.risk_profile && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">From onboarding: {client.risk_profile}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

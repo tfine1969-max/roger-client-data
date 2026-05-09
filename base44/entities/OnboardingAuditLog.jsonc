@@ -1,0 +1,84 @@
+{
+  "name": "OnboardingAuditLog",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Clients entity"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "Email of the advisor/user who performed the action"
+    },
+    "actor_name": {
+      "type": "string",
+      "description": "Full name of actor"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Returned for Review",
+        "Notes Updated",
+        "Document Request Sent",
+        "Document Uploaded by Client",
+        "Document Verified",
+        "Status Changed",
+        "Verification Override",
+        "Onboarding Submitted"
+      ],
+      "description": "The action taken"
+    },
+    "previous_status": {
+      "type": "string",
+      "description": "Client status before the action"
+    },
+    "new_status": {
+      "type": "string",
+      "description": "Client status after the action"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes recorded at time of action"
+    },
+    "supporting_document_url": {
+      "type": "string",
+      "description": "URL of any supporting document attached to this log entry"
+    },
+    "supporting_document_name": {
+      "type": "string",
+      "description": "Filename of supporting document"
+    },
+    "metadata": {
+      "type": "string",
+      "description": "JSON string of additional context (e.g. FICA ref, RMCP band)"
+    }
+  },
+  "required": [
+    "client_id",
+    "actor_email",
+    "action"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
