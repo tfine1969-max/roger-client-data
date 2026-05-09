@@ -17,15 +17,15 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, trend, c
           </div>
         )}
       </div>
-      {trend !== undefined && (
+      {trend !== undefined && trend !== null && (
         <div className="mt-3 flex items-center gap-1">
           <span className={cn(
             "text-xs font-semibold px-2 py-0.5 rounded-full",
             isPositive ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"
           )}>
-            {isPositive ? '+' : ''}{trend.toFixed(1)}%
+            {isPositive ? '+' : ''}{Number(trend).toFixed(1)}%
           </span>
-          <span className="text-xs text-muted-foreground">vs initial</span>
+          <span className="text-xs text-muted-foreground">vs prev month</span>
         </div>
       )}
     </div>
