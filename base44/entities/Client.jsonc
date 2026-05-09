@@ -1,0 +1,25 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Full name of the client"
+    },
+    "email": {
+      "type": "string",
+      "description": "Client email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Client phone number"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the client"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

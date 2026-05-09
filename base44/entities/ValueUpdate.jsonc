@@ -1,0 +1,32 @@
+{
+  "name": "ValueUpdate",
+  "type": "object",
+  "properties": {
+    "investment_id": {
+      "type": "string",
+      "description": "Reference to the investment"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to the client"
+    },
+    "value": {
+      "type": "number",
+      "description": "Updated value of the investment"
+    },
+    "month": {
+      "type": "string",
+      "description": "Month of the update (YYYY-MM format)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes about the update"
+    }
+  },
+  "required": [
+    "investment_id",
+    "client_id",
+    "value",
+    "month"
+  ]
+}

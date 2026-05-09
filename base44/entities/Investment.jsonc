@@ -1,0 +1,55 @@
+{
+  "name": "Investment",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to the client"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the investment (e.g. Apple Stock, Treasury Bond)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "stocks",
+        "bonds",
+        "real_estate",
+        "mutual_funds",
+        "etfs",
+        "crypto",
+        "cash",
+        "other"
+      ],
+      "description": "Type of investment"
+    },
+    "initial_value": {
+      "type": "number",
+      "description": "Initial investment amount"
+    },
+    "current_value": {
+      "type": "number",
+      "description": "Current value of the investment"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "USD",
+        "EUR",
+        "GBP",
+        "CAD",
+        "AUD"
+      ],
+      "default": "USD",
+      "description": "Currency of the investment"
+    }
+  },
+  "required": [
+    "client_id",
+    "name",
+    "type",
+    "initial_value",
+    "current_value"
+  ]
+}
