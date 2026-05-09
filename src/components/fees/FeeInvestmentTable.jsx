@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, AlertTriangle } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
 
-export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
+export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   const [editRow, setEditRow] = useState(null);
 
   return (
@@ -14,7 +14,7 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['Client','Platform','Investment Name','Currency','Value (R)','Rebate %','Advisory %','Monthly Rebate (R)','Monthly Advisory (R)','Total Monthly (R)',''].map(h => (
+                {['Client','Platform','Investment Name','Currency','Value (R)','Rebate %','Advisory %','Source','Monthly Rebate (R)','Monthly Advisory (R)','Total Monthly (R)',''].map(h => (
                   <th key={h} className="text-left px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -45,6 +45,9 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
                       {r.fee_required ? 'Required' : `${(r.advisory_fee_annual_percent ?? 0).toFixed(2)}%`}
                     </span>
                   </td>
+                  <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                    {r.fee_required ? 'Missing' : r.fee_source === 'override' ? 'Override' : 'Mapping'}
+                  </td>
                   <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-2">{fmtNum(r.rebate_fee_monthly_amount_zar ?? 0)}</td>
                   <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-1">{fmtNum(r.advisory_fee_monthly_amount_zar ?? 0)}</td>
                   <td className="px-3 py-2.5 font-mono text-right text-xs font-semibold">{fmtNum(r.total_monthly_fee_zar ?? 0)}</td>
@@ -58,7 +61,7 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
             </tbody>
             <tfoot>
               <tr className="bg-muted/30 border-t-2 font-semibold">
-                <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={7}>Total</td>
+                <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={8}>Total</td>
                  <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-2">
                    R {fmtNum(rows.reduce((s, r) => s + (r.rebate_fee_monthly_amount_zar ?? 0), 0))}
                  </td>
@@ -77,6 +80,7 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
       {editRow && (
         <FeeEditModal
           row={editRow}
+          feeOptions={feeOptions}
           onClose={() => setEditRow(null)}
           onSaved={() => { setEditRow(null); onFeeUpdated(); }}
         />

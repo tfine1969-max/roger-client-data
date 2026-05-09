@@ -1,48 +1,32 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
-import { applyFeeToRow, feeKey } from '@/lib/fee-utils';
+import { applyFeeToRow } from '@/lib/fee-utils';
+import { fmtNum, origVal, zarVal } from '@/lib/valuation-utils';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function FeeEditModal({ row, onClose, onSaved }) {
+export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved }) {
   const { toast } = useToast();
   const [rebate, setRebate] = useState(String(row.rebate_fee_annual_percent ?? 0));
   const [advisory, setAdvisory] = useState(String(row.advisory_fee_annual_percent ?? 0));
-  const [applyHistorical, setApplyHistorical] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     const rebatePct = parseFloat(rebate) || 0;
     const advisoryPct = parseFloat(advisory) || 0;
+    const updates = applyFeeToRow(row, rebatePct, advisoryPct);
 
-    // Find all rows matching this fee key
-    const key = feeKey(row.account_code, row.platform, row.investment_name);
-    let rows;
-    if (applyHistorical) {
-      rows = await base44.entities.PortfolioValuation.filter({
-        account_code: row.account_code,
-        platform: row.platform,
-        investment_name: row.investment_name,
-      });
-    } else {
-      rows = [row];
-    }
+    await base44.entities.PortfolioValuation.update(row.id, updates);
 
-    for (const r of rows) {
-      const updates = applyFeeToRow(r, rebatePct, advisoryPct);
-      await base44.entities.PortfolioValuation.update(r.id, updates);
-    }
-
-    // Upsert FeeConfig
     const existing = await base44.entities.FeeConfig.filter({
       account_code: row.account_code,
       platform: row.platform,
       investment_name: row.investment_name,
+      effective_from_month: row.upload_month,
     });
     const configData = {
       account_code: row.account_code,
@@ -51,7 +35,7 @@ export default function FeeEditModal({ row, onClose, onSaved }) {
       investment_name: row.investment_name,
       rebate_fee_annual_percent: rebatePct,
       advisory_fee_annual_percent: advisoryPct,
-      effective_from_month: applyHistorical ? null : row.upload_month,
+      effective_from_month: row.upload_month,
     };
     if (existing.length > 0) {
       await base44.entities.FeeConfig.update(existing[0].id, configData);
@@ -59,49 +43,61 @@ export default function FeeEditModal({ row, onClose, onSaved }) {
       await base44.entities.FeeConfig.create(configData);
     }
 
-    toast({ title: 'Fees saved', description: `Updated ${rows.length} record(s)` });
+    toast({ title: 'Fees saved', description: `Updated ${row.upload_month} only. Historical months were not changed.` });
     setSaving(false);
     onSaved();
   };
 
   const rebatePct = parseFloat(rebate) || 0;
   const advisoryPct = parseFloat(advisory) || 0;
-  const origVal = row.original_currency_value ?? row.month_end_market_value ?? 0;
-  const previewRebate = origVal * (rebatePct / 100) / 12;
-  const previewAdvisory = origVal * (advisoryPct / 100) / 12;
+  const previewRebateZar = zarVal(row) * (rebatePct / 100) / 12;
+  const previewAdvisoryZar = zarVal(row) * (advisoryPct / 100) / 12;
+  const previewRebateOrig = origVal(row) * (rebatePct / 100) / 12;
+  const previewAdvisoryOrig = origVal(row) * (advisoryPct / 100) / 12;
+  const options = [...new Set([...(feeOptions || []), rebatePct, advisoryPct])].sort((a, b) => a - b);
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-base">Edit Fees</DialogTitle>
+          <DialogTitle className="text-base">Edit Monthly Fee Rates</DialogTitle>
         </DialogHeader>
         <div className="space-y-1 text-sm text-muted-foreground border rounded p-3 bg-muted/30">
           <p><span className="font-medium text-foreground">{row.portfolio_name}</span></p>
           <p>{row.platform} · {row.investment_name}</p>
           <p>{row.currency} · {row.upload_month}</p>
+          {row.fee_mapping_client && <p>Mapped from: {row.fee_mapping_client}</p>}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Rebate Fee % (annual)</Label>
-            <Input type="number" step="0.01" min="0" value={rebate} onChange={e => setRebate(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Monthly: {(rebatePct / 12).toFixed(4)}%</p>
-            <p className="text-xs text-positive font-mono">≈ {row.currency} {(previewRebate).toFixed(2)} / mo</p>
+            <Label>Rebate annual rate</Label>
+            <Select value={rebate} onValueChange={setRebate}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {options.map(option => <SelectItem key={option} value={String(option)}>{option.toFixed(2)}%</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Monthly rate: {(rebatePct / 12).toFixed(4)}%</p>
+            <p className="text-xs text-chart-2 font-mono">{row.currency} {fmtNum(previewRebateOrig)} · R {fmtNum(previewRebateZar)}</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Advisory Fee % (annual)</Label>
-            <Input type="number" step="0.01" min="0" value={advisory} onChange={e => setAdvisory(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Monthly: {(advisoryPct / 12).toFixed(4)}%</p>
-            <p className="text-xs text-positive font-mono">≈ {row.currency} {(previewAdvisory).toFixed(2)} / mo</p>
+            <Label>Advisory annual rate</Label>
+            <Select value={advisory} onValueChange={setAdvisory}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {options.map(option => <SelectItem key={option} value={String(option)}>{option.toFixed(2)}%</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Monthly rate: {(advisoryPct / 12).toFixed(4)}%</p>
+            <p className="text-xs text-chart-1 font-mono">{row.currency} {fmtNum(previewAdvisoryOrig)} · R {fmtNum(previewAdvisoryZar)}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 pt-1">
-          <Checkbox id="hist" checked={applyHistorical} onCheckedChange={setApplyHistorical} />
-          <label htmlFor="hist" className="text-sm cursor-pointer">Apply to all historical months for this investment</label>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Changes are saved from {row.upload_month} forward through the fee config, and the current monthly valuation row is recalculated immediately.
+        </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Fees'}</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Fees'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
