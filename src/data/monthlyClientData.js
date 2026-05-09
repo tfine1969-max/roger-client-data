@@ -39,18 +39,60 @@ export const monthlyClientData = [
     "label": "Jan 2026",
     "sourceFile": "Jan.xlsx",
     "exchangeRates": {
-      "USD": 16.1329,
+      "USD": 16.139,
       "ZAR": 1
     },
     "sourceNativeTotals": {
       "USD": 32973688.220000003,
-      "ZAR": 635493828.4258403
+      "ZAR": 635493828.4258401
     },
     "sourceZarTotals": {
-      "USD": 531961214.684438,
-      "ZAR": 635493828.4258403
+      "USD": 532162354.18258,
+      "ZAR": 635493828.4258401
     },
-    "sourceZarTotal": 1167455043.1102781,
+    "sourceZarTotal": 1167656182.6084201,
+    "providerSourceTotals": {
+      "prime": {
+        "providerName": "Prime Investments",
+        "nativeUsd": 0.0,
+        "zarTotal": 213445537.93000013
+      },
+      "credo": {
+        "providerName": "Credo",
+        "nativeUsd": 11896031.0,
+        "zarTotal": 191990044.309
+      },
+      "gryphon": {
+        "providerName": "Gryphon",
+        "nativeUsd": 0.0,
+        "zarTotal": 373239158.2458401
+      },
+      "julius-baer": {
+        "providerName": "Julius Baer",
+        "nativeUsd": 20544106.630000003,
+        "zarTotal": 331561336.90157
+      },
+      "northstar-fnb": {
+        "providerName": "Northstar FNB",
+        "nativeUsd": 533550.59,
+        "zarTotal": 8610972.97201
+      },
+      "northstar-sanlam": {
+        "providerName": "Northstar Sanlam",
+        "nativeUsd": 0.0,
+        "zarTotal": 3007494.02
+      },
+      "peresec": {
+        "providerName": "Peresec",
+        "nativeUsd": 0.0,
+        "zarTotal": 3333644.92
+      },
+      "prescient": {
+        "providerName": "Prescient",
+        "nativeUsd": 0.0,
+        "zarTotal": 42467993.31
+      }
+    },
     "clients": [
       {
         "id": "credo|10012899|Blackbeard, Ginette",
@@ -62,20 +104,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 179116.0
         },
-        "zarAum": 2889660.5164,
+        "zarAum": 2890753.124,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1058.0,
-            "zarValue": 17068.6082
+            "zarValue": 17075.061999999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 178058.0,
-            "zarValue": 2872591.9082
+            "zarValue": 2873678.062
           }
         ],
         "fees": {
@@ -84,20 +126,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 44.778999999999996
             },
-            "zarFee": 722.4151291
+            "zarFee": 722.6882810000001
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 89.55799999999999
             },
-            "zarFee": 1444.8302582
+            "zarFee": 1445.3765620000001
           },
           "total": {
             "nativeFees": {
               "USD": 134.337
             },
-            "zarFee": 2167.2453873
+            "zarFee": 2168.064843
           }
         }
       },
@@ -111,20 +153,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 118353.0
         },
-        "zarAum": 1909377.1136999999,
+        "zarAum": 1910099.067,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 678.0,
-            "zarValue": 10938.1062
+            "zarValue": 10942.242
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 117675.0,
-            "zarValue": 1898439.0074999998
+            "zarValue": 1899156.825
           }
         ],
         "fees": {
@@ -133,20 +175,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 29.588250000000002
             },
-            "zarFee": 477.344278425
+            "zarFee": 477.52476675
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 59.176500000000004
             },
-            "zarFee": 954.68855685
+            "zarFee": 955.0495335
           },
           "total": {
             "nativeFees": {
               "USD": 88.76475
             },
-            "zarFee": 1432.032835275
+            "zarFee": 1432.57430025
           }
         }
       },
@@ -160,32 +202,32 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 416404.0
         },
-        "zarAum": 6717804.091599999,
+        "zarAum": 6720344.1559999995,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2742.0,
-            "zarValue": 44236.4118
+            "zarValue": 44253.138
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 193516.0,
-            "zarValue": 3121974.2764
+            "zarValue": 3123154.724
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 111783.0,
-            "zarValue": 1803383.9607
+            "zarValue": 1804065.8369999998
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 108363.0,
-            "zarValue": 1748209.4427
+            "zarValue": 1748870.457
           }
         ],
         "fees": {
@@ -194,20 +236,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 104.101
             },
-            "zarFee": 1679.4510228999998
+            "zarFee": 1680.0860389999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 208.202
             },
-            "zarFee": 3358.9020457999995
+            "zarFee": 3360.1720779999996
           },
           "total": {
             "nativeFees": {
               "USD": 312.303
             },
-            "zarFee": 5038.353068699999
+            "zarFee": 5040.258116999999
           }
         }
       },
@@ -221,26 +263,26 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 307236.0
         },
-        "zarAum": 4956607.6644,
+        "zarAum": 4958481.804,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1428.0,
-            "zarValue": 23037.781199999998
+            "zarValue": 23046.492
           },
           {
             "investment": "Harmony Capital Limited Special Situations Class",
             "currency": "USD",
             "nativeValue": 2817.0,
-            "zarValue": 45446.3793
+            "zarValue": 45463.562999999995
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 302991.0,
-            "zarValue": 4888123.5039
+            "zarValue": 4889971.749
           }
         ],
         "fees": {
@@ -249,20 +291,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 76.809
             },
-            "zarFee": 1239.1519161
+            "zarFee": 1239.620451
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 153.618
             },
-            "zarFee": 2478.3038322
+            "zarFee": 2479.240902
           },
           "total": {
             "nativeFees": {
               "USD": 230.427
             },
-            "zarFee": 3717.4557483000003
+            "zarFee": 3718.8613530000002
           }
         }
       },
@@ -276,20 +318,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 54730.0
         },
-        "zarAum": 882953.617,
+        "zarAum": 883287.47,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 417.0,
-            "zarValue": 6727.4193
+            "zarValue": 6729.963
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 54313.0,
-            "zarValue": 876226.1977
+            "zarValue": 876557.507
           }
         ],
         "fees": {
@@ -298,20 +340,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 13.6825
             },
-            "zarFee": 220.73840425
+            "zarFee": 220.82186750000002
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 27.365
             },
-            "zarFee": 441.4768085
+            "zarFee": 441.64373500000005
           },
           "total": {
             "nativeFees": {
               "USD": 41.0475
             },
-            "zarFee": 662.21521275
+            "zarFee": 662.4656025
           }
         }
       },
@@ -325,74 +367,74 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1586355.0
         },
-        "zarAum": 25592506.5795,
+        "zarAum": 25602183.344999995,
         "holdingCount": 11,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 75263.0,
-            "zarValue": 1214210.4527
+            "zarValue": 1214669.557
           },
           {
             "investment": "Volkswagen AG",
             "currency": "USD",
             "nativeValue": 11438.0,
-            "zarValue": 184528.1102
+            "zarValue": 184597.88199999998
           },
           {
             "investment": "Fundsmith Equity Fund",
             "currency": "USD",
             "nativeValue": 126289.0,
-            "zarValue": 2037407.8081
+            "zarValue": 2038178.1709999999
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 46832.0,
-            "zarValue": 755535.9728
+            "zarValue": 755821.6479999999
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 20492.0,
-            "zarValue": 330595.3868
+            "zarValue": 330720.388
           },
           {
             "investment": "Invesco Solar ETF",
             "currency": "USD",
             "nativeValue": 37094.0,
-            "zarValue": 598433.7925999999
+            "zarValue": 598660.066
           },
           {
             "investment": "iShares Global Tech ETF",
             "currency": "USD",
             "nativeValue": 151105.0,
-            "zarValue": 2437761.8545
+            "zarValue": 2438683.5949999997
           },
           {
             "investment": "Jinkosolar Holding Co Ltd",
             "currency": "USD",
             "nativeValue": 44109.0,
-            "zarValue": 711606.0861
+            "zarValue": 711875.151
           },
           {
             "investment": "Kraneshares CSI China Internet ETF",
             "currency": "USD",
             "nativeValue": 28910.0,
-            "zarValue": 466402.13899999997
+            "zarValue": 466578.49
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 915898.0,
-            "zarValue": 14776090.8442
+            "zarValue": 14781677.821999999
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 128925.0,
-            "zarValue": 2079934.1324999998
+            "zarValue": 2080720.575
           }
         ],
         "fees": {
@@ -401,20 +443,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 396.58875000000006
             },
-            "zarFee": 6398.126644875
+            "zarFee": 6400.545836249999
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 793.1775000000001
             },
-            "zarFee": 12796.25328975
+            "zarFee": 12801.091672499999
           },
           "total": {
             "nativeFees": {
               "USD": 1189.7662500000001
             },
-            "zarFee": 19194.379934625
+            "zarFee": 19201.63750875
           }
         }
       },
@@ -428,20 +470,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 73799.0
         },
-        "zarAum": 1190591.8871000002,
+        "zarAum": 1191042.0609999998,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1774.0,
-            "zarValue": 28619.7646
+            "zarValue": 28630.586
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 72025.0,
-            "zarValue": 1161972.1225
+            "zarValue": 1162411.4749999999
           }
         ],
         "fees": {
@@ -450,20 +492,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 18.449749999999998
             },
-            "zarFee": 297.64797177500003
+            "zarFee": 297.76051524999997
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 36.899499999999996
             },
-            "zarFee": 595.2959435500001
+            "zarFee": 595.5210304999999
           },
           "total": {
             "nativeFees": {
               "USD": 55.34925
             },
-            "zarFee": 892.943915325
+            "zarFee": 893.2815457499999
           }
         }
       },
@@ -477,26 +519,26 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 134883.0
         },
-        "zarAum": 2176053.9507,
+        "zarAum": 2176876.7369999997,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2477.0,
-            "zarValue": 39961.1933
+            "zarValue": 39976.303
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 51772.0,
-            "zarValue": 835232.4988
+            "zarValue": 835548.308
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 80634.0,
-            "zarValue": 1300860.2586
+            "zarValue": 1301352.126
           }
         ],
         "fees": {
@@ -505,20 +547,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 33.72075
             },
-            "zarFee": 544.013487675
+            "zarFee": 544.21918425
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 67.4415
             },
-            "zarFee": 1088.02697535
+            "zarFee": 1088.4383685
           },
           "total": {
             "nativeFees": {
               "USD": 101.16225
             },
-            "zarFee": 1632.040463025
+            "zarFee": 1632.65755275
           }
         }
       },
@@ -532,68 +574,68 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 3941455.0
         },
-        "zarAum": 63587099.3695,
+        "zarAum": 63611142.245,
         "holdingCount": 10,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 9188.0,
-            "zarValue": 148229.0852
+            "zarValue": 148285.13199999998
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 328625.0,
-            "zarValue": 5301674.2625
+            "zarValue": 5303678.875
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 22031.0,
-            "zarValue": 355423.9199
+            "zarValue": 355558.309
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 21343.0,
-            "zarValue": 344324.4847
+            "zarValue": 344454.67699999997
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 159490.0,
-            "zarValue": 2573036.221
+            "zarValue": 2574009.11
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 220882.0,
-            "zarValue": 3563467.2177999998
+            "zarValue": 3564814.5979999998
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 140472.0,
-            "zarValue": 2266220.7287999997
+            "zarValue": 2267077.608
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 30803.0,
-            "zarValue": 496941.71869999997
+            "zarValue": 497129.61699999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 2973705.0,
-            "zarValue": 47974485.394499995
+            "zarValue": 47992624.995
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 34916.0,
-            "zarValue": 563296.3364
+            "zarValue": 563509.324
           }
         ],
         "fees": {
@@ -602,20 +644,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 985.36375
             },
-            "zarFee": 15896.774842375
+            "zarFee": 15902.785561249999
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 1970.7275
             },
-            "zarFee": 31793.54968475
+            "zarFee": 31805.571122499998
           },
           "total": {
             "nativeFees": {
               "USD": 2956.09125
             },
-            "zarFee": 47690.324527125
+            "zarFee": 47708.35668375
           }
         }
       },
@@ -629,26 +671,26 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 581245.0
         },
-        "zarAum": 9377167.4605,
+        "zarAum": 9380713.055,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 133.0,
-            "zarValue": 2145.6757
+            "zarValue": 2146.487
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 444736.0,
-            "zarValue": 7174881.4144
+            "zarValue": 7177594.304
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 136376.0,
-            "zarValue": 2200140.3704
+            "zarValue": 2200972.264
           }
         ],
         "fees": {
@@ -657,20 +699,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 145.31125
             },
-            "zarFee": 2344.291865125
+            "zarFee": 2345.17826375
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 290.6225
             },
-            "zarFee": 4688.58373025
+            "zarFee": 4690.3565275
           },
           "total": {
             "nativeFees": {
               "USD": 435.93375000000003
             },
-            "zarFee": 7032.875595375001
+            "zarFee": 7035.53479125
           }
         }
       },
@@ -684,20 +726,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 5017.0
         },
-        "zarAum": 80938.75929999999,
+        "zarAum": 80969.363,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": -14.0,
-            "zarValue": -225.86059999999998
+            "zarValue": -225.946
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 5031.0,
-            "zarValue": 81164.61989999999
+            "zarValue": 81195.309
           }
         ],
         "fees": {
@@ -706,20 +748,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 1.25425
             },
-            "zarFee": 20.234689825
+            "zarFee": 20.24234075
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 2.5085
             },
-            "zarFee": 40.46937965
+            "zarFee": 40.4846815
           },
           "total": {
             "nativeFees": {
               "USD": 3.7627500000000005
             },
-            "zarFee": 60.704069475
+            "zarFee": 60.727022250000005
           }
         }
       },
@@ -733,20 +775,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 317479.0
         },
-        "zarAum": 5121856.959100001,
+        "zarAum": 5123793.580999999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1476.0,
-            "zarValue": 23812.1604
+            "zarValue": 23821.164
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 316003.0,
-            "zarValue": 5098044.7987
+            "zarValue": 5099972.416999999
           }
         ],
         "fees": {
@@ -755,20 +797,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 79.36975
             },
-            "zarFee": 1280.4642397750001
+            "zarFee": 1280.9483952499997
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 158.7395
             },
-            "zarFee": 2560.9284795500002
+            "zarFee": 2561.8967904999995
           },
           "total": {
             "nativeFees": {
               "USD": 238.10924999999997
             },
-            "zarFee": 3841.392719325
+            "zarFee": 3842.8451857499995
           }
         }
       },
@@ -782,14 +824,14 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1494.0
         },
-        "zarAum": 24102.5526,
+        "zarAum": 24111.665999999997,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1494.0,
-            "zarValue": 24102.5526
+            "zarValue": 24111.665999999997
           }
         ],
         "fees": {
@@ -798,20 +840,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 0.3735
             },
-            "zarFee": 6.02563815
+            "zarFee": 6.0279165
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 0.747
             },
-            "zarFee": 12.0512763
+            "zarFee": 12.055833
           },
           "total": {
             "nativeFees": {
               "USD": 1.1205
             },
-            "zarFee": 18.07691445
+            "zarFee": 18.0837495
           }
         }
       },
@@ -825,44 +867,44 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 51543.0
         },
-        "zarAum": 831538.0647,
+        "zarAum": 831852.477,
         "holdingCount": 6,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 3388.0,
-            "zarValue": 54658.265199999994
+            "zarValue": 54678.932
           },
           {
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 3892.0,
-            "zarValue": 62789.2468
+            "zarValue": 62812.988
           },
           {
             "investment": "Defiance Quantum ETF",
             "currency": "USD",
             "nativeValue": 2895.0,
-            "zarValue": 46704.7455
+            "zarValue": 46722.405
           },
           {
             "investment": "Invesco Nasdaq 100 ETF",
             "currency": "USD",
             "nativeValue": 4609.0,
-            "zarValue": 74356.5361
+            "zarValue": 74384.651
           },
           {
             "investment": "Invesco S&P 500 Momentum ETF",
             "currency": "USD",
             "nativeValue": 4675.0,
-            "zarValue": 75421.3075
+            "zarValue": 75449.825
           },
           {
             "investment": "RSA Government Bond",
             "currency": "USD",
             "nativeValue": 32084.0,
-            "zarValue": 517607.96359999996
+            "zarValue": 517803.676
           }
         ],
         "fees": {
@@ -871,20 +913,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 12.88575
             },
-            "zarFee": 207.88451617500002
+            "zarFee": 207.96311924999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 25.7715
             },
-            "zarFee": 415.76903235000003
+            "zarFee": 415.92623849999995
           },
           "total": {
             "nativeFees": {
               "USD": 38.65725
             },
-            "zarFee": 623.653548525
+            "zarFee": 623.8893577499999
           }
         }
       },
@@ -898,32 +940,32 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 303222.0
         },
-        "zarAum": 4891850.2038,
+        "zarAum": 4893699.857999999,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1687.0,
-            "zarValue": 27216.202299999997
+            "zarValue": 27226.493
           },
           {
             "investment": "iShares Global 100 ETF",
             "currency": "USD",
             "nativeValue": 141296.0,
-            "zarValue": 2279514.2383999997
+            "zarValue": 2280376.144
           },
           {
             "investment": "iShares Physical Gold ETF",
             "currency": "USD",
             "nativeValue": 66234.0,
-            "zarValue": 1068546.4986
+            "zarValue": 1068950.526
           },
           {
             "investment": "BBVA Global Markets ",
             "currency": "USD",
             "nativeValue": 94005.0,
-            "zarValue": 1516573.2645
+            "zarValue": 1517146.6949999998
           }
         ],
         "fees": {
@@ -932,20 +974,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 75.80550000000001
             },
-            "zarFee": 1222.9625509500001
+            "zarFee": 1223.4249644999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 151.61100000000002
             },
-            "zarFee": 2445.9251019000003
+            "zarFee": 2446.8499289999995
           },
           "total": {
             "nativeFees": {
               "USD": 227.41650000000004
             },
-            "zarFee": 3668.8876528500004
+            "zarFee": 3670.274893499999
           }
         }
       },
@@ -959,20 +1001,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 706794.0
         },
-        "zarAum": 11402636.9226,
+        "zarAum": 11406948.365999999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 10439.0,
-            "zarValue": 168411.3431
+            "zarValue": 168475.02099999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 696355.0,
-            "zarValue": 11234225.579499999
+            "zarValue": 11238473.344999999
           }
         ],
         "fees": {
@@ -981,20 +1023,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 176.6985
             },
-            "zarFee": 2850.65923065
+            "zarFee": 2851.7370914999997
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 353.397
             },
-            "zarFee": 5701.3184613
+            "zarFee": 5703.474182999999
           },
           "total": {
             "nativeFees": {
               "USD": 530.0955
             },
-            "zarFee": 8551.97769195
+            "zarFee": 8555.2112745
           }
         }
       },
@@ -1008,86 +1050,86 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 2811527.0
         },
-        "zarAum": 45358083.9383,
+        "zarAum": 45375234.253,
         "holdingCount": 13,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2284.0,
-            "zarValue": 36847.5436
+            "zarValue": 36861.475999999995
           },
           {
             "investment": "Digihost Technology Inc",
             "currency": "USD",
             "nativeValue": 2038.0,
-            "zarValue": 32878.8502
+            "zarValue": 32891.282
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 53953.0,
-            "zarValue": 870418.3537
+            "zarValue": 870747.467
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 251999.0,
-            "zarValue": 4065474.6670999997
+            "zarValue": 4067011.861
           },
           {
             "investment": "Amplify Transformational Data Sharing ETF",
             "currency": "USD",
             "nativeValue": 30436.0,
-            "zarValue": 491020.9444
+            "zarValue": 491206.604
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 85413.0,
-            "zarValue": 1377959.3876999998
+            "zarValue": 1378480.407
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 81219.0,
-            "zarValue": 1310298.0051
+            "zarValue": 1310793.4409999999
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 67662.0,
-            "zarValue": 1091584.2798
+            "zarValue": 1091997.018
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1645625.0,
-            "zarValue": 26548703.5625
+            "zarValue": 26558741.875
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 258297.0,
-            "zarValue": 4167079.6713
+            "zarValue": 4168655.283
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 163504.0,
-            "zarValue": 2637793.6816
+            "zarValue": 2638791.056
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 147720.0,
-            "zarValue": 2383151.988
+            "zarValue": 2384053.08
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 21377.0,
-            "zarValue": 344873.0033
+            "zarValue": 345003.403
           }
         ],
         "fees": {
@@ -1096,20 +1138,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 702.88175
             },
-            "zarFee": 11339.520984575
+            "zarFee": 11343.80856325
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 1405.7635
             },
-            "zarFee": 22679.04196915
+            "zarFee": 22687.6171265
           },
           "total": {
             "nativeFees": {
               "USD": 2108.64525
             },
-            "zarFee": 34018.562953725
+            "zarFee": 34031.42568975
           }
         }
       },
@@ -1123,20 +1165,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 305379.0
         },
-        "zarAum": 4926648.8691,
+        "zarAum": 4928511.681,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1558.0,
-            "zarValue": 25135.0582
+            "zarValue": 25144.561999999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 303821.0,
-            "zarValue": 4901513.8109
+            "zarValue": 4903367.119
           }
         ],
         "fees": {
@@ -1145,20 +1187,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 76.34475
             },
-            "zarFee": 1231.662217275
+            "zarFee": 1232.12792025
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 152.6895
             },
-            "zarFee": 2463.32443455
+            "zarFee": 2464.2558405
           },
           "total": {
             "nativeFees": {
               "USD": 229.03425000000001
             },
-            "zarFee": 3694.986651825
+            "zarFee": 3696.38376075
           }
         }
       },
@@ -2468,44 +2510,44 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 7222644.199999999
         },
-        "zarAum": 116522196.61418,
+        "zarAum": 116566254.7438,
         "holdingCount": 6,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 18279.95,
-            "zarValue": 294908.605355
+            "zarValue": 295020.11305
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 425569.97,
-            "zarValue": 6865677.769013
+            "zarValue": 6868273.745829999
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 465791.76,
-            "zarValue": 7514571.884904
+            "zarValue": 7517413.21464
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 5900478.29,
-            "zarValue": 95191826.204741
+            "zarValue": 95227819.12231
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 273073.89,
-            "zarValue": 4405473.759981
+            "zarValue": 4407139.51071
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 139450.34,
-            "zarValue": 2249738.3901859997
+            "zarValue": 2250589.0372599997
           }
         ],
         "fees": {
@@ -2514,20 +2556,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 1938.720757537252
             },
-            "zarFee": 31277.188109272738
+            "zarFee": 31289.014305893714
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 3411.171147776779
             },
-            "zarFee": 55032.08300996801
+            "zarFee": 55052.891153969445
           },
           "total": {
             "nativeFees": {
               "USD": 5349.891905314031
             },
-            "zarFee": 86309.27111924074
+            "zarFee": 86341.90545986316
           }
         }
       },
@@ -2541,38 +2583,38 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1764000.3299999998
         },
-        "zarAum": 28458440.923856996,
+        "zarAum": 28469201.32587,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 85352.87,
-            "zarValue": 1376989.3164229998
+            "zarValue": 1377509.96893
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 568990.12,
-            "zarValue": 9179460.706948
+            "zarValue": 9182931.54668
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 561998.77,
-            "zarValue": 9066669.956533
+            "zarValue": 9070098.14903
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 405703.14,
-            "zarValue": 6545168.187306
+            "zarValue": 6547642.97646
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 141955.43,
-            "zarValue": 2290152.7566469996
+            "zarValue": 2291018.6847699997
           }
         ],
         "fees": {
@@ -2581,20 +2623,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 473.4975116278831
             },
-            "zarFee": 7638.888005341475
+            "zarFee": 7641.776340162407
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 833.1169117211557
             },
-            "zarFee": 13440.591825106232
+            "zarFee": 13445.673838267734
           },
           "total": {
             "nativeFees": {
               "USD": 1306.6144233490388
             },
-            "zarFee": 21079.479830447708
+            "zarFee": 21087.45017843014
           }
         }
       },
@@ -2608,62 +2650,62 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1937782.42
         },
-        "zarAum": 31262050.003618,
+        "zarAum": 31273870.476379998,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 21134.22,
-            "zarValue": 340956.257838
+            "zarValue": 341085.17658
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 16870.99,
-            "zarValue": 272177.994571
+            "zarValue": 272280.90761
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 71664.45,
-            "zarValue": 1156155.4054049999
+            "zarValue": 1156592.55855
           },
           {
             "investment": "Invesco Global Clean Energy ETF",
             "currency": "USD",
             "nativeValue": 13636.13,
-            "zarValue": 219990.32167699997
+            "zarValue": 220073.50207
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1356483.71,
-            "zarValue": 21884016.045059
+            "zarValue": 21892290.595689997
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 210372.3,
-            "zarValue": 3393915.2786699994
+            "zarValue": 3395198.5497
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 139802.19,
-            "zarValue": 2255414.751051
+            "zarValue": 2256267.54441
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 39600.55,
-            "zarValue": 638871.713095
+            "zarValue": 639113.27645
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 68217.88,
-            "zarValue": 1100552.236252
+            "zarValue": 1100968.36532
           }
         ],
         "fees": {
@@ -2672,20 +2714,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 520.1445477882975
             },
-            "zarFee": 8391.439975013824
+            "zarFee": 8394.612856755333
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 915.1921787554016
             },
-            "zarFee": 14764.703900643019
+            "zarFee": 14770.286572933428
           },
           "total": {
             "nativeFees": {
               "USD": 1435.3367265436991
             },
-            "zarFee": 23156.143875656842
+            "zarFee": 23164.89942968876
           }
         }
       },
@@ -2699,20 +2741,20 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 369315.80000000005
         },
-        "zarAum": 5958134.86982,
+        "zarAum": 5960387.6962,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 323.59,
-            "zarValue": 5220.445110999999
+            "zarValue": 5222.41901
           },
           {
             "investment": "Wealthworks Global Flexible Fund (USD)",
             "currency": "USD",
             "nativeValue": 368992.21,
-            "zarValue": 5952914.424709
+            "zarValue": 5955165.27719
           }
         ],
         "fees": {
@@ -2721,20 +2763,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 99.13269818087902
             },
-            "zarFee": 1599.297906482303
+            "zarFee": 1599.9026159412062
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 174.42357210093496
             },
-            "zarFee": 2813.9580463471725
+            "zarFee": 2815.0220301369886
           },
           "total": {
             "nativeFees": {
               "USD": 273.55627028181397
             },
-            "zarFee": 4413.255952829475
+            "zarFee": 4414.924646078195
           }
         }
       },
@@ -2748,104 +2790,104 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1361735.4700000002
         },
-        "zarAum": 21968742.163963,
+        "zarAum": 21977048.75033,
         "holdingCount": 16,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 81430.56,
-            "zarValue": 1313711.081424
+            "zarValue": 1314207.80784
           },
           {
             "investment": "Bayer AG",
             "currency": "USD",
             "nativeValue": 954.19,
-            "zarValue": 15393.851851
+            "zarValue": 15399.672410000001
           },
           {
             "investment": "Alphabet",
             "currency": "USD",
             "nativeValue": 16900.0,
-            "zarValue": 272646.01
+            "zarValue": 272749.1
           },
           {
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 726544.0,
-            "zarValue": 11721261.6976
+            "zarValue": 11725693.616
           },
           {
             "investment": "Clorox Co",
             "currency": "USD",
             "nativeValue": 563.95,
-            "zarValue": 9098.148955
+            "zarValue": 9101.58905
           },
           {
             "investment": "Fossil Group Inc",
             "currency": "USD",
             "nativeValue": 31212.65,
-            "zarValue": 503550.561185
+            "zarValue": 503740.95835000003
           },
           {
             "investment": "Global X Artifical Intelligence & Technology ETF",
             "currency": "USD",
             "nativeValue": 10394.0,
-            "zarValue": 167685.3626
+            "zarValue": 167748.766
           },
           {
             "investment": "Intel Corp",
             "currency": "USD",
             "nativeValue": 1672.92,
-            "zarValue": 26989.051068
+            "zarValue": 26999.25588
           },
           {
             "investment": "Invesco QQQ Trust Series",
             "currency": "USD",
             "nativeValue": 9328.05,
-            "zarValue": 150488.49784499998
+            "zarValue": 150545.39894999997
           },
           {
             "investment": "Meta Platforms Inc",
             "currency": "USD",
             "nativeValue": 7165.0,
-            "zarValue": 115592.2285
+            "zarValue": 115635.935
           },
           {
             "investment": "Microsoft Corp",
             "currency": "USD",
             "nativeValue": 6884.64,
-            "zarValue": 111069.208656
+            "zarValue": 111111.20496
           },
           {
             "investment": "Paypal Holdings Inc",
             "currency": "USD",
             "nativeValue": 368.83,
-            "zarValue": 5950.297506999999
+            "zarValue": 5952.547369999999
           },
           {
             "investment": "Tesla Inc",
             "currency": "USD",
             "nativeValue": 45193.05,
-            "zarValue": 729094.9563450001
+            "zarValue": 729370.63395
           },
           {
             "investment": "Tripadvisor Inc",
             "currency": "USD",
             "nativeValue": 970.17,
-            "zarValue": 15651.655593
+            "zarValue": 15657.573629999999
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 391006.96,
-            "zarValue": 6308076.184984
+            "zarValue": 6310461.32744
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 31146.5,
-            "zarValue": 502483.36984999996
+            "zarValue": 502673.3635
           }
         ],
         "fees": {
@@ -2854,20 +2896,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 365.520541903995
             },
-            "zarFee": 5896.906350482961
+            "zarFee": 5899.136025788575
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 643.1318804501338
             },
-            "zarFee": 10375.582314113964
+            "zarFee": 10379.50541858471
           },
           "total": {
             "nativeFees": {
               "USD": 1008.6524223541289
             },
-            "zarFee": 16272.488664596925
+            "zarFee": 16278.641444373285
           }
         }
       },
@@ -2881,62 +2923,62 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 4369898.5600000005
         },
-        "zarAum": 70499136.478624,
+        "zarAum": 70525792.85984,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 10504.29,
-            "zarValue": 169464.660141
+            "zarValue": 169528.73631
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 14793.02,
-            "zarValue": 238654.312358
+            "zarValue": 238744.54978
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 45314.35,
-            "zarValue": 731051.8771149999
+            "zarValue": 731328.2946499999
           },
           {
             "investment": "Meituan",
             "currency": "USD",
             "nativeValue": 6521.69,
-            "zarValue": 105213.77260099999
+            "zarValue": 105253.55490999999
           },
           {
             "investment": "Tencent Holdings Limited",
             "currency": "USD",
             "nativeValue": 406598.9,
-            "zarValue": 6559619.39381
+            "zarValue": 6562099.6471
           },
           {
             "investment": "Alibaba Group Holding",
             "currency": "USD",
             "nativeValue": 156843.0,
-            "zarValue": 2530332.4347
+            "zarValue": 2531289.1769999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1639599.96,
-            "zarValue": 26451502.194684
+            "zarValue": 26461503.75444
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 646726.27,
-            "zarValue": 10433570.241283
+            "zarValue": 10437515.27153
           },
           {
             "investment": "Xhaos Special Opportunities Fund D",
             "currency": "USD",
             "nativeValue": 1442997.08,
-            "zarValue": 23279727.591932
+            "zarValue": 23288529.87412
           }
         ],
         "fees": {
@@ -2945,20 +2987,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 1172.9794258180611
             },
-            "zarFee": 18923.559778780193
+            "zarFee": 18930.714953277686
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 2063.85244431441
             },
-            "zarFee": 33295.92509887994
+            "zarFee": 33308.514598790265
           },
           "total": {
             "nativeFees": {
               "USD": 3236.8318701324715
             },
-            "zarFee": 52219.48487766013
+            "zarFee": 52239.22955206795
           }
         }
       },
@@ -2972,38 +3014,38 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 3518729.8500000006
         },
-        "zarAum": 56767316.79706499,
+        "zarAum": 56788781.04915,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 9559.4,
-            "zarValue": 154220.84425999998
+            "zarValue": 154279.1566
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 198418.19,
-            "zarValue": 3201060.8174509997
+            "zarValue": 3202271.16841
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1209675.16,
-            "zarValue": 19515568.388763998
+            "zarValue": 19522947.40724
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 693351.28,
-            "zarValue": 11185766.865112
+            "zarValue": 11189996.30792
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 1407725.82,
-            "zarValue": 22710699.881478
+            "zarValue": 22719287.00898
           }
         ],
         "fees": {
@@ -3012,20 +3054,20 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 944.5065285592973
             },
-            "zarFee": 15237.629374594282
+            "zarFee": 15243.390864418498
           },
           "advisory": {
             "annualRate": 0.0056674609242583695,
             "nativeFees": {
               "USD": 1661.8553273247098
             },
-            "zarFee": 26810.5458101968
+            "zarFee": 26820.683127693486
           },
           "total": {
             "nativeFees": {
               "USD": 2606.361855884007
             },
-            "zarFee": 42048.17518479108
+            "zarFee": 42064.07399211198
           }
         }
       },
@@ -3039,14 +3081,14 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 533550.59
         },
-        "zarAum": 8607718.313411,
+        "zarAum": 8610972.97201,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "FNB Securities Trading Account (Northstar)",
             "currency": "USD",
             "nativeValue": 533550.59,
-            "zarValue": 8607718.313411
+            "zarValue": 8610972.97201
           }
         ],
         "fees": {
@@ -3062,13 +3104,13 @@ export const monthlyClientData = [
             "nativeFees": {
               "USD": 222.31274583333334
             },
-            "zarFee": 3586.549297254583
+            "zarFee": 3587.905405004167
           },
           "total": {
             "nativeFees": {
               "USD": 222.31274583333334
             },
-            "zarFee": 3586.549297254583
+            "zarFee": 3587.905405004167
           }
         }
       },
@@ -4897,6 +4939,7 @@ export const monthlyClientData = [
       "ZAR": 633554170.606682
     },
     "sourceZarTotal": 1157270217.44788,
+    "providerSourceTotals": {},
     "clients": [
       {
         "id": "credo|10012899|Blackbeard, Ginette",
