@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo } from 'react';
-import { Users, TrendingUp, TrendingDown, BarChart3, DollarSign, Activity } from 'lucide-react';
-import KpiCard from '@/components/shared/KpiCard';
+import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
 
 export default function Dashboard() {
@@ -29,43 +27,21 @@ export default function Dashboard() {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-    const clients = new Set(current.map(v => v.account_code)).size;
-    const totalValue = current.reduce((s, v) => s + zarVal(v), 0);
+    const clientSet = new Set(current.map(v => v.account_code));
+    const totalAUM = current.reduce((s, v) => s + zarVal(v), 0);
+    const prevAUM = prev.reduce((s, v) => s + zarVal(v), 0);
+    const aumChange = prevAUM ? ((totalAUM - prevAUM) / prevAUM) * 100 : null;
 
-    // Build prev map (ZAR values)
-    const prevMap = {};
-    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = zarVal(r); });
+    const totalFees = current.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0);
+    const prevFees = prev.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0);
+    const feeChange = prevFees ? ((totalFees - prevFees) / prevFees) * 100 : null;
 
-    let totalChange = 0;
-    let bestFund = null, bestChange = -Infinity;
-    let worstFund = null, worstChange = Infinity;
+    const feeRequired = current.filter(v => v.fee_required).length;
+    const platforms = new Set(current.map(v => v.platform).filter(Boolean)).size;
 
-    current.forEach(r => {
-      const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
-      if (prevMap[k] !== undefined) {
-        const change = zarVal(r) - prevMap[k];
-        totalChange += change;
-        if (change > bestChange) { bestChange = change; bestFund = r; }
-        if (change < worstChange) { worstChange = change; worstFund = r; }
-      }
-    });
-
-    const prevTotal = prev.reduce((s, v) => s + zarVal(v), 0);
-    const changePct = prevTotal ? (totalChange / prevTotal) * 100 : null;
-
-    return { clients, totalValue, totalChange, changePct, bestFund, bestChange, worstFund, worstChange, investmentCount: current.length };
+    return { clients: clientSet.size, totalAUM, aumChange, totalFees, feeChange, feeRequired, platforms, investmentCount: current.length };
   }, [valuations, latestMonth, prevMonth]);
 
-  // Monthly trend chart
-  const chartData = useMemo(() => {
-    const months = [...getSortedMonths(valuations)].reverse();
-    return months.map(m => ({
-      month: formatMonth(m),
-      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
-    }));
-  }, [valuations]);
-
-  // Top clients by value
   const topClients = useMemo(() => {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const map = {};
@@ -76,152 +52,195 @@ export default function Dashboard() {
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
   }, [valuations, latestMonth]);
 
+  const chartData = useMemo(() => {
+    return [...getSortedMonths(valuations)].reverse().map(m => ({
+      month: formatMonth(m),
+      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
+      fees: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
+    }));
+  }, [valuations]);
+
+  const hasData = valuations.length > 0;
+
+  if (!hasData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+          <UploadIcon className="w-8 h-8 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold">No data yet</h2>
+          <p className="text-sm text-muted-foreground mt-1">Upload your first monthly spreadsheet to get started.</p>
+        </div>
+        <Link to="/upload"><Button>Upload Monthly Data</Button></Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-muted-foreground">Latest data:</p>
-            {latestMonth ? <MonthBadge month={latestMonth} /> : <span className="text-sm text-muted-foreground">No data — upload a spreadsheet to begin.</span>}
+          <h1 className="text-2xl font-semibold">Overview</h1>
+          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+            Latest data: {latestMonth ? <MonthBadge month={latestMonth} /> : '—'}
           </div>
         </div>
-        <Link to="/upload"><Button size="sm">Upload Monthly Data</Button></Link>
+        <Link to="/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          title="Total Clients"
-          value={stats.clients}
-          icon={Users}
-          accent
-        />
-        <KpiCard
-          title={`Total AUM (ZAR)${latestMonth ? ` · ${formatMonth(latestMonth)}` : ''}`}
-          value={latestMonth ? fmtNum(stats.totalValue) : '—'}
-          change={stats.changePct}
-          changeLabel="vs prior month"
-          icon={DollarSign}
-        />
-        <KpiCard
-          title="Underlying Investments"
-          value={stats.investmentCount}
-          subtitle={latestMonth ? formatMonth(latestMonth) : undefined}
-          icon={BarChart3}
-        />
-        <KpiCard
-          title="Month-on-Month Change"
-          value={stats.totalChange !== 0 ? (stats.totalChange > 0 ? '+' : '') + fmtNum(stats.totalChange) : '—'}
-          change={stats.changePct}
-          icon={Activity}
-        />
-      </div>
-
-      {/* Best/Worst */}
-      {(stats.bestFund || stats.worstFund) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {stats.bestFund && (
-            <div className="bg-white border rounded-lg p-5">
-              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-positive" /> Best Performing Fund
-              </p>
-              <p className="font-semibold text-sm text-foreground truncate">{stats.bestFund.investment_name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stats.bestFund.platform} · {stats.bestFund.portfolio_name}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stats.bestFund.currency}</p>
-              <p className="text-lg font-semibold text-positive mt-2">+ZAR {fmtNum(stats.bestChange)}</p>
-            </div>
-          )}
-          {stats.worstFund && (
-            <div className="bg-white border rounded-lg p-5">
-              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
-                <TrendingDown className="w-3.5 h-3.5 text-negative" /> Largest Decline
-              </p>
-              <p className="font-semibold text-sm text-foreground truncate">{stats.worstFund.investment_name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stats.worstFund.platform} · {stats.worstFund.portfolio_name}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stats.worstFund.currency}</p>
-              <p className="text-lg font-semibold text-negative mt-2">ZAR {fmtNum(stats.worstChange)}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Monthly AUM Chart */}
-      {chartData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Total AUM by Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={chartData} barSize={32}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
-                <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1_000_000).toFixed(1)}M`} width={60} />
-                <Tooltip
-                  formatter={v => [fmtNum(v), 'Total AUM']}
-                  contentStyle={{ borderRadius: 6, fontSize: 12, border: '1px solid hsl(214,18%,88%)' }}
-                />
-                <Bar dataKey="total" fill="hsl(220,45%,18%)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Top clients */}
-      {topClients.length > 0 && (
-        <div className="bg-white border rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">Top Clients by AUM</h2>
-            <Link to="/clients"><Button variant="ghost" size="sm" className="text-xs">View all</Button></Link>
-          </div>
-          <div className="divide-y">
-            {topClients.map((c, i) => (
-              <Link key={c.code} to={`/clients/${c.code}`} className="flex items-center justify-between px-6 py-3 hover:bg-muted/40 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-5">{i + 1}</span>
-                  <div>
-                    <p className="text-sm font-medium">{c.name}</p>
-                    <p className="text-xs text-muted-foreground">{c.code}</p>
-                  </div>
-                </div>
-                <p className="text-sm font-semibold font-mono">{fmtNum(c.total)}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recent uploads */}
-      {uploads.slice(0, 3).length > 0 && (
-        <div className="bg-white border rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-sm font-semibold text-foreground">Recent Uploads</h2>
-          </div>
-          <div className="divide-y">
-            {uploads.slice(0, 3).map(u => (
-              <div key={u.id} className="flex items-center justify-between px-6 py-3">
-                <div>
-                  <p className="text-sm font-medium">{u.file_name}</p>
-                  <p className="text-xs text-muted-foreground">{u.upload_month} · {u.total_rows} rows · {u.uploaded_by}</p>
-                </div>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  u.import_status === 'Imported' ? 'bg-green-50 text-green-700' :
-                  u.import_status === 'Failed' ? 'bg-red-50 text-red-700' :
-                  'bg-yellow-50 text-yellow-700'
-                }`}>{u.import_status}</span>
+      {/* Three nav section cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Clients */}
+        <Link to="/clients" className="group block">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
+            <div className="flex items-center justify-between mb-5">
+              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
               </div>
-            ))}
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Clients</p>
+            <p className="text-3xl font-bold text-foreground">{stats.clients}</p>
+            <p className="text-sm text-muted-foreground mt-1">{stats.platforms} platform{stats.platforms !== 1 ? 's' : ''} · {stats.investmentCount} investments</p>
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-xs text-muted-foreground">Top client</p>
+              {topClients[0] && (
+                <p className="text-sm font-medium truncate mt-0.5">{topClients[0].name} <span className="text-muted-foreground font-normal">— R {fmtNum(topClients[0].total)}</span></p>
+              )}
+            </div>
           </div>
+        </Link>
+
+        {/* AUM */}
+        <Link to="/platforms" className="group block">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
+            <div className="flex items-center justify-between mb-5">
+              <div className="w-11 h-11 rounded-lg bg-accent/15 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-accent" />
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total AUM</p>
+            <p className="text-3xl font-bold text-foreground">R {fmtNum(stats.totalAUM)}</p>
+            {stats.aumChange !== null && (
+              <div className="flex items-center gap-1 mt-1">
+                {stats.aumChange >= 0
+                  ? <TrendingUp className="w-3.5 h-3.5 text-positive" />
+                  : <TrendingDown className="w-3.5 h-3.5 text-negative" />}
+                <span className={`text-sm font-medium ${stats.aumChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {stats.aumChange >= 0 ? '+' : ''}{stats.aumChange.toFixed(2)}% vs prior month
+                </span>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-xs text-muted-foreground">Across {stats.platforms} platform{stats.platforms !== 1 ? 's' : ''}</p>
+              <p className="text-sm font-medium mt-0.5 text-muted-foreground">View by platform →</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Fees */}
+        <Link to="/fees" className="group block">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
+            <div className="flex items-center justify-between mb-5">
+              <div className="w-11 h-11 rounded-lg bg-chart-5/10 flex items-center justify-center">
+                <Receipt className="w-5 h-5 text-chart-5" />
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Monthly Fees</p>
+            <p className="text-3xl font-bold text-foreground">R {fmtNum(stats.totalFees)}</p>
+            {stats.feeChange !== null && (
+              <div className="flex items-center gap-1 mt-1">
+                {stats.feeChange >= 0
+                  ? <TrendingUp className="w-3.5 h-3.5 text-positive" />
+                  : <TrendingDown className="w-3.5 h-3.5 text-negative" />}
+                <span className={`text-sm font-medium ${stats.feeChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {stats.feeChange >= 0 ? '+' : ''}{stats.feeChange.toFixed(2)}% vs prior month
+                </span>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t">
+              {stats.feeRequired > 0
+                ? <p className="text-xs text-amber-600 font-medium">⚠ {stats.feeRequired} investment{stats.feeRequired !== 1 ? 's' : ''} missing fee config</p>
+                : <p className="text-xs text-positive font-medium">✓ All fee configs set</p>}
+              <p className="text-sm font-medium mt-0.5 text-muted-foreground">Manage fees →</p>
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* AUM Chart */}
+      {chartData.length > 1 && (
+        <div className="bg-white border rounded-xl p-6">
+          <h2 className="text-sm font-semibold mb-5">AUM & Fees — Monthly Trend</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={chartData} barSize={20} barCategoryGap="30%">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
+              <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1_000_000).toFixed(1)}M`} width={60} />
+              <Tooltip
+                formatter={(v, name) => [`R ${fmtNum(v)}`, name === 'total' ? 'AUM' : 'Fees']}
+                contentStyle={{ borderRadius: 6, fontSize: 12, border: '1px solid hsl(214,18%,88%)' }}
+              />
+              <Bar dataKey="total" name="AUM" fill="hsl(220,45%,18%)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="fees" name="Fees" fill="hsl(43,55%,52%)" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
 
-      {chartData.length === 0 && (
-        <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-lg">
-          <p className="text-sm">No data yet. <Link to="/upload" className="text-primary underline underline-offset-2">Upload your first monthly spreadsheet</Link> to get started.</p>
-        </div>
-      )}
+      {/* Top clients + Recent uploads side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {topClients.length > 0 && (
+          <div className="bg-white border rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Top Clients by AUM</h2>
+              <Link to="/clients"><Button variant="ghost" size="sm" className="text-xs h-7">View all</Button></Link>
+            </div>
+            <div className="divide-y">
+              {topClients.map((c, i) => (
+                <Link key={c.code} to={`/clients/${c.code}`} className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
+                    <div>
+                      <p className="text-sm font-medium leading-tight">{c.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{c.code}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold font-mono">R {fmtNum(c.total)}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {uploads.length > 0 && (
+          <div className="bg-white border rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Recent Uploads</h2>
+              <Link to="/upload"><Button variant="ghost" size="sm" className="text-xs h-7">Upload new</Button></Link>
+            </div>
+            <div className="divide-y">
+              {uploads.slice(0, 5).map(u => (
+                <div key={u.id} className="flex items-center justify-between px-5 py-3">
+                  <div>
+                    <p className="text-sm font-medium leading-tight">{u.file_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{formatMonth(u.upload_month)} · {u.total_rows} rows</p>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    u.import_status === 'Imported' ? 'bg-green-50 text-green-700' :
+                    u.import_status === 'Failed' ? 'bg-red-50 text-red-700' :
+                    'bg-yellow-50 text-yellow-700'
+                  }`}>{u.import_status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
