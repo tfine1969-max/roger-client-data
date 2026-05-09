@@ -26,29 +26,40 @@ Deno.serve(async (req) => {
   const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
   // Build per-account exchange rate map from Sheet1 and sub-sheets.
-  // Exchange rates are in col_12 (or __EMPTY_2 in Sheet1 after XLSX parsing).
-  // Only the first row of each account group has a rate—propagate it per platform+account.
+  // Exchange rates are in col_12. Only the first row of each account group has a rate.
+  // We need to scan all rows to find and cache the rate for each platform+account combination.
   const accountRateMap = {};
+  
+  // Scan Sheet1 first
   for (const row of rawRows) {
     const acct = String(row['Account Code'] ?? '').trim();
     const platform = String(row['Platform'] ?? '').trim();
+    const currency = String(row['Currency'] ?? '').trim();
+    if (!acct || !platform) continue;
+    
     const key = `${platform}||${acct}`;
     const rate = row['col_12'];
-    if (rate != null && !accountRateMap[key]) {
+    
+    // Cache the rate if found and not already set; also only for non-ZAR currencies
+    if (rate != null && !accountRateMap[key] && currency !== 'ZAR') {
       accountRateMap[key] = Number(rate);
     }
   }
 
-  // Also scan each sub-sheet to pick up exchange rates and pre-converted values (e.g., col_10 in "Other" sheet).
+  // Also scan each sub-sheet (platform-specific sheets and "Other")
   for (const sName of workbook.SheetNames) {
     if (sName === 'Sheet1' || sName === 'Total') continue;
     const subRows = XLSX.utils.sheet_to_json(workbook.Sheets[sName], { defval: null });
     for (const row of subRows) {
       const acct = String(row['Account Code'] ?? '').trim();
       const platform = String(row['Platform'] ?? '').trim();
+      const currency = String(row['Currency'] ?? '').trim();
+      if (!acct || !platform) continue;
+      
       const key = `${platform}||${acct}`;
       const rate = row['col_12'];
-      if (rate != null && !accountRateMap[key]) {
+      
+      if (rate != null && !accountRateMap[key] && currency !== 'ZAR') {
         accountRateMap[key] = Number(rate);
       }
     }
