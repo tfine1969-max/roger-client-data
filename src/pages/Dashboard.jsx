@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useMemo } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { withCalculatedFees } from '@/lib/fee-utils';
+import { feeMappingRows } from '@/data/feeMapping';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -19,13 +21,23 @@ export default function Dashboard() {
     queryFn: () => base44.entities.MonthlyUpload.list('-upload_month'),
   });
 
-  const months = useMemo(() => getSortedMonths(valuations), [valuations]);
+  const { data: feeConfigs = [] } = useQuery({
+    queryKey: ['feeConfigs'],
+    queryFn: () => base44.entities.FeeConfig.list(),
+  });
+
+  const feeRows = useMemo(
+    () => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    [valuations, feeConfigs]
+  );
+
+  const months = useMemo(() => getSortedMonths(feeRows), [feeRows]);
   const latestMonth = months[0] || '';
   const prevMonth = months[1] || '';
 
   const stats = useMemo(() => {
-    const current = valuations.filter(v => v.upload_month === latestMonth);
-    const prev = valuations.filter(v => v.upload_month === prevMonth);
+    const current = feeRows.filter(v => v.upload_month === latestMonth);
+    const prev = feeRows.filter(v => v.upload_month === prevMonth);
 
     const clientSet = new Set(current.map(v => v.account_code));
     const totalAUM = current.reduce((s, v) => s + zarVal(v), 0);
@@ -40,27 +52,27 @@ export default function Dashboard() {
     const platforms = new Set(current.map(v => v.platform).filter(Boolean)).size;
 
     return { clients: clientSet.size, totalAUM, aumChange, totalFees, feeChange, feeRequired, platforms, investmentCount: current.length };
-  }, [valuations, latestMonth, prevMonth]);
+  }, [feeRows, latestMonth, prevMonth]);
 
   const topClients = useMemo(() => {
-    const current = valuations.filter(v => v.upload_month === latestMonth);
+    const current = feeRows.filter(v => v.upload_month === latestMonth);
     const map = {};
     current.forEach(r => {
       if (!map[r.account_code]) map[r.account_code] = { name: r.portfolio_name, code: r.account_code, total: 0 };
       map[r.account_code].total += zarVal(r);
     });
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
-  }, [valuations, latestMonth]);
+  }, [feeRows, latestMonth]);
 
   const chartData = useMemo(() => {
-    return [...getSortedMonths(valuations)].reverse().map(m => ({
+    return [...getSortedMonths(feeRows)].reverse().map(m => ({
       month: formatMonth(m),
-      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
-      fees: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
+      total: Math.round(feeRows.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
+      fees: Math.round(feeRows.filter(v => v.upload_month === m).reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
     }));
-  }, [valuations]);
+  }, [feeRows]);
 
-  const hasData = valuations.length > 0;
+  const hasData = feeRows.length > 0;
 
   if (!hasData) {
     return (
