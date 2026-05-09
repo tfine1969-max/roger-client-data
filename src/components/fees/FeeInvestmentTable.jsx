@@ -3,6 +3,7 @@ import { fmtNum } from '@/lib/valuation-utils';
 import { Button } from '@/components/ui/button';
 import { Pencil, AlertTriangle } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
+import ProviderLogo from '@/components/shared/ProviderLogo';
 
 export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   const [editRow, setEditRow] = useState(null);
@@ -31,7 +32,9 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                       {r.portfolio_name}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground text-xs">
+                    <ProviderLogo provider={r.platform} logoClassName="h-5 max-w-[86px]" className="gap-2" />
+                  </td>
                   <td className="px-3 py-2.5 max-w-[160px] truncate text-xs">{r.investment_name}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{r.currency}</td>
                   <td className="px-3 py-2.5 font-mono text-right text-xs">R {fmtNum(r.fee_base_zar ?? r.zar_value ?? r.month_end_market_value)}</td>

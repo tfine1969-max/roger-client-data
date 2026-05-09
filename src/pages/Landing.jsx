@@ -17,6 +17,8 @@ import {
 import credoLogo from '@/assets/provider-logos/credo.png';
 import gryphonLogo from '@/assets/provider-logos/gryphon.png';
 import juliusBaerLogo from '@/assets/provider-logos/julius-baer.png';
+import northstarLogo from '@/assets/provider-logos/northstar.png';
+import prescientLogo from '@/assets/provider-logos/prescient.png';
 import primeLogo from '@/assets/provider-logos/prime-investments.png';
 import { feeRates, monthlyClientData } from '@/data/monthlyClientData';
 
@@ -25,10 +27,10 @@ const providerBranding = {
   credo: { name: 'Credo', logo: credoLogo, accent: '#00A9E0' },
   gryphon: { name: 'Gryphon', logo: gryphonLogo, accent: '#6E4CB8' },
   prime: { name: 'Prime Investments', logo: primeLogo, accent: '#B51F2F' },
-  'northstar-fnb': { name: 'Northstar FNB', accent: '#176B87' },
-  'northstar-sanlam': { name: 'Northstar Sanlam', accent: '#176B87' },
+  'northstar-fnb': { name: 'Northstar FNB', logo: northstarLogo, accent: '#176B87' },
+  'northstar-sanlam': { name: 'Northstar Sanlam', logo: northstarLogo, accent: '#176B87' },
   peresec: { name: 'Peresec', accent: '#5B5F68' },
-  prescient: { name: 'Prescient', accent: '#244C37' },
+  prescient: { name: 'Prescient', logo: prescientLogo, accent: '#244C37' },
 };
 
 const providerOrder = ['julius-baer', 'credo', 'gryphon', 'prime', 'prescient', 'northstar-fnb', 'northstar-sanlam', 'peresec'];

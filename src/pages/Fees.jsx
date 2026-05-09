@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Search, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
+import ProviderLogo from '@/components/shared/ProviderLogo';
 import FeeKpiRow from '@/components/fees/FeeKpiRow';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
 
@@ -163,7 +164,9 @@ export default function Fees() {
                     className="hover:bg-muted/20 cursor-pointer"
                     onClick={() => { setSelectedProvider(row.provider); setSelectedClient(''); setProviderView('clients'); setSearch(''); }}
                   >
-                    <td className="px-4 py-3 font-semibold">{row.provider}</td>
+                    <td className="px-4 py-3">
+                      <ProviderLogo provider={row.provider} logoClassName="h-7 max-w-[118px]" />
+                    </td>
                     <td className="px-4 py-3 font-mono text-right">R {fmtNum(row.aum)}</td>
                     <td className="px-4 py-3 text-right">{row.clients}</td>
                     <td className="px-4 py-3 text-right">{row.holdings}</td>
@@ -185,7 +188,9 @@ export default function Fees() {
             <button onClick={() => { setSelectedProvider(''); setSelectedClient(''); setSearch(''); }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4" /> Provider overview
             </button>
-            <h2 className="text-xl font-semibold">{activeProvider}</h2>
+            <h2 className="text-xl font-semibold">
+              <ProviderLogo provider={activeProvider} logoClassName="h-8 max-w-[145px]" />
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

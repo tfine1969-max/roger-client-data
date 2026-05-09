@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import ChangeCell from '@/components/shared/ChangeCell';
 import MonthBadge from '@/components/shared/MonthBadge';
+import ProviderLogo from '@/components/shared/ProviderLogo';
 import { monthlyClientData } from '@/data/monthlyClientData';
 
 const PLATFORM_LABELS = {
@@ -159,7 +160,9 @@ export default function Platforms() {
           </button>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold">{selectedPlatform}</h1>
+              <h1 className="text-2xl font-semibold">
+                <ProviderLogo provider={selectedPlatform} logoClassName="h-9 max-w-[160px]" />
+              </h1>
               <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                 <MonthBadge month={latestMonth} />
                 <span>{fundRows.length} funds · Total AUM: <strong className="text-foreground">ZAR {fmtNum(platformTotal)}</strong></span>
@@ -242,7 +245,9 @@ export default function Platforms() {
               )}
               {platformRows.map(r => (
                 <tr key={r.platform} className="hover:bg-muted/20 cursor-pointer" onClick={() => setSelectedPlatform(r.platform)}>
-                  <td className="px-4 py-3 font-semibold text-primary">{r.platform}</td>
+                  <td className="px-4 py-3 text-primary">
+                    <ProviderLogo provider={r.platform} providerId={r.platformId} logoClassName="h-7 max-w-[118px]" />
+                  </td>
                   <td className="px-4 py-3 font-mono font-semibold">ZAR {fmtNum(r.totalZar)}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{r.clients}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{r.funds}</td>
