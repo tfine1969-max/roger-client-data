@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fmtNum, fmtCcy } from '@/lib/valuation-utils';
+import { fmtNum } from '@/lib/valuation-utils';
 import { Button } from '@/components/ui/button';
 import { Pencil, AlertTriangle } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
@@ -14,7 +14,7 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['Client','Platform','Investment Name','Currency','Orig. Value','ZAR Value','Rebate %','Advisory %','Monthly Rebate','Monthly Advisory','Total Monthly',''].map(h => (
+                {['Client','Platform','Investment Name','Currency','Value (R)','Rebate %','Advisory %','Monthly Rebate (R)','Monthly Advisory (R)','Total Monthly (R)',''].map(h => (
                   <th key={h} className="text-left px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -34,8 +34,7 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
                   <td className="px-3 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
                   <td className="px-3 py-2.5 max-w-[160px] truncate text-xs">{r.investment_name}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{r.currency}</td>
-                  <td className="px-3 py-2.5 font-mono text-right text-xs">{fmtCcy(r.original_currency_value ?? r.month_end_market_value, r.currency)}</td>
-                  <td className="px-3 py-2.5 font-mono text-right text-xs">{fmtNum(r.zar_value ?? r.month_end_market_value)}</td>
+                  <td className="px-3 py-2.5 font-mono text-right text-xs">R {fmtNum(r.zar_value ?? r.month_end_market_value)}</td>
                   <td className="px-3 py-2.5 text-right">
                     <span className={`text-xs px-1.5 py-0.5 rounded ${r.fee_required ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'bg-muted text-muted-foreground'}`}>
                       {r.fee_required ? 'Required' : `${(r.rebate_fee_annual_percent ?? 0).toFixed(2)}%`}
@@ -59,16 +58,16 @@ export default function FeeInvestmentTable({ rows, onFeeUpdated }) {
             </tbody>
             <tfoot>
               <tr className="bg-muted/30 border-t-2 font-semibold">
-                <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={8}>Total</td>
-                <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-2">
-                  ZAR {fmtNum(rows.reduce((s, r) => s + (r.rebate_fee_monthly_amount_zar ?? 0), 0))}
-                </td>
-                <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-1">
-                  ZAR {fmtNum(rows.reduce((s, r) => s + (r.advisory_fee_monthly_amount_zar ?? 0), 0))}
-                </td>
-                <td className="px-3 py-2.5 font-mono text-right text-xs font-bold">
-                  ZAR {fmtNum(rows.reduce((s, r) => s + (r.total_monthly_fee_zar ?? 0), 0))}
-                </td>
+                <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={7}>Total</td>
+                 <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-2">
+                   R {fmtNum(rows.reduce((s, r) => s + (r.rebate_fee_monthly_amount_zar ?? 0), 0))}
+                 </td>
+                 <td className="px-3 py-2.5 font-mono text-right text-xs text-chart-1">
+                   R {fmtNum(rows.reduce((s, r) => s + (r.advisory_fee_monthly_amount_zar ?? 0), 0))}
+                 </td>
+                 <td className="px-3 py-2.5 font-mono text-right text-xs font-bold">
+                   R {fmtNum(rows.reduce((s, r) => s + (r.total_monthly_fee_zar ?? 0), 0))}
+                 </td>
                 <td />
               </tr>
             </tfoot>

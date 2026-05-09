@@ -2,9 +2,9 @@ import { fmtNum } from '@/lib/valuation-utils';
 
 export default function FeeKpiRow({ totalRebateZar, totalAdvisoryZar, totalFeeZar, feeRequiredCount }) {
   const cards = [
-    { label: 'Monthly Rebate Fees', value: `ZAR ${fmtNum(totalRebateZar)}`, sub: `Ann. ZAR ${fmtNum(totalRebateZar * 12)}`, color: 'border-l-chart-2' },
-    { label: 'Monthly Advisory Fees', value: `ZAR ${fmtNum(totalAdvisoryZar)}`, sub: `Ann. ZAR ${fmtNum(totalAdvisoryZar * 12)}`, color: 'border-l-chart-1' },
-    { label: 'Total Monthly Fees', value: `ZAR ${fmtNum(totalFeeZar)}`, sub: `Ann. ZAR ${fmtNum(totalFeeZar * 12)}`, color: 'border-l-chart-5' },
+    { label: 'Monthly Rebate Fees', value: `R ${fmtNum(totalRebateZar)}`, sub: `Annual: R ${fmtNum(totalRebateZar * 12)}`, color: 'border-l-chart-2' },
+    { label: 'Monthly Advisory Fees', value: `R ${fmtNum(totalAdvisoryZar)}`, sub: `Annual: R ${fmtNum(totalAdvisoryZar * 12)}`, color: 'border-l-chart-1' },
+    { label: 'Total Monthly Fees', value: `R ${fmtNum(totalFeeZar)}`, sub: `Annual: R ${fmtNum(totalFeeZar * 12)}`, color: 'border-l-chart-5' },
     { label: 'Investments Missing Fee', value: feeRequiredCount, sub: 'flagged as Fee Required', color: 'border-l-destructive', warn: feeRequiredCount > 0 },
   ];
 

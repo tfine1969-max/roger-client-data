@@ -12,6 +12,7 @@ import FeeKpiRow from '@/components/fees/FeeKpiRow';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
 import FeeByGroup from '@/components/fees/FeeByGroup';
 import ClientFeeSummary from '@/components/fees/ClientFeeSummary';
+import FeePlatformBreakdown from '@/components/fees/FeePlatformBreakdown';
 
 export default function Fees() {
   const queryClient = useQueryClient();
@@ -120,6 +121,7 @@ export default function Fees() {
         <TabsList>
           <TabsTrigger value="investments">Investment Detail</TabsTrigger>
           <TabsTrigger value="clients">By Client</TabsTrigger>
+          <TabsTrigger value="platforms">By Platform</TabsTrigger>
           <TabsTrigger value="charts">By Group</TabsTrigger>
         </TabsList>
 
@@ -152,6 +154,10 @@ export default function Fees() {
 
         <TabsContent value="clients" className="mt-4">
           <ClientFeeSummary rows={monthRows} />
+        </TabsContent>
+
+        <TabsContent value="platforms" className="mt-4">
+          <FeePlatformBreakdown valuations={valuations} />
         </TabsContent>
 
         <TabsContent value="charts" className="mt-4 space-y-4">
