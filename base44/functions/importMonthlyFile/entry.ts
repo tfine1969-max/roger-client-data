@@ -123,18 +123,10 @@ Deno.serve(async (req) => {
     let conversionStatus;
     let exchangeRate;
 
-    // Check if user provided an exchange rate for this currency
-    const userProvidedRate = exchange_rates[currency] ? Number(exchange_rates[currency]) : null;
-
     if (currency === 'ZAR') {
       zarValue = origValue;
       conversionStatus = 'ZAR Base Currency';
       exchangeRate = 1;
-    } else if (userProvidedRate) {
-      // Prioritize user-provided rate
-      zarValue = origValue * userProvidedRate;
-      conversionStatus = 'Converted';
-      exchangeRate = userProvidedRate;
     } else if (rate) {
       zarValue = origValue * rate;
       conversionStatus = manualRates[currency] ? 'Converted' : 'Converted';
