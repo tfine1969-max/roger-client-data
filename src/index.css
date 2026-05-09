@@ -67,6 +67,10 @@
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
+  .font-numbers {
+    font-family: 'Aptos', 'Aptos Narrow', 'Arial', monospace;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 /* Utility classes for wealth app */
