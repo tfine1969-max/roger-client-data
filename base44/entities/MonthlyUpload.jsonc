@@ -1,0 +1,52 @@
+{
+  "name": "MonthlyUpload",
+  "type": "object",
+  "properties": {
+    "upload_month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format e.g. 2026-01"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original file name"
+    },
+    "upload_date": {
+      "type": "string",
+      "description": "ISO date string of when uploaded"
+    },
+    "uploaded_by": {
+      "type": "string",
+      "description": "Email of the user who uploaded"
+    },
+    "total_rows": {
+      "type": "number",
+      "description": "Total rows imported"
+    },
+    "rows_imported": {
+      "type": "number",
+      "description": "Rows successfully imported"
+    },
+    "rows_skipped": {
+      "type": "number",
+      "description": "Rows skipped due to errors"
+    },
+    "import_status": {
+      "type": "string",
+      "enum": [
+        "Pending",
+        "Imported",
+        "Failed"
+      ],
+      "default": "Pending",
+      "description": "Status of the import"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or error details"
+    }
+  },
+  "required": [
+    "upload_month",
+    "import_status"
+  ]
+}

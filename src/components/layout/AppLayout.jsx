@@ -1,11 +1,13 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, TrendingUp, Upload } from 'lucide-react';
+import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/clients', label: 'Clients', icon: Users },
-  { path: '/import', label: 'Import', icon: Upload },
+  { path: '/platforms', label: 'Platforms', icon: BarChart3 },
+  { path: '/upload', label: 'Upload', icon: Upload },
+  { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
 ];
 
 export default function AppLayout() {
@@ -13,36 +15,42 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b bg-white shadow-sm">
+        <div className="max-w-screen-xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary-foreground" />
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
+                <span className="text-white text-xs font-bold tracking-wider">WW</span>
               </div>
-              <span className="text-lg font-semibold tracking-tight text-foreground">InvestTrack</span>
+              <div>
+                <span className="text-sm font-semibold text-primary tracking-tight">Wealth Works</span>
+                <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Portfolio Management</p>
+              </div>
             </Link>
-            <nav className="flex items-center gap-1">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    location.pathname === path
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{label}</span>
-                </Link>
-              ))}
+            <nav className="flex items-center gap-0.5">
+              {navItems.map(({ path, label, icon: Icon }) => {
+                const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+                return (
+                  <Link
+                    key={path}
+                    to={path}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all",
+                      active
+                        ? "bg-primary text-white"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden md:inline">{label}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-screen-xl mx-auto px-6 py-8">
         <Outlet />
       </main>
     </div>

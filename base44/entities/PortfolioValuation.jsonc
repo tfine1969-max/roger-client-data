@@ -1,0 +1,83 @@
+{
+  "name": "PortfolioValuation",
+  "type": "object",
+  "properties": {
+    "upload_month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format"
+    },
+    "portfolio_id": {
+      "type": "string",
+      "description": "Portfolio ID"
+    },
+    "account_code": {
+      "type": "string",
+      "description": "Account Code"
+    },
+    "identity_no": {
+      "type": "string",
+      "description": "Identity / ID number"
+    },
+    "portfolio_name": {
+      "type": "string",
+      "description": "Client / portfolio name"
+    },
+    "platform": {
+      "type": "string",
+      "description": "Platform / provider e.g. Allan Gray, Credo"
+    },
+    "investment_name": {
+      "type": "string",
+      "description": "Name of the investment / fund"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code e.g. USD, ZAR"
+    },
+    "month_end_market_value": {
+      "type": "number",
+      "description": "Month end market value"
+    },
+    "number_of_units": {
+      "type": "number",
+      "description": "Number of units held"
+    },
+    "month_end_unit_price": {
+      "type": "number",
+      "description": "Month end unit price"
+    },
+    "unique_key": {
+      "type": "string",
+      "description": "Composite key: account_code + platform + investment_name + currency + upload_month"
+    },
+    "has_missing_account_code": {
+      "type": "boolean",
+      "description": "Data quality flag: missing account code"
+    },
+    "has_missing_identity_no": {
+      "type": "boolean",
+      "description": "Data quality flag: missing identity number"
+    },
+    "has_missing_market_value": {
+      "type": "boolean",
+      "description": "Data quality flag: missing or zero market value"
+    },
+    "is_duplicate": {
+      "type": "boolean",
+      "description": "Data quality flag: duplicate row for same key"
+    },
+    "is_flagged": {
+      "type": "boolean",
+      "description": "Row has at least one data quality issue"
+    },
+    "monthly_upload_id": {
+      "type": "string",
+      "description": "Reference to the MonthlyUpload record"
+    }
+  },
+  "required": [
+    "upload_month",
+    "account_code",
+    "investment_name"
+  ]
+}

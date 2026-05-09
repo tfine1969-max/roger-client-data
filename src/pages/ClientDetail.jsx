@@ -1,74 +1,90 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { ArrowLeft, Mail, Hash, CreditCard } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import StatsCard from '@/components/dashboard/StatsCard';
-import InvestmentTable from '@/components/investments/InvestmentTable';
-import AddInvestmentDialog from '@/components/investments/AddInvestmentDialog';
-import { DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSortedMonths, fmtNum, formatMonth, clientMonthlyTotals } from '@/lib/valuation-utils';
+import { exportClientFundCSV } from '@/lib/export-utils';
+import KpiCard from '@/components/shared/KpiCard';
+import ChangeCell from '@/components/shared/ChangeCell';
+import MonthBadge from '@/components/shared/MonthBadge';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { DollarSign, BarChart3, TrendingUp } from 'lucide-react';
 
 export default function ClientDetail() {
-  const { id } = useParams();
-  const queryClient = useQueryClient();
+  const { accountCode } = useParams();
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedFund, setSelectedFund] = useState('');
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => base44.entities.Client.list(),
+  const { data: valuations = [] } = useQuery({
+    queryKey: ['portfolioValuations'],
+    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
   });
 
-  const client = clients.find(c => c.id === id);
+  const clientRows = useMemo(() => valuations.filter(v => v.account_code === accountCode), [valuations, accountCode]);
 
-  const { data: allInvestments = [] } = useQuery({
-    queryKey: ['investments'],
-    queryFn: () => base44.entities.Investment.list(),
-  });
+  const months = useMemo(() => getSortedMonths(clientRows), [clientRows]);
+  const latestMonth = selectedMonth || months[0] || '';
+  const prevMonth = useMemo(() => {
+    const idx = months.indexOf(latestMonth);
+    return months[idx + 1] || '';
+  }, [months, latestMonth]);
 
-  const { data: allMonthlyValues = [] } = useQuery({
-    queryKey: ['monthlyValues'],
-    queryFn: () => base44.entities.MonthlyValue.list(),
-  });
+  const clientInfo = clientRows[0] || {};
 
-  const investments = useMemo(() => allInvestments.filter(i => i.client_id === id), [allInvestments, id]);
-  const monthlyValues = useMemo(() => allMonthlyValues.filter(v => v.client_id === id), [allMonthlyValues, id]);
+  const currentRows = useMemo(() => clientRows.filter(v => v.upload_month === latestMonth), [clientRows, latestMonth]);
+  const prevRows = useMemo(() => clientRows.filter(v => v.upload_month === prevMonth), [clientRows, prevMonth]);
 
-  // Available months for this client
-  const availableMonths = useMemo(() => {
-    const months = [...new Set(monthlyValues.map(v => v.month))].sort((a, b) => b.localeCompare(a));
-    return months;
-  }, [monthlyValues]);
+  // Build prev map
+  const prevMap = useMemo(() => {
+    const m = {};
+    prevRows.forEach(r => { m[`${r.platform}||${r.investment_name}||${r.currency}`] = r; });
+    return m;
+  }, [prevRows]);
 
-  const activeMonth = selectedMonth || availableMonths[0] || '';
+  const totalValue = useMemo(() => currentRows.reduce((s, r) => s + (r.month_end_market_value || 0), 0), [currentRows]);
+  const prevTotalValue = useMemo(() => prevRows.reduce((s, r) => s + (r.month_end_market_value || 0), 0), [prevRows]);
+  const changeValue = prevTotalValue ? totalValue - prevTotalValue : null;
+  const changePct = prevTotalValue ? ((totalValue - prevTotalValue) / prevTotalValue) * 100 : null;
 
-  // Stats for selected month
-  const stats = useMemo(() => {
-    const activeValues = activeMonth
-      ? monthlyValues.filter(v => v.month === activeMonth)
-      : [];
-    const total = activeValues.reduce((s, v) => s + (v.market_value || 0), 0);
+  // Monthly trend for portfolio
+  const trendData = useMemo(() => clientMonthlyTotals(clientRows, accountCode), [clientRows, accountCode]);
 
-    // Previous month
-    const prevMonth = availableMonths[availableMonths.indexOf(activeMonth) + 1] || '';
-    const prevValues = prevMonth ? monthlyValues.filter(v => v.month === prevMonth) : [];
-    const prevTotal = prevValues.reduce((s, v) => s + (v.market_value || 0), 0);
-    const change = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : null;
+  // Fund list for fund trend selector
+  const funds = useMemo(() => {
+    return [...new Set(clientRows.map(r => `${r.investment_name}||${r.platform}||${r.currency}`))].map(k => {
+      const [investment_name, platform, currency] = k.split('||');
+      return { key: k, investment_name, platform, currency };
+    });
+  }, [clientRows]);
 
-    return { total, change, investmentCount: investments.length };
-  }, [monthlyValues, activeMonth, availableMonths, investments]);
+  // Fund trend data
+  const fundTrendData = useMemo(() => {
+    if (!selectedFund) return [];
+    const [investment_name, platform, currency] = selectedFund.split('||');
+    const rows = clientRows.filter(r => r.investment_name === investment_name && r.platform === platform && r.currency === currency);
+    return [...getSortedMonths(rows)].reverse().map(m => {
+      const row = rows.find(r => r.upload_month === m);
+      return {
+        month: formatMonth(m),
+        value: row?.month_end_market_value ?? 0,
+        unit_price: row?.month_end_unit_price ?? 0,
+      };
+    });
+  }, [selectedFund, clientRows]);
 
-  const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['investments'] });
-    queryClient.invalidateQueries({ queryKey: ['monthlyValues'] });
+  const handleExport = () => {
+    exportClientFundCSV(clientInfo.portfolio_name || accountCode, currentRows, latestMonth);
   };
 
-  if (!client) {
+  if (clientRows.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-muted-foreground">Client not found.</p>
-        <Link to="/clients"><Button variant="link">← Back to Clients</Button></Link>
+      <div className="text-center py-16 text-muted-foreground">
+        <p>No data found for account <strong>{accountCode}</strong>.</p>
+        <Link to="/clients"><Button variant="link" className="mt-2">← Back to Clients</Button></Link>
       </div>
     );
   }
@@ -77,80 +93,182 @@ export default function ClientDetail() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <Link to="/clients" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
+        <Link to="/clients" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Clients
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">{client.name?.charAt(0)?.toUpperCase()}</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{client.name}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-1">
-                {client.account_code && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <CreditCard className="w-3.5 h-3.5" /> {client.account_code}
-                  </span>
-                )}
-                {client.identity_no && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Hash className="w-3.5 h-3.5" /> {client.identity_no}
-                  </span>
-                )}
-              </div>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold">{clientInfo.portfolio_name}</h1>
+            <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-muted-foreground">
+              <span>Account: <strong className="text-foreground font-mono">{accountCode}</strong></span>
+              {clientInfo.identity_no && <span>ID: <strong className="text-foreground">{clientInfo.identity_no}</strong></span>}
             </div>
           </div>
-          <AddInvestmentDialog clientId={id} onCreated={refresh} />
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
         </div>
       </div>
 
       {/* Month selector */}
-      {availableMonths.length > 0 && (
+      {months.length > 0 && (
         <div className="flex items-center gap-3">
-          <p className="text-sm font-medium text-muted-foreground">Viewing month:</p>
-          <Select value={activeMonth} onValueChange={setSelectedMonth}>
+          <p className="text-sm text-muted-foreground">Viewing month:</p>
+          <Select value={latestMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Select month" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {availableMonths.map(m => (
-                <SelectItem key={m} value={m}>{m}</SelectItem>
-              ))}
+              {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
             </SelectContent>
           </Select>
+          {prevMonth && <span className="text-xs text-muted-foreground">vs {formatMonth(prevMonth)}</span>}
         </div>
       )}
 
-      {/* Stats */}
+      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatsCard
-          title={activeMonth ? `Total Value (${activeMonth})` : 'Total Value'}
-          value={stats.total ? stats.total.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}
+        <KpiCard
+          title={`Total Value · ${formatMonth(latestMonth)}`}
+          value={fmtNum(totalValue)}
           icon={DollarSign}
-          trend={stats.change}
+          accent
         />
-        <StatsCard title="Investments" value={stats.investmentCount} icon={BarChart3} />
-        <StatsCard title="Months on Record" value={availableMonths.length} icon={TrendingUp} />
+        <KpiCard
+          title={prevMonth ? `Prev Month · ${formatMonth(prevMonth)}` : 'Previous Month'}
+          value={prevTotalValue ? fmtNum(prevTotalValue) : '—'}
+          icon={BarChart3}
+        />
+        <KpiCard
+          title="Month-on-Month Change"
+          value={changeValue !== null ? (changeValue >= 0 ? '+' : '') + fmtNum(changeValue) : 'New'}
+          change={changePct}
+          icon={TrendingUp}
+        />
       </div>
 
-      {/* Investments Table */}
+      {/* Investment table */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Investments</h2>
-        <InvestmentTable
-          investments={investments}
-          monthlyValues={monthlyValues}
-          selectedMonth={activeMonth}
-          onRefresh={refresh}
-        />
+        <h2 className="text-base font-semibold mb-3">Underlying Investments — {formatMonth(latestMonth)}</h2>
+        <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  {['Platform', 'Investment Name', 'Currency', 'Market Value', 'Units', 'Unit Price', 'Prev Value', 'Change', 'Change %'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {currentRows.map((r, i) => {
+                  const key = `${r.platform}||${r.investment_name}||${r.currency}`;
+                  const prev = prevMap[key];
+                  const prevVal = prev?.month_end_market_value ?? null;
+                  const changeVal = prevVal !== null ? (r.month_end_market_value || 0) - prevVal : null;
+                  const changePctRow = prevVal ? (changeVal / prevVal) * 100 : null;
+                  return (
+                    <tr key={i} className="hover:bg-muted/20">
+                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
+                      <td className="px-4 py-2.5 font-medium max-w-xs truncate">{r.investment_name}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{r.currency}</td>
+                      <td className="px-4 py-2.5 font-mono text-right">{fmtNum(r.month_end_market_value)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{fmtNum(r.number_of_units, 4)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{fmtNum(r.month_end_unit_price, 4)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{prevVal !== null ? fmtNum(prevVal) : <span className="text-xs">—</span>}</td>
+                      <td className="px-4 py-2.5 text-right">
+                        <ChangeCell value={changeVal} pct={null} isNew={prevVal === null} />
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {changePctRow !== null ? (
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${changePctRow >= 0 ? 'bg-positive text-positive' : 'bg-negative text-negative'}`}>
+                            {changePctRow >= 0 ? '+' : ''}{changePctRow.toFixed(2)}%
+                          </span>
+                        ) : prevVal === null ? <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">New</span> : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-muted/30 border-t-2 border-border font-semibold">
+                  <td className="px-4 py-2.5 text-xs uppercase tracking-wider" colSpan={3}>Total</td>
+                  <td className="px-4 py-2.5 font-mono text-right">{fmtNum(totalValue)}</td>
+                  <td colSpan={3} className="px-4 py-2.5 font-mono text-right text-muted-foreground">{prevTotalValue ? fmtNum(prevTotalValue) : '—'}</td>
+                  <td className="px-4 py-2.5 text-right"><ChangeCell value={changeValue} pct={null} isNew={!prevTotalValue} /></td>
+                  <td className="px-4 py-2.5 text-right">
+                    {changePct !== null ? (
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${changePct >= 0 ? 'bg-positive text-positive' : 'bg-negative text-negative'}`}>
+                        {changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}%
+                      </span>
+                    ) : '—'}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
       </div>
 
-      {/* Notes */}
-      {client.notes && (
-        <div className="bg-card rounded-2xl border p-6">
-          <h3 className="font-semibold mb-2">Notes</h3>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{client.notes}</p>
-        </div>
+      {/* Portfolio trend chart */}
+      {trendData.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">Portfolio Total Value — Monthly Trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
+                <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} tickFormatter={m => formatMonth(m)} />
+                <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1_000_000).toFixed(2)}M`} width={65} />
+                <Tooltip
+                  formatter={v => [fmtNum(v), 'Total Value']}
+                  contentStyle={{ borderRadius: 6, fontSize: 12, border: '1px solid hsl(214,18%,88%)' }}
+                  labelFormatter={m => formatMonth(m)}
+                />
+                <Line type="monotone" dataKey="total" stroke="hsl(220,45%,18%)" strokeWidth={2} dot={{ r: 3, fill: 'hsl(220,45%,18%)' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Fund trend */}
+      {funds.length > 1 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base font-semibold">Underlying Fund Trend</CardTitle>
+              <Select value={selectedFund} onValueChange={setSelectedFund}>
+                <SelectTrigger className="w-72">
+                  <SelectValue placeholder="Select a fund to view trend…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {funds.map(f => (
+                    <SelectItem key={f.key} value={f.key}>{f.investment_name} ({f.platform})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          {selectedFund && fundTrendData.length > 0 && (
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={fundTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
+                  <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="val" orientation="left" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} width={55} />
+                  <YAxis yAxisId="price" orientation="right" fontSize={11} tickLine={false} axisLine={false} width={55} />
+                  <Tooltip contentStyle={{ borderRadius: 6, fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Line yAxisId="val" type="monotone" dataKey="value" name="Market Value" stroke="hsl(220,45%,18%)" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line yAxisId="price" type="monotone" dataKey="unit_price" name="Unit Price" stroke="hsl(43,55%,52%)" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          )}
+        </Card>
       )}
     </div>
   );

@@ -1,132 +1,225 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Users, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
-import StatsCard from '@/components/dashboard/StatsCard';
-import ClientCard from '@/components/clients/ClientCard';
+import { useMemo } from 'react';
+import { Users, TrendingUp, TrendingDown, BarChart3, DollarSign, Activity } from 'lucide-react';
+import KpiCard from '@/components/shared/KpiCard';
+import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import MonthBadge from '@/components/shared/MonthBadge';
 
 export default function Dashboard() {
-  const { data: clients = [] } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => base44.entities.Client.list('-created_date'),
+  const { data: valuations = [] } = useQuery({
+    queryKey: ['portfolioValuations'],
+    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
   });
 
-  const { data: investments = [] } = useQuery({
-    queryKey: ['investments'],
-    queryFn: () => base44.entities.Investment.list(),
+  const { data: uploads = [] } = useQuery({
+    queryKey: ['monthlyUploads'],
+    queryFn: () => base44.entities.MonthlyUpload.list('-upload_month'),
   });
 
-  const { data: monthlyValues = [] } = useQuery({
-    queryKey: ['monthlyValues'],
-    queryFn: () => base44.entities.MonthlyValue.list(),
-  });
-
-  // Find the latest month across all data
-  const latestMonth = useMemo(() => {
-    const months = [...new Set(monthlyValues.map(v => v.month))].sort((a, b) => b.localeCompare(a));
-    return months[0] || '';
-  }, [monthlyValues]);
-
-  const prevMonth = useMemo(() => {
-    const months = [...new Set(monthlyValues.map(v => v.month))].sort((a, b) => b.localeCompare(a));
-    return months[1] || '';
-  }, [monthlyValues]);
+  const months = useMemo(() => getSortedMonths(valuations), [valuations]);
+  const latestMonth = months[0] || '';
+  const prevMonth = months[1] || '';
 
   const stats = useMemo(() => {
-    const latestVals = monthlyValues.filter(v => v.month === latestMonth);
-    const prevVals = monthlyValues.filter(v => v.month === prevMonth);
-    const total = latestVals.reduce((s, v) => s + (v.market_value || 0), 0);
-    const prevTotal = prevVals.reduce((s, v) => s + (v.market_value || 0), 0);
-    const change = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : null;
-    return { total, change };
-  }, [monthlyValues, latestMonth, prevMonth]);
+    const current = valuations.filter(v => v.upload_month === latestMonth);
+    const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-  // Per-client stats using latest month
-  const clientStats = useMemo(() => {
-    return clients.slice(0, 8).map(client => {
-      const clientInvs = investments.filter(i => i.client_id === client.id);
-      const invIds = new Set(clientInvs.map(i => i.id));
-      const latestVals = monthlyValues.filter(v => invIds.has(v.investment_id) && v.month === latestMonth);
-      const prevVals = monthlyValues.filter(v => invIds.has(v.investment_id) && v.month === prevMonth);
-      const total = latestVals.reduce((s, v) => s + (v.market_value || 0), 0);
-      const prevTotal = prevVals.reduce((s, v) => s + (v.market_value || 0), 0);
-      const gain = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : 0;
-      return { client, totalValue: total, investmentCount: clientInvs.length, gainPercent: gain };
+    const clients = new Set(current.map(v => v.account_code)).size;
+    const totalValue = current.reduce((s, v) => s + (v.month_end_market_value || 0), 0);
+
+    // Build prev map
+    const prevMap = {};
+    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = r.month_end_market_value || 0; });
+
+    let totalChange = 0;
+    let bestFund = null, bestChange = -Infinity;
+    let worstFund = null, worstChange = Infinity;
+
+    current.forEach(r => {
+      const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
+      if (prevMap[k] !== undefined) {
+        const change = (r.month_end_market_value || 0) - prevMap[k];
+        totalChange += change;
+        if (change > bestChange) { bestChange = change; bestFund = r; }
+        if (change < worstChange) { worstChange = change; worstFund = r; }
+      }
     });
-  }, [clients, investments, monthlyValues, latestMonth, prevMonth]);
 
-  // Monthly trend chart data
+    const prevTotal = prev.reduce((s, v) => s + (v.month_end_market_value || 0), 0);
+    const changePct = prevTotal ? (totalChange / prevTotal) * 100 : null;
+
+    return { clients, totalValue, totalChange, changePct, bestFund, bestChange, worstFund, worstChange, investmentCount: current.length };
+  }, [valuations, latestMonth, prevMonth]);
+
+  // Monthly trend chart
   const chartData = useMemo(() => {
-    const months = [...new Set(monthlyValues.map(v => v.month))].sort();
-    return months.map(month => ({
-      month,
-      total: Math.round(monthlyValues.filter(v => v.month === month).reduce((s, v) => s + (v.market_value || 0), 0)),
+    const months = [...getSortedMonths(valuations)].reverse();
+    return months.map(m => ({
+      month: formatMonth(m),
+      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + (v.month_end_market_value || 0), 0)),
     }));
-  }, [monthlyValues]);
+  }, [valuations]);
+
+  // Top clients by value
+  const topClients = useMemo(() => {
+    const current = valuations.filter(v => v.upload_month === latestMonth);
+    const map = {};
+    current.forEach(r => {
+      if (!map[r.account_code]) map[r.account_code] = { name: r.portfolio_name, code: r.account_code, total: 0 };
+      map[r.account_code].total += r.month_end_market_value || 0;
+    });
+    return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
+  }, [valuations, latestMonth]);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          {latestMonth ? `Latest data: ${latestMonth}` : 'No data imported yet'}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-muted-foreground">Latest data:</p>
+            {latestMonth ? <MonthBadge month={latestMonth} /> : <span className="text-sm text-muted-foreground">No data — upload a spreadsheet to begin.</span>}
+          </div>
+        </div>
+        <Link to="/upload"><Button size="sm">Upload Monthly Data</Button></Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title={`Total AUM${latestMonth ? ` (${latestMonth})` : ''}`}
-          value={stats.total ? stats.total.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}
-          icon={DollarSign}
-          trend={stats.change}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          title="Total Clients"
+          value={stats.clients}
+          icon={Users}
+          accent
         />
-        <StatsCard title="Clients" value={clients.length} icon={Users} />
-        <StatsCard title="Investments" value={investments.length} icon={BarChart3} />
-        <StatsCard title="Months on Record" value={[...new Set(monthlyValues.map(v => v.month))].length} icon={TrendingUp} />
+        <KpiCard
+          title={`Total AUM${latestMonth ? ` · ${formatMonth(latestMonth)}` : ''}`}
+          value={latestMonth ? fmtNum(stats.totalValue) : '—'}
+          change={stats.changePct}
+          changeLabel="vs prior month"
+          icon={DollarSign}
+        />
+        <KpiCard
+          title="Underlying Investments"
+          value={stats.investmentCount}
+          subtitle={latestMonth ? formatMonth(latestMonth) : undefined}
+          icon={BarChart3}
+        />
+        <KpiCard
+          title="Month-on-Month Change"
+          value={stats.totalChange !== 0 ? (stats.totalChange > 0 ? '+' : '') + fmtNum(stats.totalChange) : '—'}
+          change={stats.changePct}
+          icon={Activity}
+        />
       </div>
 
-      {/* Monthly chart */}
+      {/* Best/Worst */}
+      {(stats.bestFund || stats.worstFund) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {stats.bestFund && (
+            <div className="bg-white border rounded-lg p-5">
+              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-positive" /> Best Performing Fund
+              </p>
+              <p className="font-semibold text-sm text-foreground truncate">{stats.bestFund.investment_name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.bestFund.platform} · {stats.bestFund.portfolio_name}</p>
+              <p className="text-lg font-semibold text-positive mt-2">+{fmtNum(stats.bestChange)}</p>
+            </div>
+          )}
+          {stats.worstFund && (
+            <div className="bg-white border rounded-lg p-5">
+              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+                <TrendingDown className="w-3.5 h-3.5 text-negative" /> Largest Decline
+              </p>
+              <p className="font-semibold text-sm text-foreground truncate">{stats.worstFund.investment_name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.worstFund.platform} · {stats.worstFund.portfolio_name}</p>
+              <p className="text-lg font-semibold text-negative mt-2">{fmtNum(stats.worstChange)}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Monthly AUM Chart */}
       {chartData.length > 0 && (
-        <Card className="rounded-2xl">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Total AUM by Month</CardTitle>
+            <CardTitle className="text-base font-semibold">Total AUM by Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 90%)" />
-                <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000000).toFixed(1)}M`} />
-                <Tooltip formatter={v => [v.toLocaleString(), 'Total Value']} contentStyle={{ borderRadius: '12px', fontSize: '13px' }} />
-                <Bar dataKey="total" fill="hsl(222, 47%, 18%)" radius={[6, 6, 0, 0]} />
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={chartData} barSize={32}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
+                <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1_000_000).toFixed(1)}M`} width={60} />
+                <Tooltip
+                  formatter={v => [fmtNum(v), 'Total AUM']}
+                  contentStyle={{ borderRadius: 6, fontSize: 12, border: '1px solid hsl(214,18%,88%)' }}
+                />
+                <Bar dataKey="total" fill="hsl(220,45%,18%)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       )}
 
-      {/* Clients */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Clients</h2>
-          <Link to="/clients"><Button variant="outline" size="sm">View All</Button></Link>
+      {/* Top clients */}
+      {topClients.length > 0 && (
+        <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Top Clients by AUM</h2>
+            <Link to="/clients"><Button variant="ghost" size="sm" className="text-xs">View all</Button></Link>
+          </div>
+          <div className="divide-y">
+            {topClients.map((c, i) => (
+              <Link key={c.code} to={`/clients/${c.code}`} className="flex items-center justify-between px-6 py-3 hover:bg-muted/40 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground w-5">{i + 1}</span>
+                  <div>
+                    <p className="text-sm font-medium">{c.name}</p>
+                    <p className="text-xs text-muted-foreground">{c.code}</p>
+                  </div>
+                </div>
+                <p className="text-sm font-semibold font-mono">{fmtNum(c.total)}</p>
+              </Link>
+            ))}
+          </div>
         </div>
-        <div className="space-y-3">
-          {clientStats.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-sm">No data yet. Go to <Link to="/import" className="underline text-foreground">Import</Link> to upload your spreadsheet.</p>
-            </div>
-          )}
-          {clientStats.map(({ client, totalValue, investmentCount, gainPercent }) => (
-            <ClientCard key={client.id} client={client} totalValue={totalValue} investmentCount={investmentCount} gainPercent={gainPercent} latestMonth={latestMonth} />
-          ))}
+      )}
+
+      {/* Recent uploads */}
+      {uploads.slice(0, 3).length > 0 && (
+        <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="px-6 py-4 border-b">
+            <h2 className="text-sm font-semibold text-foreground">Recent Uploads</h2>
+          </div>
+          <div className="divide-y">
+            {uploads.slice(0, 3).map(u => (
+              <div key={u.id} className="flex items-center justify-between px-6 py-3">
+                <div>
+                  <p className="text-sm font-medium">{u.file_name}</p>
+                  <p className="text-xs text-muted-foreground">{u.upload_month} · {u.total_rows} rows · {u.uploaded_by}</p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  u.import_status === 'Imported' ? 'bg-green-50 text-green-700' :
+                  u.import_status === 'Failed' ? 'bg-red-50 text-red-700' :
+                  'bg-yellow-50 text-yellow-700'
+                }`}>{u.import_status}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {chartData.length === 0 && (
+        <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-lg">
+          <p className="text-sm">No data yet. <Link to="/upload" className="text-primary underline underline-offset-2">Upload your first monthly spreadsheet</Link> to get started.</p>
+        </div>
+      )}
     </div>
   );
 }
