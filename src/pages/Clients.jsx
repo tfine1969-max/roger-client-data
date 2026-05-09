@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { clientKey } from '@/lib/client-utils';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ChevronRight } from 'lucide-react';
@@ -34,37 +35,41 @@ export default function Clients() {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-    // Build prev map (ZAR)
     const prevMap = {};
-    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = zarVal(r); });
+    prev.forEach(r => {
+      const key = clientKey(r);
+      prevMap[key] = (prevMap[key] || 0) + zarVal(r);
+    });
 
-    // Group by account_code
     const map = {};
     current.forEach(r => {
-      if (!r.account_code) return;
-      if (!map[r.account_code]) map[r.account_code] = {
-        account_code: r.account_code,
-        identity_no: r.identity_no,
-        portfolio_name: r.portfolio_name,
-        platforms: new Set(),
-        currencies: new Set(),
-        investments: 0,
-        totalValue: 0,
-        prevValue: 0,
-        rows: [],
-      };
-      const c = map[r.account_code];
+      const key = clientKey(r);
+      if (!map[key]) {
+        map[key] = {
+          client_key: key,
+          account_codes: new Set(),
+          identity_no: r.identity_no,
+          portfolio_name: r.portfolio_name,
+          platforms: new Set(),
+          currencies: new Set(),
+          investments: 0,
+          totalValue: 0,
+          prevValue: prevMap[key] || 0,
+        };
+      }
+      const c = map[key];
+      if (r.account_code) c.account_codes.add(r.account_code);
+      if (!c.identity_no && r.identity_no) c.identity_no = r.identity_no;
+      if (!c.portfolio_name && r.portfolio_name) c.portfolio_name = r.portfolio_name;
       c.platforms.add(r.platform);
       c.currencies.add(r.currency);
-      c.investments++;
+      c.investments += 1;
       c.totalValue += zarVal(r);
-      const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
-      if (prevMap[k] !== undefined) c.prevValue += prevMap[k];
-      c.rows.push(r);
     });
 
     return Object.values(map).map(c => ({
       ...c,
+      account_codes: [...c.account_codes].sort(),
       platforms: [...c.platforms],
       currencies: [...c.currencies],
       changeValue: c.prevValue ? c.totalValue - c.prevValue : null,
@@ -76,7 +81,10 @@ export default function Clients() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return clients.filter(c => {
-      const matchSearch = !q || c.portfolio_name?.toLowerCase().includes(q) || c.account_code?.includes(q) || c.identity_no?.includes(q);
+      const matchSearch = !q ||
+        c.portfolio_name?.toLowerCase().includes(q) ||
+        c.account_codes.some(code => code?.toLowerCase().includes(q)) ||
+        c.identity_no?.toLowerCase().includes(q);
       const matchPlatform = !filterPlatform || c.platforms.includes(filterPlatform);
       const matchCurrency = !filterCurrency || c.currencies.includes(filterCurrency);
       return matchSearch && matchPlatform && matchCurrency;
@@ -92,11 +100,10 @@ export default function Clients() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search by name, account code or ID…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
+          <Input placeholder="Search by name, account code or ID..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
         </div>
         <Select value={filterMonth} onValueChange={setFilterMonth}>
           <SelectTrigger className="w-40 h-9">
@@ -127,14 +134,13 @@ export default function Clients() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="bg-white border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account Code</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Accounts</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">ID Number</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
@@ -145,18 +151,19 @@ export default function Clients() {
             </thead>
             <tbody className="divide-y">
               {isLoading && (
-                <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">Loading…</td></tr>
+                <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">Loading...</td></tr>
               )}
               {!isLoading && filtered.length === 0 && (
                 <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">No clients found.</td></tr>
               )}
               {filtered.map(c => (
-                <tr key={c.account_code} className="hover:bg-muted/30 transition-colors">
+                <tr key={c.client_key} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
-                    <Link to={`/clients/${c.account_code}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '—'}</Link>
+                    <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
+                    <div className="mt-1 text-xs text-muted-foreground font-mono">{c.account_codes.join(', ')}</div>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{c.account_code}</td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '—'}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{c.account_codes.length}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '-'}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.platforms.length}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold whitespace-nowrap">R {fmtNum(c.totalValue)}</td>
@@ -164,7 +171,7 @@ export default function Clients() {
                     <ChangeCell value={c.changeValue} pct={c.changePct} isNew={c.isNew} />
                   </td>
                   <td className="px-4 py-3">
-                    <Link to={`/clients/${c.account_code}`}>
+                    <Link to={`/clients/${encodeURIComponent(c.client_key)}`}>
                       <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
                     </Link>
                   </td>
