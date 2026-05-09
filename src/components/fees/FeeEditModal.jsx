@@ -41,7 +41,7 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
       await base44.entities.FeeConfig.create(configData);
     }
 
-    toast({ title: 'Fees saved', description: `Fee config updated from ${row.upload_month}. New fees apply to future uploads only.` });
+    toast({ title: 'Fees saved', description: `Fee config updated from ${row.upload_month}. New fees apply to future uploads only.`, duration: 3000 });
     setSaving(false);
     onSaved();
   };
