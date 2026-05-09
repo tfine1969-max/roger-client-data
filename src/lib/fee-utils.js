@@ -121,14 +121,15 @@ export function findEffectiveFeeConfig(row, feeConfigs = []) {
     config.account_code === row.account_code &&
     config.platform === row.platform &&
     config.investment_name === row.investment_name &&
-    (!config.effective_from_month || config.effective_from_month <= row.upload_month)
+    config.effective_from_month &&
+    config.effective_from_month <= row.upload_month
   ));
   return matches.sort((a, b) => String(b.effective_from_month || '').localeCompare(String(a.effective_from_month || '')))[0] || null;
 }
 
 export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const config = findEffectiveFeeConfig(row, feeConfigs);
-  const mapping = !config ? findFeeMappingForRow(row, feeMappings) : null;
+  const mapping = findFeeMappingForRow(row, feeMappings);
   const hasStoredRate = row.rebate_fee_annual_percent != null || row.advisory_fee_annual_percent != null;
   const source = config || mapping || (hasStoredRate ? row : null);
   const rebate = source?.rebate_fee_annual_percent ?? source?.rebateAnnualPercent ?? 0;

@@ -191,14 +191,13 @@ export default function Fees() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white border rounded-lg p-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Historical Monthly Fees</p>
-              <div className="mt-3 divide-y">
-                {providerHistory.map(row => (
-                  <div key={row.month} className="py-2 flex items-center justify-between gap-3 text-sm">
-                    <span>{formatMonth(row.month)}</span>
-                    <span className="font-mono font-semibold">R {fmtNum(row.total)}</span>
-                  </div>
-                ))}
-              </div>
+              <button
+                className="mt-3 w-full text-left rounded-md border px-3 py-2 hover:bg-muted/30 transition-colors"
+                onClick={() => setProviderView('history')}
+              >
+                <span className="block text-sm font-medium">View monthly breakdown</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">Rebate, advisory, and total by month</span>
+              </button>
             </div>
 
             <div className="bg-white border rounded-lg p-4 border-l-4 border-l-chart-2">
@@ -221,6 +220,7 @@ export default function Fees() {
           <div className="flex flex-wrap gap-2 bg-white border rounded-lg p-3">
             {[
               ['clients', 'Client summary'],
+              ['history', 'Monthly history'],
               ['invoice', 'Advisory invoice'],
               ['investments', 'Investment detail'],
             ].map(([view, label]) => (
@@ -274,6 +274,38 @@ export default function Fees() {
                     <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalFeeZar)}</td>
                   </tr>
                 </tfoot>
+              </table>
+            </div>
+          </div>
+          )}
+
+          {providerView === 'history' && (
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{activeProvider} Monthly Fee History</p>
+              <p className="text-xs text-muted-foreground mt-1">Historical totals split between rebate, advisory, and total monthly fee.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    {['Month','Rebate','Advisory','Total','Clients','Holdings'].map(header => (
+                      <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {providerHistory.map(row => (
+                    <tr key={row.month} className="hover:bg-muted/20">
+                      <td className="px-4 py-2.5 font-medium whitespace-nowrap">{formatMonth(row.month)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(row.rebate)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(row.advisory)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(row.total)}</td>
+                      <td className="px-4 py-2.5 text-right">{row.clients}</td>
+                      <td className="px-4 py-2.5 text-right">{row.holdings}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </div>
