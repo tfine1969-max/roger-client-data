@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertTriangle, Search, ChevronRight, Pencil, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
+import EditAccountModal from '@/components/clients/EditAccountModal';
 import { cn } from '@/lib/utils';
 
 export default function Clients() {
@@ -20,6 +21,7 @@ export default function Clients() {
   const [needsCorrectionOnly, setNeedsCorrectionOnly] = useState(false);
   const [editingKey, setEditingKey] = useState(null);
   const [editingName, setEditingName] = useState('');
+  const [editingClient, setEditingClient] = useState(null);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -190,10 +192,16 @@ export default function Clients() {
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1 text-xs font-mono">
-                      {c.account_codes.map(code => (
-                        <span key={code} className={cn("text-muted-foreground", hasUnknownValue(code) && "rounded bg-amber-50 px-1 py-0.5 text-amber-800 ring-1 ring-amber-200")}>{code}</span>
-                      ))}
-                    </div>
+                       {c.account_codes.map(code => (
+                         <button
+                           key={code}
+                           onClick={() => setEditingClient(c)}
+                           className={cn("text-muted-foreground cursor-pointer hover:underline", hasUnknownValue(code) && "rounded bg-amber-50 px-1 py-0.5 text-amber-800 ring-1 ring-amber-200")}
+                         >
+                           {code}
+                         </button>
+                       ))}
+                     </div>
                   </td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.account_codes.length}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '-'}</td>
@@ -211,6 +219,18 @@ export default function Clients() {
           </table>
         </div>
       </div>
+
+      {editingClient && (
+        <EditAccountModal
+          client={editingClient}
+          valuations={valuations}
+          onClose={() => setEditingClient(null)}
+          onSaved={() => {
+            setEditingClient(null);
+            queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+          }}
+        />
+      )}
       </div>
       );
 
