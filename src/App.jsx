@@ -13,6 +13,7 @@ import Upload from '@/pages/Upload';
 import Platforms from '@/pages/Platforms';
 import DataQuality from '@/pages/DataQuality';
 import Fees from '@/pages/Fees';
+import Funds from '@/pages/Funds';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -38,6 +39,7 @@ const AuthenticatedApp = () => {
         <Route path="/clients/:accountCode" element={<ClientDetail />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/platforms" element={<Platforms />} />
+        <Route path="/funds" element={<Funds />} />
         <Route path="/data-quality" element={<DataQuality />} />
         <Route path="/fees" element={<Fees />} />
       </Route>
