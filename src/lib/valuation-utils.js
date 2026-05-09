@@ -43,10 +43,16 @@ export function origVal(row) {
  */
 export function zarVal(row) {
   if (!row) return 0;
-  if (row.zar_value !== null && row.zar_value !== undefined) return row.zar_value;
   const value = row.original_currency_value ?? row.month_end_market_value ?? 0;
   const currency = String(row.currency || '').toUpperCase();
   const rate = row.exchange_rate_to_zar;
+  if (currency && currency !== 'ZAR' && rate) {
+    const storedZar = row.zar_value;
+    if (storedZar === null || storedZar === undefined || Math.abs(storedZar - value) < 0.01) {
+      return value * rate;
+    }
+  }
+  if (row.zar_value !== null && row.zar_value !== undefined) return row.zar_value;
   if (currency && currency !== 'ZAR' && rate) return value * rate;
   return value;
 }

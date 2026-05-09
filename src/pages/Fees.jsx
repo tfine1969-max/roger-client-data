@@ -83,6 +83,12 @@ export default function Fees() {
     (row, key) => ({ accountCode: key, client: row.portfolio_name || 'Unknown', rebate: 0, advisory: 0, total: 0, aum: 0, holdings: 0, clients: new Set(), missingFees: 0 })
   ).sort((a, b) => b.total - a.total), [providerMonthRows]);
 
+  const activeProviderTotals = useMemo(() => summariseFees(providerMonthRows), [providerMonthRows]);
+  const invoiceRows = useMemo(
+    () => clientRows.filter(row => Math.abs(row.advisory) > 0.005).sort((a, b) => a.client.localeCompare(b.client)),
+    [clientRows]
+  );
+
   const detailRows = useMemo(() => {
     const q = search.toLowerCase();
     return providerMonthRows.filter(row => {
@@ -175,8 +181,8 @@ export default function Fees() {
             <h2 className="text-xl font-semibold">{activeProvider}</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="bg-white border rounded-lg p-4 lg:col-span-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white border rounded-lg p-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Historical Monthly Fees</p>
               <div className="mt-3 divide-y">
                 {providerHistory.map(row => (
@@ -188,36 +194,97 @@ export default function Fees() {
               </div>
             </div>
 
-            <div className="bg-white border rounded-lg overflow-hidden lg:col-span-2">
-              <div className="px-4 py-3 border-b">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Fees for {formatMonth(latestMonth)}</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/40">
-                      {['Client','AUM','Holdings','Rebate','Advisory','Total'].map(header => (
-                        <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {clientRows.map(row => (
-                      <tr key={row.accountCode} className={`hover:bg-muted/20 cursor-pointer ${selectedClient === row.accountCode ? 'bg-muted/30' : ''}`} onClick={() => setSelectedClient(selectedClient === row.accountCode ? '' : row.accountCode)}>
-                        <td className="px-4 py-2.5">
-                          <p className="font-medium">{row.client}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{row.accountCode}</p>
-                        </td>
-                        <td className="px-4 py-2.5 font-mono text-right">R {fmtNum(row.aum)}</td>
-                        <td className="px-4 py-2.5 text-right">{row.holdings}</td>
-                        <td className="px-4 py-2.5 font-mono text-right text-chart-2">R {fmtNum(row.rebate)}</td>
-                        <td className="px-4 py-2.5 font-mono text-right text-chart-1">R {fmtNum(row.advisory)}</td>
-                        <td className="px-4 py-2.5 font-mono text-right font-bold">R {fmtNum(row.total)}</td>
-                      </tr>
+            <div className="bg-white border rounded-lg p-4 border-l-4 border-l-chart-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Monthly Rebate</p>
+              <p className="mt-3 font-mono text-xl font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalRebateZar)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{activeProvider}</p>
+            </div>
+            <div className="bg-white border rounded-lg p-4 border-l-4 border-l-chart-1">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Monthly Advisory</p>
+              <p className="mt-3 font-mono text-xl font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalAdvisoryZar)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Invoice amount before VAT</p>
+            </div>
+            <div className="bg-white border rounded-lg p-4 border-l-4 border-l-chart-5">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Total Monthly Fee</p>
+              <p className="mt-3 font-mono text-xl font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalFeeZar)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{clientRows.length} clients</p>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Fee Summary for {formatMonth(latestMonth)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Rebate and advisory are separated per client for the selected provider.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    {['Client','AUM','Holdings','Rebate','Advisory','Total'].map(header => (
+                      <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {clientRows.map(row => (
+                    <tr key={row.accountCode} className={`hover:bg-muted/20 cursor-pointer ${selectedClient === row.accountCode ? 'bg-muted/30' : ''}`} onClick={() => setSelectedClient(selectedClient === row.accountCode ? '' : row.accountCode)}>
+                      <td className="px-4 py-3 min-w-[220px]">
+                        <p className="font-medium leading-tight">{row.client}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-1">{row.accountCode}</p>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-right whitespace-nowrap">R {fmtNum(row.aum)}</td>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">{row.holdings}</td>
+                      <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(row.rebate)}</td>
+                      <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(row.advisory)}</td>
+                      <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(row.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/30 border-t-2 font-semibold">
+                    <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
+                    <td />
+                    <td className="px-4 py-3 text-right">{clientRows.reduce((s, row) => s + row.holdings, 0)}</td>
+                    <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(activeProviderTotals.totalRebateZar)}</td>
+                    <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(activeProviderTotals.totalAdvisoryZar)}</td>
+                    <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalFeeZar)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{activeProvider} Advisory Invoice Schedule</p>
+              <p className="text-xs text-muted-foreground mt-1">Use this table for the monthly provider invoice. It lists advisory fees only, per client.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    {['Client','Account','Month','Monthly Advisory Fee'].map(header => (
+                      <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {invoiceRows.map(row => (
+                    <tr key={`${row.accountCode}-invoice`} className="hover:bg-muted/20">
+                      <td className="px-4 py-2.5 font-medium">{row.client}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{row.accountCode}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">{formatMonth(latestMonth)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right font-semibold whitespace-nowrap">R {fmtNum(row.advisory)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/30 border-t-2 font-semibold">
+                    <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={3}>Invoice Total</td>
+                    <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalAdvisoryZar)}</td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
 
