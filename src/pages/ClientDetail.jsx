@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSortedMonths, fmtNum, formatMonth, clientMonthlyTotals, zarVal } from '@/lib/valuation-utils';
 import { exportClientFundCSV } from '@/lib/export-utils';
-import MonthBadge from '@/components/shared/MonthBadge';
 import InvestmentTable from '@/components/client/InvestmentTable';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 

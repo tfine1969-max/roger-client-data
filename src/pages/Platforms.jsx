@@ -3,10 +3,53 @@ import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import ChangeCell from '@/components/shared/ChangeCell';
 import MonthBadge from '@/components/shared/MonthBadge';
+import { monthlyClientData } from '@/data/monthlyClientData';
+
+const PLATFORM_LABELS = {
+  'julius-baer': 'Julius Baer',
+  credo: 'Credo',
+  gryphon: 'Gryphon',
+  prime: 'Prime',
+  'northstar-fnb': 'Northstar FNB',
+  'northstar-sanlam': 'Northstar Sanlam',
+  peresec: 'Peresec',
+  prescient: 'Prescient',
+};
+
+const PLATFORM_IDS = {
+  'julius baer': 'julius-baer',
+  credo: 'credo',
+  gryphon: 'gryphon',
+  prime: 'prime',
+  'prime investments': 'prime',
+  'northstar fnb': 'northstar-fnb',
+  'northstar sanlam': 'northstar-sanlam',
+  peresec: 'peresec',
+  prescient: 'prescient',
+};
+
+const monthToControlId = (month) => {
+  if (!month) return '';
+  const [year, monthNumber] = month.split('-').map(Number);
+  const date = new Date(year, monthNumber - 1, 1);
+  const shortMonth = date.toLocaleString('en-US', { month: 'short' }).toLowerCase();
+  return `${shortMonth}-${year}`;
+};
+
+const platformId = (platform) => PLATFORM_IDS[String(platform || '').trim().toLowerCase()] || String(platform || 'unknown').trim().toLowerCase().replace(/\s+/g, '-');
+const platformLabel = (id, fallback) => PLATFORM_LABELS[id] || fallback || id;
+const controlForMonth = (month) => monthlyClientData.find(m => m.id === monthToControlId(month));
+const addControlClientCounts = (row, clients = []) => {
+  clients.forEach(client => {
+    if (client.accountCode) row.clients.add(client.accountCode);
+    client.holdings?.forEach(holding => {
+      if (holding.investment) row.funds.add(holding.investment);
+    });
+  });
+};
 
 export default function Platforms() {
   const [filterMonth, setFilterMonth] = useState('');
@@ -28,21 +71,37 @@ export default function Platforms() {
   const platformRows = useMemo(() => {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
+    const currentControl = controlForMonth(latestMonth);
+    const prevControl = controlForMonth(prevMonth);
 
     const prevZarMap = {};
-    prev.forEach(r => { prevZarMap[r.platform] = (prevZarMap[r.platform] || 0) + zarVal(r); });
+    prev.forEach(r => {
+      const id = platformId(r.platform);
+      prevZarMap[id] = (prevZarMap[id] || 0) + zarVal(r);
+    });
+    Object.entries(prevControl?.providerSourceTotals || {}).forEach(([id, total]) => {
+      prevZarMap[id] = total.zarTotal;
+    });
 
     const map = {};
     current.forEach(r => {
-      const p = r.platform || 'Unknown';
-      if (!map[p]) map[p] = { platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
-      map[p].totalZar += zarVal(r);
-      map[p].clients.add(r.account_code);
-      map[p].funds.add(r.investment_name);
+      const id = platformId(r.platform);
+      const p = platformLabel(id, r.platform || 'Unknown');
+      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
+      map[id].totalZar += zarVal(r);
+      if (r.account_code) map[id].clients.add(r.account_code);
+      if (r.investment_name) map[id].funds.add(r.investment_name);
+    });
+
+    Object.entries(currentControl?.providerSourceTotals || {}).forEach(([id, total]) => {
+      const p = platformLabel(id, total.providerName);
+      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
+      map[id].totalZar = total.zarTotal;
+      addControlClientCounts(map[id], currentControl.clients?.filter(client => client.providerId === id));
     });
 
     return Object.values(map).map(p => {
-      const prevZar = prevZarMap[p.platform] ?? null;
+      const prevZar = prevZarMap[p.platformId] ?? null;
       const changeZar = prevZar !== null ? p.totalZar - prevZar : null;
       const changeZarPct = prevZar ? (changeZar / prevZar) * 100 : null;
       return { ...p, clients: p.clients.size, funds: p.funds.size, prevZar, changeZar, changeZarPct, isNew: prevZar === null };

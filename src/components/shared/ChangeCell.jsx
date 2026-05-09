@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
 export function formatCurrency(value, currency) {
   if (value === null || value === undefined || isNaN(value)) return '—';

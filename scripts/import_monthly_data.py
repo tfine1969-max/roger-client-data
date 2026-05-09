@@ -42,6 +42,30 @@ FEE_RATES = {
 }
 
 
+def detect_usd_zar(workbook, month_id):
+    if month_id == "jan-2026":
+        return JANUARY_USD_ZAR
+
+    if "Total" in workbook.sheetnames:
+        total_sheet = workbook["Total"]
+        for row in range(1, total_sheet.max_row + 1):
+            for col in range(1, total_sheet.max_column + 1):
+                value = total_sheet.cell(row, col).value
+                if value in PROVIDERS:
+                    maybe_rate = total_sheet.cell(row, col + 2).value
+                    if maybe_rate:
+                        return float(maybe_rate)
+
+    for sheet in workbook.worksheets:
+        for row in range(1, min(sheet.max_row, 10) + 1):
+            for col in range(1, sheet.max_column + 1):
+                value = sheet.cell(row, col).value
+                if isinstance(value, (int, float)) and 10 <= value <= 25:
+                    return float(value)
+
+    raise ValueError("Could not detect USD/ZAR rate")
+
+
 def fee(native_values, zar_aum, provider_id, fee_type):
     annual_rate = FEE_RATES[provider_id][f"{fee_type}AnnualRate"]
     native_fees = {code: value * annual_rate / 12 for code, value in native_values.items()}
@@ -58,7 +82,7 @@ def import_file(month_id, label, path):
         sheet_name.lower().strip() in {"prime", "credo", "gryphon", "julius baer", "other"}
         for sheet_name in workbook.sheetnames
     )
-    usd_zar = JANUARY_USD_ZAR if month_id == "jan-2026" else float(workbook.active["M2"].value)
+    usd_zar = detect_usd_zar(workbook, month_id)
     exchange_rates = {"USD": usd_zar, "ZAR": 1}
     clients = {}
     source_native_totals = defaultdict(float)
@@ -76,15 +100,26 @@ def import_file(month_id, label, path):
     if has_provider_tabs:
         total_sheet = workbook["Total"]
         for row in range(1, total_sheet.max_row + 1):
-            provider_name = total_sheet.cell(row, 1).value
-            zar_total = total_sheet.cell(row, 4).value
-            if not provider_name or zar_total is None:
+            provider_col = None
+            provider_name = None
+            for col in range(1, total_sheet.max_column + 1):
+                value = total_sheet.cell(row, col).value
+                if value in PROVIDERS:
+                    provider_col = col
+                    provider_name = value
+                    break
+
+            if not provider_name:
+                continue
+
+            native_usd = total_sheet.cell(row, provider_col + 1).value
+            zar_total = total_sheet.cell(row, provider_col + 3).value
+            if zar_total is None:
                 continue
             provider_id, normalized_provider = PROVIDERS.get(
                 provider_name,
                 (str(provider_name).lower().replace(" ", "-"), provider_name),
             )
-            native_usd = total_sheet.cell(row, 2).value
             provider_source_totals[provider_id] = {
                 "providerName": normalized_provider,
                 "nativeUsd": float(native_usd or 0),

@@ -21,9 +21,24 @@ Deno.serve(async (req) => {
   // We process Sheet1 which contains all platforms combined.
   // The exchange rate is in col_12 (index 12), appears only on the first row
   // of each account group — we propagate it per account_code within the sheet.
-  const sheetName = workbook.SheetNames.find(n => n === 'Sheet1') || workbook.SheetNames[1];
-  const sheet = workbook.Sheets[sheetName];
-  const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+  const providerTabs = new Set(['prime', 'credo', 'gryphon', 'julius baer', 'other']);
+  const importSheetNames = workbook.SheetNames.filter(name => providerTabs.has(String(name).trim().toLowerCase()));
+  const fallbackSheetName = workbook.SheetNames.find(n => n === 'Sheet1') || workbook.SheetNames[0];
+  const sheetNamesToImport = importSheetNames.length ? importSheetNames : [fallbackSheetName];
+  const rawRows = sheetNamesToImport.flatMap(name => XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: null }));
+
+  const platformRateMap = {};
+  if (workbook.Sheets.Total) {
+    const totalRows = XLSX.utils.sheet_to_json(workbook.Sheets.Total, { header: 1, defval: null });
+    for (const totalRow of totalRows) {
+      const providerIndex = totalRow.findIndex(value => typeof value === 'string' && String(value).trim());
+      if (providerIndex === -1) continue;
+      const platform = String(totalRow[providerIndex]).trim();
+      const nativeValue = totalRow[providerIndex + 1];
+      const rate = totalRow[providerIndex + 2];
+      if (nativeValue != null && rate != null) platformRateMap[platform] = Number(rate);
+    }
+  }
 
   // Build per-account exchange rate map from Sheet1 and sub-sheets.
   // Exchange rates are in col_12. Only the first row of each account group has a rate.
@@ -38,7 +53,7 @@ Deno.serve(async (req) => {
     if (!acct || !platform) continue;
     
     const key = `${platform}||${acct}`;
-    const rate = row['col_12'];
+    const rate = row['col_12'] ?? platformRateMap[platform];
     
     // Cache the rate if found and not already set; also only for non-ZAR currencies
     if (rate != null && !accountRateMap[key] && currency !== 'ZAR') {
@@ -47,8 +62,7 @@ Deno.serve(async (req) => {
   }
 
   // Also scan each sub-sheet (platform-specific sheets and "Other")
-  for (const sName of workbook.SheetNames) {
-    if (sName === 'Sheet1' || sName === 'Total') continue;
+  for (const sName of sheetNamesToImport) {
     const subRows = XLSX.utils.sheet_to_json(workbook.Sheets[sName], { defval: null });
     for (const row of subRows) {
       const acct = String(row['Account Code'] ?? '').trim();
@@ -57,7 +71,7 @@ Deno.serve(async (req) => {
       if (!acct || !platform) continue;
       
       const key = `${platform}||${acct}`;
-      const rate = row['col_12'];
+      const rate = row['col_12'] ?? platformRateMap[platform];
       
       if (rate != null && !accountRateMap[key] && currency !== 'ZAR') {
         accountRateMap[key] = Number(rate);
@@ -89,15 +103,15 @@ Deno.serve(async (req) => {
       zarValue = origValue;
       conversionStatus = 'ZAR Base Currency';
       exchangeRate = 1;
-    } else if (preConvertedZar != null) {
-      // Use pre-converted value if available (e.g., from col_10)
-      zarValue = Number(preConvertedZar);
-      conversionStatus = 'Converted';
-      exchangeRate = rate; // Keep the detected rate for reference
     } else if (rate) {
       zarValue = origValue * rate;
       conversionStatus = 'Converted';
       exchangeRate = rate;
+    } else if (preConvertedZar != null) {
+      // Fall back to a pre-converted workbook value only when no rate is available.
+      zarValue = Number(preConvertedZar);
+      conversionStatus = 'Converted';
+      exchangeRate = null;
     } else {
       zarValue = origValue; // fallback: treat as ZAR (will be flagged)
       conversionStatus = 'Manual Rate Required';

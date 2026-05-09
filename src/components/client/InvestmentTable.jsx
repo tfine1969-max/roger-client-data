@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 
 export default function InvestmentTable({ clientRows, months }) {
   // Show months in chronological order (oldest → newest)

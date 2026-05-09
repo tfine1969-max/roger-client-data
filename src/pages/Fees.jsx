@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, formatMonth, fmtNum } from '@/lib/valuation-utils';
-import { summariseFees, feeKey } from '@/lib/fee-utils';
+import { getSortedMonths, formatMonth } from '@/lib/valuation-utils';
+import { summariseFees } from '@/lib/fee-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

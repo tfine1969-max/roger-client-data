@@ -1,5 +1,4 @@
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 /**
  * Shows one rate input per non-ZAR currency found in the uploaded file.

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload as UploadIcon, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Upload() {
   const queryClient = useQueryClient();

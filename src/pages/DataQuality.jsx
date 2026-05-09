@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle, Trash2, RefreshCw } from 'lucide-react';
+import { CheckCircle, Trash2 } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import { cn } from '@/lib/utils';
 

@@ -1,14 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ChangeCell from '@/components/shared/ChangeCell';
 import MonthBadge from '@/components/shared/MonthBadge';
-import { cn } from '@/lib/utils';
 
 export default function Clients() {
   const [search, setSearch] = useState('');

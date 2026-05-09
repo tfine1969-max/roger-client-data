@@ -4931,15 +4931,56 @@ export const monthlyClientData = [
       "ZAR": 1
     },
     "sourceNativeTotals": {
-      "USD": 32856697.67000001,
+      "USD": 32856697.670000006,
       "ZAR": 633554170.606682
     },
     "sourceZarTotals": {
-      "USD": 523716046.84119815,
+      "USD": 523716046.8411981,
       "ZAR": 633554170.606682
     },
     "sourceZarTotal": 1157270217.44788,
-    "providerSourceTotals": {},
+    "providerSourceTotals": {
+      "credo": {
+        "providerName": "Credo",
+        "nativeUsd": 11854560.0,
+        "zarTotal": 188954573.66399997
+      },
+      "gryphon": {
+        "providerName": "Gryphon",
+        "nativeUsd": 0.0,
+        "zarTotal": 354743375.526682
+      },
+      "julius-baer": {
+        "providerName": "Julius Baer",
+        "nativeUsd": 20478116.910000004,
+        "zarTotal": 326408896.67525405
+      },
+      "prime": {
+        "providerName": "Prime Investments",
+        "nativeUsd": 0.0,
+        "zarTotal": 228564498.12999997
+      },
+      "northstar-fnb": {
+        "providerName": "Northstar FNB",
+        "nativeUsd": 524020.76,
+        "zarTotal": 8352576.501944
+      },
+      "northstar-sanlam": {
+        "providerName": "Northstar Sanlam",
+        "nativeUsd": 0.0,
+        "zarTotal": 3050769.63
+      },
+      "peresec": {
+        "providerName": "Peresec",
+        "nativeUsd": 0.0,
+        "zarTotal": 3625180.11
+      },
+      "prescient": {
+        "providerName": "Prescient",
+        "nativeUsd": 0.0,
+        "zarTotal": 43570347.21
+      }
+    },
     "clients": [
       {
         "id": "credo|10012899|Blackbeard, Ginette",
