@@ -21,16 +21,25 @@ export default function EditAccountModal({ client, valuations, onClose, onSaved 
 
       // Update all valuations for this client
       const rows = valuations.filter(v => v.portfolio_name === client.portfolio_name);
+      if (rows.length === 0) {
+        toast.error('No valuations found for this client');
+        setSaving(false);
+        return;
+      }
+
       for (const row of rows) {
         const newCode = codeMap.get(row.account_code) || row.account_code;
-        await base44.asServiceRole.entities.PortfolioValuation.update(row.id, { account_code: newCode });
+        if (row.account_code !== newCode) {
+          await base44.entities.PortfolioValuation.update(row.id, { account_code: newCode });
+        }
       }
 
       toast.success('Account codes updated');
+      setSaving(false);
       onSaved();
     } catch (err) {
+      console.error('Save error:', err);
       toast.error(err.message || 'Failed to update account codes');
-    } finally {
       setSaving(false);
     }
   };
