@@ -13,7 +13,7 @@ export default function ClientFeeSummary({ rows }) {
       map[k].advisory += r.advisory_fee_monthly_amount_zar ?? 0;
       map[k].total += r.total_monthly_fee_zar ?? 0;
     });
-    return Object.values(map).sort((a, b) => b.total - a.total);
+    return Object.values(map).sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
   }, [rows]);
 
   return (
@@ -25,7 +25,7 @@ export default function ClientFeeSummary({ rows }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/40">
-              {['Client','Monthly Rebate (ZAR)','Monthly Advisory (ZAR)','Total Monthly (ZAR)','Ann. Advisory (ZAR)','Ann. Rebate (ZAR)',''].map(h => (
+              {['Client','Monthly Rebate (ZAR)','Monthly Advisory (ZAR)','Total Monthly (ZAR)',''].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -40,8 +40,6 @@ export default function ClientFeeSummary({ rows }) {
                 <td className="px-4 py-2.5 font-mono text-right text-xs text-chart-2">{fmtNum(c.rebate)}</td>
                 <td className="px-4 py-2.5 font-mono text-right text-xs text-chart-1">{fmtNum(c.advisory)}</td>
                 <td className="px-4 py-2.5 font-mono text-right text-sm font-semibold">{fmtNum(c.total)}</td>
-                <td className="px-4 py-2.5 font-mono text-right text-xs text-muted-foreground">{fmtNum(c.advisory * 12)}</td>
-                <td className="px-4 py-2.5 font-mono text-right text-xs text-muted-foreground">{fmtNum(c.rebate * 12)}</td>
                 <td className="px-4 py-2.5">
                   <Link to={`/clients/${c.account_code}`}>
                     <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
