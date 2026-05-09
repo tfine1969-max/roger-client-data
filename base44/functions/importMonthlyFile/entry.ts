@@ -110,14 +110,15 @@ Deno.serve(async (req) => {
 
   // Optionally delete existing records for this month before inserting
   if (replace_existing) {
-    const existing = await base44.asServiceRole.entities.PortfolioValuation.filter({ upload_month });
-    for (const rec of existing) {
-      await base44.asServiceRole.entities.PortfolioValuation.delete(rec.id);
+    const existing = await base44.asServiceRole.entities.PortfolioValuation.filter({ upload_month }, null, 2000);
+    const DEL_BATCH = 20;
+    for (let i = 0; i < existing.length; i += DEL_BATCH) {
+      await Promise.all(existing.slice(i, i + DEL_BATCH).map(r =>
+        base44.asServiceRole.entities.PortfolioValuation.delete(r.id)
+      ));
     }
     const existingUploads = await base44.asServiceRole.entities.MonthlyUpload.filter({ upload_month });
-    for (const u of existingUploads) {
-      await base44.asServiceRole.entities.MonthlyUpload.delete(u.id);
-    }
+    await Promise.all(existingUploads.map(u => base44.asServiceRole.entities.MonthlyUpload.delete(u.id)));
   }
 
   // Create MonthlyUpload record
