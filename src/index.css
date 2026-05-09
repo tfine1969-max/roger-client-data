@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,7 @@
 @layer base {
   :root {
     --font-sans: 'Aptos', 'Aptos Narrow', 'Arial', 'Segoe UI', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    --font-mono: 'Aptos', 'Aptos Narrow', 'Arial', 'Segoe UI', system-ui, sans-serif;
     --font-playfair: 'Playfair Display', serif;
 
     /* Wealth Management Palette */
@@ -62,10 +62,13 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-variant-numeric: tabular-nums;
   }
   .font-mono {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
   }
   .font-numbers {
     font-family: 'Aptos', 'Aptos Narrow', 'Arial', monospace;
