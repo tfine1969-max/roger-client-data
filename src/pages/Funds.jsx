@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 
 export default function Funds() {
@@ -22,29 +23,43 @@ export default function Funds() {
 
   const fundData = useMemo(() => {
     const monthRows = valuations.filter(v => v.upload_month === latestMonth);
-    const map = {};
+    const fundMap = {};
     
     monthRows.forEach(row => {
       const fundKey = row.investment_name;
-      if (!map[fundKey]) {
-        map[fundKey] = {
+      const clientKey = row.account_code || row.portfolio_name || 'Unknown';
+      const clientName = row.portfolio_name || clientKey;
+      
+      if (!fundMap[fundKey]) {
+        fundMap[fundKey] = {
           name: row.investment_name,
           totalZar: 0,
-          clients: new Set(),
           holdings: 0,
           platforms: new Set(),
+          clientMap: {},
         };
       }
-      map[fundKey].totalZar += zarVal(row);
-      map[fundKey].clients.add(row.account_code || row.portfolio_name || 'Unknown');
-      map[fundKey].platforms.add(row.platform || 'Unknown');
-      map[fundKey].holdings += 1;
+      
+      if (!fundMap[fundKey].clientMap[clientKey]) {
+        fundMap[fundKey].clientMap[clientKey] = {
+          code: clientKey,
+          name: clientName,
+          totalZar: 0,
+          holdings: 0,
+        };
+      }
+      
+      fundMap[fundKey].totalZar += zarVal(row);
+      fundMap[fundKey].holdings += 1;
+      fundMap[fundKey].platforms.add(row.platform || 'Unknown');
+      fundMap[fundKey].clientMap[clientKey].totalZar += zarVal(row);
+      fundMap[fundKey].clientMap[clientKey].holdings += 1;
     });
 
-    return Object.values(map)
+    return Object.values(fundMap)
       .map(f => ({
         ...f,
-        clients: Array.from(f.clients).sort(),
+        clients: Object.values(f.clientMap).sort((a, b) => a.name.localeCompare(b.name)),
         platforms: Array.from(f.platforms),
       }))
       .sort((a, b) => {
@@ -128,16 +143,35 @@ export default function Funds() {
                     </td>
                   </tr>
                   {expandedFund === fund.name && (
-                    <tr className="bg-muted/5 border-b">
-                      <td colSpan={6} className="px-4 py-3">
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Clients in this fund:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {fund.clients.map((client) => (
-                              <span key={client} className="inline-block px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">
-                                {client}
-                              </span>
-                            ))}
+                    <tr className="bg-muted/5">
+                      <td colSpan={6} className="px-4 py-4">
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Clients in this fund ({fund.clients.length}):</p>
+                          <div className="border rounded-lg overflow-hidden">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="border-b bg-muted/20">
+                                  <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Client Name</th>
+                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">Holdings</th>
+                                  <th className="text-right px-3 py-2 font-semibold text-muted-foreground">AUM (ZAR)</th>
+                                  <th className="w-6"></th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y">
+                                {fund.clients.map((client) => (
+                                  <tr key={client.code} className="hover:bg-muted/30">
+                                    <td className="px-3 py-2 font-medium text-foreground">{client.name}</td>
+                                    <td className="px-3 py-2 text-right text-muted-foreground">{client.holdings}</td>
+                                    <td className="px-3 py-2 text-right font-mono text-foreground">R {fmtNum(client.totalZar)}</td>
+                                    <td className="px-3 py-2 text-center">
+                                      <Link to={`/clients/${encodeURIComponent(client.code)}`}>
+                                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                                      </Link>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </td>
