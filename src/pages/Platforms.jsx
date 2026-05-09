@@ -3,18 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import ChangeCell from '@/components/shared/ChangeCell';
 import MonthBadge from '@/components/shared/MonthBadge';
-import { exportFullMonthlyCSV } from '@/lib/export-utils';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 
 export default function Platforms() {
-  const [search, setSearch] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState(null);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -28,124 +24,171 @@ export default function Platforms() {
     return months[idx + 1] || '';
   }, [months, latestMonth]);
 
-  const platforms = useMemo(() => [...new Set(valuations.map(v => v.platform).filter(Boolean))].sort(), [valuations]);
-
-  const fundRows = useMemo(() => {
+  // Aggregate by platform
+  const platformRows = useMemo(() => {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-    const prevOrigMap = {};
     const prevZarMap = {};
-    prev.forEach(r => {
-      const k = `${r.platform}||${r.investment_name}||${r.currency}`;
-      prevOrigMap[k] = (prevOrigMap[k] || 0) + origVal(r);
-      prevZarMap[k] = (prevZarMap[k] || 0) + zarVal(r);
-    });
+    prev.forEach(r => { prevZarMap[r.platform] = (prevZarMap[r.platform] || 0) + zarVal(r); });
 
-    // Aggregate by platform + investment + currency
     const map = {};
     current.forEach(r => {
-      const k = `${r.platform}||${r.investment_name}||${r.currency}`;
-      if (!map[k]) map[k] = { platform: r.platform, investment_name: r.investment_name, currency: r.currency, totalOrig: 0, totalZar: 0, clients: new Set() };
+      const p = r.platform || 'Unknown';
+      if (!map[p]) map[p] = { platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
+      map[p].totalZar += zarVal(r);
+      map[p].clients.add(r.account_code);
+      map[p].funds.add(r.investment_name);
+    });
+
+    return Object.values(map).map(p => {
+      const prevZar = prevZarMap[p.platform] ?? null;
+      const changeZar = prevZar !== null ? p.totalZar - prevZar : null;
+      const changeZarPct = prevZar ? (changeZar / prevZar) * 100 : null;
+      return { ...p, clients: p.clients.size, funds: p.funds.size, prevZar, changeZar, changeZarPct, isNew: prevZar === null };
+    }).sort((a, b) => b.totalZar - a.totalZar);
+  }, [valuations, latestMonth, prevMonth]);
+
+  // Fund detail for selected platform
+  const fundRows = useMemo(() => {
+    if (!selectedPlatform) return [];
+    const current = valuations.filter(v => v.upload_month === latestMonth && v.platform === selectedPlatform);
+    const prev = valuations.filter(v => v.upload_month === prevMonth && v.platform === selectedPlatform);
+
+    const prevZarMap = {};
+    prev.forEach(r => { const k = `${r.investment_name}||${r.currency}`; prevZarMap[k] = (prevZarMap[k] || 0) + zarVal(r); });
+
+    const map = {};
+    current.forEach(r => {
+      const k = `${r.investment_name}||${r.currency}`;
+      if (!map[k]) map[k] = { investment_name: r.investment_name, currency: r.currency, totalOrig: 0, totalZar: 0, clients: new Set() };
       map[k].totalOrig += origVal(r);
       map[k].totalZar += zarVal(r);
       map[k].clients.add(r.account_code);
     });
 
     return Object.entries(map).map(([k, v]) => {
-      const prevOrig = prevOrigMap[k] ?? null;
       const prevZar = prevZarMap[k] ?? null;
-      const changeOrig = prevOrig !== null ? v.totalOrig - prevOrig : null;
-      const changeOrigPct = prevOrig ? (changeOrig / prevOrig) * 100 : null;
       const changeZar = prevZar !== null ? v.totalZar - prevZar : null;
       const changeZarPct = prevZar ? (changeZar / prevZar) * 100 : null;
-      return { ...v, clients: v.clients.size, prevOrig, prevZar, changeOrig, changeOrigPct, changeZar, changeZarPct, isNew: prevOrig === null };
+      return { ...v, clients: v.clients.size, prevZar, changeZar, changeZarPct, isNew: prevZar === null };
     }).sort((a, b) => b.totalZar - a.totalZar);
-  }, [valuations, latestMonth, prevMonth]);
+  }, [valuations, latestMonth, prevMonth, selectedPlatform]);
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return fundRows.filter(r => {
-      const matchSearch = !q || r.investment_name?.toLowerCase().includes(q) || r.platform?.toLowerCase().includes(q);
-      const matchPlatform = !filterPlatform || r.platform === filterPlatform;
-      return matchSearch && matchPlatform;
-    });
-  }, [fundRows, search, filterPlatform]);
+  const totalAUM = useMemo(() => platformRows.reduce((s, r) => s + r.totalZar, 0), [platformRows]);
 
-  const totalAUM = useMemo(() => filtered.reduce((s, r) => s + r.totalZar, 0), [filtered]);
+  const MonthFilter = () => (
+    <Select value={filterMonth} onValueChange={setFilterMonth}>
+      <SelectTrigger className="w-40 h-9">
+        <SelectValue placeholder="Latest month" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={null}>Latest month</SelectItem>
+        {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
 
+  // ── Drill-down view ──────────────────────────────────────────────────────────
+  if (selectedPlatform) {
+    const platformTotal = fundRows.reduce((s, r) => s + r.totalZar, 0);
+    return (
+      <div className="space-y-6">
+        <div>
+          <button onClick={() => setSelectedPlatform(null)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Platforms
+          </button>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold">{selectedPlatform}</h1>
+              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                <MonthBadge month={latestMonth} />
+                <span>{fundRows.length} funds · Total AUM: <strong className="text-foreground">ZAR {fmtNum(platformTotal)}</strong></span>
+              </div>
+            </div>
+            <MonthFilter />
+          </div>
+        </div>
+
+        <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  {['Investment Name', 'Currency', 'Value (Orig. CCY)', 'Value (ZAR)', 'Clients', 'ZAR MoM Change'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {fundRows.length === 0 && (
+                  <tr><td colSpan={6} className="text-center py-12 text-muted-foreground text-sm">No data.</td></tr>
+                )}
+                {fundRows.map((r, i) => (
+                  <tr key={i} className="hover:bg-muted/20">
+                    <td className="px-4 py-2.5 font-medium">{r.investment_name}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{r.currency}</td>
+                    <td className="px-4 py-2.5 font-mono text-sm">{fmtCcy(r.totalOrig, r.currency)}</td>
+                    <td className="px-4 py-2.5 font-mono font-semibold">ZAR {fmtNum(r.totalZar)}</td>
+                    <td className="px-4 py-2.5 text-center text-muted-foreground">{r.clients}</td>
+                    <td className="px-4 py-2.5"><ChangeCell value={r.changeZar} pct={r.changeZarPct} isNew={r.isNew} /></td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-muted/30 border-t-2 font-semibold">
+                  <td className="px-4 py-2.5 text-xs uppercase tracking-wider" colSpan={3}>Total</td>
+                  <td className="px-4 py-2.5 font-mono">ZAR {fmtNum(platformTotal)}</td>
+                  <td colSpan={2}></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Platform summary view ────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Platforms &amp; Funds</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Aggregated view across all clients</p>
+          <h1 className="text-2xl font-semibold">Platforms</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Total assets under management by platform</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => exportFullMonthlyCSV(filtered, latestMonth)} className="gap-2">
-          <Download className="w-4 h-4" /> Export CSV
-        </Button>
+        <MonthFilter />
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
-        <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search by fund or platform…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
-        </div>
-        <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="w-40 h-9">
-            <SelectValue placeholder="Latest month" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={null}>Latest month</SelectItem>
-            {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-          <SelectTrigger className="w-44 h-9">
-            <SelectValue placeholder="All platforms" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={null}>All platforms</SelectItem>
-            {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Summary */}
       {latestMonth && (
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <MonthBadge month={latestMonth} />
-          <span>{filtered.length} funds · Total AUM (ZAR): <strong className="text-foreground">ZAR {fmtNum(totalAUM)}</strong></span>
+          <span>{platformRows.length} platforms · Total AUM (ZAR): <strong className="text-foreground">ZAR {fmtNum(totalAUM)}</strong></span>
         </div>
       )}
 
-      {/* Table */}
       <div className="bg-white border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['Platform', 'Investment Name', 'Currency', 'Value (Orig. CCY)', 'Value (ZAR)', 'Clients', 'ZAR MoM Change'].map(h => (
+                {['Platform', 'Total AUM (ZAR)', 'Clients', 'Funds', 'MoM Change', ''].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y">
-              {filtered.length === 0 && (
+              {platformRows.length === 0 && (
                 <tr><td colSpan={6} className="text-center py-12 text-muted-foreground text-sm">No data.</td></tr>
               )}
-              {filtered.map((r, i) => (
-                <tr key={i} className="hover:bg-muted/20">
-                  <td className="px-4 py-2.5 text-muted-foreground text-xs font-medium">{r.platform}</td>
-                  <td className="px-4 py-2.5 font-medium">{r.investment_name}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{r.currency}</td>
-                  <td className="px-4 py-2.5 font-mono text-sm">{fmtCcy(r.totalOrig, r.currency)}</td>
-                  <td className="px-4 py-2.5 font-mono font-semibold">ZAR {fmtNum(r.totalZar)}</td>
-                  <td className="px-4 py-2.5 text-center text-muted-foreground">{r.clients}</td>
-                  <td className="px-4 py-2.5">
-                   <ChangeCell value={r.changeZar} pct={r.changeZarPct} isNew={r.isNew} />
-                  </td>
+              {platformRows.map(r => (
+                <tr key={r.platform} className="hover:bg-muted/20 cursor-pointer" onClick={() => setSelectedPlatform(r.platform)}>
+                  <td className="px-4 py-3 font-semibold text-primary">{r.platform}</td>
+                  <td className="px-4 py-3 font-mono font-semibold">ZAR {fmtNum(r.totalZar)}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{r.clients}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{r.funds}</td>
+                  <td className="px-4 py-3"><ChangeCell value={r.changeZar} pct={r.changeZarPct} isNew={r.isNew} /></td>
+                  <td className="px-4 py-3"><ChevronRight className="w-4 h-4 text-muted-foreground" /></td>
                 </tr>
               ))}
             </tbody>
