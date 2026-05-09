@@ -7,13 +7,17 @@ import { Badge } from '@/components/ui/badge';
 
 const MONTH_MAP = {
   'jan 2026': '2026-01', 'jan': '2026-01',
-  'feb': '2026-02', 'feb 2026': '2026-02',
-  'mar': '2026-03', 'mar 2026': '2026-03',
-  'apr': '2026-04', 'apr 2026': '2026-04',
-  'may': '2026-05', 'jun': '2026-06',
-  'jul': '2026-07', 'aug': '2026-08',
-  'sep': '2026-09', 'oct': '2026-10',
-  'nov': '2026-11', 'dec': '2026-12',
+  'feb 2026': '2026-02', 'feb': '2026-02',
+  'mar 2026': '2026-03', 'mar': '2026-03',
+  'apr 2026': '2026-04', 'apr': '2026-04',
+  'may 2026': '2026-05', 'may': '2026-05',
+  'jun 2026': '2026-06', 'jun': '2026-06',
+  'jul 2026': '2026-07', 'jul': '2026-07',
+  'aug 2026': '2026-08', 'aug': '2026-08',
+  'sep 2026': '2026-09', 'sep': '2026-09',
+  'oct 2026': '2026-10', 'oct': '2026-10',
+  'nov 2026': '2026-11', 'nov': '2026-11',
+  'dec 2026': '2026-12', 'dec': '2026-12',
 };
 
 export default function Import() {
@@ -38,7 +42,8 @@ export default function Import() {
       // Upload the file first
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Extract data from all sheets using LLM
+      // Import the file sheet by sheet using base44 import tool
+      // We'll use ExtractDataFromUploadedFile with exact column names from spreadsheet
       const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: {
@@ -55,17 +60,17 @@ export default function Import() {
                     items: {
                       type: 'object',
                       properties: {
-                        portfolio_id: { type: 'string' },
-                        account_code: { type: 'string' },
-                        identity_no: { type: 'string' },
-                        portfolio_name: { type: 'string' },
-                        platform: { type: 'string' },
-                        investment_name: { type: 'string' },
-                        currency: { type: 'string' },
-                        market_value: { type: 'number' },
-                        number_of_units: { type: 'number' },
-                        unit_price: { type: 'number' },
-                        exchange_rate: { type: 'number' }
+                        portfolio_id: { type: 'string', description: 'Portfolio Id column' },
+                        account_code: { type: 'string', description: 'Account Code column' },
+                        identity_no: { type: 'string', description: 'Identity No column' },
+                        portfolio_name: { type: 'string', description: 'Portfolio Name column' },
+                        platform: { type: 'string', description: 'Platform column' },
+                        investment_name: { type: 'string', description: 'Investment Name column' },
+                        currency: { type: 'string', description: 'Currency column' },
+                        market_value: { type: 'number', description: 'Month End Market Value column' },
+                        number_of_units: { type: 'number', description: 'Number of Units column' },
+                        unit_price: { type: 'number', description: 'Month End Unit Price column' },
+                        exchange_rate: { type: 'number', description: 'Exchange rate — found in col_12 or col_13 (a decimal number like 16.13 or 15.94, only present on some rows)' }
                       }
                     }
                   }
@@ -137,9 +142,9 @@ export default function Import() {
             month,
             market_value: row.market_value,
             number_of_units: row.number_of_units,
-            unit_price: row.unit_price,
+            unit_price: row.unit_price,  // Month End Unit Price
             currency: row.currency,
-            exchange_rate: row.exchange_rate,
+            exchange_rate: row.exchange_rate || null,  // col_12 or col_13 depending on sheet
           };
 
           if (existingVal) {
