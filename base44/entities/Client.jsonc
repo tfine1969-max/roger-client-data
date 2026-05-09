@@ -1,0 +1,56 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "account_code": {
+      "type": "string",
+      "description": "Primary account code"
+    },
+    "identity_no": {
+      "type": "string",
+      "description": "Identity / registration number"
+    },
+    "portfolio_name": {
+      "type": "string",
+      "description": "Client / portfolio name"
+    },
+    "first_seen_month": {
+      "type": "string",
+      "description": "First month this client appeared (YYYY-MM)"
+    },
+    "last_updated_month": {
+      "type": "string",
+      "description": "Most recent month data was uploaded for this client (YYYY-MM)"
+    },
+    "latest_total_value": {
+      "type": "number",
+      "description": "Total portfolio value in the latest uploaded month"
+    },
+    "latest_currency": {
+      "type": "string",
+      "description": "Primary currency of the portfolio"
+    },
+    "number_of_investments": {
+      "type": "number",
+      "description": "Number of investment lines in latest month"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "New",
+        "Not Present In Latest Upload"
+      ],
+      "default": "New",
+      "description": "Client status based on latest upload"
+    },
+    "platforms": {
+      "type": "string",
+      "description": "Comma-separated list of platforms the client is on"
+    }
+  },
+  "required": [
+    "account_code",
+    "portfolio_name"
+  ]
+}

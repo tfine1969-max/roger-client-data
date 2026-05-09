@@ -161,9 +161,25 @@ export default function Upload() {
         rows_skipped: skipped,
       });
 
-      setResults({ imported, skipped, total: rows.length, flagged: batch.filter(r => r.is_flagged).length });
+      // Sync Client records
+      let clientSync = null;
+      try {
+        const syncRes = await base44.functions.invoke('syncClientsAfterUpload', { upload_month: month });
+        clientSync = syncRes.data;
+      } catch (e) {
+        console.warn('Client sync failed:', e.message);
+      }
+
+      setResults({
+        imported,
+        skipped,
+        total: rows.length,
+        flagged: batch.filter(r => r.is_flagged).length,
+        clientSync,
+      });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
     } catch (err) {
       if (uploadRecord) {
         await base44.entities.MonthlyUpload.update(uploadRecord.id, {
@@ -285,6 +301,12 @@ export default function Upload() {
                 </div>
               ))}
             </div>
+            {results.clientSync && (
+              <div className="mt-3 text-xs text-green-800 bg-green-100 rounded px-3 py-2 space-y-0.5">
+                <p className="font-semibold">Client register updated:</p>
+                <p>✦ {results.clientSync.clients_created} new clients created · {results.clientSync.clients_updated} updated · {results.clientSync.clients_marked_absent} marked absent</p>
+              </div>
+            )}
             {results.flagged > 0 && (
               <p className="text-xs text-amber-700 mt-3">⚠ {results.flagged} rows have data quality issues. Review them in the <a href="/data-quality" className="underline">Data Quality</a> screen.</p>
             )}
