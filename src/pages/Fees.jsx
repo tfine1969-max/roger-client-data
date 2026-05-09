@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { feeOptionValues, summariseFees, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +19,7 @@ function groupFeeRows(rows, keyFn, seedFn) {
     map[key].rebate += row.rebate_fee_monthly_amount_zar ?? 0;
     map[key].advisory += row.advisory_fee_monthly_amount_zar ?? 0;
     map[key].total += row.total_monthly_fee_zar ?? 0;
-    map[key].aum += zarVal(row);
+    map[key].aum += row.fee_base_zar ?? row.zar_value ?? row.month_end_market_value ?? 0;
     map[key].holdings += 1;
     if (row.account_code) map[key].clients.add(row.account_code);
     if (row.fee_required) map[key].missingFees += 1;

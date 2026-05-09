@@ -50,10 +50,11 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
 
   const rebatePct = parseFloat(rebate) || 0;
   const advisoryPct = parseFloat(advisory) || 0;
-  const previewRebateZar = zarVal(row) * (rebatePct / 100) / 12;
-  const previewAdvisoryZar = zarVal(row) * (advisoryPct / 100) / 12;
-  const previewRebateOrig = origVal(row) * (rebatePct / 100) / 12;
-  const previewAdvisoryOrig = origVal(row) * (advisoryPct / 100) / 12;
+  const feeBaseZar = row.fee_base_zar ?? zarVal(row);
+  const previewRebateZar = feeBaseZar * (rebatePct / 100) / 12;
+  const previewAdvisoryZar = feeBaseZar * (advisoryPct / 100) / 12;
+  const previewRebateOrig = (row.fee_base_zar ?? origVal(row)) * (rebatePct / 100) / 12;
+  const previewAdvisoryOrig = (row.fee_base_zar ?? origVal(row)) * (advisoryPct / 100) / 12;
   const options = [...new Set([...(feeOptions || []), rebatePct, advisoryPct])].sort((a, b) => a - b);
 
   return (

@@ -133,10 +133,14 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const source = config || mapping || (hasStoredRate ? row : null);
   const rebate = source?.rebate_fee_annual_percent ?? source?.rebateAnnualPercent ?? 0;
   const advisory = source?.advisory_fee_annual_percent ?? source?.advisoryAnnualPercent ?? 0;
+  const mappedNav = mapping?.navByMonth?.[row.upload_month];
+  const feeBaseZar = mappedNav ?? zarVal(row);
 
   return {
     ...row,
-    ...calcFees(origVal(row), zarVal(row), rebate, advisory),
+    ...calcFees(mappedNav ?? origVal(row), feeBaseZar, rebate, advisory),
+    fee_base_zar: feeBaseZar,
+    fee_base_source: mappedNav !== undefined ? 'mapping-nav' : 'valuation',
     fee_required: !source,
     fee_source: config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
     fee_mapping_client: mapping?.client,

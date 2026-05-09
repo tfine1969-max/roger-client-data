@@ -34,7 +34,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                   <td className="px-3 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
                   <td className="px-3 py-2.5 max-w-[160px] truncate text-xs">{r.investment_name}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{r.currency}</td>
-                  <td className="px-3 py-2.5 font-mono text-right text-xs">R {fmtNum(r.zar_value ?? r.month_end_market_value)}</td>
+                  <td className="px-3 py-2.5 font-mono text-right text-xs">R {fmtNum(r.fee_base_zar ?? r.zar_value ?? r.month_end_market_value)}</td>
                   <td className="px-3 py-2.5 text-right">
                     <span className={`text-xs px-1.5 py-0.5 rounded ${r.fee_required ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'bg-muted text-muted-foreground'}`}>
                       {r.fee_required ? 'Required' : `${(r.rebate_fee_annual_percent ?? 0).toFixed(2)}%`}

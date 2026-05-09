@@ -9,6 +9,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path(r"C:\Users\trevo\Wealthworks Dropbox\Website 2026\Website Design\Base44\Roger Data\Fee mapping.xlsx")
 OUT = ROOT / "src" / "data" / "feeMapping.js"
 
+NAV_COLUMNS = {
+    "2026-01": 5,
+    "2026-02": 6,
+    "2026-03": 7,
+}
+
 PROVIDER_IDS = {
     "Credo": "Credo",
     "Gryphon Asset Management": "Gryphon",
@@ -59,6 +65,10 @@ def main():
                 "investmentKey": compact(investment),
                 "provider": provider,
                 "sourceProvider": str(service_provider).strip(),
+                "navByMonth": {
+                    month: float(row[column] or 0)
+                    for month, column in NAV_COLUMNS.items()
+                },
                 "rebateAnnualPercent": float(rebate or 0) * 100,
                 "advisoryAnnualPercent": float(advisory or 0) * 100,
             }
