@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
-import { applyFeeToRow } from '@/lib/fee-utils';
 import { fmtNum, origVal, zarVal } from '@/lib/valuation-utils';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -18,16 +17,14 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
     setSaving(true);
     const rebatePct = parseFloat(rebate) || 0;
     const advisoryPct = parseFloat(advisory) || 0;
-    const updates = applyFeeToRow(row, rebatePct, advisoryPct);
 
-    await base44.entities.PortfolioValuation.update(row.id, updates);
-
+    // Create/update FeeConfig for future months
     const existing = await base44.entities.FeeConfig.filter({
       account_code: row.account_code,
       platform: row.platform,
       investment_name: row.investment_name,
-      effective_from_month: row.upload_month,
     });
+    
     const configData = {
       account_code: row.account_code,
       portfolio_name: row.portfolio_name,
@@ -37,13 +34,14 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
       advisory_fee_annual_percent: advisoryPct,
       effective_from_month: row.upload_month,
     };
+    
     if (existing.length > 0) {
       await base44.entities.FeeConfig.update(existing[0].id, configData);
     } else {
       await base44.entities.FeeConfig.create(configData);
     }
 
-    toast({ title: 'Fees saved', description: `Updated ${row.upload_month} only. Historical months were not changed.` });
+    toast({ title: 'Fees saved', description: `Fee config updated from ${row.upload_month}. New fees apply to future uploads only.` });
     setSaving(false);
     onSaved();
   };
@@ -71,30 +69,34 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Rebate annual rate</Label>
-            <Select value={rebate} onValueChange={setRebate}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {options.map(option => <SelectItem key={option} value={String(option)}>{option.toFixed(2)}%</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">Monthly rate: {(rebatePct / 12).toFixed(4)}%</p>
-            <p className="text-xs text-chart-2 font-mono">{row.currency} {fmtNum(previewRebateOrig)} · R {fmtNum(previewRebateZar)}</p>
+            <Label>Rebate annual rate (%)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={rebate}
+              onChange={(e) => setRebate(e.target.value)}
+              className="text-lg font-semibold"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-muted-foreground">Monthly: {(rebatePct / 12).toFixed(4)}%</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Advisory annual rate</Label>
-            <Select value={advisory} onValueChange={setAdvisory}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {options.map(option => <SelectItem key={option} value={String(option)}>{option.toFixed(2)}%</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">Monthly rate: {(advisoryPct / 12).toFixed(4)}%</p>
-            <p className="text-xs text-chart-1 font-mono">{row.currency} {fmtNum(previewAdvisoryOrig)} · R {fmtNum(previewAdvisoryZar)}</p>
+            <Label>Advisory annual rate (%)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              value={advisory}
+              onChange={(e) => setAdvisory(e.target.value)}
+              className="text-lg font-semibold"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-muted-foreground">Monthly: {(advisoryPct / 12).toFixed(4)}%</p>
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Changes are saved from {row.upload_month} forward through the fee config, and the current monthly valuation row is recalculated immediately.
+          New fees apply to portfolio uploads from {row.upload_month} forward. Historical data is not affected.
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
