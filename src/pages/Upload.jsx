@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import ExchangeRateInputs from '@/components/upload/ExchangeRateInputs';
 
 export default function Upload() {
   const queryClient = useQueryClient();
@@ -14,6 +15,8 @@ export default function Upload() {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
+  const [detectedCurrencies, setDetectedCurrencies] = useState([]);
+  const [exchangeRates, setExchangeRates] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +36,7 @@ export default function Upload() {
       file_url,
       upload_month: uploadMonth,
       replace_existing: replaceExisting,
+      exchange_rates: exchangeRates,
     });
 
     const result = response.data;
@@ -44,6 +48,8 @@ export default function Upload() {
     setStatus('success');
     setMessage(`Successfully imported ${result.rows_imported} rows for ${uploadMonth}.`);
     setDetail(result.exchange_rates_detected);
+    setDetectedCurrencies([]);
+    setExchangeRates({});
   };
 
   const handleSubmitSafe = async (e) => {
@@ -53,6 +59,38 @@ export default function Upload() {
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
+    }
+  };
+
+  const handleFileSelect = async (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    
+    if (selectedFile) {
+      // Detect currencies in the file by uploading and parsing
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+        const result = await base44.functions.invoke('debugSheetColumns', { file_url });
+        const sheetData = result.data;
+        
+        // Extract unique currencies from the data
+        const currencies = new Set();
+        Object.values(sheetData).forEach(sheet => {
+          if (sheet.data) {
+            sheet.data.forEach(row => {
+              if (row.Currency) currencies.add(row.Currency);
+            });
+          }
+        });
+        
+        setDetectedCurrencies(Array.from(currencies).sort());
+        setExchangeRates({});
+      } catch (err) {
+        console.error('Failed to detect currencies:', err);
+      }
+    } else {
+      setDetectedCurrencies([]);
+      setExchangeRates({});
     }
   };
 
@@ -82,10 +120,18 @@ export default function Upload() {
           <Input
             type="file"
             accept=".xlsx,.xls"
-            onChange={e => setFile(e.target.files?.[0] || null)}
+            onChange={handleFileSelect}
             required
           />
         </div>
+
+        {detectedCurrencies.length > 0 && (
+          <ExchangeRateInputs
+            currencies={detectedCurrencies}
+            rates={exchangeRates}
+            onChange={(currency, value) => setExchangeRates(prev => ({ ...prev, [currency]: value }))}
+          />
+        )}
 
         <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input

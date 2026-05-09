@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { file_url, upload_month, replace_existing } = body;
+  const { file_url, upload_month, replace_existing, exchange_rates = {} } = body;
 
   if (!file_url || !upload_month) {
     return Response.json({ error: 'file_url and upload_month are required' }, { status: 400 });
@@ -111,10 +111,18 @@ Deno.serve(async (req) => {
     // Special case: col_10 in "Other" sheet (and potentially others) may contain pre-converted ZAR values
     const preConvertedZar = row['col_10'];
 
+    // Check if user provided an exchange rate for this currency
+    const userProvidedRate = exchange_rates[currency] ? Number(exchange_rates[currency]) : null;
+
     if (currency === 'ZAR') {
       zarValue = origValue;
       conversionStatus = 'ZAR Base Currency';
       exchangeRate = 1;
+    } else if (userProvidedRate) {
+      // Prioritize user-provided rate
+      zarValue = origValue * userProvidedRate;
+      conversionStatus = 'Converted';
+      exchangeRate = userProvidedRate;
     } else if (rate) {
       zarValue = origValue * rate;
       conversionStatus = 'Converted';
