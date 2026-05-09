@@ -109,24 +109,30 @@ export default function FundBreakdown({ monthRows }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[260px]">{view === 'funds' ? 'Investment Fund' : 'Client'}</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[140px]">Total Value (ZAR)</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{view === 'funds' ? 'Clients' : 'Funds'}</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Holdings</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[240px]">{view === 'funds' ? 'Fund' : 'Client'}</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">Curr</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">Value (Orig)</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[80px]">Rate</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">Value (ZAR)</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[60px]">{view === 'funds' ? 'Clients' : 'Funds'}</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[80px]">Holdings</th>
                 <th className="w-8"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {data.map((item) => {
                 const subitems = view === 'funds' ? item.clients : item.funds;
-                const subitemLabel = view === 'funds' ? 'Clients in this fund' : 'Funds held by this client';
+                const subitemLabel = view === 'funds' ? 'Clients' : 'Funds';
                 return (
                   <>
                     <tr key={item.name} className="hover:bg-muted/20 cursor-pointer" onClick={() => setExpandedItem(expandedItem === item.name ? null : item.name)}>
-                      <td className="px-4 py-3 font-medium text-foreground">{item.name}</td>
-                      <td className="px-4 py-3 font-sans text-right text-foreground">R {fmtNum(item.totalZar)}</td>
-                      <td className="px-4 py-3 text-right text-foreground">{subitems.length}</td>
-                      <td className="px-4 py-3 text-right text-muted-foreground text-xs">{item.holdings}</td>
+                      <td className="px-4 py-3 font-medium text-foreground min-w-[240px]">{item.name}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground text-xs min-w-[120px]">—</td>
+                      <td className="px-4 py-3 font-numbers text-right text-foreground min-w-[120px]">—</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground text-xs min-w-[80px]">—</td>
+                      <td className="px-4 py-3 font-numbers text-right text-foreground font-semibold min-w-[120px]">R {fmtNum(item.totalZar)}</td>
+                      <td className="px-4 py-3 text-right text-foreground min-w-[60px]">{subitems.length}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground text-xs min-w-[80px]">{item.holdings}</td>
                       <td className="px-4 py-3 text-center">
                         {expandedItem === item.name ? (
                           <ChevronUp className="w-4 h-4 text-muted-foreground" />
