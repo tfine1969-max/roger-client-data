@@ -25,22 +25,21 @@ Deno.serve(async (req) => {
   const sheet = workbook.Sheets[sheetName];
   const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
-  // Build per-account exchange rate map.
-  // The exchange rate column appears as '__EMPTY_2' in Sheet1 (XLSX parser naming).
-  // It is only populated on the first row of each account group — propagate per account+platform key.
+  // Build per-account exchange rate map from Sheet1 and sub-sheets.
+  // Exchange rates are in col_12 (or __EMPTY_2 in Sheet1 after XLSX parsing).
+  // Only the first row of each account group has a rate—propagate it per platform+account.
   const accountRateMap = {};
   for (const row of rawRows) {
     const acct = String(row['Account Code'] ?? '').trim();
     const platform = String(row['Platform'] ?? '').trim();
     const key = `${platform}||${acct}`;
-    // Try both possible column names (Sheet1 uses __EMPTY_2; sub-sheets may use col_12)
-    const rate = row['__EMPTY_2'] ?? row['col_12'];
+    const rate = row['col_12'];
     if (rate != null && !accountRateMap[key]) {
       accountRateMap[key] = Number(rate);
     }
   }
 
-  // Also scan each sub-sheet to pick up any rates missed in Sheet1
+  // Also scan each sub-sheet to pick up exchange rates and pre-converted values (e.g., col_10 in "Other" sheet).
   for (const sName of workbook.SheetNames) {
     if (sName === 'Sheet1' || sName === 'Total') continue;
     const subRows = XLSX.utils.sheet_to_json(workbook.Sheets[sName], { defval: null });
@@ -48,7 +47,7 @@ Deno.serve(async (req) => {
       const acct = String(row['Account Code'] ?? '').trim();
       const platform = String(row['Platform'] ?? '').trim();
       const key = `${platform}||${acct}`;
-      const rate = row['__EMPTY_2'] ?? row['col_12'];
+      const rate = row['col_12'];
       if (rate != null && !accountRateMap[key]) {
         accountRateMap[key] = Number(rate);
       }
@@ -72,10 +71,18 @@ Deno.serve(async (req) => {
 
     let zarValue, conversionStatus, exchangeRate;
 
+    // Special case: col_10 in "Other" sheet (and potentially others) may contain pre-converted ZAR values
+    const preConvertedZar = row['col_10'];
+
     if (currency === 'ZAR') {
       zarValue = origValue;
       conversionStatus = 'ZAR Base Currency';
       exchangeRate = 1;
+    } else if (preConvertedZar != null) {
+      // Use pre-converted value if available (e.g., from col_10)
+      zarValue = Number(preConvertedZar);
+      conversionStatus = 'Converted';
+      exchangeRate = rate; // Keep the detected rate for reference
     } else if (rate) {
       zarValue = origValue * rate;
       conversionStatus = 'Converted';
