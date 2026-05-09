@@ -147,10 +147,47 @@ export default function Landing() {
   const selectedClient = providerClients.find((client) => client.id === selectedClientId) || providerClients[0];
 
   const monthTotals = {
-    aumZar: sum(providerSummaries.map((provider) => provider.aumZar)),
+    aumZar: selectedMonth.sourceZarTotal || sum(providerSummaries.map((provider) => provider.aumZar)),
     rebateZar: sum(providerSummaries.map((provider) => provider.rebateZar)),
     advisoryZar: sum(providerSummaries.map((provider) => provider.advisoryZar)),
   };
+
+  const sourceReconciliationRows = Object.entries(selectedMonth.sourceNativeTotals || {}).map(([code, nativeValue]) => ({
+    code,
+    nativeValue,
+    fxRate: selectedMonth.exchangeRates[code] || 1,
+    zarValue: selectedMonth.sourceZarTotals?.[code] || nativeValue * (selectedMonth.exchangeRates[code] || 1),
+  }));
+
+  const clientSummaries = Object.values(
+    selectedMonth.clients.reduce((summary, client) => {
+      if (!summary[client.client]) {
+        summary[client.client] = {
+          id: client.client,
+          client: client.client,
+          providers: new Set(),
+          nativeValues: {},
+          zarAum: 0,
+          rebateZar: 0,
+          advisoryZar: 0,
+          accounts: 0,
+        };
+      }
+
+      const row = summary[client.client];
+      row.providers.add(client.providerName);
+      row.accounts += 1;
+      row.zarAum += Number(client.zarAum || 0);
+      row.rebateZar += feeFor(client, 'rebate').zarFee;
+      row.advisoryZar += feeFor(client, 'advisory').zarFee;
+      Object.entries(client.nativeValues).forEach(([code, value]) => {
+        row.nativeValues[code] = (row.nativeValues[code] || 0) + Number(value || 0);
+      });
+      return summary;
+    }, {}),
+  )
+    .map((client) => ({ ...client, providers: [...client.providers].join(', ') }))
+    .sort((a, b) => b.zarAum - a.zarAum);
 
   const monthlyProviderRows = monthlyClientData.map((month) => {
     const clients = month.clients.filter((client) => client.providerId === selectedProviderId);
@@ -219,9 +256,46 @@ export default function Landing() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
         <section className="grid gap-4 md:grid-cols-3">
-          <Metric icon={WalletCards} label={`${selectedMonth.label} total AUM`} value={compactCurrency(monthTotals.aumZar)} helper={`Source: ${selectedMonth.sourceFile}`} />
+          <Metric icon={WalletCards} label={`${selectedMonth.label} total AUM`} value={currency(monthTotals.aumZar)} helper={`Source: ${selectedMonth.sourceFile}`} />
           <Metric icon={Banknote} label="Rebate fees" value={currency(monthTotals.rebateZar)} helper="Calculated from native client values, then converted to ZAR" />
           <Metric icon={FileText} label="Advisory fees" value={currency(monthTotals.advisoryZar)} helper="Click any ZAR fee total to audit the calculation" />
+        </section>
+
+        <section className="mt-6 border border-border bg-white">
+          <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">AUM source reconciliation</p>
+              <h2 className="mt-1 text-xl font-semibold text-navy">{selectedMonth.label} native values converted to ZAR</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">USD/ZAR {selectedMonth.exchangeRates.USD.toFixed(4)}</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[680px] text-sm">
+              <thead className="bg-[#F2F5F7] text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Currency</th>
+                  <th className="px-4 py-3 font-semibold">Native AUM</th>
+                  <th className="px-4 py-3 font-semibold">FX rate</th>
+                  <th className="px-4 py-3 font-semibold">ZAR value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sourceReconciliationRows.map((row) => (
+                  <tr key={row.code} className="border-t border-border">
+                    <td className="px-4 py-4 font-semibold text-navy">{row.code}</td>
+                    <td className="px-4 py-4">{currency(row.nativeValue, row.code)}</td>
+                    <td className="px-4 py-4">{row.fxRate.toFixed(4)}</td>
+                    <td className="px-4 py-4 font-semibold">{currency(row.zarValue)}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-border bg-navy/5">
+                  <td className="px-4 py-4 font-semibold text-navy" colSpan={3}>Total AUM</td>
+                  <td className="px-4 py-4 text-lg font-semibold text-navy">{currency(monthTotals.aumZar)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="mt-6 grid gap-6 xl:grid-cols-[0.95fr_1.55fr]">
@@ -517,18 +591,18 @@ export default function Landing() {
                 </tr>
               </thead>
               <tbody>
-                {selectedMonth.clients.map((client) => (
+                {clientSummaries.map((client) => (
                   <tr key={client.id} className="border-t border-border">
                     <td className="px-4 py-4 font-semibold text-navy">{client.client}</td>
-                    <td className="px-4 py-4">{client.providerName}</td>
+                    <td className="px-4 py-4">{client.providers}</td>
                     <td className="px-4 py-4">
                       {Object.entries(client.nativeValues).map(([code, value]) => (
                         <span key={code} className="mr-3 whitespace-nowrap">{currency(value, code)}</span>
                       ))}
                     </td>
                     <td className="px-4 py-4">{currency(client.zarAum)}</td>
-                    <td className="px-4 py-4">{currency(feeFor(client, 'rebate').zarFee)}</td>
-                    <td className="px-4 py-4 font-semibold">{currency(feeFor(client, 'advisory').zarFee)}</td>
+                    <td className="px-4 py-4">{currency(client.rebateZar)}</td>
+                    <td className="px-4 py-4 font-semibold">{currency(client.advisoryZar)}</td>
                   </tr>
                 ))}
               </tbody>

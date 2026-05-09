@@ -42,6 +42,15 @@ export const monthlyClientData = [
       "USD": 16.1329,
       "ZAR": 1
     },
+    "sourceNativeTotals": {
+      "USD": 32973688.220000003,
+      "ZAR": 635493828.4258403
+    },
+    "sourceZarTotals": {
+      "USD": 531961214.684438,
+      "ZAR": 635493828.4258403
+    },
+    "sourceZarTotal": 1167455043.1102781,
     "clients": [
       {
         "id": "credo|10012899|Blackbeard, Ginette",
@@ -53,42 +62,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 179116.0
         },
-        "zarAum": 2889660.52,
+        "zarAum": 2889660.5164,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1058.0,
-            "zarValue": 17068.61
+            "zarValue": 17068.6082
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 178058.0,
-            "zarValue": 2872591.91
+            "zarValue": 2872591.9082
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 44.78
+              "USD": 44.778999999999996
             },
-            "zarFee": 722.43
+            "zarFee": 722.4151291
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 89.56
+              "USD": 89.55799999999999
             },
-            "zarFee": 1444.86
+            "zarFee": 1444.8302582
           },
           "total": {
             "nativeFees": {
-              "USD": 134.34
+              "USD": 134.337
             },
-            "zarFee": 2167.29
+            "zarFee": 2167.2453873
           }
         }
       },
@@ -102,42 +111,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 118353.0
         },
-        "zarAum": 1909377.11,
+        "zarAum": 1909377.1136999999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 678.0,
-            "zarValue": 10938.11
+            "zarValue": 10938.1062
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 117675.0,
-            "zarValue": 1898439.01
+            "zarValue": 1898439.0074999998
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 29.59
+              "USD": 29.588250000000002
             },
-            "zarFee": 477.37
+            "zarFee": 477.344278425
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 59.18
+              "USD": 59.176500000000004
             },
-            "zarFee": 954.75
+            "zarFee": 954.68855685
           },
           "total": {
             "nativeFees": {
-              "USD": 88.77
+              "USD": 88.76475
             },
-            "zarFee": 1432.12
+            "zarFee": 1432.032835275
           }
         }
       },
@@ -151,54 +160,54 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 416404.0
         },
-        "zarAum": 6717804.09,
+        "zarAum": 6717804.091599999,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2742.0,
-            "zarValue": 44236.41
+            "zarValue": 44236.4118
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 193516.0,
-            "zarValue": 3121974.28
+            "zarValue": 3121974.2764
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 111783.0,
-            "zarValue": 1803383.96
+            "zarValue": 1803383.9607
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 108363.0,
-            "zarValue": 1748209.44
+            "zarValue": 1748209.4427
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 104.1
+              "USD": 104.101
             },
-            "zarFee": 1679.43
+            "zarFee": 1679.4510228999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 208.2
+              "USD": 208.202
             },
-            "zarFee": 3358.87
+            "zarFee": 3358.9020457999995
           },
           "total": {
             "nativeFees": {
-              "USD": 312.3
+              "USD": 312.303
             },
-            "zarFee": 5038.3
+            "zarFee": 5038.353068699999
           }
         }
       },
@@ -212,48 +221,48 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 307236.0
         },
-        "zarAum": 4956607.66,
+        "zarAum": 4956607.6644,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1428.0,
-            "zarValue": 23037.78
+            "zarValue": 23037.781199999998
           },
           {
             "investment": "Harmony Capital Limited Special Situations Class",
             "currency": "USD",
             "nativeValue": 2817.0,
-            "zarValue": 45446.38
+            "zarValue": 45446.3793
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 302991.0,
-            "zarValue": 4888123.5
+            "zarValue": 4888123.5039
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 76.81
+              "USD": 76.809
             },
-            "zarFee": 1239.17
+            "zarFee": 1239.1519161
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 153.62
+              "USD": 153.618
             },
-            "zarFee": 2478.34
+            "zarFee": 2478.3038322
           },
           "total": {
             "nativeFees": {
-              "USD": 230.43
+              "USD": 230.427
             },
-            "zarFee": 3717.51
+            "zarFee": 3717.4557483000003
           }
         }
       },
@@ -267,42 +276,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 54730.0
         },
-        "zarAum": 882953.62,
+        "zarAum": 882953.617,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 417.0,
-            "zarValue": 6727.42
+            "zarValue": 6727.4193
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 54313.0,
-            "zarValue": 876226.2
+            "zarValue": 876226.1977
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 13.68
+              "USD": 13.6825
             },
-            "zarFee": 220.7
+            "zarFee": 220.73840425
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 27.36
+              "USD": 27.365
             },
-            "zarFee": 441.4
+            "zarFee": 441.4768085
           },
           "total": {
             "nativeFees": {
-              "USD": 41.04
+              "USD": 41.0475
             },
-            "zarFee": 662.1
+            "zarFee": 662.21521275
           }
         }
       },
@@ -316,96 +325,96 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1586355.0
         },
-        "zarAum": 25592506.58,
+        "zarAum": 25592506.5795,
         "holdingCount": 11,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 75263.0,
-            "zarValue": 1214210.45
+            "zarValue": 1214210.4527
           },
           {
             "investment": "Volkswagen AG",
             "currency": "USD",
             "nativeValue": 11438.0,
-            "zarValue": 184528.11
+            "zarValue": 184528.1102
           },
           {
             "investment": "Fundsmith Equity Fund",
             "currency": "USD",
             "nativeValue": 126289.0,
-            "zarValue": 2037407.81
+            "zarValue": 2037407.8081
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 46832.0,
-            "zarValue": 755535.97
+            "zarValue": 755535.9728
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 20492.0,
-            "zarValue": 330595.39
+            "zarValue": 330595.3868
           },
           {
             "investment": "Invesco Solar ETF",
             "currency": "USD",
             "nativeValue": 37094.0,
-            "zarValue": 598433.79
+            "zarValue": 598433.7925999999
           },
           {
             "investment": "iShares Global Tech ETF",
             "currency": "USD",
             "nativeValue": 151105.0,
-            "zarValue": 2437761.85
+            "zarValue": 2437761.8545
           },
           {
             "investment": "Jinkosolar Holding Co Ltd",
             "currency": "USD",
             "nativeValue": 44109.0,
-            "zarValue": 711606.09
+            "zarValue": 711606.0861
           },
           {
             "investment": "Kraneshares CSI China Internet ETF",
             "currency": "USD",
             "nativeValue": 28910.0,
-            "zarValue": 466402.14
+            "zarValue": 466402.13899999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 915898.0,
-            "zarValue": 14776090.84
+            "zarValue": 14776090.8442
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 128925.0,
-            "zarValue": 2079934.13
+            "zarValue": 2079934.1324999998
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 396.59
+              "USD": 396.58875000000006
             },
-            "zarFee": 6398.15
+            "zarFee": 6398.126644875
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 793.18
+              "USD": 793.1775000000001
             },
-            "zarFee": 12796.29
+            "zarFee": 12796.25328975
           },
           "total": {
             "nativeFees": {
-              "USD": 1189.77
+              "USD": 1189.7662500000001
             },
-            "zarFee": 19194.44
+            "zarFee": 19194.379934625
           }
         }
       },
@@ -419,42 +428,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 73799.0
         },
-        "zarAum": 1190591.89,
+        "zarAum": 1190591.8871000002,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1774.0,
-            "zarValue": 28619.76
+            "zarValue": 28619.7646
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 72025.0,
-            "zarValue": 1161972.12
+            "zarValue": 1161972.1225
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 18.45
+              "USD": 18.449749999999998
             },
-            "zarFee": 297.65
+            "zarFee": 297.64797177500003
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 36.9
+              "USD": 36.899499999999996
             },
-            "zarFee": 595.3
+            "zarFee": 595.2959435500001
           },
           "total": {
             "nativeFees": {
-              "USD": 55.35
+              "USD": 55.34925
             },
-            "zarFee": 892.95
+            "zarFee": 892.943915325
           }
         }
       },
@@ -468,48 +477,48 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 134883.0
         },
-        "zarAum": 2176053.95,
+        "zarAum": 2176053.9507,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2477.0,
-            "zarValue": 39961.19
+            "zarValue": 39961.1933
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 51772.0,
-            "zarValue": 835232.5
+            "zarValue": 835232.4988
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 80634.0,
-            "zarValue": 1300860.26
+            "zarValue": 1300860.2586
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 33.72
+              "USD": 33.72075
             },
-            "zarFee": 544.0
+            "zarFee": 544.013487675
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 67.44
+              "USD": 67.4415
             },
-            "zarFee": 1088.0
+            "zarFee": 1088.02697535
           },
           "total": {
             "nativeFees": {
-              "USD": 101.16
+              "USD": 101.16225
             },
-            "zarFee": 1632.0
+            "zarFee": 1632.040463025
           }
         }
       },
@@ -523,90 +532,90 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 3941455.0
         },
-        "zarAum": 63587099.37,
+        "zarAum": 63587099.3695,
         "holdingCount": 10,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 9188.0,
-            "zarValue": 148229.09
+            "zarValue": 148229.0852
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 328625.0,
-            "zarValue": 5301674.26
+            "zarValue": 5301674.2625
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 22031.0,
-            "zarValue": 355423.92
+            "zarValue": 355423.9199
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 21343.0,
-            "zarValue": 344324.48
+            "zarValue": 344324.4847
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 159490.0,
-            "zarValue": 2573036.22
+            "zarValue": 2573036.221
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 220882.0,
-            "zarValue": 3563467.22
+            "zarValue": 3563467.2177999998
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 140472.0,
-            "zarValue": 2266220.73
+            "zarValue": 2266220.7287999997
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 30803.0,
-            "zarValue": 496941.72
+            "zarValue": 496941.71869999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 2973705.0,
-            "zarValue": 47974485.39
+            "zarValue": 47974485.394499995
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 34916.0,
-            "zarValue": 563296.34
+            "zarValue": 563296.3364
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 985.36
+              "USD": 985.36375
             },
-            "zarFee": 15896.71
+            "zarFee": 15896.774842375
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 1970.73
+              "USD": 1970.7275
             },
-            "zarFee": 31793.59
+            "zarFee": 31793.54968475
           },
           "total": {
             "nativeFees": {
-              "USD": 2956.09
+              "USD": 2956.09125
             },
-            "zarFee": 47690.3
+            "zarFee": 47690.324527125
           }
         }
       },
@@ -620,53 +629,53 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 581245.0
         },
-        "zarAum": 9377167.46,
+        "zarAum": 9377167.4605,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 133.0,
-            "zarValue": 2145.68
+            "zarValue": 2145.6757
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 444736.0,
-            "zarValue": 7174881.41
+            "zarValue": 7174881.4144
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 136376.0,
-            "zarValue": 2200140.37
+            "zarValue": 2200140.3704
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 145.31
+              "USD": 145.31125
             },
-            "zarFee": 2344.27
+            "zarFee": 2344.291865125
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 290.62
+              "USD": 290.6225
             },
-            "zarFee": 4688.54
+            "zarFee": 4688.58373025
           },
           "total": {
             "nativeFees": {
-              "USD": 435.93
+              "USD": 435.93375000000003
             },
-            "zarFee": 7032.81
+            "zarFee": 7032.875595375001
           }
         }
       },
       {
-        "id": "credo|None|Jackson, Matt",
+        "id": "credo||Jackson, Matt",
         "client": "Jackson, Matt",
         "accountCode": "",
         "identityNo": "9708125146083",
@@ -675,42 +684,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 5017.0
         },
-        "zarAum": 80938.76,
+        "zarAum": 80938.75929999999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": -14.0,
-            "zarValue": -225.86
+            "zarValue": -225.86059999999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 5031.0,
-            "zarValue": 81164.62
+            "zarValue": 81164.61989999999
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 1.25
+              "USD": 1.25425
             },
-            "zarFee": 20.17
+            "zarFee": 20.234689825
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 2.51
+              "USD": 2.5085
             },
-            "zarFee": 40.49
+            "zarFee": 40.46937965
           },
           "total": {
             "nativeFees": {
-              "USD": 3.76
+              "USD": 3.7627500000000005
             },
-            "zarFee": 60.66
+            "zarFee": 60.704069475
           }
         }
       },
@@ -724,42 +733,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 317479.0
         },
-        "zarAum": 5121856.96,
+        "zarAum": 5121856.959100001,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1476.0,
-            "zarValue": 23812.16
+            "zarValue": 23812.1604
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 316003.0,
-            "zarValue": 5098044.8
+            "zarValue": 5098044.7987
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 79.37
+              "USD": 79.36975
             },
-            "zarFee": 1280.47
+            "zarFee": 1280.4642397750001
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 158.74
+              "USD": 158.7395
             },
-            "zarFee": 2560.94
+            "zarFee": 2560.9284795500002
           },
           "total": {
             "nativeFees": {
-              "USD": 238.11
+              "USD": 238.10924999999997
             },
-            "zarFee": 3841.41
+            "zarFee": 3841.392719325
           }
         }
       },
@@ -773,36 +782,36 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1494.0
         },
-        "zarAum": 24102.55,
+        "zarAum": 24102.5526,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1494.0,
-            "zarValue": 24102.55
+            "zarValue": 24102.5526
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 0.37
+              "USD": 0.3735
             },
-            "zarFee": 5.97
+            "zarFee": 6.02563815
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 0.75
+              "USD": 0.747
             },
-            "zarFee": 12.1
+            "zarFee": 12.0512763
           },
           "total": {
             "nativeFees": {
-              "USD": 1.12
+              "USD": 1.1205
             },
-            "zarFee": 18.07
+            "zarFee": 18.07691445
           }
         }
       },
@@ -816,66 +825,66 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 51543.0
         },
-        "zarAum": 831538.06,
+        "zarAum": 831538.0647,
         "holdingCount": 6,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 3388.0,
-            "zarValue": 54658.27
+            "zarValue": 54658.265199999994
           },
           {
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 3892.0,
-            "zarValue": 62789.25
+            "zarValue": 62789.2468
           },
           {
             "investment": "Defiance Quantum ETF",
             "currency": "USD",
             "nativeValue": 2895.0,
-            "zarValue": 46704.75
+            "zarValue": 46704.7455
           },
           {
             "investment": "Invesco Nasdaq 100 ETF",
             "currency": "USD",
             "nativeValue": 4609.0,
-            "zarValue": 74356.54
+            "zarValue": 74356.5361
           },
           {
             "investment": "Invesco S&P 500 Momentum ETF",
             "currency": "USD",
             "nativeValue": 4675.0,
-            "zarValue": 75421.31
+            "zarValue": 75421.3075
           },
           {
             "investment": "RSA Government Bond",
             "currency": "USD",
             "nativeValue": 32084.0,
-            "zarValue": 517607.96
+            "zarValue": 517607.96359999996
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 12.89
+              "USD": 12.88575
             },
-            "zarFee": 207.95
+            "zarFee": 207.88451617500002
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 25.77
+              "USD": 25.7715
             },
-            "zarFee": 415.74
+            "zarFee": 415.76903235000003
           },
           "total": {
             "nativeFees": {
-              "USD": 38.66
+              "USD": 38.65725
             },
-            "zarFee": 623.69
+            "zarFee": 623.653548525
           }
         }
       },
@@ -889,54 +898,54 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 303222.0
         },
-        "zarAum": 4891850.2,
+        "zarAum": 4891850.2038,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1687.0,
-            "zarValue": 27216.2
+            "zarValue": 27216.202299999997
           },
           {
             "investment": "iShares Global 100 ETF",
             "currency": "USD",
             "nativeValue": 141296.0,
-            "zarValue": 2279514.24
+            "zarValue": 2279514.2383999997
           },
           {
             "investment": "iShares Physical Gold ETF",
             "currency": "USD",
             "nativeValue": 66234.0,
-            "zarValue": 1068546.5
+            "zarValue": 1068546.4986
           },
           {
             "investment": "BBVA Global Markets ",
             "currency": "USD",
             "nativeValue": 94005.0,
-            "zarValue": 1516573.26
+            "zarValue": 1516573.2645
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 75.81
+              "USD": 75.80550000000001
             },
-            "zarFee": 1223.04
+            "zarFee": 1222.9625509500001
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 151.61
+              "USD": 151.61100000000002
             },
-            "zarFee": 2445.91
+            "zarFee": 2445.9251019000003
           },
           "total": {
             "nativeFees": {
-              "USD": 227.42
+              "USD": 227.41650000000004
             },
-            "zarFee": 3668.95
+            "zarFee": 3668.8876528500004
           }
         }
       },
@@ -950,42 +959,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 706794.0
         },
-        "zarAum": 11402636.92,
+        "zarAum": 11402636.9226,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 10439.0,
-            "zarValue": 168411.34
+            "zarValue": 168411.3431
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 696355.0,
-            "zarValue": 11234225.58
+            "zarValue": 11234225.579499999
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 176.7
+              "USD": 176.6985
             },
-            "zarFee": 2850.68
+            "zarFee": 2850.65923065
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 353.4
+              "USD": 353.397
             },
-            "zarFee": 5701.37
+            "zarFee": 5701.3184613
           },
           "total": {
             "nativeFees": {
-              "USD": 530.1
+              "USD": 530.0955
             },
-            "zarFee": 8552.05
+            "zarFee": 8551.97769195
           }
         }
       },
@@ -999,108 +1008,108 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 2811527.0
         },
-        "zarAum": 45358083.94,
+        "zarAum": 45358083.9383,
         "holdingCount": 13,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2284.0,
-            "zarValue": 36847.54
+            "zarValue": 36847.5436
           },
           {
             "investment": "Digihost Technology Inc",
             "currency": "USD",
             "nativeValue": 2038.0,
-            "zarValue": 32878.85
+            "zarValue": 32878.8502
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 53953.0,
-            "zarValue": 870418.35
+            "zarValue": 870418.3537
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 251999.0,
-            "zarValue": 4065474.67
+            "zarValue": 4065474.6670999997
           },
           {
             "investment": "Amplify Transformational Data Sharing ETF",
             "currency": "USD",
             "nativeValue": 30436.0,
-            "zarValue": 491020.94
+            "zarValue": 491020.9444
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 85413.0,
-            "zarValue": 1377959.39
+            "zarValue": 1377959.3876999998
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 81219.0,
-            "zarValue": 1310298.01
+            "zarValue": 1310298.0051
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 67662.0,
-            "zarValue": 1091584.28
+            "zarValue": 1091584.2798
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1645625.0,
-            "zarValue": 26548703.56
+            "zarValue": 26548703.5625
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 258297.0,
-            "zarValue": 4167079.67
+            "zarValue": 4167079.6713
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 163504.0,
-            "zarValue": 2637793.68
+            "zarValue": 2637793.6816
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 147720.0,
-            "zarValue": 2383151.99
+            "zarValue": 2383151.988
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 21377.0,
-            "zarValue": 344873.0
+            "zarValue": 344873.0033
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 702.88
+              "USD": 702.88175
             },
-            "zarFee": 11339.49
+            "zarFee": 11339.520984575
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 1405.76
+              "USD": 1405.7635
             },
-            "zarFee": 22678.99
+            "zarFee": 22679.04196915
           },
           "total": {
             "nativeFees": {
-              "USD": 2108.64
+              "USD": 2108.64525
             },
-            "zarFee": 34018.48
+            "zarFee": 34018.562953725
           }
         }
       },
@@ -1114,42 +1123,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 305379.0
         },
-        "zarAum": 4926648.87,
+        "zarAum": 4926648.8691,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1558.0,
-            "zarValue": 25135.06
+            "zarValue": 25135.0582
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 303821.0,
-            "zarValue": 4901513.81
+            "zarValue": 4901513.8109
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 76.34
+              "USD": 76.34475
             },
-            "zarFee": 1231.59
+            "zarFee": 1231.662217275
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 152.69
+              "USD": 152.6895
             },
-            "zarFee": 2463.33
+            "zarFee": 2463.32443455
           },
           "total": {
             "nativeFees": {
-              "USD": 229.03
+              "USD": 229.03425000000001
             },
-            "zarFee": 3694.92
+            "zarFee": 3694.986651825
           }
         }
       },
@@ -1177,22 +1186,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2763.06
+              "ZAR": 2763.0599
             },
-            "zarFee": 2763.06
+            "zarFee": 2763.0599
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5526.12
+              "ZAR": 5526.1198
             },
-            "zarFee": 5526.12
+            "zarFee": 5526.1198
           },
           "total": {
             "nativeFees": {
-              "ZAR": 8289.18
+              "ZAR": 8289.1797
             },
-            "zarFee": 8289.18
+            "zarFee": 8289.1797
           }
         }
       },
@@ -1204,38 +1213,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1301224.51
+          "ZAR": 1301224.512092
         },
-        "zarAum": 1301224.51,
+        "zarAum": 1301224.512092,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 1301224.51,
-            "zarValue": 1301224.51
+            "nativeValue": 1301224.512092,
+            "zarValue": 1301224.512092
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 271.09
+              "ZAR": 271.0884400191667
             },
-            "zarFee": 271.09
+            "zarFee": 271.0884400191667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 542.18
+              "ZAR": 542.1768800383334
             },
-            "zarFee": 542.18
+            "zarFee": 542.1768800383334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 813.27
+              "ZAR": 813.2653200575
             },
-            "zarFee": 813.27
+            "zarFee": 813.2653200575
           }
         }
       },
@@ -1247,38 +1256,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 859311.28
+          "ZAR": 859311.284118
         },
-        "zarAum": 859311.28,
+        "zarAum": 859311.284118,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 859311.28,
-            "zarValue": 859311.28
+            "nativeValue": 859311.284118,
+            "zarValue": 859311.284118
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 179.02
+              "ZAR": 179.02318419125
             },
-            "zarFee": 179.02
+            "zarFee": 179.02318419125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 358.05
+              "ZAR": 358.0463683825
             },
-            "zarFee": 358.05
+            "zarFee": 358.0463683825
           },
           "total": {
             "nativeFees": {
-              "ZAR": 537.07
+              "ZAR": 537.06955257375
             },
-            "zarFee": 537.07
+            "zarFee": 537.06955257375
           }
         }
       },
@@ -1290,81 +1299,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 524147.02
+          "ZAR": 524147.016902
         },
-        "zarAum": 524147.02,
+        "zarAum": 524147.016902,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 524147.02,
-            "zarValue": 524147.02
+            "nativeValue": 524147.016902,
+            "zarValue": 524147.016902
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 109.2
+              "ZAR": 109.19729518791667
             },
-            "zarFee": 109.2
+            "zarFee": 109.19729518791667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 218.39
+              "ZAR": 218.39459037583333
             },
-            "zarFee": 218.39
+            "zarFee": 218.39459037583333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 327.59
+              "ZAR": 327.59188556375
             },
-            "zarFee": 327.59
-          }
-        }
-      },
-      {
-        "id": "gryphon|6992|BSM Management (Pty) Ltd",
-        "client": "BSM Management (Pty) Ltd",
-        "accountCode": "6992",
-        "identityNo": "K2023267015",
-        "providerId": "gryphon",
-        "providerName": "Gryphon",
-        "nativeValues": {
-          "ZAR": 0.0
-        },
-        "zarAum": 0.0,
-        "holdingCount": 1,
-        "holdings": [
-          {
-            "investment": "Gryphon Dividend Income Fund",
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          }
-        ],
-        "fees": {
-          "rebate": {
-            "annualRate": 0.0025,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "advisory": {
-            "annualRate": 0.005,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "total": {
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
+            "zarFee": 327.59188556375
           }
         }
       },
@@ -1376,38 +1342,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 42343446.44
+          "ZAR": 42343446.43863
         },
-        "zarAum": 42343446.44,
+        "zarAum": 42343446.43863,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 42343446.44,
-            "zarValue": 42343446.44
+            "nativeValue": 42343446.43863,
+            "zarValue": 42343446.43863
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 8821.55
+              "ZAR": 8821.55134138125
             },
-            "zarFee": 8821.55
+            "zarFee": 8821.55134138125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 17643.1
+              "ZAR": 17643.1026827625
             },
-            "zarFee": 17643.1
+            "zarFee": 17643.1026827625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 26464.65
+              "ZAR": 26464.654024143747
             },
-            "zarFee": 26464.65
+            "zarFee": 26464.654024143747
           }
         }
       },
@@ -1419,44 +1385,44 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1732782.9
+          "ZAR": 1732782.900528
         },
-        "zarAum": 1732782.9,
+        "zarAum": 1732782.900528,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 899584.47,
-            "zarValue": 899584.47
+            "nativeValue": 899584.471836,
+            "zarValue": 899584.471836
           },
           {
             "investment": "Gryphon Dividend Income Fund C",
             "currency": "ZAR",
-            "nativeValue": 833198.43,
-            "zarValue": 833198.43
+            "nativeValue": 833198.428692,
+            "zarValue": 833198.428692
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 361.0
+              "ZAR": 360.99643761
             },
-            "zarFee": 361.0
+            "zarFee": 360.99643761
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 721.99
+              "ZAR": 721.99287522
             },
-            "zarFee": 721.99
+            "zarFee": 721.99287522
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1082.99
+              "ZAR": 1082.98931283
             },
-            "zarFee": 1082.99
+            "zarFee": 1082.98931283
           }
         }
       },
@@ -1468,38 +1434,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 2960118.0
+          "ZAR": 2960117.998718
         },
-        "zarAum": 2960118.0,
+        "zarAum": 2960117.998718,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 2960118.0,
-            "zarValue": 2960118.0
+            "nativeValue": 2960117.998718,
+            "zarValue": 2960117.998718
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 616.69
+              "ZAR": 616.6912497329166
             },
-            "zarFee": 616.69
+            "zarFee": 616.6912497329166
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1233.38
+              "ZAR": 1233.3824994658332
             },
-            "zarFee": 1233.38
+            "zarFee": 1233.3824994658332
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1850.07
+              "ZAR": 1850.0737491987497
             },
-            "zarFee": 1850.07
+            "zarFee": 1850.0737491987497
           }
         }
       },
@@ -1511,38 +1477,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 242686.94
+          "ZAR": 242686.936595
         },
-        "zarAum": 242686.94,
+        "zarAum": 242686.936595,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 242686.94,
-            "zarValue": 242686.94
+            "nativeValue": 242686.936595,
+            "zarValue": 242686.936595
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 50.56
+              "ZAR": 50.559778457291664
             },
-            "zarFee": 50.56
+            "zarFee": 50.559778457291664
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 101.12
+              "ZAR": 101.11955691458333
             },
-            "zarFee": 101.12
+            "zarFee": 101.11955691458333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 151.68
+              "ZAR": 151.679335371875
             },
-            "zarFee": 151.68
+            "zarFee": 151.679335371875
           }
         }
       },
@@ -1554,38 +1520,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 203748.63
+          "ZAR": 203748.630378
         },
-        "zarAum": 203748.63,
+        "zarAum": 203748.630378,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 203748.63,
-            "zarValue": 203748.63
+            "nativeValue": 203748.630378,
+            "zarValue": 203748.630378
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 42.45
+              "ZAR": 42.44763132875
             },
-            "zarFee": 42.45
+            "zarFee": 42.44763132875
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 84.9
+              "ZAR": 84.8952626575
             },
-            "zarFee": 84.9
+            "zarFee": 84.8952626575
           },
           "total": {
             "nativeFees": {
-              "ZAR": 127.35
+              "ZAR": 127.34289398625
             },
-            "zarFee": 127.35
+            "zarFee": 127.34289398625
           }
         }
       },
@@ -1597,38 +1563,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 4595141.53
+          "ZAR": 4595141.53457
         },
-        "zarAum": 4595141.53,
+        "zarAum": 4595141.53457,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 4595141.53,
-            "zarValue": 4595141.53
+            "nativeValue": 4595141.53457,
+            "zarValue": 4595141.53457
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 957.32
+              "ZAR": 957.3211530354166
             },
-            "zarFee": 957.32
+            "zarFee": 957.3211530354166
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1914.64
+              "ZAR": 1914.6423060708332
             },
-            "zarFee": 1914.64
+            "zarFee": 1914.6423060708332
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2871.96
+              "ZAR": 2871.96345910625
             },
-            "zarFee": 2871.96
+            "zarFee": 2871.96345910625
           }
         }
       },
@@ -1640,38 +1606,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1861653.53
+          "ZAR": 1861653.528855
         },
-        "zarAum": 1861653.53,
+        "zarAum": 1861653.528855,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 1861653.53,
-            "zarValue": 1861653.53
+            "nativeValue": 1861653.528855,
+            "zarValue": 1861653.528855
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 387.84
+              "ZAR": 387.844485178125
             },
-            "zarFee": 387.84
+            "zarFee": 387.844485178125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 775.69
+              "ZAR": 775.68897035625
             },
-            "zarFee": 775.69
+            "zarFee": 775.68897035625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1163.53
+              "ZAR": 1163.533455534375
             },
-            "zarFee": 1163.53
+            "zarFee": 1163.533455534375
           }
         }
       },
@@ -1683,38 +1649,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 23318884.55
+          "ZAR": 23318884.554317
         },
-        "zarAum": 23318884.55,
+        "zarAum": 23318884.554317,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 23318884.55,
-            "zarValue": 23318884.55
+            "nativeValue": 23318884.554317,
+            "zarValue": 23318884.554317
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4858.1
+              "ZAR": 4858.100948816043
             },
-            "zarFee": 4858.1
+            "zarFee": 4858.100948816043
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9716.2
+              "ZAR": 9716.201897632085
             },
-            "zarFee": 9716.2
+            "zarFee": 9716.201897632085
           },
           "total": {
             "nativeFees": {
-              "ZAR": 14574.3
+              "ZAR": 14574.302846448129
             },
-            "zarFee": 14574.3
+            "zarFee": 14574.302846448129
           }
         }
       },
@@ -1726,38 +1692,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 22658225.7
+          "ZAR": 22658225.700246
         },
-        "zarAum": 22658225.7,
+        "zarAum": 22658225.700246,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 22658225.7,
-            "zarValue": 22658225.7
+            "nativeValue": 22658225.700246,
+            "zarValue": 22658225.700246
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4720.46
+              "ZAR": 4720.46368755125
             },
-            "zarFee": 4720.46
+            "zarFee": 4720.46368755125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9440.93
+              "ZAR": 9440.9273751025
             },
-            "zarFee": 9440.93
+            "zarFee": 9440.9273751025
           },
           "total": {
             "nativeFees": {
-              "ZAR": 14161.39
+              "ZAR": 14161.391062653749
             },
-            "zarFee": 14161.39
+            "zarFee": 14161.391062653749
           }
         }
       },
@@ -1769,38 +1735,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 16278977.85
+          "ZAR": 16278977.84744
         },
-        "zarAum": 16278977.85,
+        "zarAum": 16278977.84744,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 16278977.85,
-            "zarValue": 16278977.85
+            "nativeValue": 16278977.84744,
+            "zarValue": 16278977.84744
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 3391.45
+              "ZAR": 3391.4537182166673
             },
-            "zarFee": 3391.45
+            "zarFee": 3391.4537182166673
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 6782.91
+              "ZAR": 6782.907436433335
             },
-            "zarFee": 6782.91
+            "zarFee": 6782.907436433335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 10174.36
+              "ZAR": 10174.361154650001
             },
-            "zarFee": 10174.36
+            "zarFee": 10174.361154650001
           }
         }
       },
@@ -1812,38 +1778,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 47495043.57
+          "ZAR": 47495043.573321
         },
-        "zarAum": 47495043.57,
+        "zarAum": 47495043.573321,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 47495043.57,
-            "zarValue": 47495043.57
+            "nativeValue": 47495043.573321,
+            "zarValue": 47495043.573321
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9894.8
+              "ZAR": 9894.800744441874
             },
-            "zarFee": 9894.8
+            "zarFee": 9894.800744441874
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 19789.6
+              "ZAR": 19789.60148888375
             },
-            "zarFee": 19789.6
+            "zarFee": 19789.60148888375
           },
           "total": {
             "nativeFees": {
-              "ZAR": 29684.4
+              "ZAR": 29684.40223332562
             },
-            "zarFee": 29684.4
+            "zarFee": 29684.40223332562
           }
         }
       },
@@ -1855,38 +1821,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 27425445.85
+          "ZAR": 27425445.84611
         },
-        "zarAum": 27425445.85,
+        "zarAum": 27425445.84611,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 27425445.85,
-            "zarValue": 27425445.85
+            "nativeValue": 27425445.84611,
+            "zarValue": 27425445.84611
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 5713.63
+              "ZAR": 5713.634551272917
             },
-            "zarFee": 5713.63
+            "zarFee": 5713.634551272917
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 11427.27
+              "ZAR": 11427.269102545833
             },
-            "zarFee": 11427.27
+            "zarFee": 11427.269102545833
           },
           "total": {
             "nativeFees": {
-              "ZAR": 17140.9
+              "ZAR": 17140.90365381875
             },
-            "zarFee": 17140.9
+            "zarFee": 17140.90365381875
           }
         }
       },
@@ -1898,38 +1864,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 59006210.21
+          "ZAR": 59006210.212287
         },
-        "zarAum": 59006210.21,
+        "zarAum": 59006210.212287,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 59006210.21,
-            "zarValue": 59006210.21
+            "nativeValue": 59006210.212287,
+            "zarValue": 59006210.212287
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 12292.96
+              "ZAR": 12292.960460893126
             },
-            "zarFee": 12292.96
+            "zarFee": 12292.960460893126
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 24585.92
+              "ZAR": 24585.92092178625
             },
-            "zarFee": 24585.92
+            "zarFee": 24585.92092178625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 36878.88
+              "ZAR": 36878.88138267938
             },
-            "zarFee": 36878.88
+            "zarFee": 36878.88138267938
           }
         }
       },
@@ -1941,38 +1907,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 50743.61
+          "ZAR": 50743.608263
         },
-        "zarAum": 50743.61,
+        "zarAum": 50743.608263,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 50743.61,
-            "zarValue": 50743.61
+            "nativeValue": 50743.608263,
+            "zarValue": 50743.608263
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 10.57
+              "ZAR": 10.571585054791667
             },
-            "zarFee": 10.57
+            "zarFee": 10.571585054791667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 21.14
+              "ZAR": 21.143170109583334
             },
-            "zarFee": 21.14
+            "zarFee": 21.143170109583334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 31.71
+              "ZAR": 31.714755164375
             },
-            "zarFee": 31.71
+            "zarFee": 31.714755164375
           }
         }
       },
@@ -1984,38 +1950,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 13208039.18
+          "ZAR": 13208039.175891
         },
-        "zarAum": 13208039.18,
+        "zarAum": 13208039.175891,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 13208039.18,
-            "zarValue": 13208039.18
+            "nativeValue": 13208039.175891,
+            "zarValue": 13208039.175891
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2751.67
+              "ZAR": 2751.674828310625
             },
-            "zarFee": 2751.67
+            "zarFee": 2751.674828310625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5503.35
+              "ZAR": 5503.34965662125
             },
-            "zarFee": 5503.35
+            "zarFee": 5503.34965662125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 8255.02
+              "ZAR": 8255.024484931875
             },
-            "zarFee": 8255.02
+            "zarFee": 8255.024484931875
           }
         }
       },
@@ -2027,38 +1993,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 489.56
+          "ZAR": 489.560123
         },
-        "zarAum": 489.56,
+        "zarAum": 489.560123,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 489.56,
-            "zarValue": 489.56
+            "nativeValue": 489.560123,
+            "zarValue": 489.560123
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 0.1
+              "ZAR": 0.10199169229166666
             },
-            "zarFee": 0.1
+            "zarFee": 0.10199169229166666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 0.2
+              "ZAR": 0.20398338458333332
             },
-            "zarFee": 0.2
+            "zarFee": 0.20398338458333332
           },
           "total": {
             "nativeFees": {
-              "ZAR": 0.3
+              "ZAR": 0.305975076875
             },
-            "zarFee": 0.3
+            "zarFee": 0.305975076875
           }
         }
       },
@@ -2070,38 +2036,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 21791833.27
+          "ZAR": 21791833.271453
         },
-        "zarAum": 21791833.27,
+        "zarAum": 21791833.271453,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 21791833.27,
-            "zarValue": 21791833.27
+            "nativeValue": 21791833.271453,
+            "zarValue": 21791833.271453
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4539.97
+              "ZAR": 4539.965264886042
             },
-            "zarFee": 4539.97
+            "zarFee": 4539.965264886042
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9079.93
+              "ZAR": 9079.930529772084
             },
-            "zarFee": 9079.93
+            "zarFee": 9079.930529772084
           },
           "total": {
             "nativeFees": {
-              "ZAR": 13619.9
+              "ZAR": 13619.895794658125
             },
-            "zarFee": 13619.9
+            "zarFee": 13619.895794658125
           }
         }
       },
@@ -2113,38 +2079,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 4014810.07
+          "ZAR": 4014810.072164
         },
-        "zarAum": 4014810.07,
+        "zarAum": 4014810.072164,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 4014810.07,
-            "zarValue": 4014810.07
+            "nativeValue": 4014810.072164,
+            "zarValue": 4014810.072164
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 836.42
+              "ZAR": 836.4187650341668
             },
-            "zarFee": 836.42
+            "zarFee": 836.4187650341668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1672.84
+              "ZAR": 1672.8375300683335
             },
-            "zarFee": 1672.84
+            "zarFee": 1672.8375300683335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2509.26
+              "ZAR": 2509.2562951025
             },
-            "zarFee": 2509.26
+            "zarFee": 2509.2562951025
           }
         }
       },
@@ -2156,38 +2122,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 201534.97
+          "ZAR": 201534.974766
         },
-        "zarAum": 201534.97,
+        "zarAum": 201534.974766,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 201534.97,
-            "zarValue": 201534.97
+            "nativeValue": 201534.974766,
+            "zarValue": 201534.974766
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 41.99
+              "ZAR": 41.98645307625
             },
-            "zarFee": 41.99
+            "zarFee": 41.98645307625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 83.97
+              "ZAR": 83.9729061525
             },
-            "zarFee": 83.97
+            "zarFee": 83.9729061525
           },
           "total": {
             "nativeFees": {
-              "ZAR": 125.96
+              "ZAR": 125.95935922875
             },
-            "zarFee": 125.96
+            "zarFee": 125.95935922875
           }
         }
       },
@@ -2199,38 +2165,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 28478.48
+          "ZAR": 28478.475659
         },
-        "zarAum": 28478.48,
+        "zarAum": 28478.475659,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 28478.48,
-            "zarValue": 28478.48
+            "nativeValue": 28478.475659,
+            "zarValue": 28478.475659
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 5.93
+              "ZAR": 5.933015762291667
             },
-            "zarFee": 5.93
+            "zarFee": 5.933015762291667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 11.87
+              "ZAR": 11.866031524583335
             },
-            "zarFee": 11.87
+            "zarFee": 11.866031524583335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 17.8
+              "ZAR": 17.799047286875002
             },
-            "zarFee": 17.8
+            "zarFee": 17.799047286875002
           }
         }
       },
@@ -2242,38 +2208,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1222111.17
+          "ZAR": 1222111.174598
         },
-        "zarAum": 1222111.17,
+        "zarAum": 1222111.174598,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 1222111.17,
-            "zarValue": 1222111.17
+            "nativeValue": 1222111.174598,
+            "zarValue": 1222111.174598
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 254.61
+              "ZAR": 254.60649470791668
             },
-            "zarFee": 254.61
+            "zarFee": 254.60649470791668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 509.21
+              "ZAR": 509.21298941583336
             },
-            "zarFee": 509.21
+            "zarFee": 509.21298941583336
           },
           "total": {
             "nativeFees": {
-              "ZAR": 763.82
+              "ZAR": 763.81948412375
             },
-            "zarFee": 763.82
+            "zarFee": 763.81948412375
           }
         }
       },
@@ -2285,38 +2251,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 57168.73
+          "ZAR": 57168.730646
         },
-        "zarAum": 57168.73,
+        "zarAum": 57168.730646,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 57168.73,
-            "zarValue": 57168.73
+            "nativeValue": 57168.730646,
+            "zarValue": 57168.730646
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 11.91
+              "ZAR": 11.910152217916668
             },
-            "zarFee": 11.91
+            "zarFee": 11.910152217916668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 23.82
+              "ZAR": 23.820304435833336
             },
-            "zarFee": 23.82
+            "zarFee": 23.820304435833336
           },
           "total": {
             "nativeFees": {
-              "ZAR": 35.73
+              "ZAR": 35.730456653750004
             },
-            "zarFee": 35.73
+            "zarFee": 35.730456653750004
           }
         }
       },
@@ -2328,38 +2294,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 57817.87
+          "ZAR": 57817.868487
         },
-        "zarAum": 57817.87,
+        "zarAum": 57817.868487,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 57817.87,
-            "zarValue": 57817.87
+            "nativeValue": 57817.868487,
+            "zarValue": 57817.868487
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 12.05
+              "ZAR": 12.045389268125
             },
-            "zarFee": 12.05
+            "zarFee": 12.045389268125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 24.09
+              "ZAR": 24.09077853625
             },
-            "zarFee": 24.09
+            "zarFee": 24.09077853625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 36.14
+              "ZAR": 36.136167804375
             },
-            "zarFee": 36.14
+            "zarFee": 36.136167804375
           }
         }
       },
@@ -2371,81 +2337,81 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 59482890.23
+          "ZAR": 59482890.226245
         },
-        "zarAum": 59482890.23,
+        "zarAum": 59482890.226245,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 59482890.23,
-            "zarValue": 59482890.23
+            "nativeValue": 59482890.226245,
+            "zarValue": 59482890.226245
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 12392.27
+              "ZAR": 12392.268797134377
             },
-            "zarFee": 12392.27
+            "zarFee": 12392.268797134377
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 24784.54
+              "ZAR": 24784.537594268753
             },
-            "zarFee": 24784.54
+            "zarFee": 24784.537594268753
           },
           "total": {
             "nativeFees": {
-              "ZAR": 37176.81
+              "ZAR": 37176.80639140313
             },
-            "zarFee": 37176.81
+            "zarFee": 37176.80639140313
           }
         }
       },
       {
-        "id": "gryphon|None|Thomas, Mayne",
+        "id": "gryphon||Thomas, Mayne",
         "client": "Thomas, Mayne",
         "accountCode": "",
         "identityNo": "8908115051084",
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 7041168.28
+          "ZAR": 7041168.283679
         },
-        "zarAum": 7041168.28,
+        "zarAum": 7041168.283679,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 7041168.28,
-            "zarValue": 7041168.28
+            "nativeValue": 7041168.283679,
+            "zarValue": 7041168.283679
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1466.91
+              "ZAR": 1466.9100590997916
             },
-            "zarFee": 1466.91
+            "zarFee": 1466.9100590997916
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 2933.82
+              "ZAR": 2933.8201181995832
             },
-            "zarFee": 2933.82
+            "zarFee": 2933.8201181995832
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4400.73
+              "ZAR": 4400.730177299375
             },
-            "zarFee": 4400.73
+            "zarFee": 4400.730177299375
           }
         }
       },
@@ -2457,38 +2423,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 12336.79
+          "ZAR": 12336.788759
         },
-        "zarAum": 12336.79,
+        "zarAum": 12336.788759,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 12336.79,
-            "zarValue": 12336.79
+            "nativeValue": 12336.788759,
+            "zarValue": 12336.788759
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2.57
+              "ZAR": 2.5701643247916666
             },
-            "zarFee": 2.57
+            "zarFee": 2.5701643247916666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5.14
+              "ZAR": 5.140328649583333
             },
-            "zarFee": 5.14
+            "zarFee": 5.140328649583333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 7.71
+              "ZAR": 7.710492974375
             },
-            "zarFee": 7.71
+            "zarFee": 7.710492974375
           }
         }
       },
@@ -2500,68 +2466,68 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 7222644.2
+          "USD": 7222644.199999999
         },
-        "zarAum": 116522196.61,
+        "zarAum": 116522196.61418,
         "holdingCount": 6,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 18279.95,
-            "zarValue": 294908.61
+            "zarValue": 294908.605355
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 425569.97,
-            "zarValue": 6865677.77
+            "zarValue": 6865677.769013
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 465791.76,
-            "zarValue": 7514571.88
+            "zarValue": 7514571.884904
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 5900478.29,
-            "zarValue": 95191826.2
+            "zarValue": 95191826.204741
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 273073.89,
-            "zarValue": 4405473.76
+            "zarValue": 4405473.759981
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 139450.34,
-            "zarValue": 2249738.39
+            "zarValue": 2249738.3901859997
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 1938.72
+              "USD": 1938.720757537252
             },
-            "zarFee": 31277.18
+            "zarFee": 31277.188109272738
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 3411.2
+              "USD": 3411.171147776779
             },
-            "zarFee": 55032.55
+            "zarFee": 55032.08300996801
           },
           "total": {
             "nativeFees": {
-              "USD": 5349.92
+              "USD": 5349.891905314031
             },
-            "zarFee": 86309.73
+            "zarFee": 86309.27111924074
           }
         }
       },
@@ -2573,62 +2539,62 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 1764000.33
+          "USD": 1764000.3299999998
         },
-        "zarAum": 28458440.92,
+        "zarAum": 28458440.923856996,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 85352.87,
-            "zarValue": 1376989.32
+            "zarValue": 1376989.3164229998
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 568990.12,
-            "zarValue": 9179460.71
+            "zarValue": 9179460.706948
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 561998.77,
-            "zarValue": 9066669.96
+            "zarValue": 9066669.956533
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 405703.14,
-            "zarValue": 6545168.19
+            "zarValue": 6545168.187306
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 141955.43,
-            "zarValue": 2290152.76
+            "zarValue": 2290152.7566469996
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 473.5
+              "USD": 473.4975116278831
             },
-            "zarFee": 7638.93
+            "zarFee": 7638.888005341475
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 833.12
+              "USD": 833.1169117211557
             },
-            "zarFee": 13440.64
+            "zarFee": 13440.591825106232
           },
           "total": {
             "nativeFees": {
-              "USD": 1306.62
+              "USD": 1306.6144233490388
             },
-            "zarFee": 21079.57
+            "zarFee": 21079.479830447708
           }
         }
       },
@@ -2642,84 +2608,84 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1937782.42
         },
-        "zarAum": 31262050.0,
+        "zarAum": 31262050.003618,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 21134.22,
-            "zarValue": 340956.26
+            "zarValue": 340956.257838
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 16870.99,
-            "zarValue": 272177.99
+            "zarValue": 272177.994571
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 71664.45,
-            "zarValue": 1156155.41
+            "zarValue": 1156155.4054049999
           },
           {
             "investment": "Invesco Global Clean Energy ETF",
             "currency": "USD",
             "nativeValue": 13636.13,
-            "zarValue": 219990.32
+            "zarValue": 219990.32167699997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1356483.71,
-            "zarValue": 21884016.05
+            "zarValue": 21884016.045059
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 210372.3,
-            "zarValue": 3393915.28
+            "zarValue": 3393915.2786699994
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 139802.19,
-            "zarValue": 2255414.75
+            "zarValue": 2255414.751051
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 39600.55,
-            "zarValue": 638871.71
+            "zarValue": 638871.713095
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 68217.88,
-            "zarValue": 1100552.24
+            "zarValue": 1100552.236252
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 520.14
+              "USD": 520.1445477882975
             },
-            "zarFee": 8391.37
+            "zarFee": 8391.439975013824
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 915.2
+              "USD": 915.1921787554016
             },
-            "zarFee": 14764.83
+            "zarFee": 14764.703900643019
           },
           "total": {
             "nativeFees": {
-              "USD": 1435.34
+              "USD": 1435.3367265436991
             },
-            "zarFee": 23156.2
+            "zarFee": 23156.143875656842
           }
         }
       },
@@ -2731,44 +2697,44 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 369315.8
+          "USD": 369315.80000000005
         },
-        "zarAum": 5958134.87,
+        "zarAum": 5958134.86982,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 323.59,
-            "zarValue": 5220.45
+            "zarValue": 5220.445110999999
           },
           {
             "investment": "Wealthworks Global Flexible Fund (USD)",
             "currency": "USD",
             "nativeValue": 368992.21,
-            "zarValue": 5952914.42
+            "zarValue": 5952914.424709
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 99.13
+              "USD": 99.13269818087902
             },
-            "zarFee": 1599.25
+            "zarFee": 1599.297906482303
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 174.42
+              "USD": 174.42357210093496
             },
-            "zarFee": 2813.9
+            "zarFee": 2813.9580463471725
           },
           "total": {
             "nativeFees": {
-              "USD": 273.55
+              "USD": 273.55627028181397
             },
-            "zarFee": 4413.15
+            "zarFee": 4413.255952829475
           }
         }
       },
@@ -2780,22 +2746,22 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 1361735.47
+          "USD": 1361735.4700000002
         },
-        "zarAum": 21968742.16,
+        "zarAum": 21968742.163963,
         "holdingCount": 16,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 81430.56,
-            "zarValue": 1313711.08
+            "zarValue": 1313711.081424
           },
           {
             "investment": "Bayer AG",
             "currency": "USD",
             "nativeValue": 954.19,
-            "zarValue": 15393.85
+            "zarValue": 15393.851851
           },
           {
             "investment": "Alphabet",
@@ -2807,101 +2773,101 @@ export const monthlyClientData = [
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 726544.0,
-            "zarValue": 11721261.7
+            "zarValue": 11721261.6976
           },
           {
             "investment": "Clorox Co",
             "currency": "USD",
             "nativeValue": 563.95,
-            "zarValue": 9098.15
+            "zarValue": 9098.148955
           },
           {
             "investment": "Fossil Group Inc",
             "currency": "USD",
             "nativeValue": 31212.65,
-            "zarValue": 503550.56
+            "zarValue": 503550.561185
           },
           {
             "investment": "Global X Artifical Intelligence & Technology ETF",
             "currency": "USD",
             "nativeValue": 10394.0,
-            "zarValue": 167685.36
+            "zarValue": 167685.3626
           },
           {
             "investment": "Intel Corp",
             "currency": "USD",
             "nativeValue": 1672.92,
-            "zarValue": 26989.05
+            "zarValue": 26989.051068
           },
           {
             "investment": "Invesco QQQ Trust Series",
             "currency": "USD",
             "nativeValue": 9328.05,
-            "zarValue": 150488.5
+            "zarValue": 150488.49784499998
           },
           {
             "investment": "Meta Platforms Inc",
             "currency": "USD",
             "nativeValue": 7165.0,
-            "zarValue": 115592.23
+            "zarValue": 115592.2285
           },
           {
             "investment": "Microsoft Corp",
             "currency": "USD",
             "nativeValue": 6884.64,
-            "zarValue": 111069.21
+            "zarValue": 111069.208656
           },
           {
             "investment": "Paypal Holdings Inc",
             "currency": "USD",
             "nativeValue": 368.83,
-            "zarValue": 5950.3
+            "zarValue": 5950.297506999999
           },
           {
             "investment": "Tesla Inc",
             "currency": "USD",
             "nativeValue": 45193.05,
-            "zarValue": 729094.96
+            "zarValue": 729094.9563450001
           },
           {
             "investment": "Tripadvisor Inc",
             "currency": "USD",
             "nativeValue": 970.17,
-            "zarValue": 15651.66
+            "zarValue": 15651.655593
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 391006.96,
-            "zarValue": 6308076.18
+            "zarValue": 6308076.184984
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 31146.5,
-            "zarValue": 502483.37
+            "zarValue": 502483.36984999996
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 365.52
+              "USD": 365.520541903995
             },
-            "zarFee": 5896.9
+            "zarFee": 5896.906350482961
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 643.14
+              "USD": 643.1318804501338
             },
-            "zarFee": 10375.71
+            "zarFee": 10375.582314113964
           },
           "total": {
             "nativeFees": {
-              "USD": 1008.66
+              "USD": 1008.6524223541289
             },
-            "zarFee": 16272.61
+            "zarFee": 16272.488664596925
           }
         }
       },
@@ -2913,86 +2879,86 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 4369898.56
+          "USD": 4369898.5600000005
         },
-        "zarAum": 70499136.48,
+        "zarAum": 70499136.478624,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 10504.29,
-            "zarValue": 169464.66
+            "zarValue": 169464.660141
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 14793.02,
-            "zarValue": 238654.31
+            "zarValue": 238654.312358
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 45314.35,
-            "zarValue": 731051.88
+            "zarValue": 731051.8771149999
           },
           {
             "investment": "Meituan",
             "currency": "USD",
             "nativeValue": 6521.69,
-            "zarValue": 105213.77
+            "zarValue": 105213.77260099999
           },
           {
             "investment": "Tencent Holdings Limited",
             "currency": "USD",
             "nativeValue": 406598.9,
-            "zarValue": 6559619.39
+            "zarValue": 6559619.39381
           },
           {
             "investment": "Alibaba Group Holding",
             "currency": "USD",
             "nativeValue": 156843.0,
-            "zarValue": 2530332.43
+            "zarValue": 2530332.4347
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1639599.96,
-            "zarValue": 26451502.19
+            "zarValue": 26451502.194684
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 646726.27,
-            "zarValue": 10433570.24
+            "zarValue": 10433570.241283
           },
           {
             "investment": "Xhaos Special Opportunities Fund D",
             "currency": "USD",
             "nativeValue": 1442997.08,
-            "zarValue": 23279727.59
+            "zarValue": 23279727.591932
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 1172.98
+              "USD": 1172.9794258180611
             },
-            "zarFee": 18923.57
+            "zarFee": 18923.559778780193
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 2063.87
+              "USD": 2063.85244431441
             },
-            "zarFee": 33296.21
+            "zarFee": 33295.92509887994
           },
           "total": {
             "nativeFees": {
-              "USD": 3236.85
+              "USD": 3236.8318701324715
             },
-            "zarFee": 52219.78
+            "zarFee": 52219.48487766013
           }
         }
       },
@@ -3004,62 +2970,62 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 3518729.85
+          "USD": 3518729.8500000006
         },
-        "zarAum": 56767316.8,
+        "zarAum": 56767316.79706499,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 9559.4,
-            "zarValue": 154220.84
+            "zarValue": 154220.84425999998
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 198418.19,
-            "zarValue": 3201060.82
+            "zarValue": 3201060.8174509997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1209675.16,
-            "zarValue": 19515568.39
+            "zarValue": 19515568.388763998
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 693351.28,
-            "zarValue": 11185766.87
+            "zarValue": 11185766.865112
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 1407725.82,
-            "zarValue": 22710699.88
+            "zarValue": 22710699.881478
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 944.51
+              "USD": 944.5065285592973
             },
-            "zarFee": 15237.69
+            "zarFee": 15237.629374594282
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 1661.87
+              "USD": 1661.8553273247098
             },
-            "zarFee": 26810.78
+            "zarFee": 26810.5458101968
           },
           "total": {
             "nativeFees": {
-              "USD": 2606.38
+              "USD": 2606.361855884007
             },
-            "zarFee": 42048.47
+            "zarFee": 42048.17518479108
           }
         }
       },
@@ -3073,14 +3039,14 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 533550.59
         },
-        "zarAum": 8607718.31,
+        "zarAum": 8607718.313411,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "FNB Securities Trading Account (Northstar)",
             "currency": "USD",
             "nativeValue": 533550.59,
-            "zarValue": 8607718.31
+            "zarValue": 8607718.313411
           }
         ],
         "fees": {
@@ -3094,20 +3060,20 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "USD": 222.31
+              "USD": 222.31274583333334
             },
-            "zarFee": 3586.5
+            "zarFee": 3586.549297254583
           },
           "total": {
             "nativeFees": {
-              "USD": 222.31
+              "USD": 222.31274583333334
             },
-            "zarFee": 3586.5
+            "zarFee": 3586.549297254583
           }
         }
       },
       {
-        "id": "northstar-sanlam|None|Fowler, Merle",
+        "id": "northstar-sanlam||Fowler, Merle",
         "client": "Fowler, Merle",
         "accountCode": "",
         "identityNo": "5202120048084",
@@ -3137,15 +3103,15 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1253.12
+              "ZAR": 1253.1225083333334
             },
-            "zarFee": 1253.12
+            "zarFee": 1253.1225083333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1253.12
+              "ZAR": 1253.1225083333334
             },
-            "zarFee": 1253.12
+            "zarFee": 1253.1225083333334
           }
         }
       },
@@ -3180,20 +3146,20 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1389.02
+              "ZAR": 1389.0187166666667
             },
-            "zarFee": 1389.02
+            "zarFee": 1389.0187166666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1389.02
+              "ZAR": 1389.0187166666667
             },
-            "zarFee": 1389.02
+            "zarFee": 1389.0187166666667
           }
         }
       },
       {
-        "id": "prescient|None|Commercial Buildings (Pty) Ltd",
+        "id": "prescient||Commercial Buildings (Pty) Ltd",
         "client": "Commercial Buildings (Pty) Ltd",
         "accountCode": "",
         "identityNo": "1927/000221/07",
@@ -3223,15 +3189,15 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 17695.0
+              "ZAR": 17694.997212500002
             },
-            "zarFee": 17695.0
+            "zarFee": 17694.997212500002
           },
           "total": {
             "nativeFees": {
-              "ZAR": 17695.0
+              "ZAR": 17694.997212500002
             },
-            "zarFee": 17695.0
+            "zarFee": 17694.997212500002
           }
         }
       },
@@ -3243,9 +3209,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 6762949.13
+          "ZAR": 6762949.130000001
         },
-        "zarAum": 6762949.13,
+        "zarAum": 6762949.130000001,
         "holdingCount": 2,
         "holdings": [
           {
@@ -3265,71 +3231,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1408.95
+              "ZAR": 1408.9477354166668
             },
-            "zarFee": 1408.95
+            "zarFee": 1408.9477354166668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 2817.9
+              "ZAR": 2817.8954708333335
             },
-            "zarFee": 2817.9
+            "zarFee": 2817.8954708333335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4226.85
+              "ZAR": 4226.843206250001
             },
-            "zarFee": 4226.85
-          }
-        }
-      },
-      {
-        "id": "prime|None|Apex Images CC",
-        "client": "Apex Images CC",
-        "accountCode": "",
-        "identityNo": "2009/040089/23",
-        "providerId": "prime",
-        "providerName": "Prime Investments",
-        "nativeValues": {
-          "ZAR": 0.0
-        },
-        "zarAum": 0.0,
-        "holdingCount": 2,
-        "holdings": [
-          {
-            "investment": "Wealthworks Prime Managed Fund of Funds",
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          },
-          {
-            "investment": "Wealthworks Prime Cautious Fund of Funds",
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          }
-        ],
-        "fees": {
-          "rebate": {
-            "annualRate": 0.0025,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "advisory": {
-            "annualRate": 0.005,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "total": {
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
+            "zarFee": 4226.843206250001
           }
         }
       },
@@ -3369,22 +3286,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 177.84
+              "ZAR": 177.83529583333336
             },
-            "zarFee": 177.84
+            "zarFee": 177.83529583333336
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 355.67
+              "ZAR": 355.6705916666667
             },
-            "zarFee": 355.67
+            "zarFee": 355.6705916666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 533.51
+              "ZAR": 533.5058875000001
             },
-            "zarFee": 533.51
+            "zarFee": 533.5058875000001
           }
         }
       },
@@ -3412,22 +3329,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 8001.53
+              "ZAR": 8001.533445833334
             },
-            "zarFee": 8001.53
+            "zarFee": 8001.533445833334
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 16003.07
+              "ZAR": 16003.066891666667
             },
-            "zarFee": 16003.07
+            "zarFee": 16003.066891666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 24004.6
+              "ZAR": 24004.6003375
             },
-            "zarFee": 24004.6
+            "zarFee": 24004.6003375
           }
         }
       },
@@ -3455,22 +3372,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 325.82
+              "ZAR": 325.82019166666663
             },
-            "zarFee": 325.82
+            "zarFee": 325.82019166666663
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 651.64
+              "ZAR": 651.6403833333333
             },
-            "zarFee": 651.64
+            "zarFee": 651.6403833333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 977.46
+              "ZAR": 977.4605749999998
             },
-            "zarFee": 977.46
+            "zarFee": 977.4605749999998
           }
         }
       },
@@ -3498,22 +3415,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 74.21
+              "ZAR": 74.20763333333333
             },
-            "zarFee": 74.21
+            "zarFee": 74.20763333333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 148.42
+              "ZAR": 148.41526666666667
             },
-            "zarFee": 148.42
+            "zarFee": 148.41526666666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 222.63
+              "ZAR": 222.62290000000002
             },
-            "zarFee": 222.63
+            "zarFee": 222.62290000000002
           }
         }
       },
@@ -3541,22 +3458,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 537.95
+              "ZAR": 537.95331875
             },
-            "zarFee": 537.95
+            "zarFee": 537.95331875
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1075.91
+              "ZAR": 1075.9066375
             },
-            "zarFee": 1075.91
+            "zarFee": 1075.9066375
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1613.86
+              "ZAR": 1613.8599562499999
             },
-            "zarFee": 1613.86
+            "zarFee": 1613.8599562499999
           }
         }
       },
@@ -3584,22 +3501,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1597.18
+              "ZAR": 1597.1777854166667
             },
-            "zarFee": 1597.18
+            "zarFee": 1597.1777854166667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3194.36
+              "ZAR": 3194.3555708333333
             },
-            "zarFee": 3194.36
+            "zarFee": 3194.3555708333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4791.54
+              "ZAR": 4791.53335625
             },
-            "zarFee": 4791.54
+            "zarFee": 4791.53335625
           }
         }
       },
@@ -3627,22 +3544,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 181.91
+              "ZAR": 181.91063333333332
             },
-            "zarFee": 181.91
+            "zarFee": 181.91063333333332
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 363.82
+              "ZAR": 363.82126666666665
             },
-            "zarFee": 363.82
+            "zarFee": 363.82126666666665
           },
           "total": {
             "nativeFees": {
-              "ZAR": 545.73
+              "ZAR": 545.7319
             },
-            "zarFee": 545.73
+            "zarFee": 545.7319
           }
         }
       },
@@ -3670,22 +3587,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 74.32
+              "ZAR": 74.31543333333333
             },
-            "zarFee": 74.32
+            "zarFee": 74.31543333333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 148.63
+              "ZAR": 148.63086666666666
             },
-            "zarFee": 148.63
+            "zarFee": 148.63086666666666
           },
           "total": {
             "nativeFees": {
-              "ZAR": 222.95
+              "ZAR": 222.9463
             },
-            "zarFee": 222.95
+            "zarFee": 222.9463
           }
         }
       },
@@ -3731,22 +3648,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1530.17
+              "ZAR": 1530.1731604166669
             },
-            "zarFee": 1530.17
+            "zarFee": 1530.1731604166669
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3060.35
+              "ZAR": 3060.3463208333337
             },
-            "zarFee": 3060.35
+            "zarFee": 3060.3463208333337
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4590.52
+              "ZAR": 4590.51948125
             },
-            "zarFee": 4590.52
+            "zarFee": 4590.51948125
           }
         }
       },
@@ -3758,9 +3675,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 1154273.14
+          "ZAR": 1154273.1400000001
         },
-        "zarAum": 1154273.14,
+        "zarAum": 1154273.1400000001,
         "holdingCount": 3,
         "holdings": [
           {
@@ -3786,22 +3703,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 240.47
+              "ZAR": 240.47357083333338
             },
-            "zarFee": 240.47
+            "zarFee": 240.47357083333338
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 480.95
+              "ZAR": 480.94714166666677
             },
-            "zarFee": 480.95
+            "zarFee": 480.94714166666677
           },
           "total": {
             "nativeFees": {
-              "ZAR": 721.42
+              "ZAR": 721.4207125000001
             },
-            "zarFee": 721.42
+            "zarFee": 721.4207125000001
           }
         }
       },
@@ -3847,22 +3764,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 597.43
+              "ZAR": 597.4303416666668
             },
-            "zarFee": 597.43
+            "zarFee": 597.4303416666668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1194.86
+              "ZAR": 1194.8606833333336
             },
-            "zarFee": 1194.86
+            "zarFee": 1194.8606833333336
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1792.29
+              "ZAR": 1792.2910250000004
             },
-            "zarFee": 1792.29
+            "zarFee": 1792.2910250000004
           }
         }
       },
@@ -3890,22 +3807,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 343.27
+              "ZAR": 343.26914375
             },
-            "zarFee": 343.27
+            "zarFee": 343.26914375
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 686.54
+              "ZAR": 686.5382875
             },
-            "zarFee": 686.54
+            "zarFee": 686.5382875
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1029.81
+              "ZAR": 1029.80743125
             },
-            "zarFee": 1029.81
+            "zarFee": 1029.80743125
           }
         }
       },
@@ -3933,22 +3850,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 498.24
+              "ZAR": 498.2374
             },
-            "zarFee": 498.24
+            "zarFee": 498.2374
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 996.47
+              "ZAR": 996.4748
             },
-            "zarFee": 996.47
+            "zarFee": 996.4748
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1494.71
+              "ZAR": 1494.7122
             },
-            "zarFee": 1494.71
+            "zarFee": 1494.7122
           }
         }
       },
@@ -3976,22 +3893,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1508.17
+              "ZAR": 1508.1653229166668
             },
-            "zarFee": 1508.17
+            "zarFee": 1508.1653229166668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3016.33
+              "ZAR": 3016.3306458333336
             },
-            "zarFee": 3016.33
+            "zarFee": 3016.3306458333336
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4524.5
+              "ZAR": 4524.49596875
             },
-            "zarFee": 4524.5
+            "zarFee": 4524.49596875
           }
         }
       },
@@ -4067,22 +3984,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 8492.43
+              "ZAR": 8492.42790625
             },
-            "zarFee": 8492.43
+            "zarFee": 8492.42790625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 16984.86
+              "ZAR": 16984.8558125
             },
-            "zarFee": 16984.86
+            "zarFee": 16984.8558125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 25477.29
+              "ZAR": 25477.283718750004
             },
-            "zarFee": 25477.29
+            "zarFee": 25477.283718750004
           }
         }
       },
@@ -4128,22 +4045,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2421.8
+              "ZAR": 2421.803910416667
             },
-            "zarFee": 2421.8
+            "zarFee": 2421.803910416667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 4843.61
+              "ZAR": 4843.607820833334
             },
-            "zarFee": 4843.61
+            "zarFee": 4843.607820833334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 7265.41
+              "ZAR": 7265.41173125
             },
-            "zarFee": 7265.41
+            "zarFee": 7265.41173125
           }
         }
       },
@@ -4171,22 +4088,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 366.63
+              "ZAR": 366.63342291666663
             },
-            "zarFee": 366.63
+            "zarFee": 366.63342291666663
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 733.27
+              "ZAR": 733.2668458333333
             },
-            "zarFee": 733.27
+            "zarFee": 733.2668458333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1099.9
+              "ZAR": 1099.90026875
             },
-            "zarFee": 1099.9
+            "zarFee": 1099.90026875
           }
         }
       },
@@ -4198,9 +4115,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 641317.7
+          "ZAR": 641317.7000000001
         },
-        "zarAum": 641317.7,
+        "zarAum": 641317.7000000001,
         "holdingCount": 3,
         "holdings": [
           {
@@ -4226,22 +4143,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 133.61
+              "ZAR": 133.60785416666667
             },
-            "zarFee": 133.61
+            "zarFee": 133.60785416666667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 267.22
+              "ZAR": 267.21570833333334
             },
-            "zarFee": 267.22
+            "zarFee": 267.21570833333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 400.83
+              "ZAR": 400.8235625
             },
-            "zarFee": 400.83
+            "zarFee": 400.8235625
           }
         }
       },
@@ -4275,22 +4192,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1702.51
+              "ZAR": 1702.5119125
             },
-            "zarFee": 1702.51
+            "zarFee": 1702.5119125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3405.02
+              "ZAR": 3405.023825
             },
-            "zarFee": 3405.02
+            "zarFee": 3405.023825
           },
           "total": {
             "nativeFees": {
-              "ZAR": 5107.53
+              "ZAR": 5107.5357375
             },
-            "zarFee": 5107.53
+            "zarFee": 5107.5357375
           }
         }
       },
@@ -4318,22 +4235,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2.72
+              "ZAR": 2.7212625
             },
-            "zarFee": 2.72
+            "zarFee": 2.7212625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5.44
+              "ZAR": 5.442525
             },
-            "zarFee": 5.44
+            "zarFee": 5.442525
           },
           "total": {
             "nativeFees": {
-              "ZAR": 8.16
+              "ZAR": 8.1637875
             },
-            "zarFee": 8.16
+            "zarFee": 8.1637875
           }
         }
       },
@@ -4361,22 +4278,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 24.9
+              "ZAR": 24.901760416666665
             },
-            "zarFee": 24.9
+            "zarFee": 24.901760416666665
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 49.8
+              "ZAR": 49.80352083333333
             },
-            "zarFee": 49.8
+            "zarFee": 49.80352083333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 74.7
+              "ZAR": 74.70528125
             },
-            "zarFee": 74.7
+            "zarFee": 74.70528125
           }
         }
       },
@@ -4422,22 +4339,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 306.64
+              "ZAR": 306.6404375
             },
-            "zarFee": 306.64
+            "zarFee": 306.6404375
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 613.28
+              "ZAR": 613.280875
             },
-            "zarFee": 613.28
+            "zarFee": 613.280875
           },
           "total": {
             "nativeFees": {
-              "ZAR": 919.92
+              "ZAR": 919.9213125000001
             },
-            "zarFee": 919.92
+            "zarFee": 919.9213125000001
           }
         }
       },
@@ -4477,22 +4394,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1654.52
+              "ZAR": 1654.5216541666668
             },
-            "zarFee": 1654.52
+            "zarFee": 1654.5216541666668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3309.04
+              "ZAR": 3309.0433083333337
             },
-            "zarFee": 3309.04
+            "zarFee": 3309.0433083333337
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4963.56
+              "ZAR": 4963.564962500001
             },
-            "zarFee": 4963.56
+            "zarFee": 4963.564962500001
           }
         }
       },
@@ -4550,22 +4467,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9354.48
+              "ZAR": 9354.476035416666
             },
-            "zarFee": 9354.48
+            "zarFee": 9354.476035416666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 18708.95
+              "ZAR": 18708.952070833333
             },
-            "zarFee": 18708.95
+            "zarFee": 18708.952070833333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 28063.43
+              "ZAR": 28063.42810625
             },
-            "zarFee": 28063.43
+            "zarFee": 28063.42810625
           }
         }
       },
@@ -4611,22 +4528,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 840.86
+              "ZAR": 840.8602520833333
             },
-            "zarFee": 840.86
+            "zarFee": 840.8602520833333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1681.72
+              "ZAR": 1681.7205041666666
             },
-            "zarFee": 1681.72
+            "zarFee": 1681.7205041666666
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2522.58
+              "ZAR": 2522.58075625
             },
-            "zarFee": 2522.58
+            "zarFee": 2522.58075625
           }
         }
       },
@@ -4654,22 +4571,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 339.46
+              "ZAR": 339.45674375000004
             },
-            "zarFee": 339.46
+            "zarFee": 339.45674375000004
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 678.91
+              "ZAR": 678.9134875000001
             },
-            "zarFee": 678.91
+            "zarFee": 678.9134875000001
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1018.37
+              "ZAR": 1018.3702312500002
             },
-            "zarFee": 1018.37
+            "zarFee": 1018.3702312500002
           }
         }
       },
@@ -4681,9 +4598,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 507015.28
+          "ZAR": 507015.27999999997
         },
-        "zarAum": 507015.28,
+        "zarAum": 507015.27999999997,
         "holdingCount": 2,
         "holdings": [
           {
@@ -4703,22 +4620,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 105.63
+              "ZAR": 105.62818333333333
             },
-            "zarFee": 105.63
+            "zarFee": 105.62818333333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 211.26
+              "ZAR": 211.25636666666665
             },
-            "zarFee": 211.26
+            "zarFee": 211.25636666666665
           },
           "total": {
             "nativeFees": {
-              "ZAR": 316.89
+              "ZAR": 316.88455
             },
-            "zarFee": 316.89
+            "zarFee": 316.88455
           }
         }
       },
@@ -4752,22 +4669,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 459.17
+              "ZAR": 459.1698875
             },
-            "zarFee": 459.17
+            "zarFee": 459.1698875
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 918.34
+              "ZAR": 918.339775
             },
-            "zarFee": 918.34
+            "zarFee": 918.339775
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1377.51
+              "ZAR": 1377.5096625
             },
-            "zarFee": 1377.51
+            "zarFee": 1377.5096625
           }
         }
       },
@@ -4801,22 +4718,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 346.79
+              "ZAR": 346.78568125
             },
-            "zarFee": 346.79
+            "zarFee": 346.78568125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 693.57
+              "ZAR": 693.5713625
             },
-            "zarFee": 693.57
+            "zarFee": 693.5713625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1040.36
+              "ZAR": 1040.35704375
             },
-            "zarFee": 1040.36
+            "zarFee": 1040.35704375
           }
         }
       },
@@ -4828,9 +4745,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 45811.52
+          "ZAR": 45811.520000000004
         },
-        "zarAum": 45811.52,
+        "zarAum": 45811.520000000004,
         "holdingCount": 3,
         "holdings": [
           {
@@ -4856,22 +4773,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9.54
+              "ZAR": 9.544066666666668
             },
-            "zarFee": 9.54
+            "zarFee": 9.544066666666668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 19.09
+              "ZAR": 19.088133333333335
             },
-            "zarFee": 19.09
+            "zarFee": 19.088133333333335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 28.63
+              "ZAR": 28.632200000000005
             },
-            "zarFee": 28.63
+            "zarFee": 28.632200000000005
           }
         }
       },
@@ -4899,22 +4816,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 235.66
+              "ZAR": 235.66093125
             },
-            "zarFee": 235.66
+            "zarFee": 235.66093125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 471.32
+              "ZAR": 471.3218625
             },
-            "zarFee": 471.32
+            "zarFee": 471.3218625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 706.98
+              "ZAR": 706.98279375
             },
-            "zarFee": 706.98
+            "zarFee": 706.98279375
           }
         }
       },
@@ -4942,22 +4859,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 573.02
+              "ZAR": 573.0180875
             },
-            "zarFee": 573.02
+            "zarFee": 573.0180875
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1146.04
+              "ZAR": 1146.036175
             },
-            "zarFee": 1146.04
+            "zarFee": 1146.036175
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1719.06
+              "ZAR": 1719.0542624999998
             },
-            "zarFee": 1719.06
+            "zarFee": 1719.0542624999998
           }
         }
       }
@@ -4971,6 +4888,15 @@ export const monthlyClientData = [
       "USD": 15.9394,
       "ZAR": 1
     },
+    "sourceNativeTotals": {
+      "USD": 32856697.67000001,
+      "ZAR": 633554170.606682
+    },
+    "sourceZarTotals": {
+      "USD": 523716046.84119815,
+      "ZAR": 633554170.606682
+    },
+    "sourceZarTotal": 1157270217.44788,
     "clients": [
       {
         "id": "credo|10012899|Blackbeard, Ginette",
@@ -4982,42 +4908,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 179207.0
         },
-        "zarAum": 2856452.06,
+        "zarAum": 2856452.0557999997,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1058.0,
-            "zarValue": 16863.89
+            "zarValue": 16863.8852
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 178149.0,
-            "zarValue": 2839588.17
+            "zarValue": 2839588.1706
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 44.8
+              "USD": 44.80175
             },
-            "zarFee": 714.09
+            "zarFee": 714.11301395
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 89.6
+              "USD": 89.6035
             },
-            "zarFee": 1428.17
+            "zarFee": 1428.2260279
           },
           "total": {
             "nativeFees": {
-              "USD": 134.4
+              "USD": 134.40525
             },
-            "zarFee": 2142.26
+            "zarFee": 2142.33904185
           }
         }
       },
@@ -5031,42 +4957,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 118407.0
         },
-        "zarAum": 1887336.54,
+        "zarAum": 1887336.5358,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 678.0,
-            "zarValue": 10806.91
+            "zarValue": 10806.913199999999
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 117729.0,
-            "zarValue": 1876529.62
+            "zarValue": 1876529.6226
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 29.6
+              "USD": 29.60175
             },
-            "zarFee": 471.81
+            "zarFee": 471.83413395
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 59.2
+              "USD": 59.2035
             },
-            "zarFee": 943.61
+            "zarFee": 943.6682679
           },
           "total": {
             "nativeFees": {
-              "USD": 88.8
+              "USD": 88.80525
             },
-            "zarFee": 1415.42
+            "zarFee": 1415.50240185
           }
         }
       },
@@ -5080,54 +5006,54 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 378367.0
         },
-        "zarAum": 6030942.96,
+        "zarAum": 6030942.959799999,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 3644.0,
-            "zarValue": 58083.17
+            "zarValue": 58083.173599999995
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 193615.0,
-            "zarValue": 3086106.93
+            "zarValue": 3086106.931
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 117602.0,
-            "zarValue": 1874505.32
+            "zarValue": 1874505.3188
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 63506.0,
-            "zarValue": 1012247.54
+            "zarValue": 1012247.5364
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 94.59
+              "USD": 94.59175
             },
-            "zarFee": 1507.71
+            "zarFee": 1507.73573995
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 189.18
+              "USD": 189.1835
             },
-            "zarFee": 3015.42
+            "zarFee": 3015.4714799
           },
           "total": {
             "nativeFees": {
-              "USD": 283.77
+              "USD": 283.77525
             },
-            "zarFee": 4523.13
+            "zarFee": 4523.20721985
           }
         }
       },
@@ -5141,48 +5067,48 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 307330.0
         },
-        "zarAum": 4898655.8,
+        "zarAum": 4898655.801999999,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1428.0,
-            "zarValue": 22761.46
+            "zarValue": 22761.4632
           },
           {
             "investment": "Harmony Capital Limited Special Situations Class",
             "currency": "USD",
             "nativeValue": 2756.0,
-            "zarValue": 43928.99
+            "zarValue": 43928.986399999994
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 303146.0,
-            "zarValue": 4831965.35
+            "zarValue": 4831965.352399999
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 76.83
+              "USD": 76.8325
             },
-            "zarFee": 1224.62
+            "zarFee": 1224.6639504999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 153.66
+              "USD": 153.665
             },
-            "zarFee": 2449.25
+            "zarFee": 2449.3279009999997
           },
           "total": {
             "nativeFees": {
-              "USD": 230.49
+              "USD": 230.4975
             },
-            "zarFee": 3673.87
+            "zarFee": 3673.9918514999995
           }
         }
       },
@@ -5196,42 +5122,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 48307.0
         },
-        "zarAum": 769984.6,
+        "zarAum": 769984.5958,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 480.0,
-            "zarValue": 7650.91
+            "zarValue": 7650.911999999999
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 47827.0,
-            "zarValue": 762333.68
+            "zarValue": 762333.6838
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 12.08
+              "USD": 12.076749999999999
             },
-            "zarFee": 192.55
+            "zarFee": 192.49614895000002
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 24.15
+              "USD": 24.153499999999998
             },
-            "zarFee": 384.94
+            "zarFee": 384.99229790000004
           },
           "total": {
             "nativeFees": {
-              "USD": 36.23
+              "USD": 36.23025
             },
-            "zarFee": 577.49
+            "zarFee": 577.4884468500001
           }
         }
       },
@@ -5245,96 +5171,96 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1576682.0
         },
-        "zarAum": 25131365.07,
+        "zarAum": 25131365.0708,
         "holdingCount": 11,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 11991.0,
-            "zarValue": 191129.35
+            "zarValue": 191129.3454
           },
           {
             "investment": "Volkswagen AG",
             "currency": "USD",
             "nativeValue": 11198.0,
-            "zarValue": 178489.4
+            "zarValue": 178489.4012
           },
           {
             "investment": "Fundsmith Equity Fund",
             "currency": "USD",
             "nativeValue": 123215.0,
-            "zarValue": 1963973.17
+            "zarValue": 1963973.1709999999
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 45464.0,
-            "zarValue": 724668.88
+            "zarValue": 724668.8816
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 17744.0,
-            "zarValue": 282828.71
+            "zarValue": 282828.71359999996
           },
           {
             "investment": "Invesco Solar ETF",
             "currency": "USD",
             "nativeValue": 37850.0,
-            "zarValue": 603306.29
+            "zarValue": 603306.2899999999
           },
           {
             "investment": "iShares Global Tech ETF",
             "currency": "USD",
             "nativeValue": 150653.0,
-            "zarValue": 2401318.43
+            "zarValue": 2401318.4282
           },
           {
             "investment": "Jinkosolar Holding Co Ltd",
             "currency": "USD",
             "nativeValue": 43609.0,
-            "zarValue": 695101.29
+            "zarValue": 695101.2945999999
           },
           {
             "investment": "Kraneshares CSI China Internet ETF",
             "currency": "USD",
             "nativeValue": 25380.0,
-            "zarValue": 404541.97
+            "zarValue": 404541.97199999995
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 979278.0,
-            "zarValue": 15609103.75
+            "zarValue": 15609103.753199998
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 130300.0,
-            "zarValue": 2076903.82
+            "zarValue": 2076903.8199999998
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 394.17
+              "USD": 394.1705
             },
-            "zarFee": 6282.83
+            "zarFee": 6282.841267700001
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 788.34
+              "USD": 788.341
             },
-            "zarFee": 12565.67
+            "zarFee": 12565.682535400001
           },
           "total": {
             "nativeFees": {
-              "USD": 1182.51
+              "USD": 1182.5115
             },
-            "zarFee": 18848.5
+            "zarFee": 18848.5238031
           }
         }
       },
@@ -5348,42 +5274,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 73835.0
         },
-        "zarAum": 1176885.6,
+        "zarAum": 1176885.599,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1773.0,
-            "zarValue": 28260.56
+            "zarValue": 28260.5562
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 72062.0,
-            "zarValue": 1148625.04
+            "zarValue": 1148625.0428
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 18.46
+              "USD": 18.45875
             },
-            "zarFee": 294.24
+            "zarFee": 294.22139975
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 36.92
+              "USD": 36.9175
             },
-            "zarFee": 588.48
+            "zarFee": 588.4427995
           },
           "total": {
             "nativeFees": {
-              "USD": 55.38
+              "USD": 55.37625
             },
-            "zarFee": 882.72
+            "zarFee": 882.6641992499999
           }
         }
       },
@@ -5397,48 +5323,48 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 135071.0
         },
-        "zarAum": 2152950.7,
+        "zarAum": 2152950.6974,
         "holdingCount": 3,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 2477.0,
-            "zarValue": 39481.89
+            "zarValue": 39481.8938
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 51919.0,
-            "zarValue": 827557.71
+            "zarValue": 827557.7086
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 80675.0,
-            "zarValue": 1285911.09
+            "zarValue": 1285911.095
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 33.77
+              "USD": 33.76775
             },
-            "zarFee": 538.27
+            "zarFee": 538.23767435
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 67.54
+              "USD": 67.5355
             },
-            "zarFee": 1076.55
+            "zarFee": 1076.4753487
           },
           "total": {
             "nativeFees": {
-              "USD": 101.31
+              "USD": 101.30324999999999
             },
-            "zarFee": 1614.82
+            "zarFee": 1614.7130230500002
           }
         }
       },
@@ -5452,90 +5378,90 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 3948119.0
         },
-        "zarAum": 62930647.99,
+        "zarAum": 62930647.98859999,
         "holdingCount": 10,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 9188.0,
-            "zarValue": 146451.21
+            "zarValue": 146451.2072
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 329559.0,
-            "zarValue": 5252972.72
+            "zarValue": 5252972.724599999
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 24876.0,
-            "zarValue": 396508.51
+            "zarValue": 396508.5144
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 20572.0,
-            "zarValue": 327905.34
+            "zarValue": 327905.3368
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 161112.0,
-            "zarValue": 2568028.61
+            "zarValue": 2568028.6128
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 232379.0,
-            "zarValue": 3703981.83
+            "zarValue": 3703981.8326
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 136915.0,
-            "zarValue": 2182342.95
+            "zarValue": 2182342.951
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 31132.0,
-            "zarValue": 496225.4
+            "zarValue": 496225.40079999994
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 2975048.0,
-            "zarValue": 47420480.09
+            "zarValue": 47420480.091199994
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 27338.0,
-            "zarValue": 435751.32
+            "zarValue": 435751.3172
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 987.03
+              "USD": 987.02975
             },
-            "zarFee": 15732.67
+            "zarFee": 15732.661997149999
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 1974.06
+              "USD": 1974.0595
             },
-            "zarFee": 31465.33
+            "zarFee": 31465.323994299997
           },
           "total": {
             "nativeFees": {
-              "USD": 2961.09
+              "USD": 2961.08925
             },
-            "zarFee": 47198.0
+            "zarFee": 47197.98599145
           }
         }
       },
@@ -5549,7 +5475,7 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 588419.0
         },
-        "zarAum": 9379045.81,
+        "zarAum": 9379045.8086,
         "holdingCount": 3,
         "holdings": [
           {
@@ -5562,40 +5488,40 @@ export const monthlyClientData = [
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 438945.0,
-            "zarValue": 6996519.93
+            "zarValue": 6996519.932999999
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 143474.0,
-            "zarValue": 2286889.48
+            "zarValue": 2286889.4756
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 147.1
+              "USD": 147.10475
             },
-            "zarFee": 2344.69
+            "zarFee": 2344.76145215
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 294.21
+              "USD": 294.2095
             },
-            "zarFee": 4689.53
+            "zarFee": 4689.5229043
           },
           "total": {
             "nativeFees": {
-              "USD": 441.31
+              "USD": 441.31425
             },
-            "zarFee": 7034.22
+            "zarFee": 7034.28435645
           }
         }
       },
       {
-        "id": "credo|None|Jackson, Matt",
+        "id": "credo||Jackson, Matt",
         "client": "Jackson, Matt",
         "accountCode": "",
         "identityNo": "9708125146083",
@@ -5604,42 +5530,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 4940.0
         },
-        "zarAum": 78740.64,
+        "zarAum": 78740.636,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 317.0,
-            "zarValue": 5052.79
+            "zarValue": 5052.7898
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 4623.0,
-            "zarValue": 73687.85
+            "zarValue": 73687.8462
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 1.24
+              "USD": 1.235
             },
-            "zarFee": 19.76
+            "zarFee": 19.685159000000002
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
               "USD": 2.47
             },
-            "zarFee": 39.37
+            "zarFee": 39.370318000000005
           },
           "total": {
             "nativeFees": {
-              "USD": 3.71
+              "USD": 3.705
             },
-            "zarFee": 59.13
+            "zarFee": 59.05547700000001
           }
         }
       },
@@ -5653,42 +5579,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 317641.0
         },
-        "zarAum": 5063006.96,
+        "zarAum": 5063006.955399999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1476.0,
-            "zarValue": 23526.55
+            "zarValue": 23526.554399999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 316165.0,
-            "zarValue": 5039480.4
+            "zarValue": 5039480.401
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 79.41
+              "USD": 79.41025
             },
-            "zarFee": 1265.75
+            "zarFee": 1265.7517388499998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 158.82
+              "USD": 158.8205
             },
-            "zarFee": 2531.5
+            "zarFee": 2531.5034776999996
           },
           "total": {
             "nativeFees": {
-              "USD": 238.23
+              "USD": 238.23075
             },
-            "zarFee": 3797.25
+            "zarFee": 3797.255216549999
           }
         }
       },
@@ -5702,36 +5628,36 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1514.0
         },
-        "zarAum": 24132.25,
+        "zarAum": 24132.2516,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1514.0,
-            "zarValue": 24132.25
+            "zarValue": 24132.2516
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 0.38
+              "USD": 0.3785
             },
-            "zarFee": 6.06
+            "zarFee": 6.0330629
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 0.76
+              "USD": 0.757
             },
-            "zarFee": 12.11
+            "zarFee": 12.0661258
           },
           "total": {
             "nativeFees": {
-              "USD": 1.14
+              "USD": 1.1355
             },
-            "zarFee": 18.17
+            "zarFee": 18.0991887
           }
         }
       },
@@ -5745,72 +5671,66 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 51492.0
         },
-        "zarAum": 820751.58,
-        "holdingCount": 7,
+        "zarAum": 820751.5848,
+        "holdingCount": 6,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 8279.0,
-            "zarValue": 131962.29
+            "zarValue": 131962.2926
           },
           {
             "investment": "Anglogold Ashanti PLC",
             "currency": "USD",
             "nativeValue": 2557.0,
-            "zarValue": 40757.05
+            "zarValue": 40757.0458
           },
           {
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 3963.0,
-            "zarValue": 63167.84
+            "zarValue": 63167.8422
           },
           {
             "investment": "Defiance Quantum ETF",
             "currency": "USD",
             "nativeValue": 2909.0,
-            "zarValue": 46367.71
+            "zarValue": 46367.7146
           },
           {
             "investment": "Invesco Nasdaq 100 ETF",
             "currency": "USD",
             "nativeValue": 2251.0,
-            "zarValue": 35879.59
-          },
-          {
-            "investment": "Invesco S&P 500 Momentum ETF",
-            "currency": "USD",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
+            "zarValue": 35879.5894
           },
           {
             "investment": "RSA Government Bond",
             "currency": "USD",
             "nativeValue": 31533.0,
-            "zarValue": 502617.1
+            "zarValue": 502617.1002
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 12.87
+              "USD": 12.873
             },
-            "zarFee": 205.14
+            "zarFee": 205.18789619999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 25.75
+              "USD": 25.746
             },
-            "zarFee": 410.44
+            "zarFee": 410.37579239999997
           },
           "total": {
             "nativeFees": {
-              "USD": 38.62
+              "USD": 38.619
             },
-            "zarFee": 615.58
+            "zarFee": 615.5636886
           }
         }
       },
@@ -5824,54 +5744,54 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 297044.0
         },
-        "zarAum": 4734703.13,
+        "zarAum": 4734703.133599999,
         "holdingCount": 4,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1687.0,
-            "zarValue": 26889.77
+            "zarValue": 26889.767799999998
           },
           {
             "investment": "iShares Global 100 ETF",
             "currency": "USD",
             "nativeValue": 139789.0,
-            "zarValue": 2228152.79
+            "zarValue": 2228152.7865999998
           },
           {
             "investment": "iShares Physical Gold ETF",
             "currency": "USD",
             "nativeValue": 69558.0,
-            "zarValue": 1108712.79
+            "zarValue": 1108712.7852
           },
           {
             "investment": "BBVA Global Markets ",
             "currency": "USD",
             "nativeValue": 86010.0,
-            "zarValue": 1370947.79
+            "zarValue": 1370947.794
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 74.26
+              "USD": 74.26100000000001
             },
-            "zarFee": 1183.66
+            "zarFee": 1183.6757833999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 148.52
+              "USD": 148.52200000000002
             },
-            "zarFee": 2367.32
+            "zarFee": 2367.3515667999995
           },
           "total": {
             "nativeFees": {
-              "USD": 222.78
+              "USD": 222.78300000000002
             },
-            "zarFee": 3550.98
+            "zarFee": 3551.027350199999
           }
         }
       },
@@ -5885,42 +5805,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 707134.0
         },
-        "zarAum": 11271291.68,
+        "zarAum": 11271291.679599999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 10423.0,
-            "zarValue": 166136.37
+            "zarValue": 166136.3662
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 696711.0,
-            "zarValue": 11105155.31
+            "zarValue": 11105155.313399998
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 176.78
+              "USD": 176.7835
             },
-            "zarFee": 2817.77
+            "zarFee": 2817.8229198999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 353.57
+              "USD": 353.567
             },
-            "zarFee": 5635.69
+            "zarFee": 5635.6458397999995
           },
           "total": {
             "nativeFees": {
-              "USD": 530.35
+              "USD": 530.3505
             },
-            "zarFee": 8453.46
+            "zarFee": 8453.4687597
           }
         }
       },
@@ -5934,108 +5854,108 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 2815517.0
         },
-        "zarAum": 44877651.67,
+        "zarAum": 44877651.6698,
         "holdingCount": 13,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 30092.0,
-            "zarValue": 479648.42
+            "zarValue": 479648.4248
           },
           {
             "investment": "Digihost Technology Inc",
             "currency": "USD",
             "nativeValue": 2031.0,
-            "zarValue": 32372.92
+            "zarValue": 32372.9214
           },
           {
             "investment": "HG Capital Trust",
             "currency": "USD",
             "nativeValue": 46718.0,
-            "zarValue": 744656.89
+            "zarValue": 744656.8892
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 238680.0,
-            "zarValue": 3804415.99
+            "zarValue": 3804415.9919999996
           },
           {
             "investment": "Amplify Transformational Data Sharing ETF",
             "currency": "USD",
             "nativeValue": 27377.0,
-            "zarValue": 436372.95
+            "zarValue": 436372.95379999996
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 96440.0,
-            "zarValue": 1537195.74
+            "zarValue": 1537195.7359999998
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 82986.0,
-            "zarValue": 1322747.05
+            "zarValue": 1322747.0484
           },
           {
             "investment": "Nomura Global High Conviction Fund",
             "currency": "USD",
             "nativeValue": 65217.0,
-            "zarValue": 1039519.85
+            "zarValue": 1039519.8498
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1646466.0,
-            "zarValue": 26243680.16
+            "zarValue": 26243680.1604
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 246778.0,
-            "zarValue": 3933493.25
+            "zarValue": 3933493.2531999997
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 172014.0,
-            "zarValue": 2741799.95
+            "zarValue": 2741799.9516
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 143980.0,
-            "zarValue": 2294954.81
+            "zarValue": 2294954.812
           },
           {
             "investment": "iShares Bitcoin Trust ETF",
             "currency": "USD",
             "nativeValue": 16738.0,
-            "zarValue": 266793.68
+            "zarValue": 266793.6772
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 703.88
+              "USD": 703.87925
             },
-            "zarFee": 11219.42
+            "zarFee": 11219.41291745
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 1407.76
+              "USD": 1407.7585
             },
-            "zarFee": 22438.85
+            "zarFee": 22438.8258349
           },
           "total": {
             "nativeFees": {
-              "USD": 2111.64
+              "USD": 2111.63775
             },
-            "zarFee": 33658.27
+            "zarFee": 33658.23875235
           }
         }
       },
@@ -6049,42 +5969,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 305534.0
         },
-        "zarAum": 4870028.64,
+        "zarAum": 4870028.639599999,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Credo Trading account",
             "currency": "USD",
             "nativeValue": 1558.0,
-            "zarValue": 24833.59
+            "zarValue": 24833.585199999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 303976.0,
-            "zarValue": 4845195.05
+            "zarValue": 4845195.0544
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003,
             "nativeFees": {
-              "USD": 76.38
+              "USD": 76.3835
             },
-            "zarFee": 1217.45
+            "zarFee": 1217.5071598999998
           },
           "advisory": {
             "annualRate": 0.006,
             "nativeFees": {
-              "USD": 152.77
+              "USD": 152.767
             },
-            "zarFee": 2435.06
+            "zarFee": 2435.0143197999996
           },
           "total": {
             "nativeFees": {
-              "USD": 229.15
+              "USD": 229.1505
             },
-            "zarFee": 3652.51
+            "zarFee": 3652.5214796999994
           }
         }
       },
@@ -6096,38 +6016,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 13306952.78
+          "ZAR": 13306952.780904
         },
-        "zarAum": 13306952.78,
+        "zarAum": 13306952.780904,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 13306952.78,
-            "zarValue": 13306952.78
+            "nativeValue": 13306952.780904,
+            "zarValue": 13306952.780904
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2772.28
+              "ZAR": 2772.2818293550004
             },
-            "zarFee": 2772.28
+            "zarFee": 2772.2818293550004
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5544.56
+              "ZAR": 5544.563658710001
             },
-            "zarFee": 5544.56
+            "zarFee": 5544.563658710001
           },
           "total": {
             "nativeFees": {
-              "ZAR": 8316.84
+              "ZAR": 8316.845488065
             },
-            "zarFee": 8316.84
+            "zarFee": 8316.845488065
           }
         }
       },
@@ -6139,38 +6059,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 102169.74
+          "ZAR": 102169.740015
         },
-        "zarAum": 102169.74,
+        "zarAum": 102169.740015,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 102169.74,
-            "zarValue": 102169.74
+            "nativeValue": 102169.740015,
+            "zarValue": 102169.740015
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 21.29
+              "ZAR": 21.285362503125
             },
-            "zarFee": 21.29
+            "zarFee": 21.285362503125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 42.57
+              "ZAR": 42.57072500625
             },
-            "zarFee": 42.57
+            "zarFee": 42.57072500625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 63.86
+              "ZAR": 63.856087509375
             },
-            "zarFee": 63.86
+            "zarFee": 63.856087509375
           }
         }
       },
@@ -6182,38 +6102,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 792989.7
+          "ZAR": 792989.698748
         },
-        "zarAum": 792989.7,
+        "zarAum": 792989.698748,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 792989.7,
-            "zarValue": 792989.7
+            "nativeValue": 792989.698748,
+            "zarValue": 792989.698748
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 165.21
+              "ZAR": 165.20618723916667
             },
-            "zarFee": 165.21
+            "zarFee": 165.20618723916667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 330.41
+              "ZAR": 330.41237447833333
             },
-            "zarFee": 330.41
+            "zarFee": 330.41237447833333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 495.62
+              "ZAR": 495.61856171750003
             },
-            "zarFee": 495.62
+            "zarFee": 495.61856171750003
           }
         }
       },
@@ -6225,81 +6145,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 526411.97
+          "ZAR": 526411.972991
         },
-        "zarAum": 526411.97,
+        "zarAum": 526411.972991,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 526411.97,
-            "zarValue": 526411.97
+            "nativeValue": 526411.972991,
+            "zarValue": 526411.972991
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 109.67
+              "ZAR": 109.66916103979167
             },
-            "zarFee": 109.67
+            "zarFee": 109.66916103979167
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 219.34
+              "ZAR": 219.33832207958335
             },
-            "zarFee": 219.34
+            "zarFee": 219.33832207958335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 329.01
+              "ZAR": 329.007483119375
             },
-            "zarFee": 329.01
-          }
-        }
-      },
-      {
-        "id": "gryphon|6992|BSM Management (Pty) Ltd",
-        "client": "BSM Management (Pty) Ltd",
-        "accountCode": "6992",
-        "identityNo": "K2023267015",
-        "providerId": "gryphon",
-        "providerName": "Gryphon",
-        "nativeValues": {
-          "ZAR": 0.0
-        },
-        "zarAum": 0.0,
-        "holdingCount": 1,
-        "holdings": [
-          {
-            "investment": "Gryphon Dividend Income Fund",
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          }
-        ],
-        "fees": {
-          "rebate": {
-            "annualRate": 0.0025,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "advisory": {
-            "annualRate": 0.005,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "total": {
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
+            "zarFee": 329.007483119375
           }
         }
       },
@@ -6311,38 +6188,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 34508860.69
+          "ZAR": 34508860.691726
         },
-        "zarAum": 34508860.69,
+        "zarAum": 34508860.691726,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 34508860.69,
-            "zarValue": 34508860.69
+            "nativeValue": 34508860.691726,
+            "zarValue": 34508860.691726
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 7189.35
+              "ZAR": 7189.345977442917
             },
-            "zarFee": 7189.35
+            "zarFee": 7189.345977442917
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 14378.69
+              "ZAR": 14378.691954885833
             },
-            "zarFee": 14378.69
+            "zarFee": 14378.691954885833
           },
           "total": {
             "nativeFees": {
-              "ZAR": 21568.04
+              "ZAR": 21568.03793232875
             },
-            "zarFee": 21568.04
+            "zarFee": 21568.03793232875
           }
         }
       },
@@ -6354,44 +6231,44 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1688566.15
+          "ZAR": 1688566.147048
         },
-        "zarAum": 1688566.15,
+        "zarAum": 1688566.147048,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 852581.93,
-            "zarValue": 852581.93
+            "nativeValue": 852581.931521,
+            "zarValue": 852581.931521
           },
           {
             "investment": "Gryphon Dividend Income Fund C",
             "currency": "ZAR",
-            "nativeValue": 835984.22,
-            "zarValue": 835984.22
+            "nativeValue": 835984.215527,
+            "zarValue": 835984.215527
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 351.78
+              "ZAR": 351.78461396833336
             },
-            "zarFee": 351.78
+            "zarFee": 351.78461396833336
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 703.57
+              "ZAR": 703.5692279366667
             },
-            "zarFee": 703.57
+            "zarFee": 703.5692279366667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1055.35
+              "ZAR": 1055.353841905
             },
-            "zarFee": 1055.35
+            "zarFee": 1055.353841905
           }
         }
       },
@@ -6403,38 +6280,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 2669668.71
+          "ZAR": 2669668.713269
         },
-        "zarAum": 2669668.71,
+        "zarAum": 2669668.713269,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 2669668.71,
-            "zarValue": 2669668.71
+            "nativeValue": 2669668.713269,
+            "zarValue": 2669668.713269
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 556.18
+              "ZAR": 556.1809819310416
             },
-            "zarFee": 556.18
+            "zarFee": 556.1809819310416
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1112.36
+              "ZAR": 1112.3619638620833
             },
-            "zarFee": 1112.36
+            "zarFee": 1112.3619638620833
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1668.54
+              "ZAR": 1668.542945793125
             },
-            "zarFee": 1668.54
+            "zarFee": 1668.542945793125
           }
         }
       },
@@ -6446,38 +6323,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 208493.44
+          "ZAR": 208493.441592
         },
-        "zarAum": 208493.44,
+        "zarAum": 208493.441592,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 208493.44,
-            "zarValue": 208493.44
+            "nativeValue": 208493.441592,
+            "zarValue": 208493.441592
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 43.44
+              "ZAR": 43.436133665
             },
-            "zarFee": 43.44
+            "zarFee": 43.436133665
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 86.87
+              "ZAR": 86.87226733
             },
-            "zarFee": 86.87
+            "zarFee": 86.87226733
           },
           "total": {
             "nativeFees": {
-              "ZAR": 130.31
+              "ZAR": 130.308400995
             },
-            "zarFee": 130.31
+            "zarFee": 130.308400995
           }
         }
       },
@@ -6489,38 +6366,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 204428.66
+          "ZAR": 204428.662213
         },
-        "zarAum": 204428.66,
+        "zarAum": 204428.662213,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 204428.66,
-            "zarValue": 204428.66
+            "nativeValue": 204428.662213,
+            "zarValue": 204428.662213
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 42.59
+              "ZAR": 42.58930462770834
             },
-            "zarFee": 42.59
+            "zarFee": 42.58930462770834
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 85.18
+              "ZAR": 85.17860925541667
             },
-            "zarFee": 85.18
+            "zarFee": 85.17860925541667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 127.77
+              "ZAR": 127.767913883125
             },
-            "zarFee": 127.77
+            "zarFee": 127.767913883125
           }
         }
       },
@@ -6532,38 +6409,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 4610478.18
+          "ZAR": 4610478.179651
         },
-        "zarAum": 4610478.18,
+        "zarAum": 4610478.179651,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 4610478.18,
-            "zarValue": 4610478.18
+            "nativeValue": 4610478.179651,
+            "zarValue": 4610478.179651
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 960.52
+              "ZAR": 960.5162874272916
             },
-            "zarFee": 960.52
+            "zarFee": 960.5162874272916
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1921.03
+              "ZAR": 1921.0325748545831
             },
-            "zarFee": 1921.03
+            "zarFee": 1921.0325748545831
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2881.55
+              "ZAR": 2881.548862281875
             },
-            "zarFee": 2881.55
+            "zarFee": 2881.548862281875
           }
         }
       },
@@ -6575,38 +6452,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1643203.43
+          "ZAR": 1643203.431743
         },
-        "zarAum": 1643203.43,
+        "zarAum": 1643203.431743,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 1643203.43,
-            "zarValue": 1643203.43
+            "nativeValue": 1643203.431743,
+            "zarValue": 1643203.431743
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 342.33
+              "ZAR": 342.33404827979166
             },
-            "zarFee": 342.33
+            "zarFee": 342.33404827979166
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 684.67
+              "ZAR": 684.6680965595833
             },
-            "zarFee": 684.67
+            "zarFee": 684.6680965595833
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1027.0
+              "ZAR": 1027.002144839375
             },
-            "zarFee": 1027.0
+            "zarFee": 1027.002144839375
           }
         }
       },
@@ -6618,38 +6495,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 23396713.15
+          "ZAR": 23396713.150892
         },
-        "zarAum": 23396713.15,
+        "zarAum": 23396713.150892,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 23396713.15,
-            "zarValue": 23396713.15
+            "nativeValue": 23396713.150892,
+            "zarValue": 23396713.150892
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4874.32
+              "ZAR": 4874.315239769167
             },
-            "zarFee": 4874.32
+            "zarFee": 4874.315239769167
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9748.63
+              "ZAR": 9748.630479538335
             },
-            "zarFee": 9748.63
+            "zarFee": 9748.630479538335
           },
           "total": {
             "nativeFees": {
-              "ZAR": 14622.95
+              "ZAR": 14622.945719307503
             },
-            "zarFee": 14622.95
+            "zarFee": 14622.945719307503
           }
         }
       },
@@ -6661,38 +6538,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 22733849.3
+          "ZAR": 22733849.29666
         },
-        "zarAum": 22733849.3,
+        "zarAum": 22733849.29666,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 22733849.3,
-            "zarValue": 22733849.3
+            "nativeValue": 22733849.29666,
+            "zarValue": 22733849.29666
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4736.22
+              "ZAR": 4736.218603470833
             },
-            "zarFee": 4736.22
+            "zarFee": 4736.218603470833
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9472.44
+              "ZAR": 9472.437206941666
             },
-            "zarFee": 9472.44
+            "zarFee": 9472.437206941666
           },
           "total": {
             "nativeFees": {
-              "ZAR": 14208.66
+              "ZAR": 14208.6558104125
             },
-            "zarFee": 14208.66
+            "zarFee": 14208.6558104125
           }
         }
       },
@@ -6704,38 +6581,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 6327371.29
+          "ZAR": 6327371.289897
         },
-        "zarAum": 6327371.29,
+        "zarAum": 6327371.289897,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 6327371.29,
-            "zarValue": 6327371.29
+            "nativeValue": 6327371.289897,
+            "zarValue": 6327371.289897
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1318.2
+              "ZAR": 1318.2023520618752
             },
-            "zarFee": 1318.2
+            "zarFee": 1318.2023520618752
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 2636.4
+              "ZAR": 2636.4047041237504
             },
-            "zarFee": 2636.4
+            "zarFee": 2636.4047041237504
           },
           "total": {
             "nativeFees": {
-              "ZAR": 3954.6
+              "ZAR": 3954.607056185626
             },
-            "zarFee": 3954.6
+            "zarFee": 3954.607056185626
           }
         }
       },
@@ -6747,38 +6624,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 47700280.41
+          "ZAR": 47700280.411683
         },
-        "zarAum": 47700280.41,
+        "zarAum": 47700280.411683,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 47700280.41,
-            "zarValue": 47700280.41
+            "nativeValue": 47700280.411683,
+            "zarValue": 47700280.411683
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9937.56
+              "ZAR": 9937.558419100626
             },
-            "zarFee": 9937.56
+            "zarFee": 9937.558419100626
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 19875.12
+              "ZAR": 19875.11683820125
             },
-            "zarFee": 19875.12
+            "zarFee": 19875.11683820125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 29812.68
+              "ZAR": 29812.675257301875
             },
-            "zarFee": 29812.68
+            "zarFee": 29812.675257301875
           }
         }
       },
@@ -6790,38 +6667,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 27516980.41
+          "ZAR": 27516980.413115
         },
-        "zarAum": 27516980.41,
+        "zarAum": 27516980.413115,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 27516980.41,
-            "zarValue": 27516980.41
+            "nativeValue": 27516980.413115,
+            "zarValue": 27516980.413115
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 5732.7
+              "ZAR": 5732.704252732292
             },
-            "zarFee": 5732.7
+            "zarFee": 5732.704252732292
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 11465.41
+              "ZAR": 11465.408505464584
             },
-            "zarFee": 11465.41
+            "zarFee": 11465.408505464584
           },
           "total": {
             "nativeFees": {
-              "ZAR": 17198.11
+              "ZAR": 17198.112758196876
             },
-            "zarFee": 17198.11
+            "zarFee": 17198.112758196876
           }
         }
       },
@@ -6833,38 +6710,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 59203148.05
+          "ZAR": 59203148.052754
         },
-        "zarAum": 59203148.05,
+        "zarAum": 59203148.052754,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 59203148.05,
-            "zarValue": 59203148.05
+            "nativeValue": 59203148.052754,
+            "zarValue": 59203148.052754
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 12333.99
+              "ZAR": 12333.989177657082
             },
-            "zarFee": 12333.99
+            "zarFee": 12333.989177657082
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 24667.98
+              "ZAR": 24667.978355314164
             },
-            "zarFee": 24667.98
+            "zarFee": 24667.978355314164
           },
           "total": {
             "nativeFees": {
-              "ZAR": 37001.97
+              "ZAR": 37001.96753297125
             },
-            "zarFee": 37001.97
+            "zarFee": 37001.96753297125
           }
         }
       },
@@ -6876,38 +6753,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 50912.97
+          "ZAR": 50912.968806
         },
-        "zarAum": 50912.97,
+        "zarAum": 50912.968806,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 50912.97,
-            "zarValue": 50912.97
+            "nativeValue": 50912.968806,
+            "zarValue": 50912.968806
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 10.61
+              "ZAR": 10.60686850125
             },
-            "zarFee": 10.61
+            "zarFee": 10.60686850125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 21.21
+              "ZAR": 21.2137370025
             },
-            "zarFee": 21.21
+            "zarFee": 21.2137370025
           },
           "total": {
             "nativeFees": {
-              "ZAR": 31.82
+              "ZAR": 31.820605503750002
             },
-            "zarFee": 31.82
+            "zarFee": 31.820605503750002
           }
         }
       },
@@ -6919,38 +6796,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 13252122.04
+          "ZAR": 13252122.037707
         },
-        "zarAum": 13252122.04,
+        "zarAum": 13252122.037707,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 13252122.04,
-            "zarValue": 13252122.04
+            "nativeValue": 13252122.037707,
+            "zarValue": 13252122.037707
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2760.86
+              "ZAR": 2760.858757855625
             },
-            "zarFee": 2760.86
+            "zarFee": 2760.858757855625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 5521.72
+              "ZAR": 5521.71751571125
             },
-            "zarFee": 5521.72
+            "zarFee": 5521.71751571125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 8282.58
+              "ZAR": 8282.576273566874
             },
-            "zarFee": 8282.58
+            "zarFee": 8282.576273566874
           }
         }
       },
@@ -6962,38 +6839,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 491.2
+          "ZAR": 491.195291
         },
-        "zarAum": 491.2,
+        "zarAum": 491.195291,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 491.2,
-            "zarValue": 491.2
+            "nativeValue": 491.195291,
+            "zarValue": 491.195291
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 0.1
+              "ZAR": 0.10233235229166666
             },
-            "zarFee": 0.1
+            "zarFee": 0.10233235229166666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 0.2
+              "ZAR": 0.20466470458333333
             },
-            "zarFee": 0.2
+            "zarFee": 0.20466470458333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 0.3
+              "ZAR": 0.306997056875
             },
-            "zarFee": 0.3
+            "zarFee": 0.306997056875
           }
         }
       },
@@ -7005,38 +6882,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 21864565.22
+          "ZAR": 21864565.22064
         },
-        "zarAum": 21864565.22,
+        "zarAum": 21864565.22064,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 21864565.22,
-            "zarValue": 21864565.22
+            "nativeValue": 21864565.22064,
+            "zarValue": 21864565.22064
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 4555.12
+              "ZAR": 4555.1177543
             },
-            "zarFee": 4555.12
+            "zarFee": 4555.1177543
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 9110.24
+              "ZAR": 9110.2355086
             },
-            "zarFee": 9110.24
+            "zarFee": 9110.2355086
           },
           "total": {
             "nativeFees": {
-              "ZAR": 13665.36
+              "ZAR": 13665.3532629
             },
-            "zarFee": 13665.36
+            "zarFee": 13665.3532629
           }
         }
       },
@@ -7048,38 +6925,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 4028209.82
+          "ZAR": 4028209.817692
         },
-        "zarAum": 4028209.82,
+        "zarAum": 4028209.817692,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 4028209.82,
-            "zarValue": 4028209.82
+            "nativeValue": 4028209.817692,
+            "zarValue": 4028209.817692
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 839.21
+              "ZAR": 839.2103786858333
             },
-            "zarFee": 839.21
+            "zarFee": 839.2103786858333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1678.42
+              "ZAR": 1678.4207573716667
             },
-            "zarFee": 1678.42
+            "zarFee": 1678.4207573716667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2517.63
+              "ZAR": 2517.6311360575
             },
-            "zarFee": 2517.63
+            "zarFee": 2517.6311360575
           }
         }
       },
@@ -7091,38 +6968,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 202207.61
+          "ZAR": 202207.614413
         },
-        "zarAum": 202207.61,
+        "zarAum": 202207.614413,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 202207.61,
-            "zarValue": 202207.61
+            "nativeValue": 202207.614413,
+            "zarValue": 202207.614413
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 42.13
+              "ZAR": 42.12658633604167
             },
-            "zarFee": 42.13
+            "zarFee": 42.12658633604167
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 84.25
+              "ZAR": 84.25317267208334
             },
-            "zarFee": 84.25
+            "zarFee": 84.25317267208334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 126.38
+              "ZAR": 126.379759008125
             },
-            "zarFee": 126.38
+            "zarFee": 126.379759008125
           }
         }
       },
@@ -7134,38 +7011,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 28573.53
+          "ZAR": 28573.528666
         },
-        "zarAum": 28573.53,
+        "zarAum": 28573.528666,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 28573.53,
-            "zarValue": 28573.53
+            "nativeValue": 28573.528666,
+            "zarValue": 28573.528666
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 5.95
+              "ZAR": 5.952818472083333
             },
-            "zarFee": 5.95
+            "zarFee": 5.952818472083333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 11.91
+              "ZAR": 11.905636944166666
             },
-            "zarFee": 11.91
+            "zarFee": 11.905636944166666
           },
           "total": {
             "nativeFees": {
-              "ZAR": 17.86
+              "ZAR": 17.85845541625
             },
-            "zarFee": 17.86
+            "zarFee": 17.85845541625
           }
         }
       },
@@ -7177,38 +7054,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 1226190.07
+          "ZAR": 1226190.06705
         },
-        "zarAum": 1226190.07,
+        "zarAum": 1226190.06705,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 1226190.07,
-            "zarValue": 1226190.07
+            "nativeValue": 1226190.06705,
+            "zarValue": 1226190.06705
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 255.46
+              "ZAR": 255.45626396875
             },
-            "zarFee": 255.46
+            "zarFee": 255.45626396875
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 510.91
+              "ZAR": 510.9125279375
             },
-            "zarFee": 510.91
+            "zarFee": 510.9125279375
           },
           "total": {
             "nativeFees": {
-              "ZAR": 766.37
+              "ZAR": 766.36879190625
             },
-            "zarFee": 766.37
+            "zarFee": 766.36879190625
           }
         }
       },
@@ -7220,38 +7097,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 56383.55
+          "ZAR": 56383.553532
         },
-        "zarAum": 56383.55,
+        "zarAum": 56383.553532,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 56383.55,
-            "zarValue": 56383.55
+            "nativeValue": 56383.553532,
+            "zarValue": 56383.553532
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 11.75
+              "ZAR": 11.746573652499999
             },
-            "zarFee": 11.75
+            "zarFee": 11.746573652499999
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 23.49
+              "ZAR": 23.493147304999997
             },
-            "zarFee": 23.49
+            "zarFee": 23.493147304999997
           },
           "total": {
             "nativeFees": {
-              "ZAR": 35.24
+              "ZAR": 35.2397209575
             },
-            "zarFee": 35.24
+            "zarFee": 35.2397209575
           }
         }
       },
@@ -7263,38 +7140,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 31008.16
+          "ZAR": 31008.155295
         },
-        "zarAum": 31008.16,
+        "zarAum": 31008.155295,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 31008.16,
-            "zarValue": 31008.16
+            "nativeValue": 31008.155295,
+            "zarValue": 31008.155295
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 6.46
+              "ZAR": 6.460032353125
             },
-            "zarFee": 6.46
+            "zarFee": 6.460032353125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 12.92
+              "ZAR": 12.92006470625
             },
-            "zarFee": 12.92
+            "zarFee": 12.92006470625
           },
           "total": {
             "nativeFees": {
-              "ZAR": 19.38
+              "ZAR": 19.380097059375
             },
-            "zarFee": 19.38
+            "zarFee": 19.380097059375
           }
         }
       },
@@ -7306,81 +7183,81 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 59739929.26
+          "ZAR": 59739929.264526
         },
-        "zarAum": 59739929.26,
+        "zarAum": 59739929.264526,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 59739929.26,
-            "zarValue": 59739929.26
+            "nativeValue": 59739929.264526,
+            "zarValue": 59739929.264526
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 12445.82
+              "ZAR": 12445.81859677625
             },
-            "zarFee": 12445.82
+            "zarFee": 12445.81859677625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 24891.64
+              "ZAR": 24891.6371935525
             },
-            "zarFee": 24891.64
+            "zarFee": 24891.6371935525
           },
           "total": {
             "nativeFees": {
-              "ZAR": 37337.46
+              "ZAR": 37337.45579032875
             },
-            "zarFee": 37337.46
+            "zarFee": 37337.45579032875
           }
         }
       },
       {
-        "id": "gryphon|None|Thomas, Mayne",
+        "id": "gryphon||Thomas, Mayne",
         "client": "Thomas, Mayne",
         "accountCode": "",
         "identityNo": "8908115051084",
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 7064668.73
+          "ZAR": 7064668.733903
         },
-        "zarAum": 7064668.73,
+        "zarAum": 7064668.733903,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 7064668.73,
-            "zarValue": 7064668.73
+            "nativeValue": 7064668.733903,
+            "zarValue": 7064668.733903
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1471.81
+              "ZAR": 1471.8059862297916
             },
-            "zarFee": 1471.81
+            "zarFee": 1471.8059862297916
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 2943.61
+              "ZAR": 2943.6119724595833
             },
-            "zarFee": 2943.61
+            "zarFee": 2943.6119724595833
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4415.42
+              "ZAR": 4415.417958689375
             },
-            "zarFee": 4415.42
+            "zarFee": 4415.417958689375
           }
         }
       },
@@ -7392,38 +7269,38 @@ export const monthlyClientData = [
         "providerId": "gryphon",
         "providerName": "Gryphon",
         "nativeValues": {
-          "ZAR": 57547.29
+          "ZAR": 57547.29426
         },
-        "zarAum": 57547.29,
+        "zarAum": 57547.29426,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "Gryphon Dividend Income Fund",
             "currency": "ZAR",
-            "nativeValue": 57547.29,
-            "zarValue": 57547.29
+            "nativeValue": 57547.29426,
+            "zarValue": 57547.29426
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 11.99
+              "ZAR": 11.9890196375
             },
-            "zarFee": 11.99
+            "zarFee": 11.9890196375
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 23.98
+              "ZAR": 23.978039275
             },
-            "zarFee": 23.98
+            "zarFee": 23.978039275
           },
           "total": {
             "nativeFees": {
-              "ZAR": 35.97
+              "ZAR": 35.9670589125
             },
-            "zarFee": 35.97
+            "zarFee": 35.9670589125
           }
         }
       },
@@ -7437,66 +7314,66 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 7238420.05
         },
-        "zarAum": 115376072.54,
+        "zarAum": 115376072.54497,
         "holdingCount": 6,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 14439.43,
-            "zarValue": 230155.85
+            "zarValue": 230155.850542
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 426778.96,
-            "zarValue": 6802600.56
+            "zarValue": 6802600.555024
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 470529.83,
-            "zarValue": 7499963.17
+            "zarValue": 7499963.172302
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 5903493.16,
-            "zarValue": 94098138.87
+            "zarValue": 94098138.874504
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 287286.67,
-            "zarValue": 4579177.15
+            "zarValue": 4579177.147798
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 135892.0,
-            "zarValue": 2166036.94
+            "zarValue": 2166036.9447999997
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 1942.96
+              "USD": 1942.9553518237592
             },
-            "zarFee": 30969.62
+            "zarFee": 30969.542534859633
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 3418.65
+              "USD": 3418.6218988952764
             },
-            "zarFee": 54491.23
+            "zarFee": 54490.78189525136
           },
           "total": {
             "nativeFees": {
-              "USD": 5361.61
+              "USD": 5361.577250719036
             },
-            "zarFee": 85460.85
+            "zarFee": 85460.324430111
           }
         }
       },
@@ -7510,60 +7387,60 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1767165.51
         },
-        "zarAum": 28167557.93,
+        "zarAum": 28167557.930093996,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 84599.91,
-            "zarValue": 1348471.81
+            "zarValue": 1348471.805454
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 570606.54,
-            "zarValue": 9095125.88
+            "zarValue": 9095125.883676
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 567715.46,
-            "zarValue": 9049043.8
+            "zarValue": 9049043.803124
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 405910.43,
-            "zarValue": 6469968.71
+            "zarValue": 6469968.707942
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 138333.17,
-            "zarValue": 2204947.73
+            "zarValue": 2204947.729898
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 474.35
+              "USD": 474.3471173951646
             },
-            "zarFee": 7560.85
+            "zarFee": 7560.8084430084855
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 834.62
+              "USD": 834.6117895518428
             },
-            "zarFee": 13303.34
+            "zarFee": 13303.21115838264
           },
           "total": {
             "nativeFees": {
-              "USD": 1308.97
+              "USD": 1308.9589069470073
             },
-            "zarFee": 20864.19
+            "zarFee": 20864.019601391126
           }
         }
       },
@@ -7577,84 +7454,84 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 1958989.61
         },
-        "zarAum": 31225118.99,
+        "zarAum": 31225118.989634,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 19923.45,
-            "zarValue": 317567.84
+            "zarValue": 317567.83892999997
           },
           {
             "investment": "Dodge & Cox Worldwide Funds",
             "currency": "USD",
             "nativeValue": 17237.99,
-            "zarValue": 274763.22
+            "zarValue": 274763.21780600003
           },
           {
             "investment": "Global X Copper Miners ETF",
             "currency": "USD",
             "nativeValue": 80866.5,
-            "zarValue": 1288963.49
+            "zarValue": 1288963.4900999998
           },
           {
             "investment": "Invesco Global Clean Energy ETF",
             "currency": "USD",
             "nativeValue": 14229.0,
-            "zarValue": 226801.72
+            "zarValue": 226801.72259999998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1357176.81,
-            "zarValue": 21632584.05
+            "zarValue": 21632584.045314
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 221321.63,
-            "zarValue": 3527733.99
+            "zarValue": 3527733.989222
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 136234.87,
-            "zarValue": 2171502.09
+            "zarValue": 2171502.086878
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 43053.75,
-            "zarValue": 686250.94
+            "zarValue": 686250.9427499999
           },
           {
             "investment": "Prescient China Balanced Fund ",
             "currency": "USD",
             "nativeValue": 68945.61,
-            "zarValue": 1098951.66
+            "zarValue": 1098951.656034
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 525.84
+              "USD": 525.8370363456096
             },
-            "zarFee": 8381.57
+            "zarFee": 8381.52685712721
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 925.21
+              "USD": 925.2080888085952
             },
-            "zarFee": 14747.29
+            "zarFee": 14747.261810755723
           },
           "total": {
             "nativeFees": {
-              "USD": 1451.05
+              "USD": 1451.045125154205
             },
-            "zarFee": 23128.86
+            "zarFee": 23128.78866788293
           }
         }
       },
@@ -7668,42 +7545,42 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 369273.52
         },
-        "zarAum": 5885998.34,
+        "zarAum": 5885998.344688,
         "holdingCount": 2,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 92.77,
-            "zarValue": 1478.7
+            "zarValue": 1478.6981379999997
           },
           {
             "investment": "Wealthworks Global Flexible Fund (USD)",
             "currency": "USD",
             "nativeValue": 369180.75,
-            "zarValue": 5884519.65
+            "zarValue": 5884519.64655
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 99.12
+              "USD": 99.12134927439007
             },
-            "zarFee": 1579.91
+            "zarFee": 1579.9348346242132
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 174.4
+              "USD": 174.40360374694512
             },
-            "zarFee": 2779.83
+            "zarFee": 2779.8888015640573
           },
           "total": {
             "nativeFees": {
-              "USD": 273.52
+              "USD": 273.5249530213352
             },
-            "zarFee": 4359.74
+            "zarFee": 4359.82363618827
           }
         }
       },
@@ -7715,128 +7592,128 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 1363294.95
+          "USD": 1363294.9500000002
         },
-        "zarAum": 21730103.53,
+        "zarAum": 21730103.52603,
         "holdingCount": 16,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 59296.88,
-            "zarValue": 945156.69
+            "zarValue": 945156.6890719999
           },
           {
             "investment": "Bayer AG",
             "currency": "USD",
             "nativeValue": 892.82,
-            "zarValue": 14231.02
+            "zarValue": 14231.015108
           },
           {
             "investment": "Alphabet",
             "currency": "USD",
             "nativeValue": 18705.6,
-            "zarValue": 298156.04
+            "zarValue": 298156.04063999996
           },
           {
             "investment": "Apple Inc",
             "currency": "USD",
             "nativeValue": 739704.0,
-            "zarValue": 11790437.94
+            "zarValue": 11790437.9376
           },
           {
             "investment": "Clorox Co",
             "currency": "USD",
             "nativeValue": 635.8,
-            "zarValue": 10134.27
+            "zarValue": 10134.270519999998
           },
           {
             "investment": "Fossil Group Inc",
             "currency": "USD",
             "nativeValue": 42096.6,
-            "zarValue": 670994.55
+            "zarValue": 670994.5460399999
           },
           {
             "investment": "Global X Artifical Intelligence & Technology ETF",
             "currency": "USD",
             "nativeValue": 10052.0,
-            "zarValue": 160222.85
+            "zarValue": 160222.84879999998
           },
           {
             "investment": "Intel Corp",
             "currency": "USD",
             "nativeValue": 1641.96,
-            "zarValue": 26171.86
+            "zarValue": 26171.857224
           },
           {
             "investment": "Invesco QQQ Trust Series",
             "currency": "USD",
             "nativeValue": 9109.35,
-            "zarValue": 145197.57
+            "zarValue": 145197.57339
           },
           {
             "investment": "Meta Platforms Inc",
             "currency": "USD",
             "nativeValue": 6481.8,
-            "zarValue": 103316.0
+            "zarValue": 103316.00292
           },
           {
             "investment": "Microsoft Corp",
             "currency": "USD",
             "nativeValue": 6283.84,
-            "zarValue": 100160.64
+            "zarValue": 100160.639296
           },
           {
             "investment": "Paypal Holdings Inc",
             "currency": "USD",
             "nativeValue": 323.47,
-            "zarValue": 5155.92
+            "zarValue": 5155.917718000001
           },
           {
             "investment": "Tesla Inc",
             "currency": "USD",
             "nativeValue": 42263.55,
-            "zarValue": 673655.63
+            "zarValue": 673655.62887
           },
           {
             "investment": "Tripadvisor Inc",
             "currency": "USD",
             "nativeValue": 738.03,
-            "zarValue": 11763.76
+            "zarValue": 11763.755382
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 391206.75,
-            "zarValue": 6235600.87
+            "zarValue": 6235600.870949999
           },
           {
             "investment": "Gold",
             "currency": "USD",
             "nativeValue": 33862.5,
-            "zarValue": 539747.93
+            "zarValue": 539747.9325
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 365.94
+              "USD": 365.9391415419177
             },
-            "zarFee": 5832.86
+            "zarFee": 5832.850352693243
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 643.87
+              "USD": 643.8684047803141
             },
-            "zarFee": 10262.9
+            "zarFee": 10262.876051155336
           },
           "total": {
             "nativeFees": {
-              "USD": 1009.81
+              "USD": 1009.8075463222318
             },
-            "zarFee": 16095.76
+            "zarFee": 16095.726403848577
           }
         }
       },
@@ -7848,86 +7725,86 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 4269854.38
+          "USD": 4269854.380000001
         },
-        "zarAum": 68058916.9,
+        "zarAum": 68058916.904572,
         "holdingCount": 9,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": -4043.36,
-            "zarValue": -64448.73
+            "zarValue": -64448.732383999995
           },
           {
             "investment": "Blackrock ICS US Dollar Liquidity Fund",
             "currency": "USD",
             "nativeValue": 14835.05,
-            "zarValue": 236461.8
+            "zarValue": 236461.79596999998
           },
           {
             "investment": "Rubrics Enhanced Yield UCITS Fund",
             "currency": "USD",
             "nativeValue": 45775.29,
-            "zarValue": 729630.66
+            "zarValue": 729630.657426
           },
           {
             "investment": "Meituan",
             "currency": "USD",
             "nativeValue": 5436.16,
-            "zarValue": 86649.13
+            "zarValue": 86649.12870399999
           },
           {
             "investment": "Tencent Holdings Limited",
             "currency": "USD",
             "nativeValue": 347002.89,
-            "zarValue": 5531017.86
+            "zarValue": 5531017.864866
           },
           {
             "investment": "Alibaba Group Holding",
             "currency": "USD",
             "nativeValue": 133301.75,
-            "zarValue": 2124749.91
+            "zarValue": 2124749.91395
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1640696.88,
-            "zarValue": 26151723.85
+            "zarValue": 26151723.849072
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 680386.68,
-            "zarValue": 10844955.45
+            "zarValue": 10844955.447192
           },
           {
             "investment": "Xhaos Special Opportunities Fund D",
             "currency": "USD",
             "nativeValue": 1406463.04,
-            "zarValue": 22418176.98
+            "zarValue": 22418176.979776
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 1146.13
+              "USD": 1146.1253093662506
             },
-            "zarFee": 18268.62
+            "zarFee": 18268.54975611241
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 2016.62
+              "USD": 2016.6027375769543
             },
-            "zarFee": 32143.71
+            "zarFee": 32143.437675334095
           },
           "total": {
             "nativeFees": {
-              "USD": 3162.75
+              "USD": 3162.728046943205
             },
-            "zarFee": 50412.33
+            "zarFee": 50411.987431446505
           }
         }
       },
@@ -7939,62 +7816,62 @@ export const monthlyClientData = [
         "providerId": "julius-baer",
         "providerName": "Julius Baer",
         "nativeValues": {
-          "USD": 3511118.89
+          "USD": 3511118.8899999997
         },
-        "zarAum": 55965128.44,
+        "zarAum": 55965128.435266,
         "holdingCount": 5,
         "holdings": [
           {
             "investment": "Julius Baer Trading Account",
             "currency": "USD",
             "nativeValue": 7495.72,
-            "zarValue": 119477.28
+            "zarValue": 119477.279368
           },
           {
             "investment": "Scottish Mortgage Investment Trust",
             "currency": "USD",
             "nativeValue": 191615.52,
-            "zarValue": 3054236.42
+            "zarValue": 3054236.4194879998
           },
           {
             "investment": "Wealthworks Global Flexible Fund",
             "currency": "USD",
             "nativeValue": 1210484.46,
-            "zarValue": 19294396.0
+            "zarValue": 19294396.001723997
           },
           {
             "investment": "Diversified Trading Fund B1",
             "currency": "USD",
             "nativeValue": 729438.41,
-            "zarValue": 11626810.59
+            "zarValue": 11626810.592354
           },
           {
             "investment": "Xhaos Special Opportunities Fund",
             "currency": "USD",
             "nativeValue": 1372084.78,
-            "zarValue": 21870208.14
+            "zarValue": 21870208.142332
           }
         ],
         "fees": {
           "rebate": {
             "annualRate": 0.003221070905091383,
             "nativeFees": {
-              "USD": 942.46
+              "USD": 942.463575074646
             },
-            "zarFee": 15022.25
+            "zarFee": 15022.303908544813
           },
           "advisory": {
-            "annualRate": 0.005667502092853815,
+            "annualRate": 0.0056674609242583695,
             "nativeFees": {
-              "USD": 1658.27
+              "USD": 1658.260759125035
             },
-            "zarFee": 26431.83
+            "zarFee": 26431.681543997587
           },
           "total": {
             "nativeFees": {
-              "USD": 2600.73
+              "USD": 2600.724334199681
             },
-            "zarFee": 41454.08
+            "zarFee": 41453.9854525424
           }
         }
       },
@@ -8008,14 +7885,14 @@ export const monthlyClientData = [
         "nativeValues": {
           "USD": 524020.76
         },
-        "zarAum": 8352576.5,
+        "zarAum": 8352576.501944,
         "holdingCount": 1,
         "holdings": [
           {
             "investment": "FNB Securities Trading Account (Northstar)",
             "currency": "USD",
             "nativeValue": 524020.76,
-            "zarValue": 8352576.5
+            "zarValue": 8352576.501944
           }
         ],
         "fees": {
@@ -8029,20 +7906,20 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "USD": 218.34
+              "USD": 218.34198333333336
             },
-            "zarFee": 3480.21
+            "zarFee": 3480.2402091433337
           },
           "total": {
             "nativeFees": {
-              "USD": 218.34
+              "USD": 218.34198333333336
             },
-            "zarFee": 3480.21
+            "zarFee": 3480.2402091433337
           }
         }
       },
       {
-        "id": "northstar-sanlam|None|Fowler, Merle",
+        "id": "northstar-sanlam||Fowler, Merle",
         "client": "Fowler, Merle",
         "accountCode": "",
         "identityNo": "5202120048084",
@@ -8072,15 +7949,15 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1271.15
+              "ZAR": 1271.1540125
             },
-            "zarFee": 1271.15
+            "zarFee": 1271.1540125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1271.15
+              "ZAR": 1271.1540125
             },
-            "zarFee": 1271.15
+            "zarFee": 1271.1540125
           }
         }
       },
@@ -8115,20 +7992,20 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1510.49
+              "ZAR": 1510.4917125
             },
-            "zarFee": 1510.49
+            "zarFee": 1510.4917125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1510.49
+              "ZAR": 1510.4917125
             },
-            "zarFee": 1510.49
+            "zarFee": 1510.4917125
           }
         }
       },
       {
-        "id": "prescient|None|Commercial Buildings (Pty) Ltd",
+        "id": "prescient||Commercial Buildings (Pty) Ltd",
         "client": "Commercial Buildings (Pty) Ltd",
         "accountCode": "",
         "identityNo": "1927/000221/07",
@@ -8158,15 +8035,15 @@ export const monthlyClientData = [
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 18154.31
+              "ZAR": 18154.3113375
             },
-            "zarFee": 18154.31
+            "zarFee": 18154.3113375
           },
           "total": {
             "nativeFees": {
-              "ZAR": 18154.31
+              "ZAR": 18154.3113375
             },
-            "zarFee": 18154.31
+            "zarFee": 18154.3113375
           }
         }
       },
@@ -8206,36 +8083,36 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1685.32
+              "ZAR": 1685.3200416666668
             },
-            "zarFee": 1685.32
+            "zarFee": 1685.3200416666668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3370.64
+              "ZAR": 3370.6400833333337
             },
-            "zarFee": 3370.64
+            "zarFee": 3370.6400833333337
           },
           "total": {
             "nativeFees": {
-              "ZAR": 5055.96
+              "ZAR": 5055.9601250000005
             },
-            "zarFee": 5055.96
+            "zarFee": 5055.9601250000005
           }
         }
       },
       {
-        "id": "prime|None|Apex Images CC",
+        "id": "prime||Apex Images CC",
         "client": "Apex Images CC",
         "accountCode": "",
         "identityNo": "2009/040089/23",
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 1024749.33
+          "ZAR": 1024749.3300000001
         },
-        "zarAum": 1024749.33,
+        "zarAum": 1024749.3300000001,
         "holdingCount": 2,
         "holdings": [
           {
@@ -8255,22 +8132,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 213.49
+              "ZAR": 213.48944375
             },
-            "zarFee": 213.49
+            "zarFee": 213.48944375
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 426.98
+              "ZAR": 426.9788875
             },
-            "zarFee": 426.98
+            "zarFee": 426.9788875
           },
           "total": {
             "nativeFees": {
-              "ZAR": 640.47
+              "ZAR": 640.46833125
             },
-            "zarFee": 640.47
+            "zarFee": 640.46833125
           }
         }
       },
@@ -8310,22 +8187,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 180.22
+              "ZAR": 180.22087291666665
             },
-            "zarFee": 180.22
+            "zarFee": 180.22087291666665
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 360.44
+              "ZAR": 360.4417458333333
             },
-            "zarFee": 360.44
+            "zarFee": 360.4417458333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 540.66
+              "ZAR": 540.66261875
             },
-            "zarFee": 540.66
+            "zarFee": 540.66261875
           }
         }
       },
@@ -8353,22 +8230,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 8112.47
+              "ZAR": 8112.470724999999
             },
-            "zarFee": 8112.47
+            "zarFee": 8112.470724999999
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 16224.94
+              "ZAR": 16224.941449999998
             },
-            "zarFee": 16224.94
+            "zarFee": 16224.941449999998
           },
           "total": {
             "nativeFees": {
-              "ZAR": 24337.41
+              "ZAR": 24337.412174999998
             },
-            "zarFee": 24337.41
+            "zarFee": 24337.412174999998
           }
         }
       },
@@ -8396,22 +8273,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 330.43
+              "ZAR": 330.4292625
             },
-            "zarFee": 330.43
+            "zarFee": 330.4292625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 660.86
+              "ZAR": 660.858525
             },
-            "zarFee": 660.86
+            "zarFee": 660.858525
           },
           "total": {
             "nativeFees": {
-              "ZAR": 991.29
+              "ZAR": 991.2877874999999
             },
-            "zarFee": 991.29
+            "zarFee": 991.2877874999999
           }
         }
       },
@@ -8439,22 +8316,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 75.24
+              "ZAR": 75.23937083333333
             },
-            "zarFee": 75.24
+            "zarFee": 75.23937083333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 150.48
+              "ZAR": 150.47874166666665
             },
-            "zarFee": 150.48
+            "zarFee": 150.47874166666665
           },
           "total": {
             "nativeFees": {
-              "ZAR": 225.72
+              "ZAR": 225.71811249999996
             },
-            "zarFee": 225.72
+            "zarFee": 225.71811249999996
           }
         }
       },
@@ -8482,22 +8359,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 545.56
+              "ZAR": 545.5632666666667
             },
-            "zarFee": 545.56
+            "zarFee": 545.5632666666667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1091.13
+              "ZAR": 1091.1265333333333
             },
-            "zarFee": 1091.13
+            "zarFee": 1091.1265333333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1636.69
+              "ZAR": 1636.6898
             },
-            "zarFee": 1636.69
+            "zarFee": 1636.6898
           }
         }
       },
@@ -8525,22 +8402,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1619.38
+              "ZAR": 1619.3839
             },
-            "zarFee": 1619.38
+            "zarFee": 1619.3839
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3238.77
+              "ZAR": 3238.7678
             },
-            "zarFee": 3238.77
+            "zarFee": 3238.7678
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4858.15
+              "ZAR": 4858.1517
             },
-            "zarFee": 4858.15
+            "zarFee": 4858.1517
           }
         }
       },
@@ -8568,22 +8445,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 184.44
+              "ZAR": 184.43979791666666
             },
-            "zarFee": 184.44
+            "zarFee": 184.43979791666666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 368.88
+              "ZAR": 368.8795958333333
             },
-            "zarFee": 368.88
+            "zarFee": 368.8795958333333
           },
           "total": {
             "nativeFees": {
-              "ZAR": 553.32
+              "ZAR": 553.31939375
             },
-            "zarFee": 553.32
+            "zarFee": 553.31939375
           }
         }
       },
@@ -8611,22 +8488,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 75.35
+              "ZAR": 75.34866666666666
             },
-            "zarFee": 75.35
+            "zarFee": 75.34866666666666
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 150.7
+              "ZAR": 150.69733333333332
             },
-            "zarFee": 150.7
+            "zarFee": 150.69733333333332
           },
           "total": {
             "nativeFees": {
-              "ZAR": 226.05
+              "ZAR": 226.046
             },
-            "zarFee": 226.05
+            "zarFee": 226.046
           }
         }
       },
@@ -8672,22 +8549,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1554.25
+              "ZAR": 1554.2511000000002
             },
-            "zarFee": 1554.25
+            "zarFee": 1554.2511000000002
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3108.5
+              "ZAR": 3108.5022000000004
             },
-            "zarFee": 3108.5
+            "zarFee": 3108.5022000000004
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4662.75
+              "ZAR": 4662.7533
             },
-            "zarFee": 4662.75
+            "zarFee": 4662.7533
           }
         }
       },
@@ -8727,22 +8604,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 242.97
+              "ZAR": 242.96734791666668
             },
-            "zarFee": 242.97
+            "zarFee": 242.96734791666668
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 485.93
+              "ZAR": 485.93469583333336
             },
-            "zarFee": 485.93
+            "zarFee": 485.93469583333336
           },
           "total": {
             "nativeFees": {
-              "ZAR": 728.9
+              "ZAR": 728.9020437500001
             },
-            "zarFee": 728.9
+            "zarFee": 728.9020437500001
           }
         }
       },
@@ -8754,9 +8631,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 2852798.4
+          "ZAR": 2852798.3999999994
         },
-        "zarAum": 2852798.4,
+        "zarAum": 2852798.3999999994,
         "holdingCount": 4,
         "holdings": [
           {
@@ -8788,22 +8665,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 594.33
+              "ZAR": 594.333
             },
-            "zarFee": 594.33
+            "zarFee": 594.333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1188.67
+              "ZAR": 1188.666
             },
-            "zarFee": 1188.67
+            "zarFee": 1188.666
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1783.0
+              "ZAR": 1782.9989999999998
             },
-            "zarFee": 1783.0
+            "zarFee": 1782.9989999999998
           }
         }
       },
@@ -8831,22 +8708,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 348.08
+              "ZAR": 348.07506458333336
             },
-            "zarFee": 348.08
+            "zarFee": 348.07506458333336
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 696.15
+              "ZAR": 696.1501291666667
             },
-            "zarFee": 696.15
+            "zarFee": 696.1501291666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1044.23
+              "ZAR": 1044.22519375
             },
-            "zarFee": 1044.23
+            "zarFee": 1044.22519375
           }
         }
       },
@@ -8874,22 +8751,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 579.43
+              "ZAR": 579.4253520833333
             },
-            "zarFee": 579.43
+            "zarFee": 579.4253520833333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1158.85
+              "ZAR": 1158.8507041666667
             },
-            "zarFee": 1158.85
+            "zarFee": 1158.8507041666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1738.28
+              "ZAR": 1738.27605625
             },
-            "zarFee": 1738.28
+            "zarFee": 1738.27605625
           }
         }
       },
@@ -8917,22 +8794,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1529.13
+              "ZAR": 1529.1338687500001
             },
-            "zarFee": 1529.13
+            "zarFee": 1529.1338687500001
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3058.27
+              "ZAR": 3058.2677375000003
             },
-            "zarFee": 3058.27
+            "zarFee": 3058.2677375000003
           },
           "total": {
             "nativeFees": {
-              "ZAR": 4587.4
+              "ZAR": 4587.40160625
             },
-            "zarFee": 4587.4
+            "zarFee": 4587.40160625
           }
         }
       },
@@ -8944,9 +8821,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 50937930.54
+          "ZAR": 50937930.53999999
         },
-        "zarAum": 50937930.54,
+        "zarAum": 50937930.53999999,
         "holdingCount": 9,
         "holdings": [
           {
@@ -9008,22 +8885,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 10612.07
+              "ZAR": 10612.068862499998
             },
-            "zarFee": 10612.07
+            "zarFee": 10612.068862499998
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 21224.14
+              "ZAR": 21224.137724999997
             },
-            "zarFee": 21224.14
+            "zarFee": 21224.137724999997
           },
           "total": {
             "nativeFees": {
-              "ZAR": 31836.21
+              "ZAR": 31836.206587499997
             },
-            "zarFee": 31836.21
+            "zarFee": 31836.206587499997
           }
         }
       },
@@ -9069,22 +8946,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 2356.95
+              "ZAR": 2356.953954166667
             },
-            "zarFee": 2356.95
+            "zarFee": 2356.953954166667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 4713.91
+              "ZAR": 4713.907908333334
             },
-            "zarFee": 4713.91
+            "zarFee": 4713.907908333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 7070.86
+              "ZAR": 7070.8618625
             },
-            "zarFee": 7070.86
+            "zarFee": 7070.8618625
           }
         }
       },
@@ -9112,22 +8989,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 371.8
+              "ZAR": 371.8039541666667
             },
-            "zarFee": 371.8
+            "zarFee": 371.8039541666667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 743.61
+              "ZAR": 743.6079083333334
             },
-            "zarFee": 743.61
+            "zarFee": 743.6079083333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1115.41
+              "ZAR": 1115.4118625
             },
-            "zarFee": 1115.41
+            "zarFee": 1115.4118625
           }
         }
       },
@@ -9139,9 +9016,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 640588.15
+          "ZAR": 640588.1499999999
         },
-        "zarAum": 640588.15,
+        "zarAum": 640588.1499999999,
         "holdingCount": 3,
         "holdings": [
           {
@@ -9167,22 +9044,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 133.46
+              "ZAR": 133.45586458333332
             },
-            "zarFee": 133.46
+            "zarFee": 133.45586458333332
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 266.91
+              "ZAR": 266.91172916666665
             },
-            "zarFee": 266.91
+            "zarFee": 266.91172916666665
           },
           "total": {
             "nativeFees": {
-              "ZAR": 400.37
+              "ZAR": 400.36759374999997
             },
-            "zarFee": 400.37
+            "zarFee": 400.36759374999997
           }
         }
       },
@@ -9216,22 +9093,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1727.42
+              "ZAR": 1727.4211125
             },
-            "zarFee": 1727.42
+            "zarFee": 1727.4211125
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3454.84
+              "ZAR": 3454.842225
             },
-            "zarFee": 3454.84
+            "zarFee": 3454.842225
           },
           "total": {
             "nativeFees": {
-              "ZAR": 5182.26
+              "ZAR": 5182.2633375
             },
-            "zarFee": 5182.26
+            "zarFee": 5182.2633375
           }
         }
       },
@@ -9259,22 +9136,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 3.19
+              "ZAR": 3.1912083333333334
             },
-            "zarFee": 3.19
+            "zarFee": 3.1912083333333334
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 6.38
+              "ZAR": 6.382416666666667
             },
-            "zarFee": 6.38
+            "zarFee": 6.382416666666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 9.57
+              "ZAR": 9.573625
             },
-            "zarFee": 9.57
+            "zarFee": 9.573625
           }
         }
       },
@@ -9302,22 +9179,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 25.25
+              "ZAR": 25.254022916666667
             },
-            "zarFee": 25.25
+            "zarFee": 25.254022916666667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 50.51
+              "ZAR": 50.508045833333334
             },
-            "zarFee": 50.51
+            "zarFee": 50.508045833333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 75.76
+              "ZAR": 75.76206875
             },
-            "zarFee": 75.76
+            "zarFee": 75.76206875
           }
         }
       },
@@ -9363,22 +9240,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 307.13
+              "ZAR": 307.13179583333334
             },
-            "zarFee": 307.13
+            "zarFee": 307.13179583333334
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 614.26
+              "ZAR": 614.2635916666667
             },
-            "zarFee": 614.26
+            "zarFee": 614.2635916666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 921.39
+              "ZAR": 921.3953875
             },
-            "zarFee": 921.39
+            "zarFee": 921.3953875
           }
         }
       },
@@ -9390,9 +9267,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 8986575.74
+          "ZAR": 8986575.739999998
         },
-        "zarAum": 8986575.74,
+        "zarAum": 8986575.739999998,
         "holdingCount": 3,
         "holdings": [
           {
@@ -9418,22 +9295,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 1872.2
+              "ZAR": 1872.2032791666663
             },
-            "zarFee": 1872.2
+            "zarFee": 1872.2032791666663
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 3744.41
+              "ZAR": 3744.4065583333327
             },
-            "zarFee": 3744.41
+            "zarFee": 3744.4065583333327
           },
           "total": {
             "nativeFees": {
-              "ZAR": 5616.61
+              "ZAR": 5616.609837499999
             },
-            "zarFee": 5616.61
+            "zarFee": 5616.609837499999
           }
         }
       },
@@ -9445,9 +9322,9 @@ export const monthlyClientData = [
         "providerId": "prime",
         "providerName": "Prime Investments",
         "nativeValues": {
-          "ZAR": 45140516.23
+          "ZAR": 45140516.230000004
         },
-        "zarAum": 45140516.23,
+        "zarAum": 45140516.230000004,
         "holdingCount": 6,
         "holdings": [
           {
@@ -9491,22 +9368,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9404.27
+              "ZAR": 9404.274214583334
             },
-            "zarFee": 9404.27
+            "zarFee": 9404.274214583334
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 18808.55
+              "ZAR": 18808.54842916667
             },
-            "zarFee": 18808.55
+            "zarFee": 18808.54842916667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 28212.82
+              "ZAR": 28212.822643750005
             },
-            "zarFee": 28212.82
+            "zarFee": 28212.822643750005
           }
         }
       },
@@ -9552,89 +9429,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 853.54
+              "ZAR": 853.5352583333333
             },
-            "zarFee": 853.54
+            "zarFee": 853.5352583333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1707.07
+              "ZAR": 1707.0705166666667
             },
-            "zarFee": 1707.07
+            "zarFee": 1707.0705166666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 2560.61
+              "ZAR": 2560.605775
             },
-            "zarFee": 2560.61
-          }
-        }
-      },
-      {
-        "id": "prime|PRI202650602593|Thomas, Mayne",
-        "client": "Thomas, Mayne",
-        "accountCode": "PRI202650602593",
-        "identityNo": "8908115051084",
-        "providerId": "prime",
-        "providerName": "Prime Investments",
-        "nativeValues": {
-          "ZAR": 0.0
-        },
-        "zarAum": 0.0,
-        "holdingCount": 5,
-        "holdings": [
-          {
-            "investment": null,
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          },
-          {
-            "investment": null,
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          },
-          {
-            "investment": null,
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          },
-          {
-            "investment": null,
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          },
-          {
-            "investment": null,
-            "currency": "ZAR",
-            "nativeValue": 0.0,
-            "zarValue": 0.0
-          }
-        ],
-        "fees": {
-          "rebate": {
-            "annualRate": 0.0025,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "advisory": {
-            "annualRate": 0.005,
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
-          },
-          "total": {
-            "nativeFees": {
-              "ZAR": 0.0
-            },
-            "zarFee": 0.0
+            "zarFee": 2560.605775
           }
         }
       },
@@ -9662,22 +9472,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 344.24
+              "ZAR": 344.2440166666667
             },
-            "zarFee": 344.24
+            "zarFee": 344.2440166666667
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 688.49
+              "ZAR": 688.4880333333334
             },
-            "zarFee": 688.49
+            "zarFee": 688.4880333333334
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1032.73
+              "ZAR": 1032.73205
             },
-            "zarFee": 1032.73
+            "zarFee": 1032.73205
           }
         }
       },
@@ -9711,22 +9521,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 89.89
+              "ZAR": 89.89176250000001
             },
-            "zarFee": 89.89
+            "zarFee": 89.89176250000001
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 179.78
+              "ZAR": 179.78352500000003
             },
-            "zarFee": 179.78
+            "zarFee": 179.78352500000003
           },
           "total": {
             "nativeFees": {
-              "ZAR": 269.67
+              "ZAR": 269.6752875
             },
-            "zarFee": 269.67
+            "zarFee": 269.6752875
           }
         }
       },
@@ -9760,22 +9570,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 465.64
+              "ZAR": 465.6447687500001
             },
-            "zarFee": 465.64
+            "zarFee": 465.6447687500001
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 931.29
+              "ZAR": 931.2895375000002
             },
-            "zarFee": 931.29
+            "zarFee": 931.2895375000002
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1396.93
+              "ZAR": 1396.9343062500002
             },
-            "zarFee": 1396.93
+            "zarFee": 1396.9343062500002
           }
         }
       },
@@ -9809,22 +9619,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 350.33
+              "ZAR": 350.3257437500001
             },
-            "zarFee": 350.33
+            "zarFee": 350.3257437500001
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 700.65
+              "ZAR": 700.6514875000001
             },
-            "zarFee": 700.65
+            "zarFee": 700.6514875000001
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1050.98
+              "ZAR": 1050.9772312500002
             },
-            "zarFee": 1050.98
+            "zarFee": 1050.9772312500002
           }
         }
       },
@@ -9864,22 +9674,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 9.6
+              "ZAR": 9.60155625
             },
-            "zarFee": 9.6
+            "zarFee": 9.60155625
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 19.2
+              "ZAR": 19.2031125
             },
-            "zarFee": 19.2
+            "zarFee": 19.2031125
           },
           "total": {
             "nativeFees": {
-              "ZAR": 28.8
+              "ZAR": 28.804668749999998
             },
-            "zarFee": 28.8
+            "zarFee": 28.804668749999998
           }
         }
       },
@@ -9907,22 +9717,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 239.11
+              "ZAR": 239.1090375
             },
-            "zarFee": 239.11
+            "zarFee": 239.1090375
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 478.22
+              "ZAR": 478.218075
             },
-            "zarFee": 478.22
+            "zarFee": 478.218075
           },
           "total": {
             "nativeFees": {
-              "ZAR": 717.33
+              "ZAR": 717.3271125
             },
-            "zarFee": 717.33
+            "zarFee": 717.3271125
           }
         }
       },
@@ -9950,22 +9760,22 @@ export const monthlyClientData = [
           "rebate": {
             "annualRate": 0.0025,
             "nativeFees": {
-              "ZAR": 581.4
+              "ZAR": 581.4022833333333
             },
-            "zarFee": 581.4
+            "zarFee": 581.4022833333333
           },
           "advisory": {
             "annualRate": 0.005,
             "nativeFees": {
-              "ZAR": 1162.8
+              "ZAR": 1162.8045666666667
             },
-            "zarFee": 1162.8
+            "zarFee": 1162.8045666666667
           },
           "total": {
             "nativeFees": {
-              "ZAR": 1744.2
+              "ZAR": 1744.20685
             },
-            "zarFee": 1744.2
+            "zarFee": 1744.20685
           }
         }
       }
