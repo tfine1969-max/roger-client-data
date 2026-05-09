@@ -1,0 +1,44 @@
+{
+  "name": "MonthlyValue",
+  "type": "object",
+  "properties": {
+    "investment_id": {
+      "type": "string",
+      "description": "Reference to the investment"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to the client (for quick filtering)"
+    },
+    "month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format e.g. 2026-01"
+    },
+    "market_value": {
+      "type": "number",
+      "description": "Month end market value"
+    },
+    "number_of_units": {
+      "type": "number",
+      "description": "Number of units held"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Month end unit price"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code"
+    },
+    "exchange_rate": {
+      "type": "number",
+      "description": "Exchange rate at month end (e.g. USD/ZAR)"
+    }
+  },
+  "required": [
+    "investment_id",
+    "client_id",
+    "month",
+    "market_value"
+  ]
+}

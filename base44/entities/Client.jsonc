@@ -4,19 +4,19 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Full name of the client"
+      "description": "Client full name e.g. Blackbeard, Ginette"
     },
-    "email": {
+    "account_code": {
       "type": "string",
-      "description": "Client email address"
+      "description": "Account code e.g. 10012899"
     },
-    "phone": {
+    "identity_no": {
       "type": "string",
-      "description": "Client phone number"
+      "description": "Identity number / ID number"
     },
     "notes": {
       "type": "string",
-      "description": "Additional notes about the client"
+      "description": "Additional notes"
     }
   },
   "required": [

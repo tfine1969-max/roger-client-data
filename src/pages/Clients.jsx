@@ -1,12 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import ClientCard from '@/components/clients/ClientCard';
 import AddClientDialog from '@/components/clients/AddClientDialog';
-import { useQueryClient } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
 
 export default function Clients() {
   const queryClient = useQueryClient();
@@ -22,21 +20,38 @@ export default function Clients() {
     queryFn: () => base44.entities.Investment.list(),
   });
 
+  const { data: monthlyValues = [] } = useQuery({
+    queryKey: ['monthlyValues'],
+    queryFn: () => base44.entities.MonthlyValue.list(),
+  });
+
+  const latestMonth = useMemo(() => {
+    const months = [...new Set(monthlyValues.map(v => v.month))].sort((a, b) => b.localeCompare(a));
+    return months[0] || '';
+  }, [monthlyValues]);
+
+  const prevMonth = useMemo(() => {
+    const months = [...new Set(monthlyValues.map(v => v.month))].sort((a, b) => b.localeCompare(a));
+    return months[1] || '';
+  }, [monthlyValues]);
+
   const clientStats = useMemo(() => {
     return clients
-      .filter(c => c.name?.toLowerCase().includes(search.toLowerCase()))
+      .filter(c => c.name?.toLowerCase().includes(search.toLowerCase()) ||
+        c.account_code?.includes(search) || c.identity_no?.includes(search))
       .map(client => {
         const clientInvs = investments.filter(i => i.client_id === client.id);
-        const totalCurrent = clientInvs.reduce((s, i) => s + (i.current_value || 0), 0);
-        const totalInitial = clientInvs.reduce((s, i) => s + (i.initial_value || 0), 0);
-        const gain = totalInitial ? ((totalCurrent - totalInitial) / totalInitial) * 100 : 0;
-        return { client, totalValue: totalCurrent, investmentCount: clientInvs.length, gainPercent: gain };
+        const invIds = new Set(clientInvs.map(i => i.id));
+        const latestVals = monthlyValues.filter(v => invIds.has(v.investment_id) && v.month === latestMonth);
+        const prevVals = monthlyValues.filter(v => invIds.has(v.investment_id) && v.month === prevMonth);
+        const total = latestVals.reduce((s, v) => s + (v.market_value || 0), 0);
+        const prevTotal = prevVals.reduce((s, v) => s + (v.market_value || 0), 0);
+        const gain = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : 0;
+        return { client, totalValue: total, investmentCount: clientInvs.length, gainPercent: gain };
       });
-  }, [clients, investments, search]);
+  }, [clients, investments, monthlyValues, search, latestMonth, prevMonth]);
 
-  const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['clients'] });
-  };
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['clients'] });
 
   return (
     <div className="space-y-6">
@@ -48,23 +63,21 @@ export default function Clients() {
         <AddClientDialog onCreated={refresh} />
       </div>
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search clients..."
+          placeholder="Search by name, account code or ID..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="pl-10"
         />
       </div>
 
-      {/* Client list */}
       <div className="space-y-3">
         {clientStats.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-muted-foreground">
-              {search ? 'No clients match your search.' : 'No clients yet. Click "Add Client" to get started.'}
+            <p className="text-muted-foreground text-sm">
+              {search ? 'No clients match your search.' : 'No clients yet. Import a spreadsheet or add manually.'}
             </p>
           </div>
         )}
@@ -75,6 +88,7 @@ export default function Clients() {
             totalValue={totalValue}
             investmentCount={investmentCount}
             gainPercent={gainPercent}
+            latestMonth={latestMonth}
           />
         ))}
       </div>

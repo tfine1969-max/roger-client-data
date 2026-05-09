@@ -6,50 +6,27 @@
       "type": "string",
       "description": "Reference to the client"
     },
-    "name": {
+    "portfolio_id": {
       "type": "string",
-      "description": "Name of the investment (e.g. Apple Stock, Treasury Bond)"
+      "description": "Portfolio ID from the spreadsheet"
     },
-    "type": {
+    "investment_name": {
       "type": "string",
-      "enum": [
-        "stocks",
-        "bonds",
-        "real_estate",
-        "mutual_funds",
-        "etfs",
-        "crypto",
-        "cash",
-        "other"
-      ],
-      "description": "Type of investment"
+      "description": "Name of the investment / fund e.g. Wealthworks Global Flexible Fund"
     },
-    "initial_value": {
-      "type": "number",
-      "description": "Initial investment amount"
-    },
-    "current_value": {
-      "type": "number",
-      "description": "Current value of the investment"
+    "platform": {
+      "type": "string",
+      "description": "Platform / provider e.g. Credo, Allan Gray"
     },
     "currency": {
       "type": "string",
-      "enum": [
-        "USD",
-        "EUR",
-        "GBP",
-        "CAD",
-        "AUD"
-      ],
-      "default": "USD",
-      "description": "Currency of the investment"
+      "description": "Currency code e.g. USD, ZAR"
     }
   },
   "required": [
     "client_id",
-    "name",
-    "type",
-    "initial_value",
-    "current_value"
+    "investment_name",
+    "platform",
+    "currency"
   ]
 }

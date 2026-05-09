@@ -9,6 +9,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import Dashboard from '@/pages/Dashboard';
 import Clients from '@/pages/Clients';
 import ClientDetail from '@/pages/ClientDetail';
+import Import from '@/pages/Import';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -40,6 +41,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/clients/:id" element={<ClientDetail />} />
+        <Route path="/import" element={<Import />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

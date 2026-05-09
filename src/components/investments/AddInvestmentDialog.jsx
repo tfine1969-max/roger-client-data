@@ -3,38 +3,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-
-const TYPES = [
-  { value: 'stocks', label: 'Stocks' },
-  { value: 'bonds', label: 'Bonds' },
-  { value: 'real_estate', label: 'Real Estate' },
-  { value: 'mutual_funds', label: 'Mutual Funds' },
-  { value: 'etfs', label: 'ETFs' },
-  { value: 'crypto', label: 'Crypto' },
-  { value: 'cash', label: 'Cash' },
-  { value: 'other', label: 'Other' },
-];
 
 export default function AddInvestmentDialog({ clientId, onCreated }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: '', type: 'stocks', initial_value: '', current_value: '', currency: 'USD'
-  });
+  const [form, setForm] = useState({ investment_name: '', platform: '', currency: 'USD', portfolio_id: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await base44.entities.Investment.create({
-      ...form,
-      client_id: clientId,
-      initial_value: parseFloat(form.initial_value),
-      current_value: parseFloat(form.current_value || form.initial_value),
-    });
-    setForm({ name: '', type: 'stocks', initial_value: '', current_value: '', currency: 'USD' });
+    await base44.entities.Investment.create({ ...form, client_id: clientId });
+    setForm({ investment_name: '', platform: '', currency: 'USD', portfolio_id: '' });
     setOpen(false);
     setLoading(false);
     onCreated?.();
@@ -43,48 +24,30 @@ export default function AddInvestmentDialog({ clientId, onCreated }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2" size="sm">
-          <Plus className="w-4 h-4" /> Add Investment
-        </Button>
+        <Button size="sm" className="gap-2"><Plus className="w-4 h-4" /> Add Investment</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>New Investment</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>New Investment</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Investment Name *</Label>
-            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Apple Stock" required />
+            <Label>Investment / Fund Name *</Label>
+            <Input value={form.investment_name} onChange={e => setForm({ ...form, investment_name: e.target.value })} placeholder="e.g. Wealthworks Global Flexible Fund" required />
           </div>
           <div className="space-y-2">
-            <Label>Type</Label>
-            <Select value={form.type} onValueChange={v => setForm({ ...form, type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Label>Platform / Provider *</Label>
+            <Input value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })} placeholder="e.g. Credo, Allan Gray" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Initial Value *</Label>
-              <Input type="number" step="0.01" min="0" value={form.initial_value} onChange={e => setForm({ ...form, initial_value: e.target.value })} required />
+              <Label>Currency</Label>
+              <Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} placeholder="USD" />
             </div>
             <div className="space-y-2">
-              <Label>Current Value</Label>
-              <Input type="number" step="0.01" min="0" value={form.current_value} onChange={e => setForm({ ...form, current_value: e.target.value })} placeholder="Same as initial" />
+              <Label>Portfolio ID</Label>
+              <Input value={form.portfolio_id} onChange={e => setForm({ ...form, portfolio_id: e.target.value })} />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Currency</Label>
-            <Select value={form.currency} onValueChange={v => setForm({ ...form, currency: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {['USD', 'EUR', 'GBP', 'CAD', 'AUD'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button type="submit" className="w-full" disabled={loading || !form.name || !form.initial_value}>
+          <Button type="submit" className="w-full" disabled={loading || !form.investment_name || !form.platform}>
             {loading ? 'Creating...' : 'Create Investment'}
           </Button>
         </form>
