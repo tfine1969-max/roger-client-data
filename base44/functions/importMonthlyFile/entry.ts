@@ -1,6 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as XLSX from 'npm:xlsx@0.18.5';
 
+function hasUnknownValue(value: unknown) {
+  return String(value ?? '').toLowerCase().includes('unknown');
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
@@ -86,6 +90,14 @@ Deno.serve(async (req) => {
     const platform = String(row['Platform'] ?? '').trim();
     const currency = String(row['Currency'] ?? '').trim();
     const marketValue = row['Month End Market Value'];
+    const hasUnknown = [
+      accountCode,
+      row['Identity No'],
+      row['Portfolio Name'],
+      platform,
+      row['Investment Name'],
+      currency,
+    ].some(hasUnknownValue);
 
     // Skip rows with no meaningful data
     if (!accountCode || marketValue == null) continue;
@@ -136,7 +148,8 @@ Deno.serve(async (req) => {
       conversion_status: conversionStatus,
       has_missing_account_code: !accountCode,
       has_missing_market_value: origValue === 0 || origValue == null,
-      is_flagged: !accountCode || origValue === 0 || origValue == null,
+      has_unknown_value: hasUnknown,
+      is_flagged: hasUnknown || !accountCode || origValue === 0 || origValue == null,
     });
   }
 

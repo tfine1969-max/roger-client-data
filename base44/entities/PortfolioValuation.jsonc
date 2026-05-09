@@ -96,6 +96,10 @@
       "type": "boolean",
       "description": "Data quality flag: duplicate row"
     },
+    "has_unknown_value": {
+      "type": "boolean",
+      "description": "Data quality flag: one or more key fields contains UNKNOWN and needs correction"
+    },
     "is_flagged": {
       "type": "boolean",
       "description": "Row has at least one data quality issue"

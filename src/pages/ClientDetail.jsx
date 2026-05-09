@@ -2,12 +2,12 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
-import { clientDisplayName, clientKey } from '@/lib/client-utils';
+import { clientDisplayName, clientKey, rowHasUnknown } from '@/lib/client-utils';
 import { feeOptionValues, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
 import { exportClientFundCSV } from '@/lib/export-utils';
@@ -45,6 +45,7 @@ export default function ClientDetail() {
   const identityNo = clientRows.find(r => r.identity_no)?.identity_no;
   const totalZar = useMemo(() => currentRows.reduce((s, r) => s + zarVal(r), 0), [currentRows]);
   const platforms = useMemo(() => [...new Set(currentRows.map(r => r.platform).filter(Boolean))].sort(), [currentRows]);
+  const hasUnknown = useMemo(() => currentRows.some(rowHasUnknown), [currentRows]);
 
   const trendData = useMemo(() => {
     return months.map(month => ({
@@ -101,6 +102,12 @@ export default function ClientDetail() {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">{clientName}</h1>
+            {hasUnknown && (
+              <div className="mt-2 inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Contains UNKNOWN values that need correction
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-muted-foreground">
               <span>Accounts: <strong className="text-foreground font-mono">{accountCodes.join(', ')}</strong></span>
               {identityNo && <span>ID: <strong className="text-foreground">{identityNo}</strong></span>}

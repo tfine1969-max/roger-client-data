@@ -2,18 +2,21 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
-import { clientKey } from '@/lib/client-utils';
+import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Search, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
+import { cn } from '@/lib/utils';
 
 export default function Clients() {
   const [search, setSearch] = useState('');
   const [filterPlatform, setFilterPlatform] = useState('');
   const [filterCurrency, setFilterCurrency] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
+  const [needsCorrectionOnly, setNeedsCorrectionOnly] = useState(false);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -40,6 +43,7 @@ export default function Clients() {
           currencies: new Set(),
           investments: 0,
           totalValue: 0,
+          hasUnknown: false,
         };
       }
       const c = map[key];
@@ -50,6 +54,7 @@ export default function Clients() {
       c.currencies.add(r.currency);
       c.investments += 1;
       c.totalValue += zarVal(r);
+      c.hasUnknown = c.hasUnknown || rowHasUnknown(r);
     });
 
     return Object.values(map).map(c => ({
@@ -60,6 +65,8 @@ export default function Clients() {
     })).sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
   }, [valuations, latestMonth]);
 
+  const correctionCount = useMemo(() => clients.filter(c => c.hasUnknown).length, [clients]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return clients.filter(c => {
@@ -69,9 +76,10 @@ export default function Clients() {
         c.identity_no?.toLowerCase().includes(q);
       const matchPlatform = !filterPlatform || c.platforms.includes(filterPlatform);
       const matchCurrency = !filterCurrency || c.currencies.includes(filterCurrency);
-      return matchSearch && matchPlatform && matchCurrency;
+      const matchCorrection = !needsCorrectionOnly || c.hasUnknown;
+      return matchSearch && matchPlatform && matchCurrency && matchCorrection;
     });
-  }, [clients, search, filterPlatform, filterCurrency]);
+  }, [clients, search, filterPlatform, filterCurrency, needsCorrectionOnly]);
 
   return (
     <div className="space-y-6">
@@ -114,6 +122,16 @@ export default function Clients() {
             {currencies.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button
+          type="button"
+          variant={needsCorrectionOnly ? 'default' : 'outline'}
+          className="h-9 gap-2"
+          onClick={() => setNeedsCorrectionOnly(value => !value)}
+        >
+          <AlertTriangle className="w-4 h-4" />
+          Needs correction
+          {correctionCount > 0 && <span className={cn("rounded px-1.5 text-xs", needsCorrectionOnly ? "bg-white/20" : "bg-amber-50 text-amber-700")}>{correctionCount}</span>}
+        </Button>
       </div>
 
       <div className="bg-white border rounded-lg overflow-hidden">
@@ -140,8 +158,16 @@ export default function Clients() {
               {filtered.map(c => (
                 <tr key={c.client_key} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
-                    <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
-                    <div className="mt-1 text-xs text-muted-foreground font-mono">{c.account_codes.join(', ')}</div>
+                    <div className="flex items-center gap-2">
+                      {c.hasUnknown && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
+                      <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
+                      {c.hasUnknown && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800">Needs correction</span>}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1 text-xs font-mono">
+                      {c.account_codes.map(code => (
+                        <span key={code} className={cn("text-muted-foreground", hasUnknownValue(code) && "rounded bg-amber-50 px-1 py-0.5 text-amber-800 ring-1 ring-amber-200")}>{code}</span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.account_codes.length}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '-'}</td>

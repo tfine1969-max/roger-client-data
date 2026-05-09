@@ -17,3 +17,18 @@ export function clientKey(row) {
 export function clientDisplayName(rows = []) {
   return rows.find(row => row.portfolio_name)?.portfolio_name || 'Unknown Client';
 }
+
+export function hasUnknownValue(value) {
+  return String(value ?? '').toLowerCase().includes('unknown');
+}
+
+export function rowHasUnknown(row) {
+  return [
+    row?.account_code,
+    row?.identity_no,
+    row?.portfolio_name,
+    row?.platform,
+    row?.investment_name,
+    row?.currency,
+  ].some(hasUnknownValue);
+}

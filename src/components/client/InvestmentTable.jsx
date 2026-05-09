@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { hasUnknownValue } from '@/lib/client-utils';
+import { cn } from '@/lib/utils';
 
 export default function InvestmentTable({ clientRows, months }) {
   const orderedMonths = useMemo(() => [...months].reverse(), [months]);
@@ -63,7 +65,9 @@ export default function InvestmentTable({ clientRows, months }) {
               {investments.map(inv => (
                 <tr key={inv.key} className="hover:bg-muted/20">
                   <td className="px-4 py-2.5 font-medium sticky left-0 bg-white max-w-[220px] truncate">{inv.investment_name}</td>
-                  <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{inv.account_code}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">
+                    <span className={cn(hasUnknownValue(inv.account_code) && "rounded bg-amber-50 px-1.5 py-0.5 text-amber-800 ring-1 ring-amber-200")}>{inv.account_code}</span>
+                  </td>
                   <td className="px-3 py-2.5 text-muted-foreground text-xs">{inv.platform}</td>
                   <td className="px-3 py-2.5 text-muted-foreground text-xs">{inv.currency}</td>
                   {orderedMonths.map(m => {
