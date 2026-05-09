@@ -33,6 +33,7 @@ export default function Fees() {
   const [search, setSearch] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
+  const [providerView, setProviderView] = useState('clients');
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -62,7 +63,7 @@ export default function Fees() {
     (row, key) => ({ provider: key, rebate: 0, advisory: 0, total: 0, aum: 0, holdings: 0, clients: new Set(), missingFees: 0 })
   ).sort((a, b) => b.total - a.total), [monthRows]);
 
-  const activeProvider = selectedProvider || providerRows[0]?.provider || '';
+  const activeProvider = selectedProvider;
   const providerMonthRows = useMemo(
     () => monthRows.filter(row => row.platform === activeProvider),
     [monthRows, activeProvider]
@@ -115,7 +116,7 @@ export default function Fees() {
             <span>fees calculated from mapped annual rates divided by 12</span>
           </div>
         </div>
-        <Select value={latestMonth} onValueChange={setSelectedMonth}>
+        <Select value={latestMonth} onValueChange={(month) => { setSelectedMonth(month); setSelectedProvider(''); setSelectedClient(''); setSearch(''); }}>
           <SelectTrigger className="w-44">
             <SelectValue />
           </SelectTrigger>
@@ -132,50 +133,56 @@ export default function Fees() {
         feeRequiredCount={feeRequiredCount}
       />
 
-      <div className="bg-white border rounded-lg overflow-hidden">
-        <div className="px-5 py-4 border-b flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold">Provider Fees This Month</h2>
-            <p className="text-xs text-muted-foreground mt-1">Click a provider to review monthly totals, history, and client fee detail.</p>
-          </div>
-          {feeRequiredCount > 0 && (
-            <div className="flex items-center gap-1.5 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-md px-2 py-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {feeRequiredCount} unmapped holdings
+      {!activeProvider && (
+        <div className="bg-white border rounded-lg overflow-hidden">
+          <div className="px-5 py-4 border-b flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold">Provider Fees This Month</h2>
+              <p className="text-xs text-muted-foreground mt-1">Click a provider to review monthly totals, history, and client fee detail.</p>
             </div>
-          )}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/40">
-                {['Provider','AUM (ZAR)','Clients','Holdings','Monthly Rebate','Monthly Advisory','Total Monthly',''].map(header => (
-                  <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {providerRows.map(row => (
-                <tr key={row.provider} className={`hover:bg-muted/20 cursor-pointer ${activeProvider === row.provider ? 'bg-muted/30' : ''}`} onClick={() => { setSelectedProvider(row.provider); setSelectedClient(''); }}>
-                  <td className="px-4 py-3 font-semibold">{row.provider}</td>
-                  <td className="px-4 py-3 font-mono text-right">R {fmtNum(row.aum)}</td>
-                  <td className="px-4 py-3 text-right">{row.clients}</td>
-                  <td className="px-4 py-3 text-right">{row.holdings}</td>
-                  <td className="px-4 py-3 font-mono text-right text-chart-2">R {fmtNum(row.rebate)}</td>
-                  <td className="px-4 py-3 font-mono text-right text-chart-1">R {fmtNum(row.advisory)}</td>
-                  <td className="px-4 py-3 font-mono text-right font-bold">R {fmtNum(row.total)}</td>
-                  <td className="px-4 py-3"><ChevronRight className="w-4 h-4 text-muted-foreground" /></td>
+            {feeRequiredCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-md px-2 py-1">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                {feeRequiredCount} unmapped holdings
+              </div>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  {['Provider','AUM (ZAR)','Clients','Holdings','Monthly Rebate','Monthly Advisory','Total Monthly',''].map(header => (
+                    <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {providerRows.map(row => (
+                  <tr
+                    key={row.provider}
+                    className="hover:bg-muted/20 cursor-pointer"
+                    onClick={() => { setSelectedProvider(row.provider); setSelectedClient(''); setProviderView('clients'); setSearch(''); }}
+                  >
+                    <td className="px-4 py-3 font-semibold">{row.provider}</td>
+                    <td className="px-4 py-3 font-mono text-right">R {fmtNum(row.aum)}</td>
+                    <td className="px-4 py-3 text-right">{row.clients}</td>
+                    <td className="px-4 py-3 text-right">{row.holdings}</td>
+                    <td className="px-4 py-3 font-mono text-right text-chart-2">R {fmtNum(row.rebate)}</td>
+                    <td className="px-4 py-3 font-mono text-right text-chart-1">R {fmtNum(row.advisory)}</td>
+                    <td className="px-4 py-3 font-mono text-right font-bold">R {fmtNum(row.total)}</td>
+                    <td className="px-4 py-3"><ChevronRight className="w-4 h-4 text-muted-foreground" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {activeProvider && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => { setSelectedProvider(''); setSelectedClient(''); }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setSelectedProvider(''); setSelectedClient(''); setSearch(''); }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4" /> Provider overview
             </button>
             <h2 className="text-xl font-semibold">{activeProvider}</h2>
@@ -211,6 +218,23 @@ export default function Fees() {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2 bg-white border rounded-lg p-3">
+            {[
+              ['clients', 'Client summary'],
+              ['invoice', 'Advisory invoice'],
+              ['investments', 'Investment detail'],
+            ].map(([view, label]) => (
+              <button
+                key={view}
+                onClick={() => { setProviderView(view); setSelectedClient(''); setSearch(''); }}
+                className={`text-sm px-3 py-1.5 rounded-md border transition-colors ${providerView === view ? 'bg-primary text-primary-foreground border-primary' : 'bg-white text-muted-foreground hover:bg-muted/40'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {providerView === 'clients' && (
           <div className="bg-white border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Client Fee Summary for {formatMonth(latestMonth)}</p>
@@ -253,7 +277,9 @@ export default function Fees() {
               </table>
             </div>
           </div>
+          )}
 
+          {providerView === 'invoice' && (
           <div className="bg-white border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b">
               <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{activeProvider} Advisory Invoice Schedule</p>
@@ -287,7 +313,10 @@ export default function Fees() {
               </table>
             </div>
           </div>
+          )}
 
+          {providerView === 'investments' && (
+          <>
           <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
             <div className="relative flex-1 min-w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -301,6 +330,8 @@ export default function Fees() {
           </div>
 
           <FeeInvestmentTable rows={detailRows} feeOptions={feeOptions} onFeeUpdated={refresh} />
+          </>
+          )}
         </div>
       )}
     </div>
