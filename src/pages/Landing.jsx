@@ -74,6 +74,9 @@ const combineNativeValues = (clients, selector) => {
   return values;
 };
 
+const providerControlTotal = (month, providerId, fallback) =>
+  month.providerSourceTotals?.[providerId]?.zarTotal ?? fallback;
+
 function ProviderLogo({ providerId }) {
   const brand = providerBranding[providerId] || { name: providerId };
 
@@ -124,11 +127,13 @@ export default function Landing() {
           if (!clients.length) return null;
           const rebate = sum(clients.map((client) => feeFor(client, 'rebate').zarFee));
           const advisory = sum(clients.map((client) => feeFor(client, 'advisory').zarFee));
+          const clientAumZar = sum(clients.map((client) => client.zarAum));
           return {
             providerId,
             clients,
             clientCount: clients.length,
-            aumZar: sum(clients.map((client) => client.zarAum)),
+            aumZar: providerControlTotal(selectedMonth, providerId, clientAumZar),
+            clientAumZar,
             nativeValues: combineNativeValues(clients, (client) => client.nativeValues),
             rebateZar: rebate,
             advisoryZar: advisory,
@@ -193,10 +198,12 @@ export default function Landing() {
     const clients = month.clients.filter((client) => client.providerId === selectedProviderId);
     const rebate = sum(clients.map((client) => feeFor(client, 'rebate').zarFee));
     const advisory = sum(clients.map((client) => feeFor(client, 'advisory').zarFee));
+    const clientAumZar = sum(clients.map((client) => client.zarAum));
     return {
       ...month,
       clients,
-      aumZar: sum(clients.map((client) => client.zarAum)),
+      aumZar: providerControlTotal(month, selectedProviderId, clientAumZar),
+      clientAumZar,
       nativeValues: combineNativeValues(clients, (client) => client.nativeValues),
       rebateZar: rebate,
       advisoryZar: advisory,
@@ -218,6 +225,13 @@ export default function Landing() {
     zarFee: sum(calculationFeeRows.map((client) => client.fee.zarFee)),
     annualRate: calculationFeeRows[0]?.fee.annualRate || 0,
   };
+
+  const providerReconciliationRows = providerSummaries.map((provider) => ({
+    ...provider,
+    providerName: providerBranding[provider.providerId]?.name || provider.providerId,
+    sourceAumZar: selectedMonth.providerSourceTotals?.[provider.providerId]?.zarTotal ?? provider.aumZar,
+    difference: (selectedMonth.providerSourceTotals?.[provider.providerId]?.zarTotal ?? provider.aumZar) - provider.clientAumZar,
+  }));
 
   const openCalculation = (providerId, monthId, feeType) => {
     setCalculation({ providerId, monthId, feeType });
@@ -293,6 +307,38 @@ export default function Landing() {
                   <td className="px-4 py-4 font-semibold text-navy" colSpan={3}>Total AUM</td>
                   <td className="px-4 py-4 text-lg font-semibold text-navy">{currency(monthTotals.aumZar)}</td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-6 border border-border bg-white">
+          <div className="border-b border-border p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Provider control reconciliation</p>
+            <h2 className="mt-1 text-xl font-semibold text-navy">Provider totals from workbook tabs</h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="bg-[#F2F5F7] text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Provider</th>
+                  <th className="px-4 py-3 font-semibold">Source total</th>
+                  <th className="px-4 py-3 font-semibold">Client rows total</th>
+                  <th className="px-4 py-3 font-semibold">Difference</th>
+                  <th className="px-4 py-3 font-semibold">Client records</th>
+                </tr>
+              </thead>
+              <tbody>
+                {providerReconciliationRows.map((row) => (
+                  <tr key={row.providerId} className="border-t border-border">
+                    <td className="px-4 py-4 font-semibold text-navy">{row.providerName}</td>
+                    <td className="px-4 py-4">{currency(row.sourceAumZar)}</td>
+                    <td className="px-4 py-4">{currency(row.clientAumZar)}</td>
+                    <td className="px-4 py-4 font-semibold">{currency(row.difference)}</td>
+                    <td className="px-4 py-4">{row.clientCount}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
