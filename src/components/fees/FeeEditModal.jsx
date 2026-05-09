@@ -5,10 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { origVal, zarVal } from '@/lib/valuation-utils';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved }) {
-  const { toast } = useToast();
   const [rebate, setRebate] = useState(String(row.rebate_fee_annual_percent ?? 0));
   const [advisory, setAdvisory] = useState(String(row.advisory_fee_annual_percent ?? 0));
   const [saving, setSaving] = useState(false);
@@ -41,7 +40,7 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
       await base44.entities.FeeConfig.create(configData);
     }
 
-    toast({ title: 'Fees saved', description: `Fee config updated from ${row.upload_month}. New fees apply to future uploads only.`, duration: 3000 });
+    toast.success(`Fee config updated from ${row.upload_month}. New fees apply to future uploads only.`);
     setSaving(false);
     onSaved();
   };
