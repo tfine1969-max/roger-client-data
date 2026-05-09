@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
-import ExchangeRateInputs from '@/components/upload/ExchangeRateInputs';
 
 export default function Upload() {
   const queryClient = useQueryClient();
@@ -15,7 +14,6 @@ export default function Upload() {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
-  const [detectedCurrencies, setDetectedCurrencies] = useState([]);
   const [exchangeRates, setExchangeRates] = useState({});
 
   const handleSubmit = async (e) => {
@@ -48,7 +46,6 @@ export default function Upload() {
     setStatus('success');
     setMessage(`Successfully imported ${result.rows_imported} rows for ${uploadMonth}.`);
     setDetail(result.exchange_rates_detected);
-    setDetectedCurrencies([]);
     setExchangeRates({});
   };
 
@@ -62,34 +59,10 @@ export default function Upload() {
     }
   };
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
-    
-    if (selectedFile) {
-      // Detect currencies in the file by uploading and parsing
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
-        const result = await base44.functions.invoke('debugSheetColumns', { file_url });
-        const sheetData = result.data;
-        
-        // Extract unique currencies from the data
-        const currencies = new Set();
-        Object.values(sheetData).forEach(sheet => {
-          if (sheet.data) {
-            sheet.data.forEach(row => {
-              if (row.Currency) currencies.add(row.Currency);
-            });
-          }
-        });
-        
-        setDetectedCurrencies(Array.from(currencies).sort());
-        setExchangeRates({});
-      } catch (err) {
-        console.error('Failed to detect currencies:', err);
-      }
-    } else {
-      setDetectedCurrencies([]);
+    if (!selectedFile) {
       setExchangeRates({});
     }
   };
@@ -125,13 +98,27 @@ export default function Upload() {
           />
         </div>
 
-        {detectedCurrencies.length > 0 && (
-          <ExchangeRateInputs
-            currencies={detectedCurrencies}
-            rates={exchangeRates}
-            onChange={(currency, value) => setExchangeRates(prev => ({ ...prev, [currency]: value }))}
-          />
-        )}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+          <p className="text-sm font-medium text-blue-900">Exchange Rates (Optional)</p>
+          <p className="text-xs text-blue-800">Enter exchange rates for non-ZAR currencies. Leave empty to use rates from the file.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            {['USD', 'EUR', 'GBP'].map(ccy => (
+              <div key={ccy} className="flex items-center gap-2">
+                <span className="text-xs font-semibold w-10">{ccy}</span>
+                <Input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  placeholder="e.g. 18.50"
+                  value={exchangeRates[ccy] ?? ''}
+                  onChange={e => setExchangeRates(prev => ({ ...prev, [ccy]: e.target.value }))}
+                  className="h-8 text-xs flex-1"
+                />
+                <span className="text-xs text-muted-foreground">ZAR</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input
