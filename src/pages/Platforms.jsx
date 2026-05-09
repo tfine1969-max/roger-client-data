@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -34,24 +34,33 @@ export default function Platforms() {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-    const prevMap = {};
-    prev.forEach(r => { prevMap[`${r.platform}||${r.investment_name}||${r.currency}`] = (prevMap[`${r.platform}||${r.investment_name}||${r.currency}`] || 0) + (r.month_end_market_value || 0); });
+    const prevOrigMap = {};
+    const prevZarMap = {};
+    prev.forEach(r => {
+      const k = `${r.platform}||${r.investment_name}||${r.currency}`;
+      prevOrigMap[k] = (prevOrigMap[k] || 0) + origVal(r);
+      prevZarMap[k] = (prevZarMap[k] || 0) + zarVal(r);
+    });
 
     // Aggregate by platform + investment + currency
     const map = {};
     current.forEach(r => {
       const k = `${r.platform}||${r.investment_name}||${r.currency}`;
-      if (!map[k]) map[k] = { platform: r.platform, investment_name: r.investment_name, currency: r.currency, totalValue: 0, clients: new Set() };
-      map[k].totalValue += r.month_end_market_value || 0;
+      if (!map[k]) map[k] = { platform: r.platform, investment_name: r.investment_name, currency: r.currency, totalOrig: 0, totalZar: 0, clients: new Set() };
+      map[k].totalOrig += origVal(r);
+      map[k].totalZar += zarVal(r);
       map[k].clients.add(r.account_code);
     });
 
     return Object.entries(map).map(([k, v]) => {
-      const prevVal = prevMap[k] ?? null;
-      const changeVal = prevVal !== null ? v.totalValue - prevVal : null;
-      const changePct = prevVal ? (changeVal / prevVal) * 100 : null;
-      return { ...v, clients: v.clients.size, prevVal, changeVal, changePct, isNew: prevVal === null };
-    }).sort((a, b) => b.totalValue - a.totalValue);
+      const prevOrig = prevOrigMap[k] ?? null;
+      const prevZar = prevZarMap[k] ?? null;
+      const changeOrig = prevOrig !== null ? v.totalOrig - prevOrig : null;
+      const changeOrigPct = prevOrig ? (changeOrig / prevOrig) * 100 : null;
+      const changeZar = prevZar !== null ? v.totalZar - prevZar : null;
+      const changeZarPct = prevZar ? (changeZar / prevZar) * 100 : null;
+      return { ...v, clients: v.clients.size, prevOrig, prevZar, changeOrig, changeOrigPct, changeZar, changeZarPct, isNew: prevOrig === null };
+    }).sort((a, b) => b.totalZar - a.totalZar);
   }, [valuations, latestMonth, prevMonth]);
 
   const filtered = useMemo(() => {
@@ -63,7 +72,7 @@ export default function Platforms() {
     });
   }, [fundRows, search, filterPlatform]);
 
-  const totalAUM = useMemo(() => filtered.reduce((s, r) => s + r.totalValue, 0), [filtered]);
+  const totalAUM = useMemo(() => filtered.reduce((s, r) => s + r.totalZar, 0), [filtered]);
 
   return (
     <div className="space-y-6">
@@ -107,7 +116,7 @@ export default function Platforms() {
       {latestMonth && (
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <MonthBadge month={latestMonth} />
-          <span>{filtered.length} funds · Total AUM: <strong className="text-foreground">{fmtNum(totalAUM)}</strong></span>
+          <span>{filtered.length} funds · Total AUM (ZAR): <strong className="text-foreground">ZAR {fmtNum(totalAUM)}</strong></span>
         </div>
       )}
 
@@ -117,7 +126,7 @@ export default function Platforms() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {['Platform', 'Investment Name', 'Currency', 'Total Market Value', 'Clients', 'MoM Change'].map(h => (
+                {['Platform', 'Investment Name', 'Currency', 'Value (Orig. CCY)', 'Value (ZAR)', 'Clients', 'ZAR MoM Change'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -131,10 +140,11 @@ export default function Platforms() {
                   <td className="px-4 py-2.5 text-muted-foreground text-xs font-medium">{r.platform}</td>
                   <td className="px-4 py-2.5 font-medium">{r.investment_name}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{r.currency}</td>
-                  <td className="px-4 py-2.5 font-mono font-semibold">{fmtNum(r.totalValue)}</td>
+                  <td className="px-4 py-2.5 font-mono text-sm">{fmtCcy(r.totalOrig, r.currency)}</td>
+                  <td className="px-4 py-2.5 font-mono font-semibold">ZAR {fmtNum(r.totalZar)}</td>
                   <td className="px-4 py-2.5 text-center text-muted-foreground">{r.clients}</td>
                   <td className="px-4 py-2.5">
-                    <ChangeCell value={r.changeVal} pct={r.changePct} isNew={r.isNew} />
+                   <ChangeCell value={r.changeZar} pct={r.changeZarPct} isNew={r.isNew} />
                   </td>
                 </tr>
               ))}

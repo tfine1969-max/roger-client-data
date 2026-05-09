@@ -36,7 +36,37 @@
     },
     "month_end_market_value": {
       "type": "number",
-      "description": "Month end market value"
+      "description": "Month end market value (legacy field, same as original_currency_value)"
+    },
+    "original_currency_value": {
+      "type": "number",
+      "description": "Value in the original uploaded currency"
+    },
+    "exchange_rate_to_zar": {
+      "type": "number",
+      "description": "Exchange rate from original currency to ZAR (1 for ZAR)"
+    },
+    "zar_value": {
+      "type": "number",
+      "description": "Value converted to South African Rand"
+    },
+    "exchange_rate_date": {
+      "type": "string",
+      "description": "Date the exchange rate was sourced (YYYY-MM-DD)"
+    },
+    "exchange_rate_source": {
+      "type": "string",
+      "description": "Source of the exchange rate e.g. Manual, API"
+    },
+    "conversion_status": {
+      "type": "string",
+      "enum": [
+        "Converted",
+        "Manual Rate Required",
+        "ZAR Base Currency",
+        "Failed"
+      ],
+      "description": "Status of the ZAR conversion"
     },
     "number_of_units": {
       "type": "number",

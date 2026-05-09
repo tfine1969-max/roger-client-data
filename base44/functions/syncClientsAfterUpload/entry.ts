@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         };
       }
       clientMap[key].count++;
-      clientMap[key].total_value += row.month_end_market_value || 0;
+      clientMap[key].total_value += row.zar_value ?? row.month_end_market_value ?? 0;
       if (row.platform) clientMap[key].platforms.add(row.platform);
       if (!clientMap[key].currency && row.currency) clientMap[key].currency = row.currency;
     }

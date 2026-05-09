@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ChevronRight } from 'lucide-react';
@@ -35,9 +35,9 @@ export default function Clients() {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
-    // Build prev map
+    // Build prev map (ZAR)
     const prevMap = {};
-    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = r.month_end_market_value || 0; });
+    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = zarVal(r); });
 
     // Group by account_code
     const map = {};
@@ -58,7 +58,7 @@ export default function Clients() {
       c.platforms.add(r.platform);
       c.currencies.add(r.currency);
       c.investments++;
-      c.totalValue += r.month_end_market_value || 0;
+      c.totalValue += zarVal(r);
       const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
       if (prevMap[k] !== undefined) c.prevValue += prevMap[k];
       c.rows.push(r);
@@ -139,7 +139,7 @@ export default function Clients() {
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">ID Number</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Market Value</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value (ZAR)</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">MoM Change</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -161,7 +161,7 @@ export default function Clients() {
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '—'}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.platforms.length}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold">{fmtNum(c.totalValue)}</td>
+                  <td className="px-4 py-3 text-right font-mono font-semibold">ZAR {fmtNum(c.totalValue)}</td>
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <ChangeCell value={c.changeValue} pct={c.changePct} isNew={c.isNew} />
                   </td>

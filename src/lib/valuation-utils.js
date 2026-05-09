@@ -1,6 +1,6 @@
 /**
  * Given all PortfolioValuation records, compute per-investment month-on-month changes.
- * Returns a map: unique_key (without month) -> { current, prev, changeValue, changePct, isNew }
+ * Returns a map: unique_key -> { current, prevValue, prevZarValue, changeValue, changePct, zarChangeValue, zarChangePct, isNew }
  */
 export function computeChanges(valuations, currentMonth, prevMonth) {
   const result = {};
@@ -16,14 +16,34 @@ export function computeChanges(valuations, currentMonth, prevMonth) {
   currentRows.forEach(r => {
     const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
     const prev = prevMap[k];
-    const curr = r.month_end_market_value ?? 0;
-    const prevVal = prev ? (prev.month_end_market_value ?? 0) : null;
+    const curr = origVal(r);
+    const currZar = zarVal(r);
+    const prevVal = prev ? origVal(prev) : null;
+    const prevZar = prev ? zarVal(prev) : null;
     const changeValue = prevVal !== null ? curr - prevVal : null;
     const changePct = prevVal ? (changeValue / prevVal) * 100 : null;
-    result[k] = { current: r, prevValue: prevVal, changeValue, changePct, isNew: prevVal === null };
+    const zarChangeValue = prevZar !== null ? currZar - prevZar : null;
+    const zarChangePct = prevZar ? (zarChangeValue / prevZar) * 100 : null;
+    result[k] = { current: r, prevValue: prevVal, prevZarValue: prevZar, changeValue, changePct, zarChangeValue, zarChangePct, isNew: prevVal === null };
   });
 
   return result;
+}
+
+/**
+ * Get the original currency value from a row (prefers original_currency_value, falls back to month_end_market_value)
+ */
+export function origVal(row) {
+  if (!row) return 0;
+  return row.original_currency_value ?? row.month_end_market_value ?? 0;
+}
+
+/**
+ * Get the ZAR value from a row (prefers zar_value, falls back to month_end_market_value)
+ */
+export function zarVal(row) {
+  if (!row) return 0;
+  return row.zar_value ?? row.month_end_market_value ?? 0;
 }
 
 /**
@@ -54,13 +74,25 @@ export function fmtNum(v, decimals = 2) {
 }
 
 /**
- * Summarise valuations for a single client by month
+ * Format number with currency prefix e.g. "USD 178,149.00"
+ */
+export function fmtCcy(v, currency, decimals = 2) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const num = new Intl.NumberFormat('en-ZA', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(v);
+  return currency ? `${currency} ${num}` : num;
+}
+
+/**
+ * Summarise valuations for a single client by month — uses ZAR values for totals
  */
 export function clientMonthlyTotals(valuations, accountCode) {
   const clientRows = valuations.filter(v => v.account_code === accountCode);
   const months = getSortedMonths(clientRows);
   return months.map(month => ({
     month,
-    total: clientRows.filter(v => v.upload_month === month).reduce((s, v) => s + (v.month_end_market_value || 0), 0),
+    total: clientRows.filter(v => v.upload_month === month).reduce((s, v) => s + zarVal(v), 0),
   })).reverse(); // chronological for chart
 }

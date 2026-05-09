@@ -6,7 +6,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getSortedMonths, fmtNum, formatMonth, clientMonthlyTotals } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, fmtCcy, formatMonth, clientMonthlyTotals, origVal, zarVal } from '@/lib/valuation-utils';
 import { exportClientFundCSV } from '@/lib/export-utils';
 import KpiCard from '@/components/shared/KpiCard';
 import ChangeCell from '@/components/shared/ChangeCell';
@@ -45,10 +45,13 @@ export default function ClientDetail() {
     return m;
   }, [prevRows]);
 
-  const totalValue = useMemo(() => currentRows.reduce((s, r) => s + (r.month_end_market_value || 0), 0), [currentRows]);
-  const prevTotalValue = useMemo(() => prevRows.reduce((s, r) => s + (r.month_end_market_value || 0), 0), [prevRows]);
-  const changeValue = prevTotalValue ? totalValue - prevTotalValue : null;
-  const changePct = prevTotalValue ? ((totalValue - prevTotalValue) / prevTotalValue) * 100 : null;
+  const totalZar = useMemo(() => currentRows.reduce((s, r) => s + zarVal(r), 0), [currentRows]);
+  const prevTotalZar = useMemo(() => prevRows.reduce((s, r) => s + zarVal(r), 0), [prevRows]);
+  const changeValue = prevTotalZar ? totalZar - prevTotalZar : null;
+  const changePct = prevTotalZar ? ((totalZar - prevTotalZar) / prevTotalZar) * 100 : null;
+  // Keep for display
+  const totalValue = totalZar;
+  const prevTotalValue = prevTotalZar;
 
   // Monthly trend for portfolio
   const trendData = useMemo(() => clientMonthlyTotals(clientRows, accountCode), [clientRows, accountCode]);
@@ -129,14 +132,14 @@ export default function ClientDetail() {
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
-          title={`Total Value · ${formatMonth(latestMonth)}`}
-          value={fmtNum(totalValue)}
+          title={`Total Value (ZAR) · ${formatMonth(latestMonth)}`}
+          value={`ZAR ${fmtNum(totalZar)}`}
           icon={DollarSign}
           accent
         />
         <KpiCard
-          title={prevMonth ? `Prev Month · ${formatMonth(prevMonth)}` : 'Previous Month'}
-          value={prevTotalValue ? fmtNum(prevTotalValue) : '—'}
+          title={prevMonth ? `Prev Month (ZAR) · ${formatMonth(prevMonth)}` : 'Previous Month'}
+          value={prevTotalZar ? `ZAR ${fmtNum(prevTotalZar)}` : '—'}
           icon={BarChart3}
         />
         <KpiCard
@@ -155,8 +158,13 @@ export default function ClientDetail() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  {['Platform', 'Investment Name', 'Currency', 'Market Value', 'Units', 'Unit Price', 'Prev Value', 'Change', 'Change %'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                  {[
+                    'Platform', 'Investment Name', 'Currency',
+                    'Value (Orig. CCY)', 'Rate to ZAR', 'Value (ZAR)',
+                    'Prev ZAR Value', 'ZAR Change', 'ZAR Change %',
+                    'Prev Orig. Value', 'Orig. Change', 'Orig. Change %'
+                  ].map(h => (
+                    <th key={h} className="text-left px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -164,45 +172,57 @@ export default function ClientDetail() {
                 {currentRows.map((r, i) => {
                   const key = `${r.platform}||${r.investment_name}||${r.currency}`;
                   const prev = prevMap[key];
-                  const prevVal = prev?.month_end_market_value ?? null;
-                  const changeVal = prevVal !== null ? (r.month_end_market_value || 0) - prevVal : null;
-                  const changePctRow = prevVal ? (changeVal / prevVal) * 100 : null;
+                  const prevOrig = prev ? origVal(prev) : null;
+                  const prevZar = prev ? zarVal(prev) : null;
+                  const currOrig = origVal(r);
+                  const currZar = zarVal(r);
+                  const zarChange = prevZar !== null ? currZar - prevZar : null;
+                  const zarChangePct = prevZar ? (zarChange / prevZar) * 100 : null;
+                  const origChange = prevOrig !== null ? currOrig - prevOrig : null;
+                  const origChangePct = prevOrig ? (origChange / prevOrig) * 100 : null;
+                  const isNew = prevOrig === null;
+
+                  const PctBadge = ({ pct }) => pct !== null ? (
+                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${pct >= 0 ? 'bg-positive text-positive' : 'bg-negative text-negative'}`}>
+                      {pct >= 0 ? '+' : ''}{pct.toFixed(2)}%
+                    </span>
+                  ) : isNew ? <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">New</span> : <span className="text-muted-foreground">—</span>;
+
                   return (
                     <tr key={i} className="hover:bg-muted/20">
-                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
-                      <td className="px-4 py-2.5 font-medium max-w-xs truncate">{r.investment_name}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{r.currency}</td>
-                      <td className="px-4 py-2.5 font-mono text-right">{fmtNum(r.month_end_market_value)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{fmtNum(r.number_of_units, 4)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{fmtNum(r.month_end_unit_price, 4)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right text-muted-foreground">{prevVal !== null ? fmtNum(prevVal) : <span className="text-xs">—</span>}</td>
-                      <td className="px-4 py-2.5 text-right">
-                        <ChangeCell value={changeVal} pct={null} isNew={prevVal === null} />
+                      <td className="px-3 py-2.5 text-muted-foreground text-xs">{r.platform}</td>
+                      <td className="px-3 py-2.5 font-medium max-w-[180px] truncate">{r.investment_name}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground">{r.currency}</td>
+                      <td className="px-3 py-2.5 font-mono text-right">{fmtCcy(currOrig, r.currency)}</td>
+                      <td className="px-3 py-2.5 font-mono text-right text-muted-foreground text-xs">
+                        {r.currency === 'ZAR' ? '1.0000' : (r.exchange_rate_to_zar ? fmtNum(r.exchange_rate_to_zar, 4) : '—')}
                       </td>
-                      <td className="px-4 py-2.5 text-right">
-                        {changePctRow !== null ? (
-                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${changePctRow >= 0 ? 'bg-positive text-positive' : 'bg-negative text-negative'}`}>
-                            {changePctRow >= 0 ? '+' : ''}{changePctRow.toFixed(2)}%
-                          </span>
-                        ) : prevVal === null ? <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">New</span> : '—'}
-                      </td>
+                      <td className="px-3 py-2.5 font-mono font-semibold text-right">ZAR {fmtNum(currZar)}</td>
+                      <td className="px-3 py-2.5 font-mono text-right text-muted-foreground">{prevZar !== null ? `ZAR ${fmtNum(prevZar)}` : '—'}</td>
+                      <td className="px-3 py-2.5 text-right"><ChangeCell value={zarChange} pct={null} isNew={isNew} /></td>
+                      <td className="px-3 py-2.5 text-right"><PctBadge pct={zarChangePct} /></td>
+                      <td className="px-3 py-2.5 font-mono text-right text-muted-foreground">{prevOrig !== null ? fmtCcy(prevOrig, r.currency) : '—'}</td>
+                      <td className="px-3 py-2.5 text-right"><ChangeCell value={origChange} pct={null} isNew={isNew} /></td>
+                      <td className="px-3 py-2.5 text-right"><PctBadge pct={origChangePct} /></td>
                     </tr>
                   );
                 })}
               </tbody>
               <tfoot>
                 <tr className="bg-muted/30 border-t-2 border-border font-semibold">
-                  <td className="px-4 py-2.5 text-xs uppercase tracking-wider" colSpan={3}>Total</td>
-                  <td className="px-4 py-2.5 font-mono text-right">{fmtNum(totalValue)}</td>
-                  <td colSpan={3} className="px-4 py-2.5 font-mono text-right text-muted-foreground">{prevTotalValue ? fmtNum(prevTotalValue) : '—'}</td>
-                  <td className="px-4 py-2.5 text-right"><ChangeCell value={changeValue} pct={null} isNew={!prevTotalValue} /></td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={3}>Total</td>
+                  <td className="px-3 py-2.5 font-mono text-right text-muted-foreground text-xs" colSpan={2}></td>
+                  <td className="px-3 py-2.5 font-mono font-semibold text-right">ZAR {fmtNum(totalZar)}</td>
+                  <td className="px-3 py-2.5 font-mono text-right text-muted-foreground">{prevTotalZar ? `ZAR ${fmtNum(prevTotalZar)}` : '—'}</td>
+                  <td className="px-3 py-2.5 text-right"><ChangeCell value={changeValue} pct={null} isNew={!prevTotalZar} /></td>
+                  <td className="px-3 py-2.5 text-right">
                     {changePct !== null ? (
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${changePct >= 0 ? 'bg-positive text-positive' : 'bg-negative text-negative'}`}>
                         {changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}%
                       </span>
                     ) : '—'}
                   </td>
+                  <td colSpan={3}></td>
                 </tr>
               </tfoot>
             </table>

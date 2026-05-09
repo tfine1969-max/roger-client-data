@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMemo } from 'react';
 import { Users, TrendingUp, TrendingDown, BarChart3, DollarSign, Activity } from 'lucide-react';
 import KpiCard from '@/components/shared/KpiCard';
-import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,11 +30,11 @@ export default function Dashboard() {
     const prev = valuations.filter(v => v.upload_month === prevMonth);
 
     const clients = new Set(current.map(v => v.account_code)).size;
-    const totalValue = current.reduce((s, v) => s + (v.month_end_market_value || 0), 0);
+    const totalValue = current.reduce((s, v) => s + zarVal(v), 0);
 
-    // Build prev map
+    // Build prev map (ZAR values)
     const prevMap = {};
-    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = r.month_end_market_value || 0; });
+    prev.forEach(r => { prevMap[`${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`] = zarVal(r); });
 
     let totalChange = 0;
     let bestFund = null, bestChange = -Infinity;
@@ -43,14 +43,14 @@ export default function Dashboard() {
     current.forEach(r => {
       const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
       if (prevMap[k] !== undefined) {
-        const change = (r.month_end_market_value || 0) - prevMap[k];
+        const change = zarVal(r) - prevMap[k];
         totalChange += change;
         if (change > bestChange) { bestChange = change; bestFund = r; }
         if (change < worstChange) { worstChange = change; worstFund = r; }
       }
     });
 
-    const prevTotal = prev.reduce((s, v) => s + (v.month_end_market_value || 0), 0);
+    const prevTotal = prev.reduce((s, v) => s + zarVal(v), 0);
     const changePct = prevTotal ? (totalChange / prevTotal) * 100 : null;
 
     return { clients, totalValue, totalChange, changePct, bestFund, bestChange, worstFund, worstChange, investmentCount: current.length };
@@ -61,7 +61,7 @@ export default function Dashboard() {
     const months = [...getSortedMonths(valuations)].reverse();
     return months.map(m => ({
       month: formatMonth(m),
-      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + (v.month_end_market_value || 0), 0)),
+      total: Math.round(valuations.filter(v => v.upload_month === m).reduce((s, v) => s + zarVal(v), 0)),
     }));
   }, [valuations]);
 
@@ -71,7 +71,7 @@ export default function Dashboard() {
     const map = {};
     current.forEach(r => {
       if (!map[r.account_code]) map[r.account_code] = { name: r.portfolio_name, code: r.account_code, total: 0 };
-      map[r.account_code].total += r.month_end_market_value || 0;
+      map[r.account_code].total += zarVal(r);
     });
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
   }, [valuations, latestMonth]);
@@ -98,7 +98,7 @@ export default function Dashboard() {
           accent
         />
         <KpiCard
-          title={`Total AUM${latestMonth ? ` · ${formatMonth(latestMonth)}` : ''}`}
+          title={`Total AUM (ZAR)${latestMonth ? ` · ${formatMonth(latestMonth)}` : ''}`}
           value={latestMonth ? fmtNum(stats.totalValue) : '—'}
           change={stats.changePct}
           changeLabel="vs prior month"
@@ -128,7 +128,8 @@ export default function Dashboard() {
               </p>
               <p className="font-semibold text-sm text-foreground truncate">{stats.bestFund.investment_name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{stats.bestFund.platform} · {stats.bestFund.portfolio_name}</p>
-              <p className="text-lg font-semibold text-positive mt-2">+{fmtNum(stats.bestChange)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stats.bestFund.currency}</p>
+              <p className="text-lg font-semibold text-positive mt-2">+ZAR {fmtNum(stats.bestChange)}</p>
             </div>
           )}
           {stats.worstFund && (
@@ -138,7 +139,8 @@ export default function Dashboard() {
               </p>
               <p className="font-semibold text-sm text-foreground truncate">{stats.worstFund.investment_name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{stats.worstFund.platform} · {stats.worstFund.portfolio_name}</p>
-              <p className="text-lg font-semibold text-negative mt-2">{fmtNum(stats.worstChange)}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stats.worstFund.currency}</p>
+              <p className="text-lg font-semibold text-negative mt-2">ZAR {fmtNum(stats.worstChange)}</p>
             </div>
           )}
         </div>
