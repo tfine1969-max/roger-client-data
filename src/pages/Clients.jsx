@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ChangeCell from '@/components/shared/ChangeCell';
 import MonthBadge from '@/components/shared/MonthBadge';
 
 export default function Clients() {
@@ -23,24 +22,11 @@ export default function Clients() {
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const latestMonth = filterMonth || months[0] || '';
-  const prevMonth = useMemo(() => {
-    const idx = months.indexOf(latestMonth);
-    return months[idx + 1] || '';
-  }, [months, latestMonth]);
-
   const platforms = useMemo(() => [...new Set(valuations.map(v => v.platform).filter(Boolean))].sort(), [valuations]);
   const currencies = useMemo(() => [...new Set(valuations.map(v => v.currency).filter(Boolean))].sort(), [valuations]);
 
   const clients = useMemo(() => {
     const current = valuations.filter(v => v.upload_month === latestMonth);
-    const prev = valuations.filter(v => v.upload_month === prevMonth);
-
-    const prevMap = {};
-    prev.forEach(r => {
-      const key = clientKey(r);
-      prevMap[key] = (prevMap[key] || 0) + zarVal(r);
-    });
-
     const map = {};
     current.forEach(r => {
       const key = clientKey(r);
@@ -54,7 +40,6 @@ export default function Clients() {
           currencies: new Set(),
           investments: 0,
           totalValue: 0,
-          prevValue: prevMap[key] || 0,
         };
       }
       const c = map[key];
@@ -72,11 +57,8 @@ export default function Clients() {
       account_codes: [...c.account_codes].sort(),
       platforms: [...c.platforms],
       currencies: [...c.currencies],
-      changeValue: c.prevValue ? c.totalValue - c.prevValue : null,
-      changePct: c.prevValue ? ((c.totalValue - c.prevValue) / c.prevValue) * 100 : null,
-      isNew: !c.prevValue,
     })).sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
-  }, [valuations, latestMonth, prevMonth]);
+  }, [valuations, latestMonth]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -145,16 +127,15 @@ export default function Clients() {
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">MoM Change</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {isLoading && (
-                <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">Loading...</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-muted-foreground text-sm">Loading...</td></tr>
               )}
               {!isLoading && filtered.length === 0 && (
-                <tr><td colSpan={8} className="text-center py-12 text-muted-foreground text-sm">No clients found.</td></tr>
+                <tr><td colSpan={7} className="text-center py-12 text-muted-foreground text-sm">No clients found.</td></tr>
               )}
               {filtered.map(c => (
                 <tr key={c.client_key} className="hover:bg-muted/30 transition-colors">
@@ -167,9 +148,6 @@ export default function Clients() {
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.platforms.length}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold whitespace-nowrap">R {fmtNum(c.totalValue)}</td>
-                  <td className="px-4 py-3 text-right hidden lg:table-cell">
-                    <ChangeCell value={c.changeValue} pct={c.changePct} isNew={c.isNew} />
-                  </td>
                   <td className="px-4 py-3">
                     <Link to={`/clients/${encodeURIComponent(c.client_key)}`}>
                       <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
