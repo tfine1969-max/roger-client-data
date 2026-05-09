@@ -33,7 +33,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-muted-foreground text-xs">
-                    <ProviderLogo provider={r.platform} logoClassName="h-5 max-w-[86px]" className="gap-2" />
+                    <ProviderLogo provider={r.platform} showName={false} logoClassName="max-h-5 max-w-[78px]" className="gap-2" />
                   </td>
                   <td className="px-3 py-2.5 max-w-[160px] truncate text-xs">{r.investment_name}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">{r.currency}</td>

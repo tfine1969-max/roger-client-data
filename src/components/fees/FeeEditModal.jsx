@@ -98,7 +98,7 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Fees'}</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : row.fee_required ? 'Allocate Fee' : 'Save Fees'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

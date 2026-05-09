@@ -38,21 +38,23 @@ export function providerKey(value) {
   return aliases[normalized] || normalized.replace(/\s+/g, '-');
 }
 
-export default function ProviderLogo({ provider, providerId, showName = true, logoClassName = 'h-8 max-w-[150px]', className = '' }) {
+export default function ProviderLogo({ provider, providerId, showName = true, logoClassName = 'max-h-7 max-w-[96px]', className = '' }) {
   const id = providerId || providerKey(provider);
   const brand = providerBranding[id] || { name: provider || id, accent: '#5B5F68' };
   const label = provider || brand.name;
 
   return (
-    <span className={`inline-flex items-center gap-3 ${className}`}>
+    <span className={`inline-flex min-w-0 items-center gap-3 ${className}`}>
       {brand.logo ? (
-        <span className="flex h-10 w-24 shrink-0 items-center justify-start">
-          <img src={brand.logo} alt={`${brand.name} logo`} className={`${logoClassName} object-contain object-left`} />
+        <span className="flex h-10 w-28 shrink-0 items-center justify-center rounded-sm bg-white px-2">
+          <img src={brand.logo} alt={`${brand.name} logo`} className={`${logoClassName} object-contain`} />
         </span>
       ) : (
-        <span className="h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: brand.accent }} />
+        <span className="flex h-10 w-28 shrink-0 items-center justify-center rounded-sm bg-white px-2">
+          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: brand.accent }} />
+        </span>
       )}
-      {showName && <span className="font-semibold text-foreground">{label}</span>}
+      {showName && <span className="truncate font-semibold text-foreground">{label}</span>}
     </span>
   );
 }
