@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Upload, CheckCircle, AlertCircle, Loader2, FileSpreadsheet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const MONTH_MAP = {
   'jan 2026': '2026-01', 'jan': '2026-01',
@@ -22,6 +22,7 @@ const MONTH_MAP = {
 
 export default function Import() {
   const [file, setFile] = useState(null);
+  const [manualMonth, setManualMonth] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
@@ -42,48 +43,46 @@ export default function Import() {
       // Upload the file first
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Import the file sheet by sheet using base44 import tool
-      // We'll use ExtractDataFromUploadedFile with exact column names from spreadsheet
+      const ROW_SCHEMA = {
+        type: 'object',
+        properties: {
+          portfolio_id: { type: 'string', description: 'Portfolio Id column' },
+          account_code: { type: 'string', description: 'Account Code column' },
+          identity_no: { type: 'string', description: 'Identity No column' },
+          portfolio_name: { type: 'string', description: 'Portfolio Name column' },
+          platform: { type: 'string', description: 'Platform column' },
+          investment_name: { type: 'string', description: 'Investment Name column' },
+          currency: { type: 'string', description: 'Currency column' },
+          market_value: { type: 'number', description: 'Month End Market Value column' },
+          number_of_units: { type: 'number', description: 'Number of Units column' },
+          unit_price: { type: 'number', description: 'Month End Unit Price column' },
+          exchange_rate: { type: 'number', description: 'Exchange rate — last column (col_12 or col_13), decimal like 16.13, only on some rows' }
+        }
+      };
+
+      // Try flat extraction first (works for single-sheet files)
       const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: {
           type: 'object',
           properties: {
-            sheets: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  sheet_name: { type: 'string' },
-                  rows: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        portfolio_id: { type: 'string', description: 'Portfolio Id column' },
-                        account_code: { type: 'string', description: 'Account Code column' },
-                        identity_no: { type: 'string', description: 'Identity No column' },
-                        portfolio_name: { type: 'string', description: 'Portfolio Name column' },
-                        platform: { type: 'string', description: 'Platform column' },
-                        investment_name: { type: 'string', description: 'Investment Name column' },
-                        currency: { type: 'string', description: 'Currency column' },
-                        market_value: { type: 'number', description: 'Month End Market Value column' },
-                        number_of_units: { type: 'number', description: 'Number of Units column' },
-                        unit_price: { type: 'number', description: 'Month End Unit Price column' },
-                        exchange_rate: { type: 'number', description: 'Exchange rate — found in col_12 or col_13 (a decimal number like 16.13 or 15.94, only present on some rows)' }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            rows: { type: 'array', items: ROW_SCHEMA }
           }
         }
       });
 
       if (extracted.status !== 'success') throw new Error(extracted.details || 'Extraction failed');
 
-      const sheets = extracted.output?.sheets || [];
+      const output = extracted.output;
+      // Handle flat extraction result (rows array at top level)
+      let sheets = [];
+      if (output?.rows?.length) {
+        sheets = [{ sheet_name: manualMonth || 'sheet1', rows: output.rows }];
+      } else if (output?.sheets?.length) {
+        sheets = output.sheets;
+      } else if (Array.isArray(output) && output[0]?.rows) {
+        sheets = output;
+      }
       let clientsCreated = 0, investmentsCreated = 0, valuesCreated = 0, valuesUpdated = 0;
 
       // Load existing clients and investments
@@ -99,7 +98,7 @@ export default function Import() {
 
       for (const sheet of sheets) {
         const sheetKey = sheet.sheet_name?.toLowerCase().trim();
-        const month = MONTH_MAP[sheetKey] || sheetKey;
+        const month = MONTH_MAP[sheetKey] || manualMonth || sheetKey;
 
         for (const row of (sheet.rows || [])) {
           if (!row.portfolio_name || !row.investment_name) continue;
@@ -199,6 +198,22 @@ export default function Import() {
             {file && (
               <p className="mt-3 text-sm font-medium text-foreground">{file.name}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Month override <span className="text-muted-foreground font-normal">(for single-month files where the sheet isn't named by month)</span></p>
+            <Select value={manualMonth} onValueChange={setManualMonth}>
+              <SelectTrigger>
+                <SelectValue placeholder="Auto-detect from sheet name" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Auto-detect from sheet name</SelectItem>
+                {['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06',
+                  '2026-07','2026-08','2026-09','2026-10','2026-11','2026-12'].map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="bg-muted/50 rounded-xl p-4 text-sm space-y-1 text-muted-foreground">
