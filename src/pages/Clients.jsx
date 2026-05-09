@@ -139,7 +139,7 @@ export default function Clients() {
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">ID Number</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value (ZAR)</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">MoM Change</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -155,13 +155,12 @@ export default function Clients() {
                 <tr key={c.account_code} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
                     <Link to={`/clients/${c.account_code}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '—'}</Link>
-                    <p className="text-xs text-muted-foreground">{c.currencies.join(', ')}</p>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{c.account_code}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '—'}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.platforms.length}</td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold">ZAR {fmtNum(c.totalValue)}</td>
+                  <td className="px-4 py-3 text-right font-mono font-semibold whitespace-nowrap">R {fmtNum(c.totalValue)}</td>
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <ChangeCell value={c.changeValue} pct={c.changePct} isNew={c.isNew} />
                   </td>
