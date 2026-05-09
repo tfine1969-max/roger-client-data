@@ -13,25 +13,24 @@ export default function EditAccountModal({ client, valuations, onClose, onSaved 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const oldCodes = valuations
-        .filter(v => v.portfolio_name === client.portfolio_name && v.upload_month === valuations[0]?.upload_month)
-        .map(v => v.account_code);
-
+      // Build mapping from old codes to new codes
       const codeMap = new Map();
-      oldCodes.forEach((old, i) => {
+      client.account_codes.forEach((old, i) => {
         codeMap.set(old, codes[i] || old);
       });
 
-      for (const row of valuations.filter(v => v.portfolio_name === client.portfolio_name)) {
+      // Update all valuations for this client
+      const rows = valuations.filter(v => v.portfolio_name === client.portfolio_name);
+      for (const row of rows) {
         const newCode = codeMap.get(row.account_code) || row.account_code;
         await base44.asServiceRole.entities.PortfolioValuation.update(row.id, { account_code: newCode });
       }
 
       toast.success('Account codes updated');
-      setSaving(false);
       onSaved();
     } catch (err) {
-      toast.error('Failed to update account codes');
+      toast.error(err.message || 'Failed to update account codes');
+    } finally {
       setSaving(false);
     }
   };
