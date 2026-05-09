@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { withCalculatedFees } from '@/lib/fee-utils';
+import { clientKey } from '@/lib/client-utils';
 import { feeMappingRows } from '@/data/feeMapping';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,14 @@ export default function Dashboard() {
     const current = feeRows.filter(v => v.upload_month === latestMonth);
     const prev = feeRows.filter(v => v.upload_month === prevMonth);
 
-    const clientSet = new Set(current.map(v => v.account_code));
+    // Group by client key (identity/portfolio name) like Clients page
+    const clientMap = {};
+    current.forEach(v => {
+      const key = clientKey(v);
+      if (!clientMap[key]) clientMap[key] = true;
+    });
+    const clientCount = Object.keys(clientMap).length;
+
     const totalAUM = current.reduce((s, v) => s + zarVal(v), 0);
     const prevAUM = prev.reduce((s, v) => s + zarVal(v), 0);
     const aumChange = prevAUM ? ((totalAUM - prevAUM) / prevAUM) * 100 : null;
@@ -51,7 +59,7 @@ export default function Dashboard() {
     const feeRequired = current.filter(v => v.fee_required).length;
     const platforms = new Set(current.map(v => v.platform).filter(Boolean)).size;
 
-    return { clients: clientSet.size, totalAUM, aumChange, totalFees, feeChange, feeRequired, platforms, investmentCount: current.length };
+    return { clients: clientCount, totalAUM, aumChange, totalFees, feeChange, feeRequired, platforms, investmentCount: current.length };
   }, [feeRows, latestMonth, prevMonth]);
 
   const topClients = useMemo(() => {
