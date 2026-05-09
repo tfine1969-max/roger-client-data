@@ -64,13 +64,14 @@ Deno.serve(async (req) => {
   const arrayBuffer = await fileResp.arrayBuffer();
   const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
 
-  const importSheetNames = workbook.SheetNames.filter(name => {
+  const dataSheetNames = workbook.SheetNames.filter(name => {
     const normalized = String(name).trim().toLowerCase();
     if (['total', 'totals', 'summary'].includes(normalized)) return false;
     return rowsFromSheet(workbook.Sheets[name], name).length > 0;
   });
+  const providerSheetNames = dataSheetNames.filter(name => !/^sheet\d*$/i.test(String(name).trim()));
   const fallbackSheetName = workbook.SheetNames.find(n => n === 'Sheet1') || workbook.SheetNames[0];
-  const sheetNamesToImport = importSheetNames.length ? importSheetNames : [fallbackSheetName];
+  const sheetNamesToImport = providerSheetNames.length ? providerSheetNames : dataSheetNames.length ? dataSheetNames : [fallbackSheetName];
   const rawRows = sheetNamesToImport.flatMap(name => rowsFromSheet(workbook.Sheets[name], name));
 
   const platformRateMap: Record<string, number> = {};

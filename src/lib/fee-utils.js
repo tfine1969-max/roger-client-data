@@ -84,6 +84,36 @@ function clientMatchScore(mappingClient, rowClient) {
   return overlap ? Math.min(50, overlap * 20) : 0;
 }
 
+function navMatchScore(mapping, row) {
+  const mappedNav = mapping?.navByMonth?.[row.upload_month];
+  const rowNav = zarVal(row);
+  if (!mappedNav || !rowNav) return 0;
+
+  const denominator = Math.max(Math.abs(mappedNav), Math.abs(rowNav));
+  if (!denominator) return 0;
+  const variance = Math.abs(mappedNav - rowNav) / denominator;
+
+  if (variance <= 0.0001) return 100;
+  if (variance <= 0.001) return 95;
+  if (variance <= 0.005) return 85;
+  if (variance <= 0.01) return 70;
+  if (variance <= 0.03) return 50;
+  if (variance <= 0.05) return 30;
+  return 0;
+}
+
+function rankFeeMapping(mapping, row, fallback) {
+  const clientScore = clientMatchScore(mapping.client, row.portfolio_name || '');
+  const navScore = navMatchScore(mapping, row);
+  return {
+    ...mapping,
+    matchScore: Math.max(clientScore, navScore),
+    clientMatchScore: clientScore,
+    navMatchScore: navScore,
+    ...(fallback ? { fee_mapping_fallback: fallback } : {}),
+  };
+}
+
 export function findFeeMappingForRow(row, feeMappings = []) {
   const providerKey = compactFeeText(row.platform);
   const investmentKey = compactFeeText(row.investment_name);
@@ -102,18 +132,17 @@ export function findFeeMappingForRow(row, feeMappings = []) {
       return providerMatches && (mapping.investmentKey || compactFeeText(mapping.investment)) === 'equities';
     });
     const equityMatch = equityFallbacks
-      .map(mapping => ({ ...mapping, matchScore: clientMatchScore(mapping.client, row.portfolio_name || ''), fee_mapping_fallback: 'Equities' }))
+      .map(mapping => rankFeeMapping(mapping, row, 'Equities'))
       .sort((a, b) => b.matchScore - a.matchScore)[0];
     return equityMatch?.matchScore > 0 ? equityMatch : null;
   }
   if (candidates.length === 1) return { ...candidates[0], matchScore: 100 };
 
-  const rowClient = row.portfolio_name || '';
   const ranked = candidates
-    .map(mapping => ({ ...mapping, matchScore: clientMatchScore(mapping.client, rowClient) }))
+    .map(mapping => rankFeeMapping(mapping, row))
     .sort((a, b) => b.matchScore - a.matchScore);
 
-  return ranked[0].matchScore > 0 ? ranked[0] : ranked[0];
+  return ranked[0]?.matchScore > 0 ? ranked[0] : null;
 }
 
 export function findEffectiveFeeConfig(row, feeConfigs = []) {

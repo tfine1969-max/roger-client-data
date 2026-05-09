@@ -6,7 +6,7 @@ import openpyxl
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = Path(r"C:\Users\trevo\Wealthworks Dropbox\Website 2026\Website Design\Base44\Roger Data\Fee mapping.xlsx")
+SOURCE = Path(r"C:\Users\trevo\Wealthworks Dropbox\Website 2026\Website Design\Base44\Roger Data\1st quarter recon.xlsx")
 OUT = ROOT / "src" / "data" / "feeMapping.js"
 
 NAV_COLUMNS = {
