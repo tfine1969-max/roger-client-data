@@ -288,30 +288,30 @@ export default function Fees() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {clientRows.map(row => (
-                    <tr key={row.accountCode} className={`hover:bg-muted/20 cursor-pointer ${selectedClient === row.accountCode ? 'bg-muted/30' : ''}`} onClick={() => setSelectedClient(selectedClient === row.accountCode ? '' : row.accountCode)}>
-                      <td className="px-4 py-3 min-w-[220px]">
-                        <p className="font-medium leading-tight">{row.client}</p>
-                        <p className="text-xs text-muted-foreground font-mono mt-1">{row.accountCode}</p>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-right whitespace-nowrap">R {fmtNum(row.aum)}</td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap">{row.holdings}</td>
-                      <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(row.rebate)}</td>
-                      <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(row.advisory)}</td>
-                      <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(row.total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-muted/30 border-t-2 font-semibold">
-                    <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
-                    <td />
-                    <td className="px-4 py-3 text-right">{clientRows.reduce((s, row) => s + row.holdings, 0)}</td>
-                    <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap">R {fmtNum(activeProviderTotals.totalRebateZar)}</td>
-                    <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">R {fmtNum(activeProviderTotals.totalAdvisoryZar)}</td>
-                    <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">R {fmtNum(activeProviderTotals.totalFeeZar)}</td>
-                  </tr>
-                </tfoot>
+                   {clientRows.map(row => (
+                     <tr key={row.accountCode} className={`hover:bg-muted/20 cursor-pointer ${selectedClient === row.accountCode ? 'bg-muted/30' : ''}`} onClick={() => setSelectedClient(selectedClient === row.accountCode ? '' : row.accountCode)}>
+                       <td className="px-4 py-3 min-w-[220px]">
+                         <p className="font-medium leading-tight">{row.client}</p>
+                         <p className="text-xs text-muted-foreground font-mono mt-1">{row.accountCode}</p>
+                       </td>
+                       <td className="px-4 py-3 font-mono text-right whitespace-nowrap min-w-32">R {fmtNum(row.aum)}</td>
+                       <td className="px-4 py-3 text-right whitespace-nowrap min-w-16">{row.holdings}</td>
+                       <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap min-w-24">R {fmtNum(row.rebate)}</td>
+                       <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap min-w-24">R {fmtNum(row.advisory)}</td>
+                       <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap min-w-24">R {fmtNum(row.total)}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+                 <tfoot>
+                   <tr className="bg-muted/30 border-t-2 font-semibold">
+                     <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
+                     <td className="min-w-32" />
+                     <td className="px-4 py-3 text-right min-w-16">{clientRows.reduce((s, row) => s + row.holdings, 0)}</td>
+                     <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap min-w-24">R {fmtNum(activeProviderTotals.totalRebateZar)}</td>
+                     <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap min-w-24">R {fmtNum(activeProviderTotals.totalAdvisoryZar)}</td>
+                     <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap min-w-24">R {fmtNum(activeProviderTotals.totalFeeZar)}</td>
+                   </tr>
+                 </tfoot>
               </table>
             </div>
           </div>
