@@ -1,0 +1,45 @@
+{
+  "name": "FeeConfig",
+  "type": "object",
+  "properties": {
+    "account_code": {
+      "type": "string",
+      "description": "Client account code"
+    },
+    "portfolio_name": {
+      "type": "string",
+      "description": "Client name for display"
+    },
+    "platform": {
+      "type": "string",
+      "description": "Platform / provider"
+    },
+    "investment_name": {
+      "type": "string",
+      "description": "Investment / fund name"
+    },
+    "rebate_fee_annual_percent": {
+      "type": "number",
+      "description": "Annual rebate fee % (e.g. 0.5 = 0.5%)",
+      "default": 0
+    },
+    "advisory_fee_annual_percent": {
+      "type": "number",
+      "description": "Annual advisory fee % (e.g. 0.75 = 0.75%)",
+      "default": 0
+    },
+    "effective_from_month": {
+      "type": "string",
+      "description": "Month from which this fee applies (YYYY-MM)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any notes on this fee config"
+    }
+  },
+  "required": [
+    "account_code",
+    "platform",
+    "investment_name"
+  ]
+}
