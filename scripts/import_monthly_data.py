@@ -14,6 +14,8 @@ FILES = [
     ("feb-2026", "Feb 2026", SOURCE_DIR / "feb.xlsx"),
 ]
 
+JANUARY_USD_ZAR = 16.139
+
 PROVIDERS = {
     "Julius Baer": ("julius-baer", "Julius Baer"),
     "Credo": ("credo", "Credo"),
@@ -52,56 +54,88 @@ def fee(native_values, zar_aum, provider_id, fee_type):
 
 def import_file(month_id, label, path):
     workbook = openpyxl.load_workbook(path, data_only=True)
-    sheet = workbook.active
-    usd_zar = float(sheet["M2"].value)
+    has_provider_tabs = "Total" in workbook.sheetnames and any(
+        sheet_name.lower().strip() in {"prime", "credo", "gryphon", "julius baer", "other"}
+        for sheet_name in workbook.sheetnames
+    )
+    usd_zar = JANUARY_USD_ZAR if month_id == "jan-2026" else float(workbook.active["M2"].value)
     exchange_rates = {"USD": usd_zar, "ZAR": 1}
     clients = {}
     source_native_totals = defaultdict(float)
+    provider_source_totals = {}
 
-    for row in range(2, sheet.max_row + 1):
-        provider_name = sheet.cell(row, 5).value
-        native_value = sheet.cell(row, 8).value
-        if not provider_name or native_value is None:
-            continue
+    if has_provider_tabs:
+        sheets = [
+            workbook[name]
+            for name in workbook.sheetnames
+            if name.lower().strip() in {"prime", "credo", "gryphon", "julius baer", "other"}
+        ]
+    else:
+        sheets = [workbook.active]
 
-        provider_id, normalized_provider = PROVIDERS.get(
-            provider_name,
-            (str(provider_name).lower().replace(" ", "-"), provider_name),
-        )
-        account_code = str(sheet.cell(row, 2).value or "")
-        client_name = str(sheet.cell(row, 4).value or "Unmapped Client")
-        currency = str(sheet.cell(row, 7).value or "ZAR")
-        native_value = float(native_value)
-        zar_value = native_value * exchange_rates.get(currency, 1)
-        source_native_totals[currency] += native_value
-
-        client_id = f"{provider_id}|{account_code}|{client_name}"
-        if client_id not in clients:
-            clients[client_id] = {
-                "id": client_id,
-                "client": client_name,
-                "accountCode": account_code,
-                "identityNo": str(sheet.cell(row, 3).value or ""),
-                "providerId": provider_id,
+    if has_provider_tabs:
+        total_sheet = workbook["Total"]
+        for row in range(1, total_sheet.max_row + 1):
+            provider_name = total_sheet.cell(row, 1).value
+            zar_total = total_sheet.cell(row, 4).value
+            if not provider_name or zar_total is None:
+                continue
+            provider_id, normalized_provider = PROVIDERS.get(
+                provider_name,
+                (str(provider_name).lower().replace(" ", "-"), provider_name),
+            )
+            native_usd = total_sheet.cell(row, 2).value
+            provider_source_totals[provider_id] = {
                 "providerName": normalized_provider,
-                "nativeValues": defaultdict(float),
-                "zarAum": 0,
-                "holdingCount": 0,
-                "holdings": [],
+                "nativeUsd": float(native_usd or 0),
+                "zarTotal": float(zar_total),
             }
 
-        client = clients[client_id]
-        client["nativeValues"][currency] += native_value
-        client["zarAum"] += zar_value
-        client["holdingCount"] += 1
-        client["holdings"].append(
-            {
-                "investment": sheet.cell(row, 6).value or "Unmapped holding",
-                "currency": currency,
-                "nativeValue": native_value,
-                "zarValue": zar_value,
-            }
-        )
+    for sheet in sheets:
+        for row in range(2, sheet.max_row + 1):
+            provider_name = sheet.cell(row, 5).value
+            native_value = sheet.cell(row, 8).value
+            if not provider_name or native_value is None:
+                continue
+
+            provider_id, normalized_provider = PROVIDERS.get(
+                provider_name,
+                (str(provider_name).lower().replace(" ", "-"), provider_name),
+            )
+            account_code = str(sheet.cell(row, 2).value or "")
+            client_name = str(sheet.cell(row, 4).value or "Unmapped Client")
+            currency = str(sheet.cell(row, 7).value or "ZAR")
+            native_value = float(native_value)
+            zar_value = native_value * exchange_rates.get(currency, 1)
+            source_native_totals[currency] += native_value
+
+            client_id = f"{provider_id}|{account_code}|{client_name}"
+            if client_id not in clients:
+                clients[client_id] = {
+                    "id": client_id,
+                    "client": client_name,
+                    "accountCode": account_code,
+                    "identityNo": str(sheet.cell(row, 3).value or ""),
+                    "providerId": provider_id,
+                    "providerName": normalized_provider,
+                    "nativeValues": defaultdict(float),
+                    "zarAum": 0,
+                    "holdingCount": 0,
+                    "holdings": [],
+                }
+
+            client = clients[client_id]
+            client["nativeValues"][currency] += native_value
+            client["zarAum"] += zar_value
+            client["holdingCount"] += 1
+            client["holdings"].append(
+                {
+                    "investment": sheet.cell(row, 6).value or "Unmapped holding",
+                    "currency": currency,
+                    "nativeValue": native_value,
+                    "zarValue": zar_value,
+                }
+            )
 
     client_rows = []
     for client in clients.values():
@@ -125,6 +159,15 @@ def import_file(month_id, label, path):
         for code, value in source_native_totals.items()
     }
 
+    if has_provider_tabs and provider_source_totals:
+        source_zar_total = sum(provider["zarTotal"] for provider in provider_source_totals.values())
+        usd_total = sum(provider["nativeUsd"] for provider in provider_source_totals.values())
+        zar_total = source_zar_total - (usd_total * usd_zar)
+        source_native_totals = {"USD": usd_total, "ZAR": zar_total}
+        source_zar_totals = {"USD": usd_total * usd_zar, "ZAR": zar_total}
+    else:
+        source_zar_total = sum(source_zar_totals.values())
+
     return {
         "id": month_id,
         "label": label,
@@ -132,7 +175,8 @@ def import_file(month_id, label, path):
         "exchangeRates": exchange_rates,
         "sourceNativeTotals": source_native_totals,
         "sourceZarTotals": source_zar_totals,
-        "sourceZarTotal": sum(source_zar_totals.values()),
+        "sourceZarTotal": source_zar_total,
+        "providerSourceTotals": provider_source_totals,
         "clients": sorted(client_rows, key=lambda item: (item["providerName"], item["client"], item["accountCode"])),
     }
 
