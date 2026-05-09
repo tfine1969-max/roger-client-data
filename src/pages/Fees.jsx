@@ -11,6 +11,7 @@ import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import FeeKpiRow from '@/components/fees/FeeKpiRow';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
+import FundBreakdown from '@/components/fees/FundBreakdown';
 
 function groupFeeRows(rows, keyFn, seedFn) {
   const map = {};
@@ -259,6 +260,7 @@ export default function Fees() {
               ['history', 'Monthly history'],
               ['invoice', 'Advisory invoice'],
               ['investments', 'Investment detail'],
+              ['funds', 'Investment funds'],
             ].map(([view, label]) => (
               <button
                 key={view}
@@ -399,6 +401,10 @@ export default function Fees() {
 
           <FeeInvestmentTable rows={detailRows} feeOptions={feeOptions} onFeeUpdated={refresh} />
           </>
+          )}
+
+          {providerView === 'funds' && (
+          <FundBreakdown monthRows={providerMonthRows} />
           )}
         </div>
       )}

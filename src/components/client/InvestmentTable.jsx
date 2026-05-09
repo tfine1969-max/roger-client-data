@@ -16,7 +16,7 @@ export default function InvestmentTable({ clientRows, months }) {
       const aVal = clientRows.find(r => r.upload_month === latestMonth && r.account_code === aa && r.platform === ap && r.investment_name === ai && r.currency === ac);
       const bVal = clientRows.find(r => r.upload_month === latestMonth && r.account_code === ba && r.platform === bp && r.investment_name === bi && r.currency === bc);
       return (zarVal(bVal) || 0) - (zarVal(aVal) || 0);
-    }).map(k => {
+    }).sort((a, b) => a.split('||')[2].localeCompare(b.split('||')[2])).map(k => {
       const [account_code, platform, investment_name, currency] = k.split('||');
       return { key: k, account_code, platform, investment_name, currency };
     });
@@ -73,7 +73,7 @@ export default function InvestmentTable({ clientRows, months }) {
                   {orderedMonths.map(m => {
                     const val = lookup[m]?.[inv.key];
                     return (
-                      <td key={m} className="px-4 py-2.5 font-mono text-right text-sm">
+                      <td key={m} className="px-4 py-2.5 text-right text-sm font-sans text-foreground">
                         {val !== undefined ? fmtNum(val) : <span className="text-muted-foreground text-xs">-</span>}
                       </td>
                     );
@@ -85,7 +85,7 @@ export default function InvestmentTable({ clientRows, months }) {
               <tr className="bg-muted/30 border-t-2 border-border font-semibold">
                 <td className="px-4 py-2.5 text-xs uppercase tracking-wider sticky left-0 bg-muted/30" colSpan={4}>Total (ZAR)</td>
                 {orderedMonths.map(m => (
-                  <td key={m} className="px-4 py-2.5 font-mono text-right">
+                  <td key={m} className="px-4 py-2.5 text-right font-sans text-foreground">
                     {fmtNum(monthTotals[m] || 0)}
                   </td>
                 ))}
