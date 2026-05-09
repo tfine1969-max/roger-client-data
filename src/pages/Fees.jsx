@@ -367,10 +367,10 @@ export default function Fees() {
                 <tbody className="divide-y">
                   {invoiceRows.map(row => (
                     <tr key={`${row.accountCode}-invoice`} className="hover:bg-muted/20">
-                      <td className="px-4 py-2.5 font-medium">{row.client}</td>
-                      <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{row.accountCode}</td>
-                      <td className="px-4 py-2.5 whitespace-nowrap">{formatMonth(latestMonth)}</td>
-                      <td className="px-4 py-2.5 font-mono text-right font-semibold whitespace-nowrap">R {fmtNum(row.advisory)}</td>
+                      <td className="px-4 py-2.5 font-medium min-w-48">{row.client}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground min-w-24">{row.accountCode}</td>
+                      <td className="px-4 py-2.5 whitespace-nowrap min-w-20">{formatMonth(latestMonth)}</td>
+                      <td className="px-4 py-2.5 font-mono text-right font-semibold whitespace-nowrap min-w-32">R {fmtNum(row.advisory)}</td>
                     </tr>
                   ))}
                 </tbody>
