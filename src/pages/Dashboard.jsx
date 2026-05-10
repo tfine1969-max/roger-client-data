@@ -11,6 +11,19 @@ import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
 
+function mappedAumForMonth(month) {
+  return feeMappingRows.reduce((sum, row) => sum + (row.navByMonth?.[month] ?? 0), 0);
+}
+
+function mappedFeesForMonth(month) {
+  return feeMappingRows.reduce((sum, row) => {
+    const nav = row.navByMonth?.[month] ?? 0;
+    const rebate = row.rebateAnnualPercent ?? 0;
+    const advisory = row.advisoryAnnualPercent ?? 0;
+    return sum + (nav * ((rebate + advisory) / 100) / 12);
+  }, 0);
+}
+
 export default function Dashboard() {
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -73,14 +86,22 @@ export default function Dashboard() {
   }, [feeRows, latestMonth]);
 
   const chartData = useMemo(() => {
-    return [...getSortedMonths(feeRows)].reverse().map(m => {
+    const valuationMonths = getSortedMonths(feeRows);
+    const mappedMonths = Object.keys(feeMappingRows[0]?.navByMonth || {});
+    const monthsForChart = [...new Set([...valuationMonths, ...mappedMonths])].sort();
+
+    return monthsForChart.map(m => {
       const monthRows = feeRows.filter(v => v.upload_month === m);
+      const mappedAum = mappedAumForMonth(m);
+      const mappedFees = mappedFeesForMonth(m);
+      const useMappedMonth = mappedAum > 0;
+
       return {
         month: formatMonth(m),
-        total: Math.round(monthRows.reduce((s, v) => s + (v.zar_value ?? v.original_currency_value ?? 0), 0)),
-        fees: Math.round(monthRows.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
+        total: Math.round(useMappedMonth ? mappedAum : monthRows.reduce((s, v) => s + zarVal(v), 0)),
+        fees: Math.round(useMappedMonth ? mappedFees : monthRows.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
       };
-    });
+    }).filter(row => row.total > 0 || row.fees > 0);
   }, [feeRows]);
 
   const hasData = feeRows.length > 0;
