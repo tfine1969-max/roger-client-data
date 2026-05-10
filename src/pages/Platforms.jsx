@@ -213,7 +213,7 @@ export default function Platforms() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Platform</th>
+                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Provider</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM (ZAR)</th>
                 <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Share</th>
                 <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
@@ -227,8 +227,11 @@ export default function Platforms() {
               )}
               {platformRows.map(r => (
                 <tr key={r.platform} className="group cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelectedPlatform(r.platform)}>
-                  <td className="px-5 py-4 text-primary">
-                    <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-12 w-36" logoClassName="max-h-8 max-w-[120px]" />
+                  <td className="px-5 py-4 text-center">
+                   <div className="inline-flex flex-col items-center gap-1.5">
+                     <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-12 w-36" logoClassName="max-h-8 max-w-[120px]" showName={false} />
+                     <span className="text-sm font-semibold text-foreground">{r.platform}</span>
+                   </div>
                   </td>
                   <td className="px-5 py-4 text-right font-numbers text-lg font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
                   <td className="px-5 py-4 text-center">
