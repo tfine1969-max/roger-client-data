@@ -136,8 +136,8 @@ export default function Dashboard() {
 
         {/* AUM */}
         <Link to="/platforms" className="group block">
-          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center text-center">
+            <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-accent/15 flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-accent" />
               </div>
@@ -146,7 +146,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total AUM</p>
             <p className="text-3xl font-bold text-foreground">R {fmtNum(stats.totalAUM)}</p>
             {stats.aumChange !== null && (
-              <div className="flex items-center gap-1 mt-1">
+              <div className="flex items-center justify-center gap-1 mt-1">
                 {stats.aumChange >= 0
                   ? <TrendingUp className="w-3.5 h-3.5 text-positive" />
                   : <TrendingDown className="w-3.5 h-3.5 text-negative" />}
@@ -155,7 +155,7 @@ export default function Dashboard() {
                 </span>
               </div>
             )}
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t w-full">
               <p className="text-xs text-muted-foreground">Across {stats.platforms} platform{stats.platforms !== 1 ? 's' : ''}</p>
               <p className="text-sm font-medium mt-0.5 text-muted-foreground">View by platform →</p>
             </div>
@@ -164,8 +164,8 @@ export default function Dashboard() {
 
         {/* Fees */}
         <Link to="/fees" className="group block">
-          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center text-center">
+            <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-chart-5/10 flex items-center justify-center">
                 <Receipt className="w-5 h-5 text-chart-5" />
               </div>
@@ -174,7 +174,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Monthly Fees</p>
             <p className="text-3xl font-bold text-foreground">R {fmtNum(stats.totalFees)}</p>
             {stats.feeChange !== null && (
-              <div className="flex items-center gap-1 mt-1">
+              <div className="flex items-center justify-center gap-1 mt-1">
                 {stats.feeChange >= 0
                   ? <TrendingUp className="w-3.5 h-3.5 text-positive" />
                   : <TrendingDown className="w-3.5 h-3.5 text-negative" />}
@@ -183,7 +183,7 @@ export default function Dashboard() {
                 </span>
               </div>
             )}
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t w-full">
               {stats.feeRequired > 0
                 ? <p className="text-xs text-amber-600 font-medium">⚠ {stats.feeRequired} investment{stats.feeRequired !== 1 ? 's' : ''} missing fee config</p>
                 : <p className="text-xs text-positive font-medium">✓ All fee configs set</p>}
