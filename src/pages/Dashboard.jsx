@@ -217,11 +217,11 @@ export default function Dashboard() {
       {/* AUM Chart */}
       {chartData.length > 1 && (
         <div className="bg-white border rounded-xl p-6">
-          <h2 className="text-sm font-semibold mb-5">AUM & Fees — Monthly Trend</h2>
+          <h2 className="text-sm font-semibold mb-5 text-center">AUM & Fees — Monthly Trend</h2>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barSize={20} barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(214,18%,92%)" vertical={false} />
-              <XAxis dataKey="month" fontSize={11} tickLine={false} axisLine={false} />
+              <XAxis dataKey="month" fontSize={14} tickLine={false} axisLine={false} />
               <YAxis fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1_000_000).toFixed(1)}M`} width={60} />
               <Tooltip
                 formatter={(v, name) => [`R ${fmtNum(v)}`, name === 'total' ? 'AUM' : 'Fees']}
