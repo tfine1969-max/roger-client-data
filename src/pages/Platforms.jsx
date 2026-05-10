@@ -192,9 +192,9 @@ export default function Platforms() {
 
       {latestMonth && (
         <div className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-lg border bg-white p-4">
+          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reporting Month</p>
-            <div className="mt-2"><MonthBadge month={latestMonth} /></div>
+            <p className="mt-2 text-2xl font-bold text-primary">{latestMonth ? new Date(+latestMonth.split('-')[0], +latestMonth.split('-')[1] - 1, 1).toLocaleString('en-ZA', { month: 'long', year: 'numeric' }) : '—'}</p>
           </div>
           <div className="rounded-lg border bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total AUM</p>
