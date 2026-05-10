@@ -117,8 +117,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Clients */}
         <Link to="/clients" className="group block">
-          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center text-center">
+            <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
               </div>
@@ -127,7 +127,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Clients</p>
             <p className="text-3xl font-bold text-foreground">{stats.clients}</p>
             <p className="text-sm text-muted-foreground mt-1">{stats.platforms} platform{stats.platforms !== 1 ? 's' : ''} · {stats.investmentCount} investments</p>
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t w-full">
               <p className="text-xs text-muted-foreground">View all clients</p>
               <p className="text-sm font-medium mt-0.5 text-muted-foreground">Clients overview →</p>
             </div>
