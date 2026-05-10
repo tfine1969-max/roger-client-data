@@ -203,7 +203,7 @@ export default function Platforms() {
           <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</p>
             <p className="mt-1 text-2xl font-semibold">{platformRows.length}</p>
-            {largestPlatform && <p className="mt-1 text-xs text-muted-foreground">Largest: {largestPlatform.platform}</p>}
+
           </div>
         </div>
       )}
