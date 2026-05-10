@@ -14,6 +14,7 @@ import Platforms from '@/pages/Platforms';
 import DataQuality from '@/pages/DataQuality';
 import Fees from '@/pages/Fees';
 import Funds from '@/pages/Funds';
+import BulkFees from '@/pages/BulkFees';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -42,6 +43,7 @@ const AuthenticatedApp = () => {
         <Route path="/funds" element={<Funds />} />
         <Route path="/data-quality" element={<DataQuality />} />
         <Route path="/fees" element={<Fees />} />
+        <Route path="/bulk-fees" element={<BulkFees />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
