@@ -233,7 +233,7 @@ export default function Platforms() {
                      <span className="text-sm font-semibold text-foreground">{r.platform}</span>
                    </div>
                   </td>
-                  <td className="px-5 py-4 text-right font-numbers text-lg font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
+                  <td className="px-5 py-4 text-center font-numbers text-lg font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
                   <td className="px-5 py-4 text-center">
                     <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
                       {totalAUM ? `${((r.totalZar / totalAUM) * 100).toFixed(1)}%` : '-'}
