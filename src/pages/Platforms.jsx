@@ -196,11 +196,11 @@ export default function Platforms() {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reporting Month</p>
             <p className="mt-2 text-2xl font-bold text-primary">{latestMonth ? new Date(+latestMonth.split('-')[0], +latestMonth.split('-')[1] - 1, 1).toLocaleString('en-ZA', { month: 'long', year: 'numeric' }) : '—'}</p>
           </div>
-          <div className="rounded-lg border bg-white p-4">
+          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total AUM</p>
             <p className="mt-1 font-numbers text-2xl font-semibold">ZAR {fmtNum(totalAUM)}</p>
           </div>
-          <div className="rounded-lg border bg-white p-4">
+          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</p>
             <p className="mt-1 text-2xl font-semibold">{platformRows.length}</p>
             {largestPlatform && <p className="mt-1 text-xs text-muted-foreground">Largest: {largestPlatform.platform}</p>}
