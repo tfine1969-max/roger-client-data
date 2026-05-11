@@ -12,7 +12,7 @@ const LAST_UPLOAD_KEY = 'credo_last_upload';
 
 export default function CredoUpload({ onImported }) {
   const queryClient = useQueryClient();
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [uploadMonth, setUploadMonth] = useState('');
   const [rate, setRate] = useState('');
   const [status, setStatus] = useState(null);
@@ -27,41 +27,51 @@ export default function CredoUpload({ onImported }) {
   }, []);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files?.[0] || null);
+    const selectedFiles = Array.from(e.target.files || []).filter(f => f.type === 'application/pdf');
+    setFiles(selectedFiles);
     setStatus(null);
     setMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !uploadMonth || !rate) return;
+    if (files.length === 0 || !uploadMonth || !rate) return;
     setStatus('uploading');
-    setMessage('Uploading file...');
+    setMessage(`Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setMessage('Extracting holdings...');
-      const res = await base44.functions.invoke('importCredoPdf', {
-        file_url,
-        upload_month: uploadMonth,
-        exchange_rate: parseFloat(rate),
-      });
-      if (!res.data.success) throw new Error(res.data.error || 'Import failed');
-
-      const info = {
-        file_name: file.name,
-        upload_month: uploadMonth,
-        rows_imported: res.data.rows_imported,
-        client_name: res.data.client_name,
-        uploaded_at: new Date().toISOString(),
-      };
-      localStorage.setItem(LAST_UPLOAD_KEY, JSON.stringify(info));
-      setLastUpload(info);
+      let totalRows = 0;
+      let processedFiles = 0;
+      
+      for (const file of files) {
+        setMessage(`Processing ${processedFiles + 1} of ${files.length}: ${file.name}...`);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const res = await base44.functions.invoke('importCredoPdf', {
+          file_url,
+          upload_month: uploadMonth,
+          exchange_rate: parseFloat(rate),
+        });
+        if (!res.data.success) throw new Error(`${file.name}: ${res.data.error || 'Import failed'}`);
+        totalRows += res.data.rows_imported;
+        processedFiles++;
+        
+        if (processedFiles === 1) {
+          const info = {
+            file_name: file.name,
+            upload_month: uploadMonth,
+            rows_imported: res.data.rows_imported,
+            client_name: res.data.client_name,
+            uploaded_at: new Date().toISOString(),
+          };
+          localStorage.setItem(LAST_UPLOAD_KEY, JSON.stringify(info));
+          setLastUpload(info);
+        }
+      }
 
       setStatus('success');
-      setMessage(`Imported ${res.data.rows_imported} holdings for ${formatMonth(uploadMonth)}.`);
+      setMessage(`Imported ${totalRows} holdings from ${files.length} file${files.length > 1 ? 's' : ''} for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       if (onImported) onImported();
-      setFile(null);
+      setFiles([]);
       setRate('');
       document.getElementById('credo-file-input').value = '';
     } catch (err) {
@@ -73,7 +83,7 @@ export default function CredoUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload a Credo valuation PDF to import monthly holdings. Enter the USD → ZAR exchange rate for that month.
+        Upload one or more Credo valuation PDFs to import monthly holdings. Enter the USD → ZAR exchange rate for that month.
       </p>
 
       {lastUpload && (
@@ -111,20 +121,27 @@ export default function CredoUpload({ onImported }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Credo Valuation PDF</Label>
+          <Label>Credo Valuation PDF(s)</Label>
           <Input
             id="credo-file-input"
             type="file"
             accept=".pdf"
+            multiple
+            webkitdirectory={false}
             onChange={handleFileChange}
             required
           />
-          {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
+          {files.length > 0 && (
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">Selected: {files.length} file{files.length > 1 ? 's' : ''}</p>
+              {files.map((f, i) => <p key={i} className="truncate">• {f.name}</p>)}
+            </div>
+          )}
         </div>
 
         <Button
           type="submit"
-          disabled={!file || !uploadMonth || !rate || status === 'uploading'}
+          disabled={files.length === 0 || !uploadMonth || !rate || status === 'uploading'}
           className="w-full gap-2"
         >
           <UploadIcon className="w-4 h-4" />
