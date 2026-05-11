@@ -53,6 +53,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                   className="rounded border-border cursor-pointer"
                 />
               </th>
+              <th className="text-left px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
               <th className="text-left px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground">Fund</th>
               <th className="text-center px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Curr</th>
               <th className="text-right px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (Orig)</th>
@@ -68,7 +69,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
           </thead>
           <tbody className="divide-y">
             {rows.length === 0 && (
-              <tr><td colSpan={12} className="text-center py-8 text-muted-foreground">No data.</td></tr>
+            <tr><td colSpan={13} className="text-center py-8 text-muted-foreground">No data.</td></tr>
             )}
             {rows.map((r, i) => {
               const id = r.id ?? i;
@@ -87,7 +88,11 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                       className="rounded border-border cursor-pointer"
                     />
                   </td>
-                  <td className="px-2 py-1.5 font-medium max-w-[220px] truncate">{r.investment_name}</td>
+                  <td className="px-2 py-1.5 max-w-[160px]">
+                    <p className="font-medium text-xs truncate">{r.portfolio_name || r.account_code || '—'}</p>
+                    <p className="text-xs text-muted-foreground font-mono truncate">{r.account_code}</p>
+                  </td>
+                  <td className="px-2 py-1.5 font-medium max-w-[200px] truncate">{r.investment_name}</td>
                   <td className="px-2 py-1.5 text-center text-muted-foreground font-semibold whitespace-nowrap">{r.currency}</td>
                   <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap">{fmtNum(r.original_currency_value ?? 0)}</td>
                   <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap">{r.currency === 'ZAR' ? '-' : (r.exchange_rate_to_zar?.toFixed(3) ?? '-')}</td>
@@ -116,7 +121,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
           </tbody>
           <tfoot>
             <tr className="bg-muted/30 border-t-2 font-semibold">
-              <td colSpan={8} className="px-2 py-2 text-xs uppercase tracking-wider">Total</td>
+              <td colSpan={9} className="px-2 py-2 text-xs uppercase tracking-wider">Total</td>
               <td className="px-2 py-2 font-numbers text-right text-chart-2">
                 {fmtNum(rows.reduce((s, r) => s + (r.rebate_fee_monthly_amount_zar ?? 0), 0))}
               </td>
