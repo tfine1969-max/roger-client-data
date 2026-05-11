@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { fmtNum } from '@/lib/valuation-utils';
 import { Button } from '@/components/ui/button';
-import { Pencil, CheckSquare, ChevronDown, ChevronRight, Users, Layers } from 'lucide-react';
+import { Pencil, CheckSquare, ChevronDown, ChevronRight } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
 import BulkFeeEditModal from './BulkFeeEditModal';
 
@@ -10,44 +10,16 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   const [bulkEdit, setBulkEdit] = useState(false);
   const [expandedClients, setExpandedClients] = useState(new Set());
   const [selectedClients, setSelectedClients] = useState(new Set());
-  const [groupBy, setGroupBy] = useState('client'); // 'client' | 'fund'
 
-  // Group rows by client name (portfolio_name), consolidating multiple account codes
+  // Group rows by client (account_code)
   const clientGroups = useMemo(() => {
     const map = {};
     rows.forEach(r => {
-      const key = r.portfolio_name || r.account_code || 'Unknown';
+      const key = r.account_code || r.portfolio_name || 'Unknown';
       if (!map[key]) map[key] = {
         key,
         name: r.portfolio_name || r.account_code || 'Unknown',
-        account_codes: new Set(),
-        items: [],
-        totalZar: 0,
-        totalRebate: 0,
-        totalAdvisory: 0,
-        totalFee: 0,
-        missingFees: 0,
-      };
-      if (r.account_code) map[key].account_codes.add(r.account_code);
-      map[key].items.push(r);
-      map[key].totalZar += r.zar_value ?? 0;
-      map[key].totalRebate += r.rebate_fee_monthly_amount_zar ?? 0;
-      map[key].totalAdvisory += r.advisory_fee_monthly_amount_zar ?? 0;
-      map[key].totalFee += r.total_monthly_fee_zar ?? 0;
-      if (r.fee_required) map[key].missingFees++;
-    });
-    return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
-  }, [rows]);
-
-  // Fund grouping
-  const fundGroups = useMemo(() => {
-    const map = {};
-    rows.forEach(r => {
-      const key = r.investment_name || 'Unknown Fund';
-      if (!map[key]) map[key] = {
-        key,
-        name: key,
-        platform: r.platform,
+        account_code: r.account_code,
         items: [],
         totalZar: 0,
         totalRebate: 0,
@@ -65,7 +37,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
     return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
   }, [rows]);
 
-  const allClientKeys = useMemo(() => (groupBy === 'fund' ? fundGroups : clientGroups).map(g => g.key), [groupBy, clientGroups, fundGroups]);
+  const allClientKeys = clientGroups.map(g => g.key);
   const allSelected = allClientKeys.length > 0 && allClientKeys.every(k => selectedClients.has(k));
 
   const toggleAllClients = () => {
@@ -88,8 +60,8 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   };
 
   const selectedRows = useMemo(
-    () => (groupBy === 'fund' ? fundGroups : clientGroups).filter(g => selectedClients.has(g.key)).flatMap(g => g.items),
-    [groupBy, clientGroups, fundGroups, selectedClients]
+    () => clientGroups.filter(g => selectedClients.has(g.key)).flatMap(g => g.items),
+    [clientGroups, selectedClients]
   );
 
   const grandTotals = useMemo(() => ({
@@ -99,28 +71,8 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
     fee: rows.reduce((s, r) => s + (r.total_monthly_fee_zar ?? 0), 0),
   }), [rows]);
 
-  const activeGroups = groupBy === 'fund' ? fundGroups : clientGroups;
-
   return (
     <>
-      {/* View toggle + bulk action bar */}
-      <div className="flex items-center gap-2 mb-2">
-        <div className="flex rounded-md border overflow-hidden text-xs">
-          <button
-            className={`px-3 py-1.5 flex items-center gap-1.5 transition-colors ${groupBy === 'client' ? 'bg-primary text-primary-foreground' : 'bg-white text-muted-foreground hover:bg-muted/40'}`}
-            onClick={() => { setGroupBy('client'); setExpandedClients(new Set()); setSelectedClients(new Set()); }}
-          >
-            <Users className="w-3 h-3" /> By Client
-          </button>
-          <button
-            className={`px-3 py-1.5 flex items-center gap-1.5 border-l transition-colors ${groupBy === 'fund' ? 'bg-primary text-primary-foreground' : 'bg-white text-muted-foreground hover:bg-muted/40'}`}
-            onClick={() => { setGroupBy('fund'); setExpandedClients(new Set()); setSelectedClients(new Set()); }}
-          >
-            <Layers className="w-3 h-3" /> By Fund
-          </button>
-        </div>
-      </div>
-
       {/* Bulk action bar */}
       {selectedClients.size > 0 && (
         <div className="flex items-center gap-3 mb-2 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg">
@@ -144,7 +96,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                 <input type="checkbox" checked={allSelected} onChange={toggleAllClients} className="rounded border-border cursor-pointer" />
               </th>
               <th className="w-6 px-1" />
-              <th className="text-left px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground">{groupBy === 'fund' ? 'Fund' : 'Client'}</th>
+              <th className="text-left px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
               <th className="text-right px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Holdings</th>
               <th className="text-right px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM (ZAR)</th>
               <th className="text-right px-2 py-2 font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Mo. Rebate</th>
@@ -154,15 +106,15 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
             </tr>
           </thead>
           <tbody>
-            {activeGroups.length === 0 && (
+            {clientGroups.length === 0 && (
               <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">No data.</td></tr>
             )}
-            {activeGroups.map(group => {
+            {clientGroups.map(group => {
               const isSel = selectedClients.has(group.key);
               const isExpanded = expandedClients.has(group.key);
               return (
                 <>
-                  {/* Group summary row */}
+                  {/* Client summary row */}
                   <tr
                     key={group.key}
                     className={`border-t cursor-pointer hover:bg-muted/20 ${isSel ? 'bg-primary/5' : group.missingFees > 0 ? 'bg-yellow-50/40' : ''}`}
@@ -183,11 +135,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                     </td>
                     <td className="px-2 py-2">
                       <p className="font-semibold text-xs">{group.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {groupBy === 'fund'
-                          ? `${group.items.length} client${group.items.length !== 1 ? 's' : ''}`
-                          : [...(group.account_codes ?? [])].join(', ')}
-                      </p>
+                      <p className="text-xs text-muted-foreground font-mono">{group.account_code}</p>
                     </td>
                     <td className="px-2 py-2 text-right text-muted-foreground">
                       {group.items.length}
@@ -202,7 +150,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                     <td className="px-2 py-2" />
                   </tr>
 
-                  {/* Expanded sub-rows */}
+                  {/* Expanded instrument rows */}
                   {isExpanded && group.items.map((r, ii) => (
                     <tr
                       key={`${group.key}-${ii}`}
@@ -210,31 +158,22 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                     >
                       <td className="px-3 py-1.5" />
                       <td className="px-1 py-1.5" />
-                      <td className="px-2 py-1.5 pl-6">
-                        {groupBy === 'fund' ? (
-                          <>
-                            <p className="font-medium truncate max-w-[260px]">{r.portfolio_name || r.account_code}</p>
-                            <p className="text-muted-foreground font-mono">{r.account_code}</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-medium truncate max-w-[260px]">{r.investment_name}</p>
-                            <p className="text-muted-foreground font-mono">{r.account_code} · {r.currency}{r.currency !== 'ZAR' ? ` · Rate ${r.exchange_rate_to_zar?.toFixed(3) ?? '-'}` : ''}</p>
-                          </>
-                        )}
+                      <td className="px-2 py-1.5 pl-6" colSpan={1}>
+                        <p className="font-medium truncate max-w-[260px]">{r.investment_name}</p>
+                        <p className="text-muted-foreground">{r.currency} · Rate {r.currency === 'ZAR' ? '-' : (r.exchange_rate_to_zar?.toFixed(3) ?? '-')}</p>
                       </td>
                       <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap text-muted-foreground">
                         {fmtNum(r.original_currency_value ?? 0)}
                       </td>
                       <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap">{fmtNum(r.zar_value ?? 0)}</td>
                       <td className="px-2 py-1.5 text-right">
-                        <span className={`px-1 py-0.5 rounded whitespace-nowrap inline-block ${(r.rebate_fee_annual_percent == null || r.rebate_fee_annual_percent === 0) ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'text-chart-2'}`}>
-                          {(r.rebate_fee_annual_percent == null || r.rebate_fee_annual_percent === 0) ? 'Req' : fmtNum(r.rebate_fee_monthly_amount_zar ?? 0)}
+                        <span className={`px-1 py-0.5 rounded whitespace-nowrap inline-block ${r.fee_required ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'text-chart-2'}`}>
+                          {r.fee_required ? 'Req' : fmtNum(r.rebate_fee_monthly_amount_zar ?? 0)}
                         </span>
                       </td>
                       <td className="px-2 py-1.5 text-right">
-                        <span className={`px-1 py-0.5 rounded whitespace-nowrap inline-block ${(r.advisory_fee_annual_percent == null || r.advisory_fee_annual_percent === 0) ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'text-chart-1'}`}>
-                          {(r.advisory_fee_annual_percent == null || r.advisory_fee_annual_percent === 0) ? 'Req' : fmtNum(r.advisory_fee_monthly_amount_zar ?? 0)}
+                        <span className={`px-1 py-0.5 rounded whitespace-nowrap inline-block ${r.fee_required ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'text-chart-1'}`}>
+                          {r.fee_required ? 'Req' : fmtNum(r.advisory_fee_monthly_amount_zar ?? 0)}
                         </span>
                       </td>
                       <td className="px-2 py-1.5 text-right font-numbers font-semibold whitespace-nowrap">{fmtNum(r.total_monthly_fee_zar ?? 0)}</td>

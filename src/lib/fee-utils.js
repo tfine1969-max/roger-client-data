@@ -166,17 +166,12 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const mappedNav = mapping?.navByMonth?.[row.upload_month];
   const feeBaseZar = mappedNav ?? zarVal(row);
 
-  // fee_required is true if there's no source at all, OR if advisory is still 0/unset
-  const advisoryValue = source?.advisory_fee_annual_percent ?? source?.advisoryAnnualPercent ?? null;
-  const advisoryMissing = advisoryValue == null || advisoryValue === 0;
-  const feeRequired = !source || advisoryMissing;
-
   return {
     ...row,
     ...calcFees(mappedNav ?? origVal(row), feeBaseZar, rebate, advisory),
     fee_base_zar: feeBaseZar,
     fee_base_source: mappedNav !== undefined ? 'mapping-nav' : 'valuation',
-    fee_required: feeRequired,
+    fee_required: !source,
     fee_source: config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
     fee_mapping_client: mapping?.client,
     fee_mapping_match_score: mapping?.matchScore ?? null,
