@@ -21,10 +21,11 @@ async function deleteAllByQuery(entity, query, base44) {
     if (!records || records.length === 0) break;
     for (const r of records) {
       await base44.asServiceRole.entities[entity].delete(r.id);
+      await new Promise(res => setTimeout(res, 150));
     }
     deleted += records.length;
     if (records.length < BATCH) break;
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(res => setTimeout(res, 500));
   }
   return deleted;
 }
@@ -58,20 +59,19 @@ Deno.serve(async (req) => {
       // Monthly workbook: delete all PV records for that month that are NOT Prime or Julius Baer
       // We delete all for the month and let user re-upload
       // Fetch all for month, filter out Prime & JB
-      let skip = 0;
       while (true) {
         const records = await base44.asServiceRole.entities.PortfolioValuation.filter(
-          { upload_month }, '-created_date', 200
+          { upload_month }, '-created_date', 100
         );
         if (!records || records.length === 0) break;
         const toDelete = records.filter(r => r.platform !== 'Prime' && r.platform !== 'Julius Baer');
         for (const r of toDelete) {
           await base44.asServiceRole.entities.PortfolioValuation.delete(r.id);
           pvDeleted++;
+          await new Promise(res => setTimeout(res, 150));
         }
-        if (records.length < 200) break;
-        await new Promise(r => setTimeout(r, 300));
-        skip += 200;
+        if (records.length < 100) break;
+        await new Promise(res => setTimeout(res, 500));
       }
     } else {
       // Named platform
