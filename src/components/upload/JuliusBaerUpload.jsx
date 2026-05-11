@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpen } from 'lucide-react';
+import DeleteMonthData from './DeleteMonthData';
 
 export default function JuliusBaerUpload({ onImported }) {
   const [month, setMonth] = useState('');
@@ -222,6 +223,7 @@ export default function JuliusBaerUpload({ onImported }) {
           </div>
         )}
       </form>
+      <DeleteMonthData provider="julius-baer" />
     </div>
   );
 }

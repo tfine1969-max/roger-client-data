@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
+import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'prime_last_upload';
 
@@ -135,6 +136,7 @@ export default function PrimeUpload({ onImported }) {
           </div>
         )}
       </form>
+      <DeleteMonthData provider="prime" />
     </div>
   );
 }

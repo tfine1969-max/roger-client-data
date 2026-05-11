@@ -8,6 +8,7 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
+import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
 const EMPTY_RATES = { USD: '', EUR: '', GBP: '' };
 
@@ -22,14 +23,17 @@ const PROVIDERS = [
   { id: 'prescient', label: 'Prescient' },
 ];
 
-function ComingSoon({ provider }) {
+function ComingSoon({ provider, providerId }) {
   return (
-    <div className="bg-white border rounded-lg p-10 flex flex-col items-center justify-center text-center gap-3">
-      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-        <UploadIcon className="w-5 h-5 text-muted-foreground" />
+    <div className="space-y-0">
+      <div className="bg-white border rounded-lg p-10 flex flex-col items-center justify-center text-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+          <UploadIcon className="w-5 h-5 text-muted-foreground" />
+        </div>
+        <p className="text-sm font-medium text-foreground">{provider} import coming soon</p>
+        <p className="text-xs text-muted-foreground">Use the Monthly Workbook tab to import this provider's data for now.</p>
       </div>
-      <p className="text-sm font-medium text-foreground">{provider} import coming soon</p>
-      <p className="text-xs text-muted-foreground">Use the Monthly Workbook tab to import this provider's data for now.</p>
+      <DeleteMonthData provider={providerId} />
     </div>
   );
 }
@@ -156,6 +160,7 @@ function MonthlyWorkbookUpload({ onImported }) {
           </div>
         )}
       </form>
+      <DeleteMonthData provider="monthly" />
     </div>
   );
 }
@@ -199,11 +204,11 @@ export default function Upload() {
         {activeTab === 'monthly' && <MonthlyWorkbookUpload onImported={handleImported} />}
         {activeTab === 'julius-baer' && <JuliusBaerUpload onImported={handleImported} />}
         {activeTab === 'prime' && <PrimeUpload onImported={handleImported} />}
-        {activeTab === 'credo' && <ComingSoon provider="Credo" />}
-        {activeTab === 'gryphon' && <ComingSoon provider="Gryphon" />}
-        {activeTab === 'northstar' && <ComingSoon provider="Northstar" />}
-        {activeTab === 'peresec' && <ComingSoon provider="Peresec" />}
-        {activeTab === 'prescient' && <ComingSoon provider="Prescient" />}
+        {activeTab === 'credo' && <ComingSoon provider="Credo" providerId="credo" />}
+        {activeTab === 'gryphon' && <ComingSoon provider="Gryphon" providerId="gryphon" />}
+        {activeTab === 'northstar' && <ComingSoon provider="Northstar" providerId="northstar" />}
+        {activeTab === 'peresec' && <ComingSoon provider="Peresec" providerId="peresec" />}
+        {activeTab === 'prescient' && <ComingSoon provider="Prescient" providerId="prescient" />}
       </div>
     </div>
   );
