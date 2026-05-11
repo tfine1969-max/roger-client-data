@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
 import GreyphonUpload from '@/components/upload/GreyphonUpload';
+import CredoUpload from '@/components/upload/CredoUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
 const EMPTY_RATES = { USD: '', EUR: '', GBP: '' };
@@ -205,7 +206,7 @@ export default function Upload() {
         {activeTab === 'monthly' && <MonthlyWorkbookUpload onImported={handleImported} />}
         {activeTab === 'julius-baer' && <JuliusBaerUpload onImported={handleImported} />}
         {activeTab === 'prime' && <PrimeUpload onImported={handleImported} />}
-        {activeTab === 'credo' && <ComingSoon provider="Credo" providerId="credo" />}
+        {activeTab === 'credo' && <CredoUpload onImported={handleImported} />}
         {activeTab === 'gryphon' && <GreyphonUpload onImported={handleImported} />}
         {activeTab === 'northstar' && <ComingSoon provider="Northstar" providerId="northstar" />}
         {activeTab === 'peresec' && <ComingSoon provider="Peresec" providerId="peresec" />}
