@@ -23,10 +23,13 @@ export default function ClientConsolidation() {
   const fetchSuggestions = async () => {
     try {
       setLoading(true);
+      setMessage('');
       const res = await base44.functions.invoke('suggestClientMerges', {});
       setSuggestions(res.data.suggestions || []);
     } catch (err) {
+      console.error('Error fetching suggestions:', err);
       setMessage(err.message || 'Failed to load suggestions');
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
@@ -72,10 +75,19 @@ export default function ClientConsolidation() {
 
   if (suggestions.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
-        <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
-        <p className="text-sm font-medium text-foreground">No duplicate clients detected</p>
-        <p className="text-xs text-muted-foreground mt-1">Your client list appears clean.</p>
+      <div className="space-y-2">
+        {message && (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+            {message}
+          </div>
+        )}
+        {!message && (
+          <div className="rounded-lg border border-border bg-muted/30 p-6 text-center">
+            <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className="text-sm font-medium text-foreground">No duplicate clients detected</p>
+            <p className="text-xs text-muted-foreground mt-1">Your client list appears clean.</p>
+          </div>
+        )}
       </div>
     );
   }
