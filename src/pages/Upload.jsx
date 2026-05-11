@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
+import PrimeUpload from '@/components/upload/PrimeUpload';
 
 const EMPTY_RATES = { USD: '', EUR: '', GBP: '' };
 
@@ -197,7 +198,7 @@ export default function Upload() {
       <div>
         {activeTab === 'monthly' && <MonthlyWorkbookUpload onImported={handleImported} />}
         {activeTab === 'julius-baer' && <JuliusBaerUpload onImported={handleImported} />}
-        {activeTab === 'prime' && <ComingSoon provider="Prime Investments" />}
+        {activeTab === 'prime' && <PrimeUpload onImported={handleImported} />}
         {activeTab === 'credo' && <ComingSoon provider="Credo" />}
         {activeTab === 'gryphon' && <ComingSoon provider="Gryphon" />}
         {activeTab === 'northstar' && <ComingSoon provider="Northstar" />}
