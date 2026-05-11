@@ -79,6 +79,7 @@ export default function CredoUpload({ onImported }) {
       setFiles([]);
       setRate('');
       document.getElementById('credo-file-input').value = '';
+      document.getElementById('credo-folder-input').value = '';
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
