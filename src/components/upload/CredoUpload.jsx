@@ -134,9 +134,8 @@ export default function CredoUpload({ onImported }) {
           <Input
             id="credo-folder-input"
             type="file"
-            accept=".pdf"
             multiple
-            webkitdirectory
+            webkitdirectory=""
             onChange={handleFileChange}
             className="hidden"
             required
