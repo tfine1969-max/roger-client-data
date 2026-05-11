@@ -97,9 +97,53 @@ Deno.serve(async (req) => {
     adviser: cleanText(row['Adviser']),
   })).filter(r => r.investor || r.account_number);
 
-  const BATCH = 100;
+  const BATCH = 50;
   for (let i = 0; i < records.length; i += BATCH) {
     await base44.asServiceRole.entities.PrimeHolding.bulkCreate(records.slice(i, i + BATCH));
+    if (i + BATCH < records.length) await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Also write into PortfolioValuation so dashboard/fees/platforms see Prime data
+  if (replace_existing) {
+    let page = 0;
+    while (true) {
+      const existingPV = await base44.asServiceRole.entities.PortfolioValuation.filter(
+        { upload_month, platform: 'Prime' }, '', 200, page * 200
+      );
+      if (!existingPV.length) break;
+      await Promise.all(existingPV.map(rec => base44.asServiceRole.entities.PortfolioValuation.delete(rec.id)));
+      if (existingPV.length < 200) break;
+      page++;
+    }
+  }
+
+  const pvRecords = records
+    .filter(r => r.market_value != null && r.instrument_name)
+    .map(r => ({
+      upload_month,
+      account_code: r.account_number,
+      portfolio_name: r.investor,
+      identity_no: r.id_number,
+      platform: 'Prime',
+      investment_name: r.instrument_name,
+      currency: r.currency || 'ZAR',
+      original_currency_value: r.market_value,
+      exchange_rate_to_zar: 1,
+      zar_value: r.market_value,
+      conversion_status: 'ZAR Base Currency',
+      number_of_units: r.units,
+      month_end_unit_price: r.price,
+      month_end_market_value: r.market_value,
+      has_missing_account_code: !r.account_number,
+      has_missing_identity_no: !r.id_number,
+      has_missing_market_value: !r.market_value,
+      is_duplicate: false,
+      is_flagged: !r.account_number || !r.id_number,
+    }));
+
+  for (let i = 0; i < pvRecords.length; i += BATCH) {
+    await base44.asServiceRole.entities.PortfolioValuation.bulkCreate(pvRecords.slice(i, i + BATCH));
+    if (i + BATCH < pvRecords.length) await new Promise(r => setTimeout(r, 500));
   }
 
   return Response.json({
