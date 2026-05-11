@@ -66,8 +66,8 @@ export default function BulkFeeEditModal({ rows, feeOptions = [], onClose, onSav
     let saved = 0;
     for (const [idxStr, { rebate, advisory }] of Object.entries(fees)) {
       const row = rows[parseInt(idxStr)];
-      const rebatePct = parseFloat(rebate);
-      const advisoryPct = parseFloat(advisory);
+      const rebatePct = rebate === '' ? 0 : (parseFloat(rebate) ?? 0);
+      const advisoryPct = advisory === '' ? null : (parseFloat(advisory) ?? null);
 
       const existing = await base44.entities.FeeConfig.filter({
         account_code: row.account_code,
@@ -80,8 +80,8 @@ export default function BulkFeeEditModal({ rows, feeOptions = [], onClose, onSav
         portfolio_name: row.portfolio_name,
         platform: row.platform,
         investment_name: row.investment_name,
-        rebate_fee_annual_percent: isNaN(rebatePct) ? (row.rebate_fee_annual_percent ?? 0) : rebatePct,
-        advisory_fee_annual_percent: isNaN(advisoryPct) ? (row.advisory_fee_annual_percent ?? 0) : advisoryPct,
+        rebate_fee_annual_percent: rebatePct,
+        advisory_fee_annual_percent: advisoryPct, // null = not yet set; 0 = explicitly zero
         effective_from_month: row.upload_month,
       };
 

@@ -14,8 +14,8 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
 
   const handleSave = async () => {
     setSaving(true);
-    const rebatePct = parseFloat(rebate) || 0;
-    const advisoryPct = parseFloat(advisory) || 0;
+    const rebatePct = rebate === '' ? 0 : parseFloat(rebate) ?? 0;
+    const advisoryPct = advisory === '' ? null : parseFloat(advisory) ?? null;
 
     // Create/update FeeConfig for future months
     const existing = await base44.entities.FeeConfig.filter({
@@ -30,7 +30,7 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
       platform: row.platform,
       investment_name: row.investment_name,
       rebate_fee_annual_percent: rebatePct,
-      advisory_fee_annual_percent: advisoryPct,
+      advisory_fee_annual_percent: advisoryPct, // null = not yet set; 0 = explicitly zero
       effective_from_month: row.upload_month,
     };
     
@@ -45,8 +45,8 @@ export default function FeeEditModal({ row, feeOptions = [], onClose, onSaved })
     onSaved();
   };
 
-  const rebatePct = parseFloat(rebate) || 0;
-  const advisoryPct = parseFloat(advisory) || 0;
+  const rebatePct = rebate === '' ? 0 : (parseFloat(rebate) ?? 0);
+  const advisoryPct = advisory === '' ? 0 : (parseFloat(advisory) ?? 0);
   const feeBaseZar = row.fee_base_zar ?? zarVal(row);
   const previewRebateZar = feeBaseZar * (rebatePct / 100) / 12;
   const previewAdvisoryZar = feeBaseZar * (advisoryPct / 100) / 12;
