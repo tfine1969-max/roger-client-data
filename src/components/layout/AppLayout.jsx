@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal } from 'lucide-react';
+import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { path: '/funds', label: 'Funds', icon: Briefcase },
   { path: '/fees', label: 'Fees', icon: Percent },
   { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
+  { path: '/providers/prime', label: 'Prime', icon: Building2 },
   { path: '/upload', label: 'Upload', icon: Upload },
   { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
 ];

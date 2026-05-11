@@ -1,0 +1,75 @@
+{
+  "name": "PrimeHolding",
+  "type": "object",
+  "properties": {
+    "upload_month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format"
+    },
+    "date_of_report": {
+      "type": "string",
+      "description": "Date of the report (YYYY-MM-DD)"
+    },
+    "account_number": {
+      "type": "string",
+      "description": "Client account number e.g. PRI202450595273"
+    },
+    "investor": {
+      "type": "string",
+      "description": "Investor / client name"
+    },
+    "id_number": {
+      "type": "string",
+      "description": "ID or registration number"
+    },
+    "product": {
+      "type": "string",
+      "description": "Product type e.g. Prime Investment Plan"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status e.g. Existing business"
+    },
+    "instrument_code": {
+      "type": "string",
+      "description": "Instrument / fund code"
+    },
+    "instrument_name": {
+      "type": "string",
+      "description": "Instrument / fund name"
+    },
+    "percent_of_account": {
+      "type": "number",
+      "description": "% of account this instrument represents"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Preferred currency"
+    },
+    "market_value": {
+      "type": "number",
+      "description": "Market value (column S - Value in original currency)"
+    },
+    "units": {
+      "type": "number",
+      "description": "Number of units held"
+    },
+    "price": {
+      "type": "number",
+      "description": "Unit price"
+    },
+    "price_date": {
+      "type": "string",
+      "description": "Date of the price (YYYY-MM-DD)"
+    },
+    "adviser": {
+      "type": "string",
+      "description": "Adviser name"
+    }
+  },
+  "required": [
+    "upload_month",
+    "account_number",
+    "instrument_name"
+  ]
+}
