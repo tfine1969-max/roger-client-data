@@ -54,6 +54,7 @@ export default function CredoUpload({ onImported }) {
           file_url,
           upload_month: uploadMonth,
           exchange_rate: parseFloat(rate),
+          replace_existing: processedFiles === 0,
         });
         if (!res.data.success) throw new Error(`${file.name}: ${res.data.error || 'Import failed'}`);
         totalRows += res.data.rows_imported;

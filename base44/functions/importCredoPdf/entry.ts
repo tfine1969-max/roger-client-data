@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { file_url, upload_month, exchange_rate } = await req.json();
+    const { file_url, upload_month, exchange_rate, replace_existing = true } = await req.json();
     if (!file_url || !upload_month || !exchange_rate) {
       return Response.json({ error: 'file_url, upload_month, and exchange_rate required' }, { status: 400 });
     }
@@ -110,7 +110,7 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
       month_end_unit_price: h.unit_cost,
     }));
 
-    const created = await bulkCreateValuations(base44, valuations, true, upload_month);
+    const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month);
 
     return Response.json({
       success: true,
