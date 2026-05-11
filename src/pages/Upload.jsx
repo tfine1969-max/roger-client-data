@@ -8,6 +8,7 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
+import GreyphonUpload from '@/components/upload/GreyphonUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
 const EMPTY_RATES = { USD: '', EUR: '', GBP: '' };
@@ -205,7 +206,7 @@ export default function Upload() {
         {activeTab === 'julius-baer' && <JuliusBaerUpload onImported={handleImported} />}
         {activeTab === 'prime' && <PrimeUpload onImported={handleImported} />}
         {activeTab === 'credo' && <ComingSoon provider="Credo" providerId="credo" />}
-        {activeTab === 'gryphon' && <ComingSoon provider="Gryphon" providerId="gryphon" />}
+        {activeTab === 'gryphon' && <GreyphonUpload onImported={handleImported} />}
         {activeTab === 'northstar' && <ComingSoon provider="Northstar" providerId="northstar" />}
         {activeTab === 'peresec' && <ComingSoon provider="Peresec" providerId="peresec" />}
         {activeTab === 'prescient' && <ComingSoon provider="Prescient" providerId="prescient" />}
