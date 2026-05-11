@@ -88,7 +88,7 @@ export default function CredoUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload a folder or select multiple Credo valuation PDFs to import monthly holdings. Enter the USD → ZAR exchange rate for that month.
+        Upload a folder or select multiple Credo valuation PDFs to import monthly holdings. Only PDF files will be processed. Enter the USD → ZAR exchange rate for that month.
       </p>
 
       {lastUpload && (
