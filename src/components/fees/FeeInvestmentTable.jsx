@@ -12,15 +12,15 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   const [selectedClients, setSelectedClients] = useState(new Set());
   const [groupBy, setGroupBy] = useState('client'); // 'client' | 'fund'
 
-  // Group rows by client (account_code)
+  // Group rows by client name (portfolio_name), consolidating multiple account codes
   const clientGroups = useMemo(() => {
     const map = {};
     rows.forEach(r => {
-      const key = r.account_code || r.portfolio_name || 'Unknown';
+      const key = r.portfolio_name || r.account_code || 'Unknown';
       if (!map[key]) map[key] = {
         key,
         name: r.portfolio_name || r.account_code || 'Unknown',
-        account_code: r.account_code,
+        account_codes: new Set(),
         items: [],
         totalZar: 0,
         totalRebate: 0,
@@ -28,6 +28,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
         totalFee: 0,
         missingFees: 0,
       };
+      if (r.account_code) map[key].account_codes.add(r.account_code);
       map[key].items.push(r);
       map[key].totalZar += r.zar_value ?? 0;
       map[key].totalRebate += r.rebate_fee_monthly_amount_zar ?? 0;
@@ -183,7 +184,9 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                     <td className="px-2 py-2">
                       <p className="font-semibold text-xs">{group.name}</p>
                       <p className="text-xs text-muted-foreground font-mono">
-                        {groupBy === 'fund' ? `${group.items.length} client${group.items.length !== 1 ? 's' : ''}` : group.account_code}
+                        {groupBy === 'fund'
+                          ? `${group.items.length} client${group.items.length !== 1 ? 's' : ''}`
+                          : [...(group.account_codes ?? [])].join(', ')}
                       </p>
                     </td>
                     <td className="px-2 py-2 text-right text-muted-foreground">
@@ -216,7 +219,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                         ) : (
                           <>
                             <p className="font-medium truncate max-w-[260px]">{r.investment_name}</p>
-                            <p className="text-muted-foreground">{r.currency} · Rate {r.currency === 'ZAR' ? '-' : (r.exchange_rate_to_zar?.toFixed(3) ?? '-')}</p>
+                            <p className="text-muted-foreground font-mono">{r.account_code} · {r.currency}{r.currency !== 'ZAR' ? ` · Rate ${r.exchange_rate_to_zar?.toFixed(3) ?? '-'}` : ''}</p>
                           </>
                         )}
                       </td>
