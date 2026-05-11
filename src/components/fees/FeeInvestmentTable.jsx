@@ -38,33 +38,6 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
     return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
   }, [rows]);
 
-  const allClientKeys = useMemo(() => (groupBy === 'fund' ? fundGroups : clientGroups).map(g => g.key), [groupBy, clientGroups, fundGroups]);
-  const allSelected = allClientKeys.length > 0 && allClientKeys.every(k => selectedClients.has(k));
-
-  const toggleAllClients = () => {
-    if (allSelected) setSelectedClients(new Set());
-    else setSelectedClients(new Set(allClientKeys));
-  };
-
-  const toggleClient = (key) => {
-    const next = new Set(selectedClients);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setSelectedClients(next);
-  };
-
-  const toggleExpand = (key) => {
-    const next = new Set(expandedClients);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setExpandedClients(next);
-  };
-
-  const selectedRows = useMemo(
-    () => clientGroups.filter(g => selectedClients.has(g.key)).flatMap(g => g.items),
-    [clientGroups, selectedClients]
-  );
-
   // Fund grouping
   const fundGroups = useMemo(() => {
     const map = {};
@@ -90,6 +63,33 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
     });
     return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
   }, [rows]);
+
+  const allClientKeys = useMemo(() => (groupBy === 'fund' ? fundGroups : clientGroups).map(g => g.key), [groupBy, clientGroups, fundGroups]);
+  const allSelected = allClientKeys.length > 0 && allClientKeys.every(k => selectedClients.has(k));
+
+  const toggleAllClients = () => {
+    if (allSelected) setSelectedClients(new Set());
+    else setSelectedClients(new Set(allClientKeys));
+  };
+
+  const toggleClient = (key) => {
+    const next = new Set(selectedClients);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setSelectedClients(next);
+  };
+
+  const toggleExpand = (key) => {
+    const next = new Set(expandedClients);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setExpandedClients(next);
+  };
+
+  const selectedRows = useMemo(
+    () => (groupBy === 'fund' ? fundGroups : clientGroups).filter(g => selectedClients.has(g.key)).flatMap(g => g.items),
+    [groupBy, clientGroups, fundGroups, selectedClients]
+  );
 
   const grandTotals = useMemo(() => ({
     zar: rows.reduce((s, r) => s + (r.zar_value ?? 0), 0),
