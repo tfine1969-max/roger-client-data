@@ -78,6 +78,7 @@ export default function CredoUpload({ onImported }) {
       if (onImported) onImported();
       setFiles([]);
       setRate('');
+      setUploadMonth('');
       document.getElementById('credo-file-input').value = '';
       document.getElementById('credo-folder-input').value = '';
     } catch (err) {
@@ -173,6 +174,12 @@ export default function CredoUpload({ onImported }) {
             </div>
           )}
         </div>
+
+        {files.length > 0 && (!uploadMonth || !rate) && (
+          <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+            ⚠️ Please fill in month and exchange rate to upload.
+          </div>
+        )}
 
         <Button
           type="submit"

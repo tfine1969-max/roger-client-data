@@ -11,8 +11,12 @@ async function bulkCreateValuations(base44, records, replaceExisting, uploadMont
       );
       if (!toDelete || toDelete.length === 0) break;
       for (const r of toDelete) {
-        await base44.asServiceRole.entities.PortfolioValuation.delete(r.id);
-        deleted++;
+        try {
+          await base44.asServiceRole.entities.PortfolioValuation.delete(r.id);
+          deleted++;
+        } catch (err) {
+          // Record may have been deleted already, skip
+        }
         await new Promise(res => setTimeout(res, 100));
       }
       if (toDelete.length < BATCH) break;
