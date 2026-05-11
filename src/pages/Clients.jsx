@@ -10,6 +10,7 @@ import { AlertTriangle, Search, ChevronRight, Pencil, Check, X } from 'lucide-re
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 import EditAccountModal from '@/components/clients/EditAccountModal';
+import ClientConsolidation from '@/components/clients/ClientConsolidation';
 import { cn } from '@/lib/utils';
 
 export default function Clients() {
@@ -94,6 +95,8 @@ export default function Clients() {
           <p className="text-sm text-muted-foreground mt-0.5">{clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}</p>
         </div>
       </div>
+
+      <ClientConsolidation />
 
       <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
         <div className="relative flex-1 min-w-48">
