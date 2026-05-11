@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
 import { hasUnknownValue } from '@/lib/client-utils';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,9 @@ export default function InvestmentTable({ clientRows, months }) {
     clientRows.forEach(r => {
       const k = `${r.account_code}||${r.platform}||${r.investment_name}||${r.currency}`;
       if (!map[r.upload_month]) map[r.upload_month] = {};
-      map[r.upload_month][k] = (map[r.upload_month][k] || 0) + zarVal(r);
+      if (!map[r.upload_month][k]) map[r.upload_month][k] = { zar: 0, orig: 0 };
+      map[r.upload_month][k].zar += zarVal(r);
+      map[r.upload_month][k].orig += origVal(r);
     });
     return map;
   }, [clientRows]);
@@ -35,7 +37,10 @@ export default function InvestmentTable({ clientRows, months }) {
   const monthTotals = useMemo(() => {
     const totals = {};
     orderedMonths.forEach(m => {
-      totals[m] = investments.reduce((sum, inv) => sum + (lookup[m]?.[inv.key] ?? 0), 0);
+      totals[m] = {
+        zar: investments.reduce((sum, inv) => sum + (lookup[m]?.[inv.key]?.zar ?? 0), 0),
+        orig: investments.reduce((sum, inv) => sum + (lookup[m]?.[inv.key]?.orig ?? 0), 0),
+      };
     });
     return totals;
   }, [orderedMonths, investments, lookup]);
@@ -44,7 +49,7 @@ export default function InvestmentTable({ clientRows, months }) {
 
   return (
     <div>
-      <h2 className="text-base font-semibold mb-3">Underlying Components - Monthly Values (ZAR)</h2>
+      <h2 className="text-base font-semibold mb-3">Underlying Components - Monthly Values</h2>
       <div className="bg-white border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -55,9 +60,18 @@ export default function InvestmentTable({ clientRows, months }) {
                 <th className="text-left px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Platform</th>
                 <th className="text-left px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">CCY</th>
                 {orderedMonths.map(m => (
-                  <th key={m} className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[130px]">
+                  <th key={m} colSpan={2} className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[260px] border-l border-border/40">
                     {formatMonth(m)}
                   </th>
+                ))}
+              </tr>
+              <tr className="border-b bg-muted/20">
+                <th colSpan={4} />
+                {orderedMonths.map(m => (
+                  <>
+                    <th key={`${m}-usd`} className="text-right px-4 py-2 text-xs font-medium text-muted-foreground whitespace-nowrap border-l border-border/40 min-w-[120px]">USD</th>
+                    <th key={`${m}-zar`} className="text-right px-4 py-2 text-xs font-medium text-muted-foreground whitespace-nowrap min-w-[130px]">ZAR</th>
+                  </>
                 ))}
               </tr>
             </thead>
@@ -73,9 +87,14 @@ export default function InvestmentTable({ clientRows, months }) {
                   {orderedMonths.map(m => {
                     const val = lookup[m]?.[inv.key];
                     return (
-                      <td key={m} className="px-4 py-2.5 text-right text-sm font-sans text-foreground">
-                        {val !== undefined ? fmtNum(val) : <span className="text-muted-foreground text-xs">-</span>}
-                      </td>
+                      <>
+                        <td key={`${m}-usd`} className="px-4 py-2.5 text-right text-sm font-numbers text-muted-foreground border-l border-border/40">
+                          {val !== undefined ? fmtNum(val.orig) : <span className="text-muted-foreground text-xs">-</span>}
+                        </td>
+                        <td key={`${m}-zar`} className="px-4 py-2.5 text-right text-sm font-numbers text-foreground">
+                          {val !== undefined ? fmtNum(val.zar) : <span className="text-muted-foreground text-xs">-</span>}
+                        </td>
+                      </>
                     );
                   })}
                 </tr>
@@ -83,11 +102,16 @@ export default function InvestmentTable({ clientRows, months }) {
             </tbody>
             <tfoot>
               <tr className="bg-muted/30 border-t-2 border-border font-semibold">
-                <td className="px-4 py-2.5 text-xs uppercase tracking-wider sticky left-0 bg-muted/30" colSpan={4}>Total (ZAR)</td>
+                <td className="px-4 py-2.5 text-xs uppercase tracking-wider sticky left-0 bg-muted/30" colSpan={4}>Total</td>
                 {orderedMonths.map(m => (
-                  <td key={m} className="px-4 py-2.5 text-right font-sans text-foreground">
-                    {fmtNum(monthTotals[m] || 0)}
-                  </td>
+                  <>
+                    <td key={`${m}-usd`} className="px-4 py-2.5 text-right font-numbers text-muted-foreground border-l border-border/40">
+                      {fmtNum(monthTotals[m]?.orig || 0)}
+                    </td>
+                    <td key={`${m}-zar`} className="px-4 py-2.5 text-right font-numbers text-foreground">
+                      {fmtNum(monthTotals[m]?.zar || 0)}
+                    </td>
+                  </>
                 ))}
               </tr>
             </tfoot>
