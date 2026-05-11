@@ -170,7 +170,13 @@ export default function Platforms() {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 bg-muted/30 font-semibold">
-                  <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={3}>Total</td>
+                  <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={2}>Total</td>
+                  <td className="px-4 py-3 font-numbers text-sm">
+                    {(() => {
+                      const usdTotal = fundRows.filter(r => r.currency === 'USD').reduce((s, r) => s + r.totalOrig, 0);
+                      return usdTotal > 0 ? `USD ${fmtNum(usdTotal)}` : null;
+                    })()}
+                  </td>
                   <td className="px-4 py-3 font-numbers">ZAR {fmtNum(platformTotal)}</td>
                   <td />
                 </tr>
