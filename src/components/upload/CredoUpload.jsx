@@ -127,10 +127,38 @@ export default function CredoUpload({ onImported }) {
             type="file"
             accept=".pdf"
             multiple
-            webkitdirectory
             onChange={handleFileChange}
+            className="hidden"
             required
           />
+          <Input
+            id="credo-folder-input"
+            type="file"
+            accept=".pdf"
+            multiple
+            webkitdirectory
+            onChange={handleFileChange}
+            className="hidden"
+            required
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('credo-file-input').click()}
+              className="flex-1"
+            >
+              Choose Files
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('credo-folder-input').click()}
+              className="flex-1"
+            >
+              Choose Folder
+            </Button>
+          </div>
           {files.length > 0 && (
             <div className="text-xs text-muted-foreground space-y-1">
               <p className="font-medium text-foreground">Selected: {files.length} file{files.length > 1 ? 's' : ''}</p>
