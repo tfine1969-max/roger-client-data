@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
+
+const LAST_UPLOAD_KEY = 'prime_last_upload';
 
 export default function PrimeUpload({ onImported }) {
   const queryClient = useQueryClient();
@@ -14,6 +16,20 @@ export default function PrimeUpload({ onImported }) {
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
+  const [lastUpload, setLastUpload] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(LAST_UPLOAD_KEY);
+    if (stored) {
+      try { setLastUpload(JSON.parse(stored)); } catch {}
+    }
+  }, []);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files?.[0] || null);
+    setStatus(null);
+    setMessage('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,11 +45,23 @@ export default function PrimeUpload({ onImported }) {
         replace_existing: replaceExisting,
       });
       if (!res.data.success) throw new Error(res.data.error || 'Import failed');
+      
+      const info = {
+        file_name: file.name,
+        upload_month: uploadMonth,
+        rows_imported: res.data.rows_imported,
+        uploaded_at: new Date().toISOString(),
+      };
+      localStorage.setItem(LAST_UPLOAD_KEY, JSON.stringify(info));
+      setLastUpload(info);
+
       setStatus('success');
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['primeHoldings'] });
       if (onImported) onImported();
       setFile(null);
+      // reset file input
+      document.getElementById('prime-file-input').value = '';
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
@@ -44,8 +72,20 @@ export default function PrimeUpload({ onImported }) {
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         Upload a Prime Investments Holdings Excel file (.xlsx) to import monthly holdings data.
-        The file should contain an <strong>Investor</strong>, <strong>Account number</strong>, and <strong>Instrument name</strong> column.
       </p>
+
+      {/* Last upload info */}
+      {lastUpload && (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="text-xs text-muted-foreground space-y-0.5">
+            <p className="font-semibold text-foreground">Last uploaded file</p>
+            <p><span className="font-medium">{lastUpload.file_name}</span> · {formatMonth(lastUpload.upload_month)} · {lastUpload.rows_imported} rows</p>
+            <p>{new Date(lastUpload.uploaded_at).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
         <div className="space-y-1.5">
           <Label>Upload Month</Label>
@@ -59,11 +99,13 @@ export default function PrimeUpload({ onImported }) {
         <div className="space-y-1.5">
           <Label>Prime Holdings File (.xlsx)</Label>
           <Input
+            id="prime-file-input"
             type="file"
             accept=".xlsx,.xls"
-            onChange={e => setFile(e.target.files?.[0] || null)}
+            onChange={handleFileChange}
             required
           />
+          {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
         </div>
         <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input
