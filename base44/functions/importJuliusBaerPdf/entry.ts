@@ -119,9 +119,9 @@ Return a JSON object with this exact schema:
   const portfolioName = extracted.client_name || 'Unknown';
   const platform = 'Julius Baer';
 
-  // Delete existing records for this month if replacing
+  // Delete existing records for this specific client+month if replacing
   if (replace_existing) {
-    const existing = await base44.asServiceRole.entities.PortfolioValuation.filter({ upload_month, platform }, '', 5000);
+    const existing = await base44.asServiceRole.entities.PortfolioValuation.filter({ upload_month, platform, account_code: accountCode }, '', 5000);
     for (const rec of existing) {
       await base44.asServiceRole.entities.PortfolioValuation.delete(rec.id);
     }
