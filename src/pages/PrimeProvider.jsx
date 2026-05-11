@@ -17,6 +17,7 @@ export default function PrimeProvider() {
   const queryClient = useQueryClient();
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
+  const [activeTab, setActiveTab] = useState('clients');
   const [search, setSearch] = useState('');
   const [showUpload, setShowUpload] = useState(false);
 
@@ -84,6 +85,21 @@ export default function PrimeProvider() {
   }, [clients, search]);
 
   const totalAUM = useMemo(() => clients.reduce((s, c) => s + c.total_value, 0), [clients]);
+
+  // Group by fund/instrument for Funds tab
+  const funds = useMemo(() => {
+    const map = {};
+    monthHoldings.forEach(h => {
+      const key = h.instrument_name || '—';
+      if (!map[key]) map[key] = { instrument_name: h.instrument_name, instrument_code: h.instrument_code, currency: h.currency, total_value: 0, clients: new Set(), units: 0 };
+      map[key].total_value += h.market_value ?? 0;
+      map[key].units += h.units ?? 0;
+      map[key].clients.add((h.id_number || h.investor || '').trim());
+    });
+    return Object.values(map)
+      .map(f => ({ ...f, clients: f.clients.size }))
+      .sort((a, b) => b.total_value - a.total_value);
+  }, [monthHoldings]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -277,43 +293,101 @@ export default function PrimeProvider() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search client or account..." value={search} onChange={e => setSearch(e.target.value)} />
+          {/* Tab bar */}
+          <div className="flex items-center gap-1 border-b">
+            {[{ id: 'clients', label: 'Clients' }, { id: 'funds', label: 'Fund Data' }].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-all -mb-px ${
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Client table */}
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    {['Client', 'ID Number', 'Accounts', 'Holdings', 'Total Value (ZAR)', ''].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {filteredClients.length === 0 && (
-                    <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data for this month. Upload a Prime file above.</td></tr>
-                  )}
-                  {filteredClients.map((c, i) => (
-                    <tr key={i} className="group cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setSelectedClient(c)}>
-                      <td className="px-5 py-4 font-medium">{c.investor || '—'}</td>
-                      <td className="px-5 py-4 text-muted-foreground text-xs">{c.id_number || '—'}</td>
-                      <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.length}</td>
-                      <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.reduce((s, a) => s + a.holdings.length, 0)}</td>
-                      <td className="px-5 py-4 font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(c.total_value)}</td>
-                      <td className="px-5 py-4">
-                        <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                      </td>
+          {activeTab === 'clients' && (
+            <>
+              {/* Search */}
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input className="pl-9" placeholder="Search client or account..." value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
+
+              {/* Client table */}
+              <div className="bg-white border rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        {['Client', 'ID Number', 'Accounts', 'Holdings', 'Total Value (ZAR)', ''].map(h => (
+                          <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredClients.length === 0 && (
+                        <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data for this month. Upload a Prime file above.</td></tr>
+                      )}
+                      {filteredClients.map((c, i) => (
+                        <tr key={i} className="group cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setSelectedClient(c)}>
+                          <td className="px-5 py-4 font-medium">{c.investor || '—'}</td>
+                          <td className="px-5 py-4 text-muted-foreground text-xs">{c.id_number || '—'}</td>
+                          <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.length}</td>
+                          <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.reduce((s, a) => s + a.holdings.length, 0)}</td>
+                          <td className="px-5 py-4 font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(c.total_value)}</td>
+                          <td className="px-5 py-4">
+                            <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'funds' && (
+            <div className="bg-white border rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      {['Instrument', 'Code', 'Currency', 'Units', 'Clients', 'Total Value (ZAR)'].map(h => (
+                        <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y">
+                    {funds.length === 0 && (
+                      <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No fund data for this month.</td></tr>
+                    )}
+                    {funds.map((f, i) => (
+                      <tr key={i} className="hover:bg-muted/20">
+                        <td className="px-5 py-4 font-medium max-w-xs"><span className="line-clamp-2">{f.instrument_name || '—'}</span></td>
+                        <td className="px-5 py-4 text-xs font-mono text-muted-foreground">{f.instrument_code || '—'}</td>
+                        <td className="px-5 py-4 text-muted-foreground">{f.currency || '—'}</td>
+                        <td className="px-5 py-4 font-numbers text-right">{fmtNum(f.units)}</td>
+                        <td className="px-5 py-4 text-center text-muted-foreground">{f.clients}</td>
+                        <td className="px-5 py-4 font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(f.total_value)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 bg-muted/30 font-semibold">
+                      <td className="px-5 py-3 text-xs uppercase tracking-wider" colSpan={5}>Total</td>
+                      <td className="px-5 py-3 font-numbers whitespace-nowrap">ZAR {fmtNum(totalAUM)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
