@@ -28,7 +28,12 @@ export default function CredoUpload({ onImported }) {
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []).filter(f => f.type === 'application/pdf');
-    setFiles(selectedFiles);
+    // For folder selections, keep existing files and add new ones; for file selections, replace
+    const isFolder = e.target.id === 'credo-folder-input';
+    const newFiles = isFolder 
+      ? [...files, ...selectedFiles].filter((f, i, arr) => arr.findIndex(x => x.webkitRelativePath === f.webkitRelativePath) === i)
+      : selectedFiles;
+    setFiles(newFiles);
     setStatus(null);
     setMessage('');
   };
