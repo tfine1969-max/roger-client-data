@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -9,13 +9,20 @@ const navItems = [
   { path: '/funds', label: 'Funds', icon: Briefcase },
   { path: '/fees', label: 'Fees', icon: Percent },
   { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
-  { path: '/providers/prime', label: 'Prime', icon: Building2 },
   { path: '/upload', label: 'Upload', icon: Upload },
   { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
 ];
 
+const platformsSubNav = [
+  { path: '/platforms', label: 'All Platforms' },
+  { path: '/providers/prime', label: 'Prime Investments' },
+];
+
 export default function AppLayout() {
   const location = useLocation();
+
+  const inPlatformsSection =
+    location.pathname === '/platforms' || location.pathname.startsWith('/providers/');
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,7 +40,12 @@ export default function AppLayout() {
             </Link>
             <nav className="flex items-center gap-0.5">
               {navItems.map(({ path, label, icon: Icon }) => {
-                const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+                const active =
+                  path === '/'
+                    ? location.pathname === '/'
+                    : path === '/platforms'
+                    ? inPlatformsSection
+                    : location.pathname.startsWith(path);
                 return (
                   <Link
                     key={path}
@@ -53,6 +65,35 @@ export default function AppLayout() {
             </nav>
           </div>
         </div>
+
+        {/* Platforms sub-nav */}
+        {inPlatformsSection && (
+          <div className="border-t bg-muted/40">
+            <div className="max-w-screen-xl mx-auto px-6">
+              <div className="flex items-center gap-1 h-10">
+                {platformsSubNav.map(({ path, label }) => {
+                  const active = path === '/platforms'
+                    ? location.pathname === '/platforms'
+                    : location.pathname.startsWith(path);
+                  return (
+                    <Link
+                      key={path}
+                      to={path}
+                      className={cn(
+                        "px-3 py-1 rounded text-xs font-medium transition-all",
+                        active
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </header>
       <main className="max-w-screen-xl mx-auto px-6 py-8">
         <Outlet />
