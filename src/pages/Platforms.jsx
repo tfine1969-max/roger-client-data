@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
@@ -52,6 +53,7 @@ const addControlClientCounts = (row, clients = []) => {
 };
 
 export default function Platforms() {
+  const navigate = useNavigate();
   const [filterMonth, setFilterMonth] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState(null);
 
@@ -226,7 +228,7 @@ export default function Platforms() {
                 <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data.</td></tr>
               )}
               {platformRows.map(r => (
-                <tr key={r.platform} className="group cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelectedPlatform(r.platform)}>
+                <tr key={r.platform} className="group cursor-pointer transition-colors hover:bg-muted/20" onClick={() => r.platformId === 'prime' ? navigate('/providers/prime') : setSelectedPlatform(r.platform)}>
                   <td className="px-5 py-4 text-center">
                    <div className="inline-flex flex-col items-center gap-1.5">
                      <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-12 w-36" logoClassName="max-h-8 max-w-[120px]" showName={false} />
