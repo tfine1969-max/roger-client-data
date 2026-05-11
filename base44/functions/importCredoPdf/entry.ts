@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     }
 
     // Extract PDF content via LLM
-    const res = await base44.integrations.Core.InvokeLLM({
+    const extracted = await base44.integrations.Core.InvokeLLM({
       prompt: `Extract from this Credo valuation PDF the client name, account number, and all security holdings.
       
 For each holding, extract:
@@ -83,7 +83,7 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
       },
     });
 
-    const { client_name, account_number, holdings } = res.data;
+    const { client_name, account_number, holdings } = extracted;
 
     if (!holdings || holdings.length === 0) {
       return Response.json({ error: 'No holdings extracted from PDF' }, { status: 400 });
