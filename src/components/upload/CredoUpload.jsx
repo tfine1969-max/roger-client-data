@@ -83,7 +83,7 @@ export default function CredoUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload one or more Credo valuation PDFs to import monthly holdings. Enter the USD → ZAR exchange rate for that month.
+        Upload a folder or select multiple Credo valuation PDFs to import monthly holdings. Enter the USD → ZAR exchange rate for that month.
       </p>
 
       {lastUpload && (
@@ -121,20 +121,22 @@ export default function CredoUpload({ onImported }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Credo Valuation PDF(s)</Label>
+          <Label>Credo Valuation PDF(s) or Folder</Label>
           <Input
             id="credo-file-input"
             type="file"
             accept=".pdf"
             multiple
-            webkitdirectory={false}
+            webkitdirectory
             onChange={handleFileChange}
             required
           />
           {files.length > 0 && (
             <div className="text-xs text-muted-foreground space-y-1">
               <p className="font-medium text-foreground">Selected: {files.length} file{files.length > 1 ? 's' : ''}</p>
-              {files.map((f, i) => <p key={i} className="truncate">• {f.name}</p>)}
+              <div className="max-h-32 overflow-y-auto">
+                {files.map((f, i) => <p key={i} className="truncate">• {f.name}</p>)}
+              </div>
             </div>
           )}
         </div>
