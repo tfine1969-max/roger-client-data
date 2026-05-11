@@ -271,6 +271,9 @@ export default function Upload() {
                       {jbDetail.holdings_extracted.map((h, i) => (
                         <p key={i}>{h.instrument} — USD {h.usd_value?.toLocaleString()} → ZAR {Math.round(h.zar_value)?.toLocaleString()}</p>
                       ))}
+                      <div className="border-t border-border mt-2 pt-2 font-semibold text-foreground">
+                        <p>Total — USD {jbDetail.holdings_extracted.reduce((s, h) => s + (h.usd_value ?? 0), 0).toLocaleString()} → ZAR {Math.round(jbDetail.holdings_extracted.reduce((s, h) => s + (h.zar_value ?? 0), 0)).toLocaleString()}</p>
+                      </div>
                     </>
                   )}
                 </div>
