@@ -40,27 +40,37 @@ export default function PrimeProvider() {
     [holdings, activeMonth]
   );
 
-  // Group by client (account_number + investor)
+  // Group by unique client (investor name + id_number) — one client may have multiple account numbers/products
   const clients = useMemo(() => {
     const map = {};
     monthHoldings.forEach(h => {
-      const key = h.account_number || h.investor;
+      const key = (h.id_number || h.investor || '').trim();
       if (!map[key]) {
         map[key] = {
-          account_number: h.account_number,
           investor: h.investor,
           id_number: h.id_number,
-          product: h.product,
-          status: h.status,
           adviser: h.adviser,
-          holdings: [],
+          accounts: {},   // keyed by account_number
           total_value: 0,
         };
       }
-      map[key].holdings.push(h);
+      const acctKey = h.account_number;
+      if (!map[key].accounts[acctKey]) {
+        map[key].accounts[acctKey] = {
+          account_number: h.account_number,
+          product: h.product,
+          status: h.status,
+          holdings: [],
+          account_value: 0,
+        };
+      }
+      map[key].accounts[acctKey].holdings.push(h);
+      map[key].accounts[acctKey].account_value += h.market_value ?? 0;
       map[key].total_value += h.market_value ?? 0;
     });
-    return Object.values(map).sort((a, b) => (a.investor || '').localeCompare(b.investor || ''));
+    return Object.values(map)
+      .map(c => ({ ...c, accounts: Object.values(c.accounts) }))
+      .sort((a, b) => (a.investor || '').localeCompare(b.investor || ''));
   }, [monthHoldings]);
 
   const filteredClients = useMemo(() => {
@@ -103,18 +113,16 @@ export default function PrimeProvider() {
   // Client detail view
   if (selectedClient) {
     const c = selectedClient;
+    const totalHoldings = c.accounts.reduce((s, a) => s + a.holdings.length, 0);
     return (
       <div className="space-y-6">
         <div>
           <button onClick={() => setSelectedClient(null)} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-4 h-4" /> Back to clients
           </button>
-          <div className="flex items-start gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold">{c.investor}</h1>
-              <p className="text-sm text-muted-foreground mt-1 font-mono">{c.account_number} · {c.id_number}</p>
-              <p className="text-sm text-muted-foreground">{c.product} · {c.status}</p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-semibold">{c.investor}</h1>
+            <p className="text-sm text-muted-foreground mt-1">ID: {c.id_number || '—'} · Adviser: {c.adviser || '—'}</p>
           </div>
         </div>
 
@@ -124,12 +132,12 @@ export default function PrimeProvider() {
             <p className="mt-1 text-xl font-bold font-numbers">ZAR {fmtNum(c.total_value)}</p>
           </div>
           <div className="bg-white border rounded-lg p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Holdings</p>
-            <p className="mt-1 text-xl font-bold">{c.holdings.length}</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Accounts</p>
+            <p className="mt-1 text-xl font-bold">{c.accounts.length}</p>
           </div>
           <div className="bg-white border rounded-lg p-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Adviser</p>
-            <p className="mt-1 text-sm font-medium">{c.adviser || '—'}</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Holdings</p>
+            <p className="mt-1 text-xl font-bold">{totalHoldings}</p>
           </div>
           <div className="bg-white border rounded-lg p-4 text-center">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Report Month</p>
@@ -137,41 +145,47 @@ export default function PrimeProvider() {
           </div>
         </div>
 
-        <div className="bg-white border rounded-lg overflow-hidden">
-          <div className="px-5 py-4 border-b">
-            <h2 className="text-sm font-semibold">Holdings Detail</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/40">
-                  {['Instrument', 'Code', '% of Account', 'Units', 'Price', 'Price Date', 'Currency', 'Market Value'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {c.holdings.map((h, i) => (
-                  <tr key={i} className="hover:bg-muted/20">
-                    <td className="px-4 py-3 font-medium max-w-xs"><span className="line-clamp-2">{h.instrument_name}</span></td>
-                    <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{h.instrument_code}</td>
-                    <td className="px-4 py-3 text-right">{h.percent_of_account != null ? `${h.percent_of_account.toFixed(2)}%` : '—'}</td>
-                    <td className="px-4 py-3 text-right font-numbers">{h.units != null ? fmtNum(h.units) : '—'}</td>
-                    <td className="px-4 py-3 text-right font-numbers">{h.price != null ? h.price.toFixed(4) : '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{h.price_date || '—'}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{h.currency}</td>
-                    <td className="px-4 py-3 font-numbers font-semibold text-right whitespace-nowrap">ZAR {fmtNum(h.market_value ?? 0)}</td>
+        {/* One section per account */}
+        {c.accounts.map((acct, ai) => (
+          <div key={ai} className="bg-white border rounded-lg overflow-hidden">
+            <div className="px-5 py-4 border-b bg-muted/20 flex items-center justify-between">
+              <div>
+                <span className="text-sm font-semibold font-mono">{acct.account_number}</span>
+                <span className="ml-3 text-xs text-muted-foreground">{acct.product}</span>
+              </div>
+              <span className="font-numbers font-semibold text-sm">ZAR {fmtNum(acct.account_value)}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    {['Instrument', 'Code', '% of Account', 'Units', 'Price', 'Price Date', 'Currency', 'Market Value'].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 bg-muted/30 font-semibold">
-                  <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={7}>Total</td>
-                  <td className="px-4 py-3 font-numbers text-right whitespace-nowrap">ZAR {fmtNum(c.total_value)}</td>
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody className="divide-y">
+                  {acct.holdings.map((h, i) => (
+                    <tr key={i} className="hover:bg-muted/20">
+                      <td className="px-4 py-3 font-medium max-w-xs"><span className="line-clamp-2">{h.instrument_name}</span></td>
+                      <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{h.instrument_code}</td>
+                      <td className="px-4 py-3 text-right">{h.percent_of_account != null ? `${h.percent_of_account.toFixed(2)}%` : '—'}</td>
+                      <td className="px-4 py-3 text-right font-numbers">{h.units != null ? fmtNum(h.units) : '—'}</td>
+                      <td className="px-4 py-3 text-right font-numbers">{h.price != null ? h.price.toFixed(4) : '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{h.price_date || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{h.currency}</td>
+                      <td className="px-4 py-3 font-numbers font-semibold text-right whitespace-nowrap">ZAR {fmtNum(h.market_value ?? 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+        ))}
+
+        <div className="bg-muted/30 border rounded-lg px-5 py-3 flex justify-between items-center font-semibold text-sm">
+          <span className="uppercase tracking-wider text-xs text-muted-foreground">Total across all accounts</span>
+          <span className="font-numbers">ZAR {fmtNum(c.total_value)}</span>
         </div>
       </div>
     );
@@ -275,22 +289,21 @@ export default function PrimeProvider() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/40">
-                    {['Client', 'Account Number', 'ID Number', 'Product', 'Holdings', 'Total Value (ZAR)', ''].map(h => (
+                    {['Client', 'ID Number', 'Accounts', 'Holdings', 'Total Value (ZAR)', ''].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {filteredClients.length === 0 && (
-                    <tr><td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">No data for this month. Upload a Prime file above.</td></tr>
+                    <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data for this month. Upload a Prime file above.</td></tr>
                   )}
                   {filteredClients.map((c, i) => (
                     <tr key={i} className="group cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setSelectedClient(c)}>
                       <td className="px-5 py-4 font-medium">{c.investor || '—'}</td>
-                      <td className="px-5 py-4 font-mono text-xs text-muted-foreground">{c.account_number}</td>
                       <td className="px-5 py-4 text-muted-foreground text-xs">{c.id_number || '—'}</td>
-                      <td className="px-5 py-4 text-muted-foreground text-xs">{c.product || '—'}</td>
-                      <td className="px-5 py-4 text-center text-muted-foreground">{c.holdings.length}</td>
+                      <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.length}</td>
+                      <td className="px-5 py-4 text-center text-muted-foreground">{c.accounts.reduce((s, a) => s + a.holdings.length, 0)}</td>
                       <td className="px-5 py-4 font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(c.total_value)}</td>
                       <td className="px-5 py-4">
                         <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
