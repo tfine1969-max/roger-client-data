@@ -7,6 +7,7 @@ import openpyxl
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path(r"C:\Users\trevo\Wealthworks Dropbox\Website 2026\Website Design\Base44\Roger Data\1st quarter recon.xlsx")
+CLIENT_NAMES_SOURCE = Path(r"C:\Users\trevo\Wealthworks Dropbox\Wealth Works (Pty) Ltd\Roger Data\Client Names.xlsx")
 OUT = ROOT / "src" / "data" / "feeMapping.js"
 
 NAV_COLUMNS = {
@@ -48,18 +49,27 @@ def client_tokens(value):
 def main():
     workbook = openpyxl.load_workbook(SOURCE, data_only=True)
     sheet = workbook.active
+    client_names_workbook = openpyxl.load_workbook(CLIENT_NAMES_SOURCE, data_only=True)
+    client_names_sheet = client_names_workbook.active
+    indexed_client_names = [
+        str(row[0]).strip()
+        for row in client_names_sheet.iter_rows(min_row=2, values_only=True)
+        if row and row[0]
+    ]
+
     rows = []
-    for row in sheet.iter_rows(min_row=2, values_only=True):
+    for index, row in enumerate(sheet.iter_rows(min_row=2, values_only=True)):
         client, _, investment, investment_class, service_provider = row[:5]
         rebate, advisory = row[8], row[9]
         if not client or not investment or not service_provider:
             continue
+        corrected_client = indexed_client_names[index] if index < len(indexed_client_names) else str(client).strip()
         provider = PROVIDER_IDS.get(service_provider, service_provider)
         rows.append(
             {
-                "client": str(client).strip(),
-                "clientKey": compact(client),
-                "clientTokens": client_tokens(client),
+                "client": corrected_client,
+                "clientKey": compact(corrected_client),
+                "clientTokens": client_tokens(corrected_client),
                 "investment": str(investment).strip(),
                 "investmentClass": str(investment_class or "").strip(),
                 "investmentKey": compact(investment),

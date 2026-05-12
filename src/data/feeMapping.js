@@ -235,10 +235,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Blackbeard, G Mrs",
-    "clientKey": "blackbeardg",
+    "client": "Chin, Ashley",
+    "clientKey": "chinashley",
     "clientTokens": [
-      "blackbeard"
+      "chin",
+      "ashley"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -353,11 +354,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Chin, Ashley",
-    "clientKey": "chinashley",
+    "client": "Diva Trust",
+    "clientKey": "divatrust",
     "clientTokens": [
-      "chin",
-      "ashley"
+      "diva",
+      "trust"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -373,11 +374,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Chin, Ashley",
-    "clientKey": "chinashley",
+    "client": "Divaris, BN Mrs",
+    "clientKey": "divarisbn",
     "clientTokens": [
-      "chin",
-      "ashley"
+      "divaris",
+      "bn"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -457,11 +458,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.79
   },
   {
-    "client": "Conder, Andrew",
-    "clientKey": "conderandrew",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "conder",
-      "andrew"
+      "fallows"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -477,11 +477,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.7000000000000001
   },
   {
-    "client": "Conder, Andrew",
-    "clientKey": "conderandrew",
+    "client": "Gennari, Enrico",
+    "clientKey": "gennarienrico",
     "clientTokens": [
-      "conder",
-      "andrew"
+      "gennari",
+      "enrico"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -497,11 +497,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.7000000000000001
   },
   {
-    "client": "Conder, Andrew",
-    "clientKey": "conderandrew",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "conder",
-      "andrew"
+      "ikigai",
+      "trust"
     ],
     "investment": "Diversified Trading Fund B1",
     "investmentClass": "",
@@ -517,11 +517,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.7000000000000001
   },
   {
-    "client": "Conder, Andrew",
-    "clientKey": "conderandrew",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "conder",
-      "andrew"
+      "ikigai",
+      "trust"
     ],
     "investment": "Xhaos Special Opportunities Fund",
     "investmentClass": "",
@@ -852,10 +852,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.5
   },
   {
-    "client": "Diva Trust",
-    "clientKey": "divatrust",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "diva",
+      "ikigai",
       "trust"
     ],
     "investment": "Credo Trading Account",
@@ -872,10 +872,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Diva Trust",
-    "clientKey": "divatrust",
+    "client": "Irving Trust",
+    "clientKey": "irvingtrust",
     "clientTokens": [
-      "diva",
+      "irving",
       "trust"
     ],
     "investment": "Harmony Capital Limited Special Situations Class",
@@ -892,10 +892,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Diva Trust",
-    "clientKey": "divatrust",
+    "client": "Irving Trust",
+    "clientKey": "irvingtrust",
     "clientTokens": [
-      "diva",
+      "irving",
       "trust"
     ],
     "investment": "Wealthworks Global Flexible Fund",
@@ -912,11 +912,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Divaris, BN Mrs",
-    "clientKey": "divarisbn",
+    "client": "Jackson, Matt",
+    "clientKey": "jacksonmatt",
     "clientTokens": [
-      "divaris",
-      "bn"
+      "jackson",
+      "matt"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -932,11 +932,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Divaris, BN Mrs",
-    "clientKey": "divarisbn",
+    "client": "Malby, Francoise",
+    "clientKey": "malbyfrancoise",
     "clientTokens": [
-      "divaris",
-      "bn"
+      "malby",
+      "francoise"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -1076,10 +1076,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "McGuirk, Pamela",
+    "clientKey": "mcguirkpamela",
     "clientTokens": [
-      "fallows"
+      "mcguirk",
+      "pamela"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -1095,10 +1096,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "fallows"
+      "sommer",
+      "am"
     ],
     "investment": "Volkswagen AG",
     "investmentClass": "",
@@ -1114,10 +1116,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "fallows"
+      "sommer",
+      "am"
     ],
     "investment": "Fundsmith Equity Fund",
     "investmentClass": "",
@@ -1133,10 +1136,13 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Von Arnim, Achim & Hildegard",
+    "clientKey": "vonarnimachimhildegard",
     "clientTokens": [
-      "fallows"
+      "von",
+      "arnim",
+      "achim",
+      "hildegard"
     ],
     "investment": "Scottish Mortgage Investment Trust",
     "investmentClass": "",
@@ -1152,10 +1158,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Conder, Andrew",
+    "clientKey": "conderandrew",
     "clientTokens": [
-      "fallows"
+      "conder",
+      "andrew"
     ],
     "investment": "HG Capital Trust",
     "investmentClass": "",
@@ -1171,10 +1178,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Conder, Andrew",
+    "clientKey": "conderandrew",
     "clientTokens": [
-      "fallows"
+      "conder",
+      "andrew"
     ],
     "investment": "Invesco Solar ETF",
     "investmentClass": "",
@@ -1190,10 +1198,12 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Hoar, Bianca Leigh",
+    "clientKey": "hoarbiancaleigh",
     "clientTokens": [
-      "fallows"
+      "hoar",
+      "bianca",
+      "leigh"
     ],
     "investment": "iShares Global Tech ETF",
     "investmentClass": "",
@@ -1209,10 +1219,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "fallows"
+      "ikigai",
+      "trust"
     ],
     "investment": "Jinkosolar Holding Co Ltd",
     "investmentClass": "",
@@ -1228,10 +1239,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "fallows"
+      "sommer",
+      "am"
     ],
     "investment": "Kraneshares CSI China Internet ETF",
     "investmentClass": "",
@@ -1247,10 +1259,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Blackbeard, G Mrs",
+    "clientKey": "blackbeardg",
     "clientTokens": [
-      "fallows"
+      "blackbeard"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -1266,10 +1278,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscm",
+    "client": "Chin, Ashley",
+    "clientKey": "chinashley",
     "clientTokens": [
-      "fallows"
+      "chin",
+      "ashley"
     ],
     "investment": "Prescient China Balanced Fund",
     "investmentClass": "",
@@ -1505,11 +1518,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Gennari, Enrico",
-    "clientKey": "gennarienrico",
+    "client": "Diva Trust",
+    "clientKey": "divatrust",
     "clientTokens": [
-      "gennari",
-      "enrico"
+      "diva",
+      "trust"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -1525,11 +1538,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Gennari, Enrico",
-    "clientKey": "gennarienrico",
+    "client": "Diva Trust",
+    "clientKey": "divatrust",
     "clientTokens": [
-      "gennari",
-      "enrico"
+      "diva",
+      "trust"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -1733,12 +1746,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.65
   },
   {
-    "client": "Hoar, Bianca Leigh",
-    "clientKey": "hoarbiancaleigh",
+    "client": "Divaris, BN Mrs",
+    "clientKey": "divarisbn",
     "clientTokens": [
-      "hoar",
-      "bianca",
-      "leigh"
+      "divaris",
+      "bn"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -1754,12 +1766,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Hoar, Bianca Leigh",
-    "clientKey": "hoarbiancaleigh",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "hoar",
-      "bianca",
-      "leigh"
+      "fallows"
     ],
     "investment": "Blackrock ICS US Dollar Liquidity Fund",
     "investmentClass": "",
@@ -1775,12 +1785,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Hoar, Bianca Leigh",
-    "clientKey": "hoarbiancaleigh",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "hoar",
-      "bianca",
-      "leigh"
+      "fallows"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -2279,11 +2287,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -2299,11 +2306,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Blackrock ICS US Dollar Liquidity Fund",
     "investmentClass": "",
@@ -2319,11 +2325,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Global X Copper Miners ETF",
     "investmentClass": "",
@@ -2339,11 +2344,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Nomura Global High Conviction Fund",
     "investmentClass": "",
@@ -2359,11 +2363,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Rubrics Enhanced Yield UCITS Fund",
     "investmentClass": "",
@@ -2379,11 +2382,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Diversified Trading Fund B1",
     "investmentClass": "",
@@ -2399,11 +2401,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Xhaos Special Opportunities Fund",
     "investmentClass": "",
@@ -2419,11 +2420,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscm",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "fallows"
     ],
     "investment": "Prescient China Balanced Fund",
     "investmentClass": "",
@@ -2439,11 +2439,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
+    "client": "Gennari, Enrico",
+    "clientKey": "gennarienrico",
     "clientTokens": [
-      "ikigai",
-      "trust"
+      "gennari",
+      "enrico"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -2479,10 +2479,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Irving Trust",
-    "clientKey": "irvingtrust",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "irving",
+      "ikigai",
       "trust"
     ],
     "investment": "Credo Trading Account",
@@ -2499,10 +2499,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Irving Trust",
-    "clientKey": "irvingtrust",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "irving",
+      "ikigai",
       "trust"
     ],
     "investment": "Wealthworks Global Flexible Fund",
@@ -2519,10 +2519,10 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Irving Trust",
-    "clientKey": "irvingtrust",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "irving",
+      "ikigai",
       "trust"
     ],
     "investment": "Diversified Trading Fund B1",
@@ -2539,11 +2539,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Jackson, Matt",
-    "clientKey": "jacksonmatt",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "jackson",
-      "matt"
+      "ikigai",
+      "trust"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -2559,11 +2559,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Jackson, Matt",
-    "clientKey": "jacksonmatt",
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
     "clientTokens": [
-      "jackson",
-      "matt"
+      "ikigai",
+      "trust"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -2916,11 +2916,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Malby, Francoise",
-    "clientKey": "malbyfrancoise",
+    "client": "Irving Trust",
+    "clientKey": "irvingtrust",
     "clientTokens": [
-      "malby",
-      "francoise"
+      "irving",
+      "trust"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -2936,11 +2936,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Malby, Francoise",
-    "clientKey": "malbyfrancoise",
+    "client": "Jackson, Matt",
+    "clientKey": "jacksonmatt",
     "clientTokens": [
-      "malby",
-      "francoise"
+      "jackson",
+      "matt"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -2956,12 +2956,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Mandy, Sean Gary",
-    "clientKey": "mandyseangary",
+    "client": "Malby, Francoise",
+    "clientKey": "malbyfrancoise",
     "clientTokens": [
-      "mandy",
-      "sean",
-      "gary"
+      "malby",
+      "francoise"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -3377,11 +3376,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.7000000000000001
   },
   {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
+    "client": "McGuirk, Pamela",
+    "clientKey": "mcguirkpamela",
     "clientTokens": [
-      "maxwell",
-      "dave"
+      "mcguirk",
+      "pamela"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -3397,11 +3396,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "maxwell",
-      "dave"
+      "sommer",
+      "am"
     ],
     "investment": "iShares Global 100 ETF",
     "investmentClass": "",
@@ -3417,11 +3416,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "maxwell",
-      "dave"
+      "sommer",
+      "am"
     ],
     "investment": "iShares Physical Gold ETF",
     "investmentClass": "",
@@ -3437,11 +3436,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "maxwell",
-      "dave"
+      "sommer",
+      "am"
     ],
     "investment": "BBVA Global Markets",
     "investmentClass": "",
@@ -3477,11 +3476,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.0
   },
   {
-    "client": "McGuirk, Pamela",
-    "clientKey": "mcguirkpamela",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "mcguirk",
-      "pamela"
+      "sommer",
+      "am"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -3497,11 +3496,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "McGuirk, Pamela",
-    "clientKey": "mcguirkpamela",
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeram",
     "clientTokens": [
-      "mcguirk",
-      "pamela"
+      "sommer",
+      "am"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -3837,11 +3836,13 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Von Arnim, Achim & Hildegard",
+    "clientKey": "vonarnimachimhildegard",
     "clientTokens": [
-      "sommer",
-      "am"
+      "von",
+      "arnim",
+      "achim",
+      "hildegard"
     ],
     "investment": "Global X Copper Miners ETF",
     "investmentClass": "",
@@ -3857,11 +3858,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Conder, Andrew",
+    "clientKey": "conderandrew",
     "clientTokens": [
-      "sommer",
-      "am"
+      "conder",
+      "andrew"
     ],
     "investment": "Dodge & Cox Worldwide Funds",
     "investmentClass": "",
@@ -3877,11 +3878,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Conder, Andrew",
+    "clientKey": "conderandrew",
     "clientTokens": [
-      "sommer",
-      "am"
+      "conder",
+      "andrew"
     ],
     "investment": "Nomura Global High Conviction Fund",
     "investmentClass": "",
@@ -3897,11 +3898,12 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Hoar, Bianca Leigh",
+    "clientKey": "hoarbiancaleigh",
     "clientTokens": [
-      "sommer",
-      "am"
+      "hoar",
+      "bianca",
+      "leigh"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
@@ -3917,11 +3919,12 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Hoar, Bianca Leigh",
+    "clientKey": "hoarbiancaleigh",
     "clientTokens": [
-      "sommer",
-      "am"
+      "hoar",
+      "bianca",
+      "leigh"
     ],
     "investment": "Rubrics Enhanced Yield UCITS Fund",
     "investmentClass": "",
@@ -3937,11 +3940,12 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Mandy, Sean Gary",
+    "clientKey": "mandyseangary",
     "clientTokens": [
-      "sommer",
-      "am"
+      "mandy",
+      "sean",
+      "gary"
     ],
     "investment": "Diversified Trading Fund B1",
     "investmentClass": "",
@@ -3957,11 +3961,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
     "clientTokens": [
-      "sommer",
-      "am"
+      "maxwell",
+      "dave"
     ],
     "investment": "Xhaos Special Opportunities Fund",
     "investmentClass": "",
@@ -3977,11 +3981,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
     "clientTokens": [
-      "sommer",
-      "am"
+      "maxwell",
+      "dave"
     ],
     "investment": "iShares Bitcoin Trust ETF",
     "investmentClass": "",
@@ -4756,13 +4760,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Von Arnim, Achim & Hildegard",
-    "clientKey": "vonarnimachimhildegard",
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
     "clientTokens": [
-      "von",
-      "arnim",
-      "achim",
-      "hildegard"
+      "maxwell",
+      "dave"
     ],
     "investment": "Credo Trading Account",
     "investmentClass": "",
@@ -4778,13 +4780,11 @@ export const feeMappingRows = [
     "advisoryAnnualPercent": 0.75
   },
   {
-    "client": "Von Arnim, Achim & Hildegard",
-    "clientKey": "vonarnimachimhildegard",
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
     "clientTokens": [
-      "von",
-      "arnim",
-      "achim",
-      "hildegard"
+      "maxwell",
+      "dave"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
