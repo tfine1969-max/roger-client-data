@@ -53,9 +53,12 @@ Deno.serve(async (req) => {
     const keySet = new Set(client_keys);
     const rows = await base44.asServiceRole.entities.PortfolioValuation.list('-upload_month', BATCH_LIMIT);
 
-    if (action === 'merge') {
-      if (client_keys.length < 2 || !primary_key || !String(merged_name || '').trim()) {
-        return Response.json({ error: 'Merge requires at least two clients, a primary client and a merged name' }, { status: 400 });
+    if (action === 'merge' || action === 'rename') {
+      if (action === 'merge' && client_keys.length < 2) {
+        return Response.json({ error: 'Merge requires at least two clients' }, { status: 400 });
+      }
+      if (!primary_key || !String(merged_name || '').trim()) {
+        return Response.json({ error: 'Select a primary client and enter a corrected name' }, { status: 400 });
       }
 
       const primaryRows = rows.filter((row: Record<string, unknown>) => clientKey(row) === primary_key);
@@ -102,8 +105,8 @@ Deno.serve(async (req) => {
         rule_saved: ruleSaved,
         warning: ruleWarning,
         message: ruleSaved
-          ? `Merged ${client_keys.length} clients into ${String(merged_name).trim()} and saved the rule for future uploads`
-          : `Merged ${client_keys.length} clients into ${String(merged_name).trim()}. ${ruleWarning}`,
+          ? `${action === 'merge' ? 'Merged' : 'Renamed'} ${client_keys.length} client${client_keys.length === 1 ? '' : 's'} to ${String(merged_name).trim()} and saved the rule for future uploads`
+          : `${action === 'merge' ? 'Merged' : 'Renamed'} ${client_keys.length} client${client_keys.length === 1 ? '' : 's'} to ${String(merged_name).trim()}. ${ruleWarning}`,
       });
     }
 

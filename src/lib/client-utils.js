@@ -38,6 +38,35 @@ function normaliseLegalEntity(value) {
     .toUpperCase();
 }
 
+export function splitClientName(name) {
+  const formatted = formatClientName(name || '');
+  if (!formatted) return { surname: '', firstNames: '' };
+  if (ENTITY_MARKERS.test(formatted) || ENTITY_PREFIX.test(formatted)) {
+    return { surname: formatted, firstNames: '' };
+  }
+  if (formatted.includes(',')) {
+    const [surname, ...rest] = formatted.split(',');
+    return {
+      surname: surname.trim(),
+      firstNames: rest.join(',').trim(),
+    };
+  }
+  const words = formatted.split(/\s+/).filter(Boolean);
+  if (words.length < 2) return { surname: formatted, firstNames: '' };
+  return {
+    surname: words[words.length - 1],
+    firstNames: words.slice(0, -1).join(' '),
+  };
+}
+
+export function buildStructuredClientName(surname, firstNames = '') {
+  const cleanSurname = String(surname || '').trim();
+  const cleanFirstNames = String(firstNames || '').trim();
+  if (!cleanSurname) return '';
+  if (!cleanFirstNames) return formatClientName(cleanSurname);
+  return `${titleCaseName(cleanSurname)}, ${titleCaseName(cleanFirstNames)}`;
+}
+
 export function formatClientName(name) {
   if (!name) return name;
   let cleaned = name.trim();

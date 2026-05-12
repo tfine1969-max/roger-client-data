@@ -21,7 +21,7 @@ import ClientConsolidation from '@/components/clients/ClientConsolidation';
 import ManualMergeDialog from '@/components/clients/ManualMergeDialog';
 import { cn } from '@/lib/utils';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
-import { hasUnknownValue, clientKey, rowHasUnknown, formatClientName } from '@/lib/client-utils';
+import { buildStructuredClientName, hasUnknownValue, clientKey, rowHasUnknown, formatClientName, splitClientName } from '@/lib/client-utils';
 
 const ALL_VALUE = '__all__';
 const LATEST_VALUE = '__latest__';
@@ -35,7 +35,8 @@ export default function Clients() {
   const [needsCorrectionOnly, setNeedsCorrectionOnly] = useState(false);
   const [zeroBalancesOnly, setZeroBalancesOnly] = useState(false);
   const [editingKey, setEditingKey] = useState(null);
-  const [editingName, setEditingName] = useState('');
+  const [editingSurname, setEditingSurname] = useState('');
+  const [editingFirstNames, setEditingFirstNames] = useState('');
   const [editingClient, setEditingClient] = useState(null);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
@@ -146,8 +147,15 @@ export default function Clients() {
     queryClient.invalidateQueries({ queryKey: ['clients'] });
   };
 
-  const handleSaveName = async (key, newName) => {
-    const trimmedName = newName.trim();
+  const startEditingName = (client) => {
+    const parts = splitClientName(client.portfolio_name || '');
+    setEditingKey(client.client_key);
+    setEditingSurname(parts.surname);
+    setEditingFirstNames(parts.firstNames);
+  };
+
+  const handleSaveName = async (key) => {
+    const trimmedName = buildStructuredClientName(editingSurname, editingFirstNames);
     const currentClient = clients.find(client => client.client_key === key);
     if (!trimmedName || !currentClient || trimmedName === currentClient.portfolio_name) {
       setEditingKey(null);
@@ -156,17 +164,19 @@ export default function Clients() {
 
     setActionStatus('Saving client name...');
     try {
-      const rows = valuations.filter(row => clientKey(row) === key);
-      for (const row of rows) {
-        await base44.entities.PortfolioValuation.update(row.id, {
-          portfolio_name: trimmedName,
-          has_unknown_value: row.has_unknown_value && hasUnknownValue(trimmedName),
-        });
-      }
+      const res = await base44.functions.invoke('bulkClientMaintenance', {
+        action: 'rename',
+        client_keys: [key],
+        primary_key: key,
+        merged_name: trimmedName,
+      });
+      if (!res.data.success) throw new Error(res.data.error || 'Rename failed');
       refreshClientData();
       setEditingKey(null);
-    } finally {
       setActionStatus(null);
+    } catch (err) {
+      setActionStatus(err.message || 'Rename failed');
+      setTimeout(() => setActionStatus(null), 2200);
     }
   };
 
@@ -339,18 +349,31 @@ export default function Clients() {
                       <div className="flex items-center gap-2">
                         {client.hasUnknown && <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />}
                         {editingKey === client.client_key ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="text"
-                              value={editingName}
-                              onChange={(event) => setEditingName(event.target.value)}
-                              className="w-56 rounded border px-2 py-1 text-sm font-medium"
-                              autoFocus
-                            />
+                          <div className="flex flex-wrap items-end gap-1.5">
+                            <label className="space-y-0.5">
+                              <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Surname / Entity</span>
+                              <input
+                                type="text"
+                                value={editingSurname}
+                                onChange={(event) => setEditingSurname(event.target.value)}
+                                className="w-48 rounded border px-2 py-1 text-sm font-medium"
+                                autoFocus
+                              />
+                            </label>
+                            <label className="space-y-0.5">
+                              <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">First names</span>
+                              <input
+                                type="text"
+                                value={editingFirstNames}
+                                onChange={(event) => setEditingFirstNames(event.target.value)}
+                                className="w-48 rounded border px-2 py-1 text-sm font-medium"
+                              />
+                            </label>
                             <button
                               type="button"
-                              onClick={() => handleSaveName(client.client_key, editingName)}
+                              onClick={() => handleSaveName(client.client_key)}
                               className="rounded p-1 hover:bg-muted"
+                              title={`Save as ${buildStructuredClientName(editingSurname, editingFirstNames) || 'client name'}`}
                             >
                               <Check className="h-4 w-4 text-green-600" />
                             </button>
@@ -368,10 +391,7 @@ export default function Clients() {
                             </Link>
                             <button
                               type="button"
-                              onClick={() => {
-                                setEditingKey(client.client_key);
-                                setEditingName(client.portfolio_name || '');
-                              }}
+                              onClick={() => startEditingName(client)}
                               className="rounded p-1 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
                               aria-label="Edit client name"
                             >
