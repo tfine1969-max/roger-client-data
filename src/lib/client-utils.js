@@ -1,3 +1,27 @@
+const TITLES = /^(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?\s+/i;
+
+export function formatClientName(name) {
+  if (!name) return name;
+  // Strip leading title(s)
+  let cleaned = name.trim();
+  let prev;
+  do {
+    prev = cleaned;
+    cleaned = cleaned.replace(TITLES, '').trim();
+  } while (cleaned !== prev);
+
+  if (!cleaned) return name;
+
+  // Split into words
+  const words = cleaned.split(/\s+/);
+  if (words.length < 2) return cleaned;
+
+  // Last word treated as surname
+  const surname = words[words.length - 1];
+  const firstNames = words.slice(0, -1).join(' ');
+  return `${surname}, ${firstNames}`;
+}
+
 export function normalizeClientText(value) {
   return String(value || '')
     .toLowerCase()

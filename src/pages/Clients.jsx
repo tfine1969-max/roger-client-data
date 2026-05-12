@@ -21,7 +21,7 @@ import ClientConsolidation from '@/components/clients/ClientConsolidation';
 import ManualMergeDialog from '@/components/clients/ManualMergeDialog';
 import { cn } from '@/lib/utils';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
-import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
+import { hasUnknownValue, clientKey, rowHasUnknown, formatClientName } from '@/lib/client-utils';
 
 const ALL_VALUE = '__all__';
 const LATEST_VALUE = '__latest__';
@@ -91,7 +91,7 @@ export default function Clients() {
         platforms: [...client.platforms].sort(),
         currencies: [...client.currencies].sort(),
       }))
-      .sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
+      .sort((a, b) => (formatClientName(a.portfolio_name) || '').localeCompare(formatClientName(b.portfolio_name) || ''));
   }, [valuations, latestMonth]);
 
   const correctionCount = useMemo(() => clients.filter(c => c.hasUnknown).length, [clients]);
@@ -364,7 +364,7 @@ export default function Clients() {
                               to={`/clients/${encodeURIComponent(client.client_key)}`}
                               className="font-medium text-foreground transition-colors hover:text-primary"
                             >
-                              {client.portfolio_name || '-'}
+                              {formatClientName(client.portfolio_name) || '-'}
                             </Link>
                             <button
                               type="button"
