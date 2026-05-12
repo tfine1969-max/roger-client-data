@@ -47,7 +47,8 @@ export default function NorthstarUpload({ onImported }) {
 
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const response = await base44.functions.invoke('importNorthstarPdf', {
+        const response = await base44.functions.invoke('importCredoPdf', {
+          provider: 'Northstar',
           file_url,
           upload_month: month,
           exchange_rate: exchangeRate,
