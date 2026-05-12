@@ -12,6 +12,31 @@ import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMe
  *   replace_existing - boolean
  */
 
+function cleanText(value: unknown) {
+  return String(value || '').trim();
+}
+
+function normalizeJuliusRelationshipNo(value: unknown) {
+  const text = cleanText(value);
+  if (!text || /^pri/i.test(text)) return '';
+
+  const dotted = text.match(/\b(\d{4})\.(\d{4})\b/);
+  if (dotted) return `${dotted[1]}.${dotted[2]}`;
+
+  const compact = text.replace(/\D/g, '');
+  if (compact.length >= 8) return `${compact.slice(0, 4)}.${compact.slice(4, 8)}`;
+  return '';
+}
+
+function relationshipNoFromFileUrl(fileUrl: string) {
+  try {
+    const filename = decodeURIComponent(fileUrl.split('/').pop() || '');
+    return normalizeJuliusRelationshipNo(filename);
+  } catch (_error) {
+    return normalizeJuliusRelationshipNo(fileUrl);
+  }
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
@@ -116,7 +141,11 @@ Return a JSON object with this exact schema:
     return Response.json({ error: 'Could not extract holdings from PDF', raw: extracted }, { status: 400 });
   }
 
-  const accountCode = (extracted.relationship_no || extracted.portfolio_no || 'JB_UNKNOWN').replace(/\s+/g, '_');
+  const accountCode =
+    relationshipNoFromFileUrl(file_url) ||
+    normalizeJuliusRelationshipNo(extracted.relationship_no) ||
+    normalizeJuliusRelationshipNo(extracted.portfolio_no) ||
+    'JB_UNKNOWN';
   const portfolioName = extracted.client_name || 'Unknown';
   const platform = 'Julius Baer';
   const mergeRules = await loadClientMergeRules(base44);
@@ -182,6 +211,7 @@ Return a JSON object with this exact schema:
     upload_id: upload.id,
     client_name: portfolioName,
     portfolio_no: extracted.portfolio_no,
+    relationship_no: accountCode,
     account_code: accountCode,
     exchange_rate_used: usdToZar,
     holdings_extracted: extracted.holdings.map(h => ({
