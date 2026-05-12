@@ -1,45 +1,47 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
-import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Search, ChevronRight, Pencil, Check, X, Merge } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { AlertTriangle, Check, ChevronRight, Merge, Pencil, Search, Trash2, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import MonthBadge from '@/components/shared/MonthBadge';
 import EditAccountModal from '@/components/clients/EditAccountModal';
 import ClientConsolidation from '@/components/clients/ClientConsolidation';
 import ManualMergeDialog from '@/components/clients/ManualMergeDialog';
 import { cn } from '@/lib/utils';
+import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
+
+const ALL_VALUE = '__all__';
+const LATEST_VALUE = '__latest__';
 
 export default function Clients() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
-  const [filterPlatform, setFilterPlatform] = useState('');
-  const [filterCurrency, setFilterCurrency] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
+  const [filterPlatform, setFilterPlatform] = useState(ALL_VALUE);
+  const [filterCurrency, setFilterCurrency] = useState(ALL_VALUE);
+  const [filterMonth, setFilterMonth] = useState(LATEST_VALUE);
   const [needsCorrectionOnly, setNeedsCorrectionOnly] = useState(false);
+  const [zeroBalancesOnly, setZeroBalancesOnly] = useState(false);
   const [editingKey, setEditingKey] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [editingClient, setEditingClient] = useState(null);
-  const [selectMode, setSelectMode] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
-
-  const toggleSelect = (key) => {
-    setSelectedKeys(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setSelectedKeys(new Set());
-  };
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionStatus, setActionStatus] = useState(null);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -47,21 +49,22 @@ export default function Clients() {
   });
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
-  const latestMonth = filterMonth || months[0] || '';
+  const latestMonth = filterMonth === LATEST_VALUE ? months[0] || '' : filterMonth;
   const platforms = useMemo(() => [...new Set(valuations.map(v => v.platform).filter(Boolean))].sort(), [valuations]);
   const currencies = useMemo(() => [...new Set(valuations.map(v => v.currency).filter(Boolean))].sort(), [valuations]);
 
   const clients = useMemo(() => {
     const current = valuations.filter(v => v.upload_month === latestMonth);
     const map = {};
-    current.forEach(r => {
-      const key = clientKey(r);
+
+    current.forEach(row => {
+      const key = clientKey(row);
       if (!map[key]) {
         map[key] = {
           client_key: key,
           account_codes: new Set(),
-          identity_no: r.identity_no,
-          portfolio_name: r.portfolio_name,
+          identity_no: row.identity_no,
+          portfolio_name: row.portfolio_name,
           platforms: new Set(),
           currencies: new Set(),
           investments: 0,
@@ -69,219 +72,372 @@ export default function Clients() {
           hasUnknown: false,
         };
       }
-      const c = map[key];
-      if (r.account_code) c.account_codes.add(r.account_code);
-      if (!c.identity_no && r.identity_no) c.identity_no = r.identity_no;
-      if (!c.portfolio_name && r.portfolio_name) c.portfolio_name = r.portfolio_name;
-      c.platforms.add(r.platform);
-      c.currencies.add(r.currency);
-      c.investments += 1;
-      c.totalValue += zarVal(r);
-      c.hasUnknown = c.hasUnknown || rowHasUnknown(r);
+
+      const client = map[key];
+      if (row.account_code) client.account_codes.add(row.account_code);
+      if (!client.identity_no && row.identity_no) client.identity_no = row.identity_no;
+      if (!client.portfolio_name && row.portfolio_name) client.portfolio_name = row.portfolio_name;
+      if (row.platform) client.platforms.add(row.platform);
+      if (row.currency) client.currencies.add(row.currency);
+      client.investments += 1;
+      client.totalValue += zarVal(row);
+      client.hasUnknown = client.hasUnknown || rowHasUnknown(row);
     });
 
-    return Object.values(map).map(c => ({
-      ...c,
-      account_codes: [...c.account_codes].sort(),
-      platforms: [...c.platforms],
-      currencies: [...c.currencies],
-    })).sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
+    return Object.values(map)
+      .map(client => ({
+        ...client,
+        account_codes: [...client.account_codes].sort(),
+        platforms: [...client.platforms].sort(),
+        currencies: [...client.currencies].sort(),
+      }))
+      .sort((a, b) => (a.portfolio_name || '').localeCompare(b.portfolio_name || ''));
   }, [valuations, latestMonth]);
 
   const correctionCount = useMemo(() => clients.filter(c => c.hasUnknown).length, [clients]);
+  const zeroBalanceClients = useMemo(() => clients.filter(c => Math.abs(c.totalValue) < 0.01), [clients]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return clients.filter(c => {
+    const q = search.toLowerCase().trim();
+    return clients.filter(client => {
       const matchSearch = !q ||
-        c.portfolio_name?.toLowerCase().includes(q) ||
-        c.account_codes.some(code => code?.toLowerCase().includes(q)) ||
-        c.identity_no?.toLowerCase().includes(q);
-      const matchPlatform = !filterPlatform || c.platforms.includes(filterPlatform);
-      const matchCurrency = !filterCurrency || c.currencies.includes(filterCurrency);
-      const matchCorrection = !needsCorrectionOnly || c.hasUnknown;
-      return matchSearch && matchPlatform && matchCurrency && matchCorrection;
+        client.portfolio_name?.toLowerCase().includes(q) ||
+        client.account_codes.some(code => code?.toLowerCase().includes(q)) ||
+        client.identity_no?.toLowerCase().includes(q);
+      const matchPlatform = filterPlatform === ALL_VALUE || client.platforms.includes(filterPlatform);
+      const matchCurrency = filterCurrency === ALL_VALUE || client.currencies.includes(filterCurrency);
+      const matchCorrection = !needsCorrectionOnly || client.hasUnknown;
+      const matchZero = !zeroBalancesOnly || Math.abs(client.totalValue) < 0.01;
+      return matchSearch && matchPlatform && matchCurrency && matchCorrection && matchZero;
     });
-  }, [clients, search, filterPlatform, filterCurrency, needsCorrectionOnly]);
+  }, [clients, search, filterPlatform, filterCurrency, needsCorrectionOnly, zeroBalancesOnly]);
 
-  const selectedClients = filtered.filter(c => selectedKeys.has(c.client_key));
+  const selectedClients = useMemo(
+    () => clients.filter(client => selectedKeys.has(client.client_key)),
+    [clients, selectedKeys]
+  );
+  const selectedZeroClients = selectedClients.filter(client => Math.abs(client.totalValue) < 0.01);
+  const visibleKeys = filtered.map(client => client.client_key);
+  const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every(key => selectedKeys.has(key));
+  const deleteTargetClients = selectedZeroClients.length > 0 ? selectedZeroClients : filtered.filter(client => Math.abs(client.totalValue) < 0.01);
+
+  const toggleSelect = (key) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleSelectVisible = () => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (allVisibleSelected) visibleKeys.forEach(key => next.delete(key));
+      else visibleKeys.forEach(key => next.add(key));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedKeys(new Set());
+
+  const refreshClientData = () => {
+    queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+    queryClient.invalidateQueries({ queryKey: ['clients'] });
+  };
+
+  const handleSaveName = async (key, newName) => {
+    const trimmedName = newName.trim();
+    const currentClient = clients.find(client => client.client_key === key);
+    if (!trimmedName || !currentClient || trimmedName === currentClient.portfolio_name) {
+      setEditingKey(null);
+      return;
+    }
+
+    setActionStatus('Saving client name...');
+    try {
+      const rows = valuations.filter(row => clientKey(row) === key);
+      for (const row of rows) {
+        await base44.entities.PortfolioValuation.update(row.id, {
+          portfolio_name: trimmedName,
+          has_unknown_value: row.has_unknown_value && hasUnknownValue(trimmedName),
+        });
+      }
+      refreshClientData();
+      setEditingKey(null);
+    } finally {
+      setActionStatus(null);
+    }
+  };
+
+  const handleDeleteZeroBalances = async () => {
+    if (!latestMonth || deleteTargetClients.length === 0) return;
+    setActionStatus('Deleting zero-balance clients...');
+    try {
+      const res = await base44.functions.invoke('bulkClientMaintenance', {
+        action: 'delete_zero_balance',
+        upload_month: latestMonth,
+        client_keys: deleteTargetClients.map(client => client.client_key),
+      });
+      if (!res.data.success) throw new Error(res.data.error || 'Delete failed');
+      setSelectedKeys(prev => {
+        const next = new Set(prev);
+        deleteTargetClients.forEach(client => next.delete(client.client_key));
+        return next;
+      });
+      refreshClientData();
+      setDeleteDialogOpen(false);
+    } catch (err) {
+      setActionStatus(err.message || 'Delete failed');
+    } finally {
+      setTimeout(() => setActionStatus(null), 1800);
+    }
+  };
+
+  const tableColSpan = 8;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Clients</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
+          </p>
         </div>
       </div>
 
       <ClientConsolidation />
 
-      {selectMode && (
-        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">
-          <span className="text-sm font-medium text-primary">{selectedKeys.size} selected</span>
-          <Button
-            size="sm"
-            disabled={selectedKeys.size < 2}
-            onClick={() => setMergeDialogOpen(true)}
-            className="gap-1.5"
-          >
-            <Merge className="w-3.5 h-3.5" />
-            Merge Selected
-          </Button>
-          <Button size="sm" variant="ghost" onClick={exitSelectMode}>Cancel</Button>
+      <div className="flex flex-wrap gap-3 rounded-lg border bg-white p-4">
+        <div className="relative min-w-56 flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, account code or ID..."
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            className="h-9 pl-9"
+          />
         </div>
-      )}
 
-      <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
-        <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search by name, account code or ID..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
-        </div>
         <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="w-40 h-9">
-            <SelectValue placeholder="All months" />
+          <SelectTrigger className="h-9 w-40">
+            <SelectValue placeholder="Latest month" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>Latest month</SelectItem>
-            {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
+            <SelectItem value={LATEST_VALUE}>Latest month</SelectItem>
+            {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
           </SelectContent>
         </Select>
+
         <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-          <SelectTrigger className="w-40 h-9">
+          <SelectTrigger className="h-9 w-40">
             <SelectValue placeholder="All platforms" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>All platforms</SelectItem>
-            {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            <SelectItem value={ALL_VALUE}>All platforms</SelectItem>
+            {platforms.map(platform => <SelectItem key={platform} value={platform}>{platform}</SelectItem>)}
           </SelectContent>
         </Select>
+
         <Select value={filterCurrency} onValueChange={setFilterCurrency}>
-          <SelectTrigger className="w-32 h-9">
+          <SelectTrigger className="h-9 w-36">
             <SelectValue placeholder="All currencies" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>All currencies</SelectItem>
-            {currencies.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            <SelectItem value={ALL_VALUE}>All currencies</SelectItem>
+            {currencies.map(currency => <SelectItem key={currency} value={currency}>{currency}</SelectItem>)}
           </SelectContent>
         </Select>
+
         <Button
           type="button"
           variant={needsCorrectionOnly ? 'default' : 'outline'}
           className="h-9 gap-2"
           onClick={() => setNeedsCorrectionOnly(value => !value)}
         >
-          <AlertTriangle className="w-4 h-4" />
+          <AlertTriangle className="h-4 w-4" />
           Needs correction
-          {correctionCount > 0 && <span className={cn("rounded px-1.5 text-xs", needsCorrectionOnly ? "bg-white/20" : "bg-amber-50 text-amber-700")}>{correctionCount}</span>}
+          {correctionCount > 0 && (
+            <span className={cn('rounded px-1.5 text-xs', needsCorrectionOnly ? 'bg-white/20' : 'bg-amber-50 text-amber-700')}>
+              {correctionCount}
+            </span>
+          )}
         </Button>
-        {!selectMode && (
-          <Button type="button" variant="outline" className="h-9 gap-2" onClick={() => setSelectMode(true)}>
-            <Merge className="w-4 h-4" />
-            Select to Merge
-          </Button>
-        )}
+
+        <Button
+          type="button"
+          variant={zeroBalancesOnly ? 'default' : 'outline'}
+          className="h-9 gap-2"
+          onClick={() => setZeroBalancesOnly(value => !value)}
+        >
+          <Trash2 className="h-4 w-4" />
+          Zero balances
+          {zeroBalanceClients.length > 0 && (
+            <span className={cn('rounded px-1.5 text-xs', zeroBalancesOnly ? 'bg-white/20' : 'bg-red-50 text-red-700')}>
+              {zeroBalanceClients.length}
+            </span>
+          )}
+        </Button>
       </div>
 
-      <div className="bg-white border rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-lg border bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                {selectMode && <th className="px-4 py-3 w-10"></th>}
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Accounts</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">ID Number</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value</th>
+                <th className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectVisible}
+                    className="h-4 w-4 cursor-pointer accent-primary"
+                    aria-label="Select visible clients"
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Accounts</th>
+                <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground md:table-cell">ID Number</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investments</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Value</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {isLoading && (
-                <tr><td colSpan={7} className="text-center py-12 text-muted-foreground text-sm">Loading...</td></tr>
+                <tr><td colSpan={tableColSpan} className="py-12 text-center text-sm text-muted-foreground">Loading...</td></tr>
               )}
               {!isLoading && filtered.length === 0 && (
-                <tr><td colSpan={7} className="text-center py-12 text-muted-foreground text-sm">No clients found.</td></tr>
+                <tr><td colSpan={tableColSpan} className="py-12 text-center text-sm text-muted-foreground">No clients found.</td></tr>
               )}
-              {filtered.map(c => (
-                <tr
-                  key={c.client_key}
-                  className={cn("hover:bg-muted/30 transition-colors", selectMode && "cursor-pointer", selectMode && selectedKeys.has(c.client_key) && "bg-primary/5")}
-                  onClick={selectMode ? () => toggleSelect(c.client_key) : undefined}
-                >
-                  {selectMode && (
-                    <td className="px-4 py-3" onClick={e => { e.stopPropagation(); toggleSelect(c.client_key); }}>
+              {filtered.map(client => {
+                const selected = selectedKeys.has(client.client_key);
+                return (
+                  <tr
+                    key={client.client_key}
+                    className={cn('group transition-colors hover:bg-muted/30', selected && 'bg-primary/5')}
+                  >
+                    <td className="px-4 py-3">
                       <input
                         type="checkbox"
-                        checked={selectedKeys.has(c.client_key)}
-                        onChange={() => toggleSelect(c.client_key)}
-                        className="w-4 h-4 accent-primary cursor-pointer"
+                        checked={selected}
+                        onChange={() => toggleSelect(client.client_key)}
+                        className="h-4 w-4 cursor-pointer accent-primary"
+                        aria-label={`Select ${client.portfolio_name || 'client'}`}
                       />
                     </td>
-                  )}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {c.hasUnknown && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
-                      {editingKey === c.client_key ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="text"
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            className="px-2 py-1 border rounded text-sm font-medium w-48"
-                            autoFocus
-                          />
-                          <button onClick={() => handleSaveName(c.client_key, editingName)} className="p-1 hover:bg-muted rounded">
-                            <Check className="w-4 h-4 text-green-600" />
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {client.hasUnknown && <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />}
+                        {editingKey === client.client_key ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={editingName}
+                              onChange={(event) => setEditingName(event.target.value)}
+                              className="w-56 rounded border px-2 py-1 text-sm font-medium"
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSaveName(client.client_key, editingName)}
+                              className="rounded p-1 hover:bg-muted"
+                            >
+                              <Check className="h-4 w-4 text-green-600" />
+                            </button>
+                            <button type="button" onClick={() => setEditingKey(null)} className="rounded p-1 hover:bg-muted">
+                              <X className="h-4 w-4 text-red-600" />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <Link
+                              to={`/clients/${encodeURIComponent(client.client_key)}`}
+                              className="font-medium text-foreground transition-colors hover:text-primary"
+                            >
+                              {client.portfolio_name || '-'}
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingKey(client.client_key);
+                                setEditingName(client.portfolio_name || '');
+                              }}
+                              className="rounded p-1 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                              aria-label="Edit client name"
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                            {client.hasUnknown && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800">Needs correction</span>}
+                            {Math.abs(client.totalValue) < 0.01 && <span className="rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-700">Zero balance</span>}
+                          </>
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1 font-mono text-xs">
+                        {client.account_codes.map(code => (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => setEditingClient(client)}
+                            className={cn(
+                              'cursor-pointer text-muted-foreground hover:underline',
+                              hasUnknownValue(code) && 'rounded bg-amber-50 px-1 py-0.5 text-amber-800 ring-1 ring-amber-200'
+                            )}
+                          >
+                            {code}
                           </button>
-                          <button onClick={() => setEditingKey(null)} className="p-1 hover:bg-muted rounded">
-                            <X className="w-4 h-4 text-red-600" />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          {selectMode ? (
-                            <span className="font-medium text-foreground">{c.portfolio_name || '-'}</span>
-                          ) : (
-                            <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
-                          )}
-                          <button onClick={() => { setEditingKey(c.client_key); setEditingName(c.portfolio_name || ''); }} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                          </button>
-                          {c.hasUnknown && <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-800">Needs correction</span>}
-                        </>
-                      )}
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-1 text-xs font-mono">
-                       {c.account_codes.map(code => (
-                         <button
-                           key={code}
-                           onClick={() => setEditingClient(c)}
-                           className={cn("text-muted-foreground cursor-pointer hover:underline", hasUnknownValue(code) && "rounded bg-amber-50 px-1 py-0.5 text-amber-800 ring-1 ring-amber-200")}
-                         >
-                           {code}
-                         </button>
-                       ))}
-                     </div>
-                  </td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{c.account_codes.length}</td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{c.identity_no || '-'}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{c.platforms.length}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold whitespace-nowrap">R {fmtNum(c.totalValue)}</td>
-                  <td className="px-4 py-3">
-                    {!selectMode && (
-                      <Link to={`/clients/${encodeURIComponent(c.client_key)}`}>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{client.account_codes.length}</td>
+                    <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">{client.identity_no || '-'}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{client.platforms.length}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{client.investments}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold">R {fmtNum(client.totalValue)}</td>
+                    <td className="px-4 py-3">
+                      <Link to={`/clients/${encodeURIComponent(client.client_key)}`}>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-primary" />
                       </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white/95 px-6 py-3 shadow-lg backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
+          <div className="text-sm">
+            <span className="font-semibold">{selectedClients.length}</span> selected
+            {selectedZeroClients.length > 0 && <span className="ml-2 text-muted-foreground">· {selectedZeroClients.length} zero-balance</span>}
+            {actionStatus && <span className="ml-3 text-muted-foreground">{actionStatus}</span>}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={toggleSelectVisible}>
+              {allVisibleSelected ? 'Unselect visible' : 'Select visible'}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={clearSelection} disabled={selectedClients.length === 0}>
+              Clear
+            </Button>
+            <Button type="button" size="sm" className="gap-1.5" onClick={() => setMergeDialogOpen(true)} disabled={selectedClients.length < 2}>
+              <Merge className="h-3.5 w-3.5" />
+              Merge selected
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteTargetClients.length === 0}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete zero balances
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -289,8 +445,26 @@ export default function Clients() {
         open={mergeDialogOpen}
         onOpenChange={setMergeDialogOpen}
         selectedClients={selectedClients}
-        onMerged={exitSelectMode}
+        onMerged={clearSelection}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete zero-balance clients?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will delete valuation rows for {deleteTargetClients.length} zero-balance client{deleteTargetClients.length === 1 ? '' : 's'} in {formatMonth(latestMonth)}.
+              Clients with non-zero balances will not be deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteZeroBalances} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete zero balances
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {editingClient && (
         <EditAccountModal
@@ -299,29 +473,10 @@ export default function Clients() {
           onClose={() => setEditingClient(null)}
           onSaved={() => {
             setEditingClient(null);
-            queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+            refreshClientData();
           }}
         />
       )}
-      </div>
-      );
-
-      const handleSaveName = async (key, newName) => {
-      if (!newName.trim() || newName === filtered.find(c => c.client_key === key)?.portfolio_name) {
-      setEditingKey(null);
-      return;
-      }
-
-      const rows = valuations.filter(v => {
-      const k = v.account_code || clientKey(v);
-      return k === key || v.portfolio_name === filtered.find(c => c.client_key === key)?.portfolio_name;
-      });
-
-      for (const row of rows) {
-      await base44.asServiceRole.entities.PortfolioValuation.update(row.id, { portfolio_name: newName });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
-      setEditingKey(null);
-      };
-      }
+    </div>
+  );
+}
