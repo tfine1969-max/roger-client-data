@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, ChevronRight, Merge, Pencil, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Check, CheckSquare, ChevronRight, Merge, Pencil, Search, Square, Trash2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -286,7 +286,7 @@ export default function Clients() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="w-10 px-4 py-3">
+                <th className="w-36 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={allVisibleSelected}
@@ -319,13 +319,19 @@ export default function Clients() {
                     className={cn('group transition-colors hover:bg-muted/30', selected && 'bg-primary/5')}
                   >
                     <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() => toggleSelect(client.client_key)}
-                        className="h-4 w-4 cursor-pointer accent-primary"
-                        aria-label={`Select ${client.portfolio_name || 'client'}`}
-                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleSelect(client.client_key)}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors',
+                          selected
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-primary'
+                        )}
+                      >
+                        {selected ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+                        {selected ? 'Selected' : 'Select'}
+                      </button>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
