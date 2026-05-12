@@ -10,9 +10,11 @@ import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
 import GreyphonUpload from '@/components/upload/GreyphonUpload';
 import CredoUpload from '@/components/upload/CredoUpload';
+import NorthstarUpload from '@/components/upload/NorthstarUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
-const EMPTY_RATES = { USD: '', EUR: '', GBP: '' };
+const DEFAULT_USD_ZAR_RATE = '16.668';
+const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
 const PROVIDERS = [
   { id: 'monthly', label: 'Monthly Workbook' },
@@ -112,7 +114,7 @@ function MonthlyWorkbookUpload({ onImported }) {
                 <Label className="text-xs font-semibold">{currency}</Label>
                 <div className="flex items-center gap-2">
                   <Input
-                    type="number" step="0.0001" min="0" placeholder="e.g. 18.50"
+                    type="number" step="0.0001" min="0" placeholder={currency === 'USD' ? DEFAULT_USD_ZAR_RATE : 'e.g. 18.50'}
                     value={exchangeRates[currency]}
                     onChange={e => setExchangeRates(rates => ({ ...rates, [currency]: e.target.value }))}
                     className="h-9"
@@ -208,7 +210,7 @@ export default function Upload() {
         {activeTab === 'prime' && <PrimeUpload onImported={handleImported} />}
         {activeTab === 'credo' && <CredoUpload onImported={handleImported} />}
         {activeTab === 'gryphon' && <GreyphonUpload onImported={handleImported} />}
-        {activeTab === 'northstar' && <ComingSoon provider="Northstar" providerId="northstar" />}
+        {activeTab === 'northstar' && <NorthstarUpload onImported={handleImported} />}
         {activeTab === 'peresec' && <ComingSoon provider="Peresec" providerId="peresec" />}
         {activeTab === 'prescient' && <ComingSoon provider="Prescient" providerId="prescient" />}
       </div>

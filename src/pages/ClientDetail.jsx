@@ -6,7 +6,7 @@ import { AlertTriangle, ArrowLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
+import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
 import { clientDisplayName, clientKey, rowHasUnknown } from '@/lib/client-utils';
 import { feeOptionValues, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
@@ -44,6 +44,12 @@ export default function ClientDetail() {
   const accountCodes = useMemo(() => [...new Set(clientRows.map(r => r.account_code).filter(Boolean))].sort(), [clientRows]);
   const identityNo = clientRows.find(r => r.identity_no)?.identity_no;
   const totalZar = useMemo(() => currentRows.reduce((s, r) => s + zarVal(r), 0), [currentRows]);
+  const totalUsd = useMemo(
+    () => currentRows
+      .filter(r => String(r.currency || '').toUpperCase() === 'USD')
+      .reduce((s, r) => s + origVal(r), 0),
+    [currentRows]
+  );
   const platforms = useMemo(() => [...new Set(currentRows.map(r => r.platform).filter(Boolean))].sort(), [currentRows]);
   const hasUnknown = useMemo(() => currentRows.some(rowHasUnknown), [currentRows]);
 
@@ -112,6 +118,7 @@ export default function ClientDetail() {
               <span>Accounts: <strong className="text-foreground font-mono">{accountCodes.join(', ')}</strong></span>
               {identityNo && <span>ID: <strong className="text-foreground">{identityNo}</strong></span>}
               <span>Platforms: <strong className="text-foreground">{platforms.length}</strong></span>
+              {totalUsd > 0 && <span>USD Value: <strong className="text-foreground font-mono">$ {fmtNum(totalUsd)}</strong></span>}
               <span>Total: <strong className="text-foreground font-mono">R {fmtNum(totalZar)}</strong></span>
             </div>
           </div>

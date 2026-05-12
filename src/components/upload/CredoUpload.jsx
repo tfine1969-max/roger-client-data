@@ -9,12 +9,13 @@ import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'credo_last_upload';
+const DEFAULT_USD_ZAR_RATE = '16.668';
 
 export default function CredoUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [files, setFiles] = useState([]);
   const [uploadMonth, setUploadMonth] = useState('');
-  const [rate, setRate] = useState('');
+  const [rate, setRate] = useState(DEFAULT_USD_ZAR_RATE);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [lastUpload, setLastUpload] = useState(null);
@@ -78,7 +79,7 @@ export default function CredoUpload({ onImported }) {
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       if (onImported) onImported();
       setFiles([]);
-      setRate('');
+      setRate(DEFAULT_USD_ZAR_RATE);
       setUploadMonth('');
       document.getElementById('credo-file-input').value = '';
       document.getElementById('credo-folder-input').value = '';
@@ -118,7 +119,7 @@ export default function CredoUpload({ onImported }) {
                 type="number"
                 step="0.0001"
                 min="0"
-                placeholder="e.g. 18.50"
+                placeholder={DEFAULT_USD_ZAR_RATE}
                 value={rate}
                 onChange={e => setRate(e.target.value)}
                 required
