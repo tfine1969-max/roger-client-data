@@ -137,7 +137,6 @@ export default function CredoUpload({ onImported }) {
             multiple
             onChange={handleFileChange}
             className="hidden"
-            required
           />
           <Input
             id="credo-folder-input"
@@ -146,7 +145,6 @@ export default function CredoUpload({ onImported }) {
             webkitdirectory=""
             onChange={handleFileChange}
             className="hidden"
-            required
           />
           <div className="flex gap-2">
             <Button
