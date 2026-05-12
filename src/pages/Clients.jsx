@@ -6,11 +6,12 @@ import { hasUnknownValue, clientKey, rowHasUnknown } from '@/lib/client-utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Search, ChevronRight, Pencil, Check, X } from 'lucide-react';
+import { AlertTriangle, Search, ChevronRight, Pencil, Check, X, Merge } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 import EditAccountModal from '@/components/clients/EditAccountModal';
 import ClientConsolidation from '@/components/clients/ClientConsolidation';
+import ManualMergeDialog from '@/components/clients/ManualMergeDialog';
 import { cn } from '@/lib/utils';
 
 export default function Clients() {
@@ -23,6 +24,22 @@ export default function Clients() {
   const [editingKey, setEditingKey] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [editingClient, setEditingClient] = useState(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState(new Set());
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+
+  const toggleSelect = (key) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedKeys(new Set());
+  };
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -87,6 +104,8 @@ export default function Clients() {
     });
   }, [clients, search, filterPlatform, filterCurrency, needsCorrectionOnly]);
 
+  const selectedClients = filtered.filter(c => selectedKeys.has(c.client_key));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -97,6 +116,22 @@ export default function Clients() {
       </div>
 
       <ClientConsolidation />
+
+      {selectMode && (
+        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-4 py-3">
+          <span className="text-sm font-medium text-primary">{selectedKeys.size} selected</span>
+          <Button
+            size="sm"
+            disabled={selectedKeys.size < 2}
+            onClick={() => setMergeDialogOpen(true)}
+            className="gap-1.5"
+          >
+            <Merge className="w-3.5 h-3.5" />
+            Merge Selected
+          </Button>
+          <Button size="sm" variant="ghost" onClick={exitSelectMode}>Cancel</Button>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
         <div className="relative flex-1 min-w-48">
@@ -140,6 +175,12 @@ export default function Clients() {
           Needs correction
           {correctionCount > 0 && <span className={cn("rounded px-1.5 text-xs", needsCorrectionOnly ? "bg-white/20" : "bg-amber-50 text-amber-700")}>{correctionCount}</span>}
         </Button>
+        {!selectMode && (
+          <Button type="button" variant="outline" className="h-9 gap-2" onClick={() => setSelectMode(true)}>
+            <Merge className="w-4 h-4" />
+            Select to Merge
+          </Button>
+        )}
       </div>
 
       <div className="bg-white border rounded-lg overflow-hidden">
@@ -147,6 +188,7 @@ export default function Clients() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
+                {selectMode && <th className="px-4 py-3 w-10"></th>}
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
                 <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Accounts</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">ID Number</th>
@@ -164,7 +206,21 @@ export default function Clients() {
                 <tr><td colSpan={7} className="text-center py-12 text-muted-foreground text-sm">No clients found.</td></tr>
               )}
               {filtered.map(c => (
-                <tr key={c.client_key} className="hover:bg-muted/30 transition-colors">
+                <tr
+                  key={c.client_key}
+                  className={cn("hover:bg-muted/30 transition-colors", selectMode && "cursor-pointer", selectMode && selectedKeys.has(c.client_key) && "bg-primary/5")}
+                  onClick={selectMode ? () => toggleSelect(c.client_key) : undefined}
+                >
+                  {selectMode && (
+                    <td className="px-4 py-3" onClick={e => { e.stopPropagation(); toggleSelect(c.client_key); }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedKeys.has(c.client_key)}
+                        onChange={() => toggleSelect(c.client_key)}
+                        className="w-4 h-4 accent-primary cursor-pointer"
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {c.hasUnknown && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />}
@@ -186,7 +242,11 @@ export default function Clients() {
                         </div>
                       ) : (
                         <>
-                          <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
+                          {selectMode ? (
+                            <span className="font-medium text-foreground">{c.portfolio_name || '-'}</span>
+                          ) : (
+                            <Link to={`/clients/${encodeURIComponent(c.client_key)}`} className="font-medium text-foreground hover:text-primary transition-colors">{c.portfolio_name || '-'}</Link>
+                          )}
                           <button onClick={() => { setEditingKey(c.client_key); setEditingName(c.portfolio_name || ''); }} className="p-1 hover:bg-muted rounded opacity-0 group-hover:opacity-100 transition-opacity">
                             <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                           </button>
@@ -212,9 +272,11 @@ export default function Clients() {
                   <td className="px-4 py-3 text-center text-muted-foreground">{c.investments}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold whitespace-nowrap">R {fmtNum(c.totalValue)}</td>
                   <td className="px-4 py-3">
-                    <Link to={`/clients/${encodeURIComponent(c.client_key)}`}>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                    </Link>
+                    {!selectMode && (
+                      <Link to={`/clients/${encodeURIComponent(c.client_key)}`}>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -222,6 +284,13 @@ export default function Clients() {
           </table>
         </div>
       </div>
+
+      <ManualMergeDialog
+        open={mergeDialogOpen}
+        onOpenChange={setMergeDialogOpen}
+        selectedClients={selectedClients}
+        onMerged={exitSelectMode}
+      />
 
       {editingClient && (
         <EditAccountModal
