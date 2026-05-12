@@ -1,0 +1,38 @@
+{
+  "name": "ClientMergeRule",
+  "type": "object",
+  "properties": {
+    "merged_name": {
+      "type": "string",
+      "description": "Corrected client name to apply"
+    },
+    "primary_key": {
+      "type": "string",
+      "description": "Primary client key selected during merge"
+    },
+    "client_keys": {
+      "type": "string",
+      "description": "Pipe-separated client keys included in the merge"
+    },
+    "account_codes": {
+      "type": "string",
+      "description": "Pipe-separated account codes that should be normalised to the merged name"
+    },
+    "identity_numbers": {
+      "type": "string",
+      "description": "Pipe-separated identity numbers that should be normalised to the merged name"
+    },
+    "source_names": {
+      "type": "string",
+      "description": "Pipe-separated source names that should be normalised to the merged name"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User who created the merge rule"
+    }
+  },
+  "required": [
+    "merged_name",
+    "client_keys"
+  ]
+}

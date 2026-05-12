@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
 /**
  * Parses a Julius Baer PDF valuation report (text extracted via LLM)
@@ -118,6 +119,7 @@ Return a JSON object with this exact schema:
   const accountCode = (extracted.relationship_no || extracted.portfolio_no || 'JB_UNKNOWN').replace(/\s+/g, '_');
   const portfolioName = extracted.client_name || 'Unknown';
   const platform = 'Julius Baer';
+  const mergeRules = await loadClientMergeRules(base44);
 
   // Delete existing records for this specific client+month if replacing
   if (replace_existing) {
@@ -132,7 +134,7 @@ Return a JSON object with this exact schema:
     const currency = (h.currency || extracted.currency || 'USD').toUpperCase();
     const zarValue = currency === 'ZAR' ? origValue : origValue * usdToZar;
 
-    return {
+    return applyClientMergeRules({
       upload_month,
       account_code: accountCode,
       portfolio_name: portfolioName,
@@ -153,7 +155,7 @@ Return a JSON object with this exact schema:
       has_missing_market_value: origValue === 0,
       is_duplicate: false,
       is_flagged: origValue === 0,
-    };
+    }, mergeRules);
   });
 
   const upload = await base44.asServiceRole.entities.MonthlyUpload.create({

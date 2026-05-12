@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as xlsx from 'npm:xlsx@0.18.5';
+import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
 const BATCH = 50;
 
@@ -81,6 +82,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No data rows found' }, { status: 400 });
     }
 
+    const mergeRules = await loadClientMergeRules(base44);
     const valuations = [];
     for (const row of rows) {
       const accountCode = sanitize(String(row['Reference'] || row['Entity ID'] || ''));
@@ -95,7 +97,7 @@ Deno.serve(async (req) => {
       const value = parseExcelValue(row['Value']);
       const priceDate = parseExcelDate(row['Price Date']);
 
-      valuations.push({
+      valuations.push(applyClientMergeRules({
         upload_month: upload_month,
         account_code: accountCode,
         portfolio_name: investorName,
@@ -110,7 +112,7 @@ Deno.serve(async (req) => {
         conversion_status: 'ZAR Base Currency',
         number_of_units: qty,
         month_end_unit_price: unitPrice,
-      });
+      }, mergeRules));
     }
 
     const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month);

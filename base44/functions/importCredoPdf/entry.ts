@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
 const BATCH = 50;
 
@@ -93,7 +94,9 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
       return Response.json({ error: 'No holdings extracted from PDF' }, { status: 400 });
     }
 
-    const valuations = holdings.map(h => ({
+    const mergeRules = await loadClientMergeRules(base44);
+
+    const valuations = holdings.map(h => applyClientMergeRules({
       upload_month,
       account_code: account_number || 'UNKNOWN',
       portfolio_name: client_name || 'Credo Client',
@@ -108,7 +111,7 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
       conversion_status: 'Converted',
       number_of_units: h.quantity,
       month_end_unit_price: h.unit_cost,
-    }));
+    }, mergeRules));
 
     const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month);
 

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as XLSX from 'npm:xlsx@0.18.5';
+import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
 function cleanText(value: unknown) {
   return value == null ? '' : String(value).trim();
@@ -49,6 +50,7 @@ Deno.serve(async (req) => {
 
   const body = await req.json();
   const { file_url, upload_month, replace_existing, exchange_rates = {} } = body;
+  const mergeRules = await loadClientMergeRules(base44);
 
   if (!file_url || !upload_month) {
     return Response.json({ error: 'file_url and upload_month are required' }, { status: 400 });
@@ -151,7 +153,7 @@ Deno.serve(async (req) => {
       currency,
     ].some(hasUnknownValue);
 
-    rows.push({
+    rows.push(applyClientMergeRules({
       upload_month,
       portfolio_id: row['Portfolio Id'] != null ? String(row['Portfolio Id']) : null,
       account_code: accountCode,
@@ -172,7 +174,7 @@ Deno.serve(async (req) => {
       has_missing_market_value: origValue === 0 || origValue == null,
       has_unknown_value: hasUnknown,
       is_flagged: hasUnknown || !rawAccountCode || origValue === 0 || origValue == null || conversionStatus === 'Manual Rate Required',
-    });
+    }, mergeRules));
   }
 
   if (replace_existing) {

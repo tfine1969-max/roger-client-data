@@ -18,6 +18,10 @@ function clientKey(row: Record<string, unknown>) {
   return name ? `name-${name}` : `account-${row?.account_code || 'unknown'}`;
 }
 
+function compactUnique(values: unknown[]) {
+  return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))];
+}
+
 function zarVal(row: Record<string, unknown>) {
   const value = row?.zar_value ?? row?.month_end_market_value ?? 0;
   const parsed = typeof value === 'number' ? value : Number(String(value).replace(/[$R,\s]/g, ''));
@@ -54,6 +58,10 @@ Deno.serve(async (req) => {
       const primaryIdentity = primaryRows.find((row: Record<string, unknown>) => row.identity_no)?.identity_no || null;
       const targetRows = rows.filter((row: Record<string, unknown>) => keySet.has(clientKey(row)));
 
+      if (targetRows.length === 0) {
+        return Response.json({ error: 'No valuation rows matched the selected clients' }, { status: 404 });
+      }
+
       let updated = 0;
       for (const row of targetRows) {
         await base44.asServiceRole.entities.PortfolioValuation.update(row.id, {
@@ -66,11 +74,21 @@ Deno.serve(async (req) => {
         if (updated % 25 === 0) await new Promise(res => setTimeout(res, 100));
       }
 
+      await base44.asServiceRole.entities.ClientMergeRule.create({
+        merged_name: String(merged_name).trim(),
+        primary_key,
+        client_keys: compactUnique(client_keys).join('|'),
+        account_codes: compactUnique(targetRows.map((row: Record<string, unknown>) => row.account_code)).join('|'),
+        identity_numbers: compactUnique(targetRows.map((row: Record<string, unknown>) => row.identity_no)).join('|'),
+        source_names: compactUnique(targetRows.map((row: Record<string, unknown>) => row.portfolio_name)).join('|'),
+        created_by: user.email || user.full_name || 'Unknown',
+      });
+
       return Response.json({
         success: true,
         action,
         updated_records: updated,
-        message: `Merged ${client_keys.length} clients into ${String(merged_name).trim()}`,
+        message: `Merged ${client_keys.length} clients into ${String(merged_name).trim()} and saved the rule for future uploads`,
       });
     }
 
@@ -90,6 +108,10 @@ Deno.serve(async (req) => {
         const key = clientKey(row);
         return keySet.has(key) && Math.abs(totalsByKey[key] || 0) < 0.01;
       });
+
+      if (toDelete.length === 0) {
+        return Response.json({ error: 'No zero-balance rows matched the selected clients' }, { status: 404 });
+      }
 
       let deleted = 0;
       for (const row of toDelete) {

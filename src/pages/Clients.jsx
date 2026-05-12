@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -42,6 +41,7 @@ export default function Clients() {
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
+  const [isDeletingZeroBalances, setIsDeletingZeroBalances] = useState(false);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -172,6 +172,7 @@ export default function Clients() {
 
   const handleDeleteZeroBalances = async () => {
     if (!latestMonth || deleteTargetClients.length === 0) return;
+    setIsDeletingZeroBalances(true);
     setActionStatus('Deleting zero-balance clients...');
     try {
       const res = await base44.functions.invoke('bulkClientMaintenance', {
@@ -190,6 +191,7 @@ export default function Clients() {
     } catch (err) {
       setActionStatus(err.message || 'Delete failed');
     } finally {
+      setIsDeletingZeroBalances(false);
       setTimeout(() => setActionStatus(null), 1800);
     }
   };
@@ -464,10 +466,15 @@ export default function Clients() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteZeroBalances} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete zero balances
-            </AlertDialogAction>
+            <AlertDialogCancel disabled={isDeletingZeroBalances}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteZeroBalances}
+              disabled={isDeletingZeroBalances || deleteTargetClients.length === 0}
+            >
+              {isDeletingZeroBalances ? 'Deleting...' : 'Delete zero balances'}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
