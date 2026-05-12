@@ -1,4 +1,5 @@
 import { canonicalClientMappings } from './canonicalClientMappings.ts';
+import { canonicalFeeFallbackMappings, canonicalFeeMappings } from './canonicalFeeMappings.ts';
 
 export function normalizeClientText(value: unknown) {
   return String(value || '')
@@ -28,10 +29,16 @@ function canonicalPlatform(value: unknown) {
   return normalizeClientText(value).replace(/asset management|investments|securities/g, '').trim();
 }
 
+function compactKey(value: unknown) {
+  return normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
+}
+
 const providerAccountMappings = new Map<string, string>();
 const accountMappings = new Map<string, string>();
 const identityNames = new Map<string, Set<string>>();
 const identityMappings = new Map<string, string>();
+const exactFeeMappings = new Map<string, any>();
+const accountFeeFallbacks = new Map<string, any>();
 
 for (const mapping of canonicalClientMappings) {
   const name = mapping.portfolioName;
@@ -52,6 +59,19 @@ for (const [identity, names] of identityNames.entries()) {
   if (names.size === 1 && name) identityMappings.set(identity, name);
 }
 
+for (const mapping of canonicalFeeMappings) {
+  const platform = canonicalPlatform(mapping.platform);
+  const accountCode = cleanAccountCode(mapping.accountCode);
+  const investment = compactKey(mapping.investmentName);
+  if (platform && accountCode && investment) exactFeeMappings.set(`${platform}||${accountCode}||${investment}`, mapping);
+}
+
+for (const mapping of canonicalFeeFallbackMappings) {
+  const platform = canonicalPlatform(mapping.platform);
+  const accountCode = cleanAccountCode(mapping.accountCode);
+  if (platform && accountCode) accountFeeFallbacks.set(`${platform}||${accountCode}`, mapping);
+}
+
 function applyCanonicalClientMapping(row: Record<string, any>) {
   const accountCode = cleanAccountCode(row.account_code || row.account_number);
   const identity = cleanIdentity(row.identity_no);
@@ -64,6 +84,50 @@ function applyCanonicalClientMapping(row: Record<string, any>) {
 
   if (!canonicalName) return row;
   return { ...row, portfolio_name: canonicalName };
+}
+
+function monthlyFeeAmounts(row: Record<string, any>, rebateAnnualPercent: number, advisoryAnnualPercent: number) {
+  const originalValue = Number(row.original_currency_value ?? row.month_end_market_value ?? 0) || 0;
+  const zarValue = Number(row.zar_value ?? row.month_end_market_value ?? 0) || 0;
+  const rebateMonthlyPercent = rebateAnnualPercent / 12;
+  const advisoryMonthlyPercent = advisoryAnnualPercent / 12;
+  const rebateOriginal = originalValue * (rebateAnnualPercent / 100) / 12;
+  const advisoryOriginal = originalValue * (advisoryAnnualPercent / 100) / 12;
+  const rebateZar = zarValue * (rebateAnnualPercent / 100) / 12;
+  const advisoryZar = zarValue * (advisoryAnnualPercent / 100) / 12;
+
+  return {
+    rebate_fee_annual_percent: rebateAnnualPercent,
+    advisory_fee_annual_percent: advisoryAnnualPercent,
+    rebate_fee_monthly_percent: rebateMonthlyPercent,
+    advisory_fee_monthly_percent: advisoryMonthlyPercent,
+    rebate_fee_monthly_amount_original_currency: rebateOriginal,
+    advisory_fee_monthly_amount_original_currency: advisoryOriginal,
+    rebate_fee_monthly_amount_zar: rebateZar,
+    advisory_fee_monthly_amount_zar: advisoryZar,
+    total_monthly_fee_original_currency: rebateOriginal + advisoryOriginal,
+    total_monthly_fee_zar: rebateZar + advisoryZar,
+    fee_required: false,
+  };
+}
+
+function applyCanonicalFeeMapping(row: Record<string, any>) {
+  const platform = canonicalPlatform(row.platform);
+  const accountCode = cleanAccountCode(row.account_code || row.account_number);
+  const investment = compactKey(row.investment_name || row.investment);
+  if (!platform || !accountCode) return row;
+
+  const feeMapping = (investment ? exactFeeMappings.get(`${platform}||${accountCode}||${investment}`) : null) ||
+    accountFeeFallbacks.get(`${platform}||${accountCode}`);
+
+  if (!feeMapping) return row;
+
+  const rebate = Number(feeMapping.rebateAnnualPercent ?? 0);
+  const advisory = Number(feeMapping.advisoryAnnualPercent ?? 0);
+  return {
+    ...row,
+    ...monthlyFeeAmounts(row, rebate, advisory),
+  };
 }
 
 export async function loadClientMergeRules(base44: any) {
@@ -92,6 +156,6 @@ export function applyClientMergeRules(row: Record<string, any>, rules: any[] = [
     (name && rule.names.has(name))
   );
 
-  if (!match?.mergedName) return canonicalRow;
-  return { ...canonicalRow, portfolio_name: match.mergedName };
+  const mergedRow = match?.mergedName ? { ...canonicalRow, portfolio_name: match.mergedName } : canonicalRow;
+  return applyCanonicalFeeMapping(mergedRow);
 }
