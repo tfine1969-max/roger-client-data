@@ -33,6 +33,60 @@ function compactKey(value: unknown) {
   return normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
 }
 
+function titleCaseWord(value: string) {
+  if (/^[A-Z]{2,}$/.test(value) && value.length <= 4) return value;
+  return value
+    .toLowerCase()
+    .split(/([-'()])/)
+    .map(part => /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+    .join('');
+}
+
+function titleCaseName(value: unknown) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .map(titleCaseWord)
+    .join(' ');
+}
+
+function isEntityName(value: unknown) {
+  return /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof)\b/i.test(String(value || '')) ||
+    /^(ltd|limited|cc|inc|plc),?\s+/i.test(String(value || ''));
+}
+
+function formatCanonicalClientName(value: unknown) {
+  const raw = String(value || '').trim().replace(/\s+/g, ' ');
+  if (!raw) return raw;
+
+  if (isEntityName(raw)) {
+    const prefix = raw.match(/^(ltd|limited|cc|inc|plc),?\s+/i)?.[1];
+    const ordered = prefix ? `${raw.replace(/^(ltd|limited|cc|inc|plc),?\s+/i, '').trim()} ${prefix}` : raw;
+    return ordered
+      .replace(/\(\s*pty\s*\)/ig, '(PTY)')
+      .replace(/\bpty\b/ig, 'PTY')
+      .replace(/\bltd\b/ig, 'LTD')
+      .replace(/\blimited\b/ig, 'LIMITED')
+      .replace(/\bcc\b/ig, 'CC')
+      .toUpperCase();
+  }
+
+  const stripped = raw
+    .replace(/^(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?\s+/i, '')
+    .replace(/\s+(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?$/i, '')
+    .trim();
+
+  if (stripped.includes(',')) {
+    const [surname, ...rest] = stripped.split(',');
+    return [titleCaseName(surname), titleCaseName(rest.join(' ').trim())].filter(Boolean).join(', ');
+  }
+
+  const words = stripped.split(/\s+/).filter(Boolean);
+  if (words.length < 2) return titleCaseName(stripped);
+  return `${titleCaseName(words[words.length - 1])}, ${titleCaseName(words.slice(0, -1).join(' '))}`;
+}
+
 const providerAccountMappings = new Map<string, string>();
 const accountMappings = new Map<string, string>();
 const identityNames = new Map<string, Set<string>>();
@@ -83,7 +137,7 @@ function applyCanonicalClientMapping(row: Record<string, any>) {
     (identity ? identityMappings.get(identity) : null);
 
   if (!canonicalName) return row;
-  return { ...row, portfolio_name: canonicalName };
+  return { ...row, portfolio_name: formatCanonicalClientName(canonicalName) };
 }
 
 function monthlyFeeAmounts(row: Record<string, any>, rebateAnnualPercent: number, advisoryAnnualPercent: number) {
