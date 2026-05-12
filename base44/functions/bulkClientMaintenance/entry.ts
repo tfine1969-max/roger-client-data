@@ -28,6 +28,10 @@ function zarVal(row: Record<string, unknown>) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error || 'Unknown error');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -74,21 +78,32 @@ Deno.serve(async (req) => {
         if (updated % 25 === 0) await new Promise(res => setTimeout(res, 100));
       }
 
-      await base44.asServiceRole.entities.ClientMergeRule.create({
-        merged_name: String(merged_name).trim(),
-        primary_key,
-        client_keys: compactUnique(client_keys).join('|'),
-        account_codes: compactUnique(targetRows.map((row: Record<string, unknown>) => row.account_code)).join('|'),
-        identity_numbers: compactUnique(targetRows.map((row: Record<string, unknown>) => row.identity_no)).join('|'),
-        source_names: compactUnique(targetRows.map((row: Record<string, unknown>) => row.portfolio_name)).join('|'),
-        created_by: user.email || user.full_name || 'Unknown',
-      });
+      let ruleSaved = false;
+      let ruleWarning = '';
+      try {
+        await base44.asServiceRole.entities.ClientMergeRule.create({
+          merged_name: String(merged_name).trim(),
+          primary_key,
+          client_keys: compactUnique(client_keys).join('|'),
+          account_codes: compactUnique(targetRows.map((row: Record<string, unknown>) => row.account_code)).join('|'),
+          identity_numbers: compactUnique(targetRows.map((row: Record<string, unknown>) => row.identity_no)).join('|'),
+          source_names: compactUnique(targetRows.map((row: Record<string, unknown>) => row.portfolio_name)).join('|'),
+          created_by: user.email || user.full_name || 'Unknown',
+        });
+        ruleSaved = true;
+      } catch (error) {
+        ruleWarning = `The selected rows were merged, but the future-import merge rule could not be saved: ${errorMessage(error)}`;
+      }
 
       return Response.json({
         success: true,
         action,
         updated_records: updated,
-        message: `Merged ${client_keys.length} clients into ${String(merged_name).trim()} and saved the rule for future uploads`,
+        rule_saved: ruleSaved,
+        warning: ruleWarning,
+        message: ruleSaved
+          ? `Merged ${client_keys.length} clients into ${String(merged_name).trim()} and saved the rule for future uploads`
+          : `Merged ${client_keys.length} clients into ${String(merged_name).trim()}. ${ruleWarning}`,
       });
     }
 
@@ -130,6 +145,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
-    return Response.json({ error: error.message || 'Bulk client maintenance failed' }, { status: 500 });
+    return Response.json({ error: errorMessage(error) || 'Bulk client maintenance failed' }, { status: 500 });
   }
 });

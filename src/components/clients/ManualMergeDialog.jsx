@@ -7,6 +7,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Loader2, Merge } from 'lucide-react';
 import { fmtNum } from '@/lib/valuation-utils';
 
+function getInvokeErrorMessage(err) {
+  return err?.response?.data?.error
+    || err?.response?.data?.message
+    || err?.data?.error
+    || err?.message
+    || 'Merge failed';
+}
+
 export default function ManualMergeDialog({ open, onOpenChange, selectedClients, onMerged }) {
   const queryClient = useQueryClient();
   const [primaryKey, setPrimaryKey] = useState('');
@@ -46,7 +54,7 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
       if (!res.data.success) throw new Error(res.data.error || 'Merge failed');
 
       setStatus('success');
-      setMessage(res.data.message || `Merged ${selectedClients.length} clients.`);
+      setMessage(res.data.warning || res.data.message || `Merged ${selectedClients.length} clients.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
 
@@ -56,7 +64,7 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
       }, 800);
     } catch (err) {
       setStatus('error');
-      setMessage(err.message || 'Merge failed');
+      setMessage(getInvokeErrorMessage(err));
     } finally {
       setLoading(false);
     }
