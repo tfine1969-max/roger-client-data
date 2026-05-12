@@ -76,6 +76,20 @@ async function bulkCreateValuations(base44, records, replaceExisting, uploadMont
   return created;
 }
 
+async function deleteMatchingRows(base44, query) {
+  let deleted = 0;
+  while (true) {
+    const records = await base44.asServiceRole.entities.PortfolioValuation.filter(query, '-created_date', BATCH);
+    if (!records || records.length === 0) break;
+    for (const row of records) {
+      await base44.asServiceRole.entities.PortfolioValuation.delete(row.id);
+      deleted++;
+    }
+    if (records.length < BATCH) break;
+  }
+  return deleted;
+}
+
 async function importNorthstarPdf({ base44, user, file_url, upload_month, exchange_rate, replace_existing }) {
   const filenameClient = clientNameFromNorthstarFilename(file_url);
   const extracted = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -162,6 +176,11 @@ Return JSON exactly in this shape:
   const reportingCurrency = cleanText(extracted.reporting_currency).toUpperCase() || 'USD';
   const mergeRules = await loadClientMergeRules(base44);
 
+  await deleteMatchingRows(base44, { upload_month, platform: 'Credo', portfolio_name: clientName });
+  if (accountCode) {
+    await deleteMatchingRows(base44, { upload_month, platform: 'Credo', account_code: accountCode });
+  }
+
   const valuations = holdings.map(h => {
     const currency = cleanText(h.currency).toUpperCase() || reportingCurrency || 'USD';
     const originalValue = parseNumber(h.market_value);
@@ -212,6 +231,7 @@ Return JSON exactly in this shape:
 
   return Response.json({
     success: true,
+    platform: 'Northstar',
     rows_imported: created,
     client_name: clientName,
     account_code: accountCode,
@@ -307,6 +327,7 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
 
     return Response.json({
       success: true,
+      platform: 'Credo',
       rows_imported: created,
       client_name,
       account_number,

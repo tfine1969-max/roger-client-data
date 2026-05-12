@@ -56,6 +56,9 @@ export default function NorthstarUpload({ onImported }) {
         });
         const result = response.data;
         if (!result.success) throw new Error(result.error || 'Import failed');
+        if (result.platform !== 'Northstar') {
+          throw new Error('Northstar backend update is not live yet. Please retry after deployment finishes.');
+        }
 
         const entry = {
           name: file.name,
