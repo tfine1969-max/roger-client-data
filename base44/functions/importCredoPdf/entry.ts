@@ -306,7 +306,15 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { provider = 'Credo', file_url, upload_month, exchange_rate, replace_existing = true } = await req.json();
+    const { action, provider = 'Credo', file_url, upload_month, exchange_rate, replace_existing = true } = await req.json();
+    if (action === 'capabilities') {
+      return Response.json({
+        success: true,
+        platform: 'Credo',
+        northstar_supported: true,
+      });
+    }
+
     if (!file_url || !upload_month || !exchange_rate) {
       return Response.json({ error: 'file_url, upload_month, and exchange_rate required' }, { status: 400 });
     }

@@ -32,22 +32,25 @@ export default function NorthstarUpload({ onImported }) {
 
   const removeFile = (name) => setFiles(prev => prev.filter(f => f.name !== name));
 
-  const invokeNorthstarImport = async ({ file_url, exchangeRate, replaceExisting }) => {
+  const assertNorthstarBackendReady = async () => {
     try {
-      return await base44.functions.invoke('importNorthstarPdf', {
-        file_url,
-        upload_month: month,
-        exchange_rate: exchangeRate,
-        replace_existing: replaceExisting,
-      });
-    } catch (error) {
-      const status = error?.response?.status || error?.status;
-      const message = String(error?.message || '');
-      if (status === 404 || message.includes('404')) {
-        throw new Error('Northstar import function is not published yet. Publish the latest Base44 build, then retry.');
+      const response = await base44.functions.invoke('importCredoPdf', { action: 'capabilities' });
+      if (!response.data?.northstar_supported) {
+        throw new Error('Northstar backend update is not live yet. Publish the latest Base44 build, then retry.');
       }
-      throw error;
+    } catch (error) {
+      throw new Error('Northstar backend update is not live yet. Publish the latest Base44 build, then retry.');
     }
+  };
+
+  const invokeNorthstarImport = async ({ file_url, exchangeRate, replaceExisting }) => {
+    return base44.functions.invoke('importCredoPdf', {
+      provider: 'Northstar',
+      file_url,
+      upload_month: month,
+      exchange_rate: exchangeRate,
+      replace_existing: replaceExisting,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -57,6 +60,13 @@ export default function NorthstarUpload({ onImported }) {
     setResults([]);
 
     const exchangeRate = parseFloat(rate);
+    try {
+      await assertNorthstarBackendReady();
+    } catch (err) {
+      setResults(files.map(file => ({ name: file.name, status: 'error', message: err.message })));
+      setStatus('done');
+      return;
+    }
 
     for (let i = 0; i < files.length; i += 1) {
       const file = files[i];
