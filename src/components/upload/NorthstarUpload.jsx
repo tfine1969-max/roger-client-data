@@ -43,14 +43,10 @@ export default function NorthstarUpload({ onImported }) {
     } catch (error) {
       const status = error?.response?.status || error?.status;
       const message = String(error?.message || '');
-      if (status !== 404 && !message.includes('404')) throw error;
-      return base44.functions.invoke('importCredoPdf', {
-        provider: 'Northstar',
-        file_url,
-        upload_month: month,
-        exchange_rate: exchangeRate,
-        replace_existing: replaceExisting,
-      });
+      if (status === 404 || message.includes('404')) {
+        throw new Error('Northstar import function is not published yet. Publish the latest Base44 build, then retry.');
+      }
+      throw error;
     }
   };
 
@@ -72,9 +68,7 @@ export default function NorthstarUpload({ onImported }) {
         const response = await invokeNorthstarImport({ file_url, exchangeRate, replaceExisting: replace && i === 0 });
         const result = response.data;
         if (!result.success) throw new Error(result.error || 'Import failed');
-        if (result.platform !== 'Northstar') {
-          throw new Error('Northstar backend update is not live yet. Please retry after deployment finishes.');
-        }
+        if (result.platform !== 'Northstar') throw new Error('Northstar import returned an unexpected platform. Publish the latest Base44 build, then retry.');
 
         const entry = {
           name: file.name,
