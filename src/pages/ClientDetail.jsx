@@ -2,23 +2,30 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { AlertTriangle, ArrowLeft, Download } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
-import { clientDisplayName, clientKey, rowHasUnknown } from '@/lib/client-utils';
+import { clientDisplayName, clientKey, hasUnknownValue, rowHasUnknown } from '@/lib/client-utils';
 import { feeOptionValues, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
 import { exportClientFundCSV } from '@/lib/export-utils';
 import InvestmentTable from '@/components/client/InvestmentTable';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { toast } from 'sonner';
 
 export default function ClientDetail() {
   const { accountCode } = useParams();
   const queryClient = useQueryClient();
   const [selectedFund, setSelectedFund] = useState('');
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [accountCodeEdits, setAccountCodeEdits] = useState({});
+  const [savingCorrections, setSavingCorrections] = useState(false);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -52,6 +59,8 @@ export default function ClientDetail() {
   );
   const platforms = useMemo(() => [...new Set(currentRows.map(r => r.platform).filter(Boolean))].sort(), [currentRows]);
   const hasUnknown = useMemo(() => currentRows.some(rowHasUnknown), [currentRows]);
+  const unknownAccountCodes = useMemo(() => accountCodes.filter(hasUnknownValue), [accountCodes]);
+  const cleanAccountCodes = useMemo(() => accountCodes.filter(code => !hasUnknownValue(code)), [accountCodes]);
 
   const trendData = useMemo(() => {
     return months.map(month => ({
@@ -84,6 +93,66 @@ export default function ClientDetail() {
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['feeConfigs'] });
+  };
+
+  const suggestAccountCode = (code) => {
+    const stripped = String(code || '')
+      .replace(/^UNKNOWN[_\s-]*/i, '')
+      .trim();
+    const slashCandidate = stripped.replace(/_/g, '/');
+    const compactIdentity = String(identityNo || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+    const compactCode = stripped.replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+
+    if (identityNo && compactIdentity && compactCode.includes(compactIdentity)) return identityNo;
+    if (slashCandidate && slashCandidate !== code) return slashCandidate;
+    if (cleanAccountCodes.length === 1) return cleanAccountCodes[0];
+    return stripped || code;
+  };
+
+  const openCorrectionModal = () => {
+    setAccountCodeEdits(Object.fromEntries(unknownAccountCodes.map(code => [code, suggestAccountCode(code)])));
+    setCorrectionOpen(true);
+  };
+
+  const handleSaveCorrections = async () => {
+    const replacements = Object.entries(accountCodeEdits)
+      .map(([oldCode, newCode]) => [oldCode, String(newCode || '').trim()])
+      .filter(([oldCode, newCode]) => newCode && oldCode !== newCode);
+
+    if (replacements.length === 0) {
+      toast.info('No account code changes to save');
+      return;
+    }
+
+    setSavingCorrections(true);
+    try {
+      const codeMap = new Map(replacements);
+      let updated = 0;
+
+      for (const row of clientRows) {
+        const nextCode = codeMap.get(row.account_code);
+        if (!nextCode) continue;
+
+        const nextRow = { ...row, account_code: nextCode };
+        const stillUnknown = rowHasUnknown(nextRow);
+        await base44.entities.PortfolioValuation.update(row.id, {
+          account_code: nextCode,
+          has_missing_account_code: false,
+          has_unknown_value: stillUnknown,
+          is_flagged: stillUnknown || row.has_missing_identity_no || row.has_missing_market_value || row.is_duplicate || false,
+        });
+        updated += 1;
+      }
+
+      toast.success(`Updated ${updated} valuation row${updated === 1 ? '' : 's'}`);
+      setCorrectionOpen(false);
+      refresh();
+    } catch (err) {
+      console.error('Correction save error:', err);
+      toast.error(err.message || 'Failed to save corrections');
+    } finally {
+      setSavingCorrections(false);
+    }
   };
 
   const handleExport = () => {
@@ -122,9 +191,16 @@ export default function ClientDetail() {
               <span>Total: <strong className="text-foreground font-mono">R {fmtNum(totalZar)}</strong></span>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
-            <Download className="w-4 h-4" /> Export CSV
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasUnknown && (
+              <Button variant="outline" size="sm" onClick={openCorrectionModal} className="gap-2">
+                <Pencil className="w-4 h-4" /> Correct Unknowns
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -193,6 +269,54 @@ export default function ClientDetail() {
           )}
         </Card>
       )}
+
+      <Dialog open={correctionOpen} onOpenChange={setCorrectionOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Correct Unknown Values</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/30 p-3 text-sm">
+              <p className="font-medium text-foreground">{clientName}</p>
+              <p className="text-muted-foreground">These changes update every matching valuation row for this client.</p>
+            </div>
+
+            {unknownAccountCodes.length === 0 ? (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                This client still has an UNKNOWN value, but it is not an account code. Check the investment, platform, currency, client name, or ID on the imported row.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {unknownAccountCodes.map((code, idx) => (
+                  <div key={code} className="grid gap-2 sm:grid-cols-[1fr_1fr] sm:items-end">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Current UNKNOWN account {idx + 1}</Label>
+                      <Input value={code} readOnly className="font-mono text-xs bg-muted/50" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Correct account code</Label>
+                      <Input
+                        value={accountCodeEdits[code] || ''}
+                        onChange={(e) => setAccountCodeEdits(prev => ({ ...prev, [code]: e.target.value }))}
+                        placeholder="Enter the correct account code"
+                        className="font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCorrectionOpen(false)} disabled={savingCorrections}>Cancel</Button>
+            <Button onClick={handleSaveCorrections} disabled={savingCorrections || unknownAccountCodes.length === 0}>
+              {savingCorrections ? 'Saving...' : 'Save Corrections'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
