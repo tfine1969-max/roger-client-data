@@ -11,6 +11,45 @@ import DeleteMonthData from './DeleteMonthData';
 const LAST_UPLOAD_KEY = 'credo_last_upload';
 const DEFAULT_USD_ZAR_RATE = '16.668';
 
+function duplicateHoldingKey(row) {
+  const original = Number(row.original_currency_value ?? row.month_end_market_value ?? 0) || 0;
+  const zar = Number(row.zar_value ?? row.month_end_market_value ?? 0) || 0;
+  return [
+    String(row.investment_name || '').toLowerCase().replace(/[^a-z0-9]+/g, ''),
+    String(row.currency || '').toUpperCase(),
+    Math.round(original * 100),
+    Math.round(zar * 100),
+  ].join('||');
+}
+
+async function deleteStaleJuliusDuplicates(uploadMonth, accountNumber, clientName) {
+  const [credoRows, juliusRows] = await Promise.all([
+    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 5000),
+    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Julius Baer' }, '-created_date', 5000),
+  ]);
+  const cleanClientName = String(clientName || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const importedCredoRows = (credoRows || []).filter(row =>
+    (accountNumber && row.account_code === accountNumber) ||
+    (cleanClientName && String(row.portfolio_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === cleanClientName)
+  );
+  const credoKeys = new Set(importedCredoRows.map(duplicateHoldingKey));
+  if (credoKeys.size === 0) return 0;
+  const importedClientNames = new Set([
+    cleanClientName,
+    ...importedCredoRows.map(row => String(row.portfolio_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '')),
+  ].filter(Boolean));
+
+  const staleJuliusRows = (juliusRows || []).filter(row => {
+    const sameClient = importedClientNames.has(String(row.portfolio_name || '').toLowerCase().replace(/[^a-z0-9]+/g, ''));
+    return sameClient && credoKeys.has(duplicateHoldingKey(row));
+  });
+
+  for (const row of staleJuliusRows) {
+    await base44.entities.PortfolioValuation.delete(row.id);
+  }
+  return staleJuliusRows.length;
+}
+
 export default function CredoUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [files, setFiles] = useState([]);
@@ -58,6 +97,7 @@ export default function CredoUpload({ onImported }) {
           replace_existing: processedFiles === 0,
         });
         if (!res.data.success) throw new Error(`${file.name}: ${res.data.error || 'Import failed'}`);
+        await deleteStaleJuliusDuplicates(uploadMonth, res.data.account_number, res.data.client_name);
         totalRows += res.data.rows_imported;
         processedFiles++;
         

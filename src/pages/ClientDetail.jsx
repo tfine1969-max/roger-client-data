@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
-import { AlertTriangle, ArrowLeft, Download, Pencil } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ export default function ClientDetail() {
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [accountCodeEdits, setAccountCodeEdits] = useState({});
   const [savingCorrections, setSavingCorrections] = useState(false);
+  const [cleaningDuplicates, setCleaningDuplicates] = useState(false);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -61,6 +62,22 @@ export default function ClientDetail() {
   const hasUnknown = useMemo(() => currentRows.some(rowHasUnknown), [currentRows]);
   const unknownAccountCodes = useMemo(() => accountCodes.filter(hasUnknownValue), [accountCodes]);
   const cleanAccountCodes = useMemo(() => accountCodes.filter(code => !hasUnknownValue(code)), [accountCodes]);
+  const duplicateJuliusRows = useMemo(() => {
+    const duplicateKey = (row) => [
+      String(row.investment_name || '').toLowerCase().replace(/[^a-z0-9]+/g, ''),
+      String(row.currency || '').toUpperCase(),
+      Math.round(origVal(row) * 100),
+      Math.round(zarVal(row) * 100),
+    ].join('||');
+
+    const credoKeys = new Set(
+      currentRows
+        .filter(row => row.platform === 'Credo')
+        .map(duplicateKey)
+    );
+
+    return currentRows.filter(row => row.platform === 'Julius Baer' && credoKeys.has(duplicateKey(row)));
+  }, [currentRows]);
 
   const trendData = useMemo(() => {
     return months.map(month => ({
@@ -155,6 +172,23 @@ export default function ClientDetail() {
     }
   };
 
+  const handleRemoveJuliusDuplicates = async () => {
+    if (duplicateJuliusRows.length === 0) return;
+    setCleaningDuplicates(true);
+    try {
+      for (const row of duplicateJuliusRows) {
+        await base44.entities.PortfolioValuation.delete(row.id);
+      }
+      toast.success(`Removed ${duplicateJuliusRows.length} duplicated Julius Baer row${duplicateJuliusRows.length === 1 ? '' : 's'}`);
+      refresh();
+    } catch (err) {
+      console.error('Duplicate cleanup error:', err);
+      toast.error(err.message || 'Failed to remove duplicated Julius Baer rows');
+    } finally {
+      setCleaningDuplicates(false);
+    }
+  };
+
   const handleExport = () => {
     exportClientFundCSV(clientName, currentRows, latestMonth);
   };
@@ -195,6 +229,11 @@ export default function ClientDetail() {
             {hasUnknown && (
               <Button variant="outline" size="sm" onClick={openCorrectionModal} className="gap-2">
                 <Pencil className="w-4 h-4" /> Correct Unknowns
+              </Button>
+            )}
+            {duplicateJuliusRows.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleRemoveJuliusDuplicates} disabled={cleaningDuplicates} className="gap-2 text-destructive hover:text-destructive">
+                <Trash2 className="w-4 h-4" /> {cleaningDuplicates ? 'Removing...' : `Remove ${duplicateJuliusRows.length} Julius Duplicate${duplicateJuliusRows.length === 1 ? '' : 's'}`}
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
