@@ -32,6 +32,28 @@ export default function NorthstarUpload({ onImported }) {
 
   const removeFile = (name) => setFiles(prev => prev.filter(f => f.name !== name));
 
+  const invokeNorthstarImport = async ({ file_url, exchangeRate, replaceExisting }) => {
+    try {
+      return await base44.functions.invoke('importNorthstarPdf', {
+        file_url,
+        upload_month: month,
+        exchange_rate: exchangeRate,
+        replace_existing: replaceExisting,
+      });
+    } catch (error) {
+      const status = error?.response?.status || error?.status;
+      const message = String(error?.message || '');
+      if (status !== 404 && !message.includes('404')) throw error;
+      return base44.functions.invoke('importCredoPdf', {
+        provider: 'Northstar',
+        file_url,
+        upload_month: month,
+        exchange_rate: exchangeRate,
+        replace_existing: replaceExisting,
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!files.length || !month || !rate) return;
@@ -47,13 +69,7 @@ export default function NorthstarUpload({ onImported }) {
 
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const response = await base44.functions.invoke('importCredoPdf', {
-          provider: 'Northstar',
-          file_url,
-          upload_month: month,
-          exchange_rate: exchangeRate,
-          replace_existing: replace && i === 0,
-        });
+        const response = await invokeNorthstarImport({ file_url, exchangeRate, replaceExisting: replace && i === 0 });
         const result = response.data;
         if (!result.success) throw new Error(result.error || 'Import failed');
         if (result.platform !== 'Northstar') {

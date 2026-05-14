@@ -216,6 +216,7 @@ Return JSON exactly in this shape:
 
     return Response.json({
       success: true,
+      platform: 'Northstar',
       rows_imported: rows.length,
       upload_id: upload.id,
       client_name: clientName,
