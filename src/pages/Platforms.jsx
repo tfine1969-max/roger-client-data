@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
+import { effectiveExchangeRate, getSortedMonths, fmtNum, fmtCcy, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import { monthlyClientData } from '@/data/monthlyClientData';
+import { clientDisplayName, clientKey } from '@/lib/client-utils';
 
 const PLATFORM_LABELS = {
   'julius-baer': 'Julius Baer',
@@ -43,6 +44,22 @@ const monthToControlId = (month) => {
 const platformId = (platform) => PLATFORM_IDS[String(platform || '').trim().toLowerCase()] || String(platform || 'unknown').trim().toLowerCase().replace(/\s+/g, '-');
 const platformLabel = (id, fallback) => PLATFORM_LABELS[id] || fallback || id;
 const controlForMonth = (month) => monthlyClientData.find(m => m.id === monthToControlId(month));
+const compactKey = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+const rateLabel = (rows) => {
+  const nonZarRates = rows
+    .filter(row => String(row.currency || '').toUpperCase() !== 'ZAR')
+    .map(row => effectiveExchangeRate(row))
+    .filter(rate => Number.isFinite(rate) && rate > 0);
+  const uniqueRates = [...new Set(nonZarRates.map(rate => Number(rate).toFixed(4)))];
+  if (uniqueRates.length === 0) return 'ZAR base';
+  if (uniqueRates.length === 1) return uniqueRates[0];
+  return 'Mixed';
+};
+const originalValueLabel = (rows, totalOrig) => {
+  const currencies = [...new Set(rows.map(row => String(row.currency || 'ZAR').toUpperCase()).filter(Boolean))];
+  if (currencies.length === 1) return fmtCcy(totalOrig, currencies[0]);
+  return fmtNum(totalOrig);
+};
 const addControlClientCounts = (row, clients = []) => {
   clients.forEach(client => {
     if (client.accountCode) row.clients.add(client.accountCode);
@@ -56,6 +73,7 @@ export default function Platforms() {
   const navigate = useNavigate();
   const [filterMonth, setFilterMonth] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState(null);
+  const [providerView, setProviderView] = useState('clients');
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -98,13 +116,40 @@ export default function Platforms() {
 
     current.forEach(r => {
       const k = `${r.investment_name}||${r.currency}`;
-      if (!map[k]) map[k] = { investment_name: r.investment_name, currency: r.currency, totalOrig: 0, totalZar: 0, clients: new Set() };
+      if (!map[k]) map[k] = { investment_name: r.investment_name, currency: r.currency, rows: [], totalOrig: 0, totalZar: 0, clients: new Set() };
+      map[k].rows.push(r);
       map[k].totalOrig += origVal(r);
       map[k].totalZar += zarVal(r);
       map[k].clients.add(r.account_code);
     });
 
-    return Object.values(map).map(v => ({ ...v, clients: v.clients.size })).sort((a, b) => b.totalZar - a.totalZar);
+    return Object.values(map).map(v => ({ ...v, clients: v.clients.size, rateDisplay: rateLabel(v.rows) })).sort((a, b) => b.totalZar - a.totalZar);
+  }, [valuations, latestMonth, selectedPlatform]);
+
+  const clientRows = useMemo(() => {
+    if (!selectedPlatform) return [];
+    const current = valuations.filter(v => v.upload_month === latestMonth && v.platform === selectedPlatform);
+    const map = {};
+
+    current.forEach(row => {
+      const key = clientKey(row);
+      if (!map[key]) map[key] = { key, rows: [], totalOrig: 0, totalZar: 0, funds: new Set() };
+      map[key].rows.push(row);
+      map[key].totalOrig += origVal(row);
+      map[key].totalZar += zarVal(row);
+      if (row.investment_name) map[key].funds.add(compactKey(row.investment_name));
+    });
+
+    return Object.values(map)
+      .map(group => ({
+        ...group,
+        name: clientDisplayName(group.rows),
+        accountCode: group.rows.find(row => row.account_code)?.account_code || '',
+        originalDisplay: originalValueLabel(group.rows, group.totalOrig),
+        rateDisplay: rateLabel(group.rows),
+        funds: group.funds.size,
+      }))
+      .sort((a, b) => b.totalZar - a.totalZar);
   }, [valuations, latestMonth, selectedPlatform]);
 
   const totalAUM = useMemo(() => platformRows.reduce((s, r) => s + r.totalZar, 0), [platformRows]);
@@ -123,35 +168,94 @@ export default function Platforms() {
   );
 
   if (selectedPlatform) {
-    const platformTotal = fundRows.reduce((s, r) => s + r.totalZar, 0);
+    const platformTotal = clientRows.reduce((s, r) => s + r.totalZar, 0);
     return (
       <div className="space-y-6">
         <div>
-          <button onClick={() => setSelectedPlatform(null)} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <button onClick={() => { setSelectedPlatform(null); setProviderView('clients'); }} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="w-4 h-4" /> Back to Platforms
           </button>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold">
-                <ProviderLogo provider={selectedPlatform} logoClassName="max-h-8 max-w-[120px]" logoBoxClassName="h-12 w-36" />
+              <h1 className="flex items-center gap-3 text-2xl font-semibold">
+                <ProviderLogo provider={selectedPlatform} logoClassName="max-h-8 max-w-[120px]" logoBoxClassName="h-12 w-36" showName={false} />
+                <span>{selectedPlatform}</span>
               </h1>
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <MonthBadge month={latestMonth} />
-                <span>{fundRows.length} funds - Total AUM: <strong className="text-foreground">ZAR {fmtNum(platformTotal)}</strong></span>
+                <span>{clientRows.length} clients - {fundRows.length} funds - Total AUM: <strong className="text-foreground">ZAR {fmtNum(platformTotal)}</strong></span>
               </div>
             </div>
             <MonthFilter />
           </div>
         </div>
 
+        <div className="inline-flex overflow-hidden rounded-md border bg-white text-sm">
+          <button
+            onClick={() => setProviderView('clients')}
+            className={`px-4 py-2 font-medium transition-colors ${providerView === 'clients' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/40'}`}
+          >
+            Clients
+          </button>
+          <button
+            onClick={() => setProviderView('funds')}
+            className={`border-l px-4 py-2 font-medium transition-colors ${providerView === 'funds' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/40'}`}
+          >
+            Funds
+          </button>
+        </div>
+
         <div className="overflow-hidden rounded-lg border bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            {providerView === 'clients' ? (
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  {['Investment Name', 'Currency', 'Value (Orig. CCY)', 'Value (ZAR)', 'Clients'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
-                  ))}
+                  <th className="w-[46%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
+                  <th className="w-[19%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (Orig. CCY)</th>
+                  <th className="w-[15%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">FX Rate</th>
+                  <th className="w-[20%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (ZAR)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {clientRows.length === 0 && (
+                  <tr><td colSpan={4} className="py-12 text-center text-sm text-muted-foreground">No data.</td></tr>
+                )}
+                {clientRows.map((r) => (
+                  <tr key={r.key} className="cursor-pointer hover:bg-muted/20" onClick={() => navigate(`/clients/${encodeURIComponent(r.key)}`)}>
+                    <td className="px-4 py-3">
+                      <p className="truncate font-medium">{r.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{r.accountCode} · {r.funds} fund{r.funds === 1 ? '' : 's'}</p>
+                    </td>
+                    <td className="px-4 py-3 text-right font-numbers whitespace-nowrap">{r.originalDisplay}</td>
+                    <td className="px-4 py-3 text-right font-numbers text-muted-foreground whitespace-nowrap">{r.rateDisplay}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 bg-muted/30 font-semibold">
+                  <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
+                  <td className="px-4 py-3 text-right font-numbers text-sm">
+                    {(() => {
+                      const usdTotal = clientRows.flatMap(r => r.rows).filter(r => r.currency === 'USD').reduce((s, r) => s + origVal(r), 0);
+                      return usdTotal > 0 ? `USD ${fmtNum(usdTotal)}` : null;
+                    })()}
+                  </td>
+                  <td />
+                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
+                </tr>
+              </tfoot>
+            </table>
+            ) : (
+            <table className="w-full table-fixed text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  <th className="w-[42%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investment Name</th>
+                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (Orig. CCY)</th>
+                  <th className="w-[14%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">FX Rate</th>
+                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (ZAR)</th>
+                  <th className="w-[8%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -160,28 +264,33 @@ export default function Platforms() {
                 )}
                 {fundRows.map((r, i) => (
                   <tr key={i} className="hover:bg-muted/20">
-                    <td className="px-4 py-3 font-medium">{r.investment_name}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{r.currency}</td>
-                    <td className="px-4 py-3 font-numbers text-sm">{fmtCcy(r.totalOrig, r.currency)}</td>
-                    <td className="px-4 py-3 font-numbers font-semibold">ZAR {fmtNum(r.totalZar)}</td>
+                    <td className="px-4 py-3">
+                      <p className="truncate font-medium">{r.investment_name}</p>
+                      <p className="text-xs text-muted-foreground">{r.currency}</p>
+                    </td>
+                    <td className="px-4 py-3 text-right font-numbers whitespace-nowrap">{fmtCcy(r.totalOrig, r.currency)}</td>
+                    <td className="px-4 py-3 text-right font-numbers text-muted-foreground whitespace-nowrap">{r.rateDisplay}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{r.clients}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="border-t-2 bg-muted/30 font-semibold">
-                  <td className="px-4 py-3 text-xs uppercase tracking-wider" colSpan={2}>Total</td>
-                  <td className="px-4 py-3 font-numbers text-sm">
+                  <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
+                  <td className="px-4 py-3 text-right font-numbers text-sm">
                     {(() => {
                       const usdTotal = fundRows.filter(r => r.currency === 'USD').reduce((s, r) => s + r.totalOrig, 0);
                       return usdTotal > 0 ? `USD ${fmtNum(usdTotal)}` : null;
                     })()}
                   </td>
-                  <td className="px-4 py-3 font-numbers">ZAR {fmtNum(platformTotal)}</td>
+                  <td />
+                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
                   <td />
                 </tr>
               </tfoot>
             </table>
+            )}
           </div>
         </div>
       </div>
@@ -234,7 +343,17 @@ export default function Platforms() {
                 <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data.</td></tr>
               )}
               {platformRows.map(r => (
-                <tr key={r.platform} className="group cursor-pointer transition-colors hover:bg-muted/20" onClick={() => r.platformId === 'prime' ? navigate('/providers/prime') : setSelectedPlatform(r.platform)}>
+                <tr
+                  key={r.platform}
+                  className="group cursor-pointer transition-colors hover:bg-muted/20"
+                  onClick={() => {
+                    if (r.platformId === 'prime') navigate('/providers/prime');
+                    else {
+                      setSelectedPlatform(r.platform);
+                      setProviderView('clients');
+                    }
+                  }}
+                >
                   <td className="px-5 py-4 text-center">
                    <div className="inline-flex flex-col items-center gap-1.5">
                      <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-12 w-36" logoClassName="max-h-8 max-w-[120px]" showName={false} />
