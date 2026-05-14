@@ -69,7 +69,7 @@ export default function InvestmentTable({ clientRows, months }) {
                 <th colSpan={4} />
                 {orderedMonths.map(m => (
                   <>
-                    <th key={`${m}-usd`} className="text-right px-4 py-2 text-xs font-medium text-muted-foreground whitespace-nowrap border-l border-border/40 min-w-[120px]">USD</th>
+                    <th key={`${m}-orig`} className="text-right px-4 py-2 text-xs font-medium text-muted-foreground whitespace-nowrap border-l border-border/40 min-w-[120px]">Orig. CCY</th>
                     <th key={`${m}-zar`} className="text-right px-4 py-2 text-xs font-medium text-muted-foreground whitespace-nowrap min-w-[130px]">ZAR</th>
                   </>
                 ))}

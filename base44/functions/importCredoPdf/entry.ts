@@ -43,6 +43,10 @@ function slugNorthstarAccount(value: string) {
   return slug ? `NORTHSTAR_${slug}` : 'NORTHSTAR_UNKNOWN';
 }
 
+function normalizeText(value: unknown) {
+  return cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
 async function bulkCreateValuations(base44, records, replaceExisting, uploadMonth, platform = 'Credo') {
   if (replaceExisting && records.length > 0) {
     let deleted = 0;
@@ -90,6 +94,57 @@ async function deleteMatchingRows(base44, query) {
   return deleted;
 }
 
+async function deleteStaleNorthstarCredoRows(base44, uploadMonth, clientName, accountCode, filenameClient) {
+  const names = new Set([normalizeText(clientName), normalizeText(filenameClient)].filter(Boolean));
+  const accounts = new Set([cleanText(accountCode)].filter(Boolean));
+  let deleted = 0;
+
+  for (const account of accounts) {
+    deleted += await deleteMatchingRows(base44, { upload_month: uploadMonth, platform: 'Credo', account_code: account });
+  }
+
+  let page = 0;
+  while (true) {
+    const records = await base44.asServiceRole.entities.PortfolioValuation.filter(
+      { upload_month: uploadMonth, platform: 'Credo' },
+      '-created_date',
+      200,
+      page * 200,
+    );
+    if (!records || records.length === 0) break;
+    for (const row of records) {
+      if (names.has(normalizeText(row.portfolio_name))) {
+        await base44.asServiceRole.entities.PortfolioValuation.delete(row.id);
+        deleted++;
+      }
+    }
+    if (records.length < 200) break;
+    page++;
+  }
+
+  return deleted;
+}
+
+function dedupeNorthstarHoldings(holdings) {
+  const map = new Map();
+  for (const holding of holdings) {
+    const name = normalizeText(holding.holding_name);
+    const value = Math.round(parseNumber(holding.market_value) * 100) / 100;
+    const key = `${name}||${value}`;
+    const currency = cleanText(holding.currency).toUpperCase();
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, holding);
+      continue;
+    }
+    const existingCurrency = cleanText(existing.currency).toUpperCase();
+    if (currency === 'ZAR' && existingCurrency !== 'ZAR') {
+      map.set(key, holding);
+    }
+  }
+  return [...map.values()];
+}
+
 async function importNorthstarPdf({ base44, user, file_url, upload_month, exchange_rate, replace_existing }) {
   const filenameClient = clientNameFromNorthstarFilename(file_url);
   const extracted = await base44.asServiceRole.integrations.Core.InvokeLLM({
@@ -97,6 +152,12 @@ async function importNorthstarPdf({ base44, user, file_url, upload_month, exchan
 Extract portfolio holdings from this Northstar monthly statement PDF.
 
 The statement may be a scanned PDF. Read all pages and extract every individual holding/position/fund line from the holdings, portfolio valuation, portfolio details, asset allocation, or similar statement tables. Do not return summary-only asset-class rows if individual holdings are present.
+
+Important currency rules:
+- If a value is shown in a ZAR/Rand/current value column, set currency to ZAR. Never label a ZAR value as USD.
+- If a value is shown in a USD/Dollar/current value column, set currency to USD.
+- Do not convert values yourself. Extract the number exactly as shown and the currency exactly from the column/section.
+- If the same holding appears twice with the same value in both USD and ZAR, keep the ZAR version only.
 
 Extract statement-level fields:
 - client_name: the investor/client name. If unclear, use this filename-derived client name: "${filenameClient}".
@@ -107,7 +168,7 @@ Extract statement-level fields:
 For each holding extract:
 - holding_name: full fund/security/instrument name.
 - asset_class: section/category if shown.
-- currency: holding/reporting currency. Use USD when the value is shown as a USD value and no other currency is shown.
+- currency: holding/reporting currency. Use ZAR when the value is shown in Rand/ZAR and USD only when the value is explicitly shown in USD.
 - units: units/shares/quantity if shown.
 - unit_price: price/NAV if shown.
 - market_value: market value in the holding currency, preferring the USD/current value column.
@@ -161,9 +222,9 @@ Return JSON exactly in this shape:
     },
   });
 
-  const holdings = Array.isArray(extracted?.holdings)
+  const holdings = dedupeNorthstarHoldings(Array.isArray(extracted?.holdings)
     ? extracted.holdings.filter(h => cleanText(h?.holding_name) && parseNumber(h?.market_value) !== 0)
-    : [];
+    : []);
 
   if (holdings.length === 0) {
     return Response.json({ error: 'No Northstar holdings extracted from PDF', raw: extracted }, { status: 400 });
@@ -176,10 +237,7 @@ Return JSON exactly in this shape:
   const reportingCurrency = cleanText(extracted.reporting_currency).toUpperCase() || 'USD';
   const mergeRules = await loadClientMergeRules(base44);
 
-  await deleteMatchingRows(base44, { upload_month, platform: 'Credo', portfolio_name: clientName });
-  if (accountCode) {
-    await deleteMatchingRows(base44, { upload_month, platform: 'Credo', account_code: accountCode });
-  }
+  await deleteStaleNorthstarCredoRows(base44, upload_month, clientName, accountCode, filenameClient);
 
   const valuations = holdings.map(h => {
     const currency = cleanText(h.currency).toUpperCase() || reportingCurrency || 'USD';
