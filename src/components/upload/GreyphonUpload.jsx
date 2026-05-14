@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
+import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 
 const LAST_UPLOAD_KEY = 'gryphon_last_upload';
 
@@ -14,6 +15,7 @@ export default function GreyphonUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
   const [uploadMonth, setUploadMonth] = useState('');
+  const [rate, setRate] = useState(DEFAULT_USD_ZAR_RATE);
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
@@ -30,6 +32,16 @@ export default function GreyphonUpload({ onImported }) {
     setFile(e.target.files?.[0] || null);
     setStatus(null);
     setMessage('');
+  };
+
+  const handleMonthChange = (value) => {
+    setUploadMonth(value);
+    setRate(getUsdZarRateForMonth(value));
+  };
+
+  const handleRateChange = (value) => {
+    setRate(value);
+    saveUsdZarRateForMonth(uploadMonth, value);
   };
 
   const handleSubmit = async (e) => {
@@ -91,9 +103,24 @@ export default function GreyphonUpload({ onImported }) {
           <Input
             type="month"
             value={uploadMonth}
-            onChange={e => setUploadMonth(e.target.value)}
+            onChange={e => handleMonthChange(e.target.value)}
             required
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Universal USD → ZAR Rate</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              step="0.0001"
+              min="0"
+              placeholder={DEFAULT_USD_ZAR_RATE}
+              value={rate}
+              onChange={e => handleRateChange(e.target.value)}
+            />
+            <span className="text-xs text-muted-foreground whitespace-nowrap">ZAR / USD</span>
+          </div>
+          <p className="text-xs text-muted-foreground">Gryphon imports are ZAR-based; this stores the same month rate for other USD uploads.</p>
         </div>
         <div className="space-y-1.5">
           <Label>Gryphon Unit Holder Report (.xlsx)</Label>

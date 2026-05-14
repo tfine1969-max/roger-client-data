@@ -67,7 +67,6 @@ export default function ClientDetail() {
       String(row.investment_name || '').toLowerCase().replace(/[^a-z0-9]+/g, ''),
       String(row.currency || '').toUpperCase(),
       Math.round(origVal(row) * 100),
-      Math.round(zarVal(row) * 100),
     ].join('||');
 
     const credoKeys = new Set(

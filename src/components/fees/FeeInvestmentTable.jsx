@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { fmtNum } from '@/lib/valuation-utils';
+import { effectiveExchangeRate, fmtNum, zarVal } from '@/lib/valuation-utils';
 import { Button } from '@/components/ui/button';
 import { Pencil, CheckSquare, ChevronDown, ChevronRight, Users, Layers } from 'lucide-react';
 import FeeEditModal from './FeeEditModal';
@@ -29,7 +29,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
         missingFees: 0,
       };
       map[key].items.push(r);
-      map[key].totalZar += r.zar_value ?? 0;
+      map[key].totalZar += r.fee_base_zar ?? zarVal(r);
       map[key].totalRebate += r.rebate_fee_monthly_amount_zar ?? 0;
       map[key].totalAdvisory += r.advisory_fee_monthly_amount_zar ?? 0;
       map[key].totalFee += r.total_monthly_fee_zar ?? 0;
@@ -54,7 +54,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
         missingFees: 0,
       };
       map[key].items.push(r);
-      map[key].totalZar += r.zar_value ?? 0;
+      map[key].totalZar += r.fee_base_zar ?? zarVal(r);
       map[key].totalRebate += r.rebate_fee_monthly_amount_zar ?? 0;
       map[key].totalAdvisory += r.advisory_fee_monthly_amount_zar ?? 0;
       map[key].totalFee += r.total_monthly_fee_zar ?? 0;
@@ -99,7 +99,7 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
   };
 
   const grandTotals = useMemo(() => ({
-    zar: rows.reduce((s, r) => s + (r.zar_value ?? 0), 0),
+    zar: rows.reduce((s, r) => s + (r.fee_base_zar ?? zarVal(r)), 0),
     rebate: rows.reduce((s, r) => s + (r.rebate_fee_monthly_amount_zar ?? 0), 0),
     advisory: rows.reduce((s, r) => s + (r.advisory_fee_monthly_amount_zar ?? 0), 0),
     fee: rows.reduce((s, r) => s + (r.total_monthly_fee_zar ?? 0), 0),
@@ -212,12 +212,12 @@ export default function FeeInvestmentTable({ rows, feeOptions, onFeeUpdated }) {
                       <td className="px-1 py-1.5" />
                       <td className="px-2 py-1.5 pl-6" colSpan={1}>
                         <p className="font-medium truncate max-w-[260px]">{r.investment_name}</p>
-                        <p className="text-muted-foreground">{r.currency} · Rate {r.currency === 'ZAR' ? '-' : (r.exchange_rate_to_zar?.toFixed(3) ?? '-')}</p>
+                        <p className="text-muted-foreground">{r.currency} · Rate {r.currency === 'ZAR' ? '-' : (effectiveExchangeRate(r)?.toFixed(4) ?? '-')}</p>
                       </td>
                       <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap text-muted-foreground">
                         {fmtNum(r.original_currency_value ?? 0)}
                       </td>
-                      <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap">{fmtNum(r.zar_value ?? 0)}</td>
+                      <td className="px-2 py-1.5 text-right font-numbers whitespace-nowrap">{fmtNum(r.fee_base_zar ?? zarVal(r))}</td>
                       <td className="px-2 py-1.5 text-right">
                         <span className={`px-1 py-0.5 rounded whitespace-nowrap inline-block ${r.fee_required ? 'bg-yellow-100 text-yellow-800 font-semibold' : 'text-chart-2'}`}>
                           {r.fee_required ? 'Req' : fmtNum(r.rebate_fee_monthly_amount_zar ?? 0)}

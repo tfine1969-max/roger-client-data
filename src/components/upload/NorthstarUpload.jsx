@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpen } from 'lucide-react';
 import DeleteMonthData from './DeleteMonthData';
+import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 
-const DEFAULT_USD_ZAR_RATE = '16.668';
 const BATCH_SIZE = 25;
 
 const cleanText = value => String(value || '').trim();
@@ -159,6 +159,16 @@ export default function NorthstarUpload({ onImported }) {
   const folderRef = useRef(null);
   const fileRef = useRef(null);
 
+  const handleMonthChange = (value) => {
+    setMonth(value);
+    setRate(getUsdZarRateForMonth(value));
+  };
+
+  const handleRateChange = (value) => {
+    setRate(value);
+    saveUsdZarRateForMonth(month, value);
+  };
+
   const addFiles = (incoming) => {
     const pdfs = Array.from(incoming || []).filter(f => f.name.toLowerCase().endsWith('.pdf'));
     setFiles(prev => {
@@ -303,21 +313,22 @@ export default function NorthstarUpload({ onImported }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Upload Month</Label>
-            <Input type="month" value={month} onChange={e => setMonth(e.target.value)} required />
+            <Input type="month" value={month} onChange={e => handleMonthChange(e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label>USD → ZAR Exchange Rate</Label>
+            <Label>Universal USD → ZAR Rate</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
                 step="0.0001"
                 min="0"
                 value={rate}
-                onChange={e => setRate(e.target.value)}
+                onChange={e => handleRateChange(e.target.value)}
                 required
               />
               <span className="text-xs text-muted-foreground whitespace-nowrap">ZAR / USD</span>
             </div>
+            <p className="text-xs text-muted-foreground">Used for all USD uploads in the selected month unless changed here.</p>
           </div>
         </div>
 

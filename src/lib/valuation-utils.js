@@ -1,3 +1,5 @@
+import { getConfiguredUsdZarRateForMonth } from '@/lib/exchange-rates';
+
 /**
  * Given all PortfolioValuation records, compute per-investment month-on-month changes.
  * Returns a map: unique_key -> { current, prevValue, prevZarValue, changeValue, changePct, zarChangeValue, zarChangePct, isNew }
@@ -45,7 +47,9 @@ export function zarVal(row) {
   if (!row) return 0;
   const value = row.original_currency_value ?? row.month_end_market_value ?? 0;
   const currency = String(row.currency || '').toUpperCase();
-  const rate = row.exchange_rate_to_zar;
+  const configuredUsdRate = currency === 'USD' ? Number(getConfiguredUsdZarRateForMonth(row.upload_month)) : null;
+  const rate = effectiveExchangeRate(row);
+  if (currency === 'USD' && configuredUsdRate) return value * configuredUsdRate;
   if (currency && currency !== 'ZAR' && rate) {
     const storedZar = row.zar_value;
     if (storedZar === null || storedZar === undefined || Math.abs(storedZar - value) < 0.01) {
@@ -55,6 +59,12 @@ export function zarVal(row) {
   if (row.zar_value !== null && row.zar_value !== undefined) return row.zar_value;
   if (currency && currency !== 'ZAR' && rate) return value * rate;
   return value;
+}
+
+export function effectiveExchangeRate(row) {
+  const currency = String(row?.currency || '').toUpperCase();
+  const configuredUsdRate = currency === 'USD' ? Number(getConfiguredUsdZarRateForMonth(row?.upload_month)) : null;
+  return configuredUsdRate || row?.exchange_rate_to_zar;
 }
 
 /**

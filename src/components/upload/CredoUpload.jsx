@@ -7,18 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
+import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 
 const LAST_UPLOAD_KEY = 'credo_last_upload';
-const DEFAULT_USD_ZAR_RATE = '16.668';
 
 function duplicateHoldingKey(row) {
   const original = Number(row.original_currency_value ?? row.month_end_market_value ?? 0) || 0;
-  const zar = Number(row.zar_value ?? row.month_end_market_value ?? 0) || 0;
   return [
     String(row.investment_name || '').toLowerCase().replace(/[^a-z0-9]+/g, ''),
     String(row.currency || '').toUpperCase(),
     Math.round(original * 100),
-    Math.round(zar * 100),
   ].join('||');
 }
 
@@ -78,6 +76,16 @@ export default function CredoUpload({ onImported }) {
     setMessage('');
   };
 
+  const handleMonthChange = (value) => {
+    setUploadMonth(value);
+    setRate(getUsdZarRateForMonth(value));
+  };
+
+  const handleRateChange = (value) => {
+    setRate(value);
+    saveUsdZarRateForMonth(uploadMonth, value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (files.length === 0 || !uploadMonth || !rate) return;
@@ -119,7 +127,6 @@ export default function CredoUpload({ onImported }) {
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       if (onImported) onImported();
       setFiles([]);
-      setRate(DEFAULT_USD_ZAR_RATE);
       setUploadMonth('');
       document.getElementById('credo-file-input').value = '';
       document.getElementById('credo-folder-input').value = '';
@@ -150,10 +157,10 @@ export default function CredoUpload({ onImported }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Upload Month</Label>
-            <Input type="month" value={uploadMonth} onChange={e => setUploadMonth(e.target.value)} required />
+            <Input type="month" value={uploadMonth} onChange={e => handleMonthChange(e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label>USD → ZAR Exchange Rate</Label>
+            <Label>Universal USD → ZAR Rate</Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
@@ -161,11 +168,12 @@ export default function CredoUpload({ onImported }) {
                 min="0"
                 placeholder={DEFAULT_USD_ZAR_RATE}
                 value={rate}
-                onChange={e => setRate(e.target.value)}
+                onChange={e => handleRateChange(e.target.value)}
                 required
               />
               <span className="text-xs text-muted-foreground whitespace-nowrap">ZAR / USD</span>
             </div>
+            <p className="text-xs text-muted-foreground">Used for all USD uploads in the selected month unless changed here.</p>
           </div>
         </div>
 

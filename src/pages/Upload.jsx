@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
 import GreyphonUpload from '@/components/upload/GreyphonUpload';
@@ -13,7 +14,6 @@ import CredoUpload from '@/components/upload/CredoUpload';
 import NorthstarUpload from '@/components/upload/NorthstarUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
-const DEFAULT_USD_ZAR_RATE = '16.668';
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
 const PROVIDERS = [
@@ -51,6 +51,16 @@ function MonthlyWorkbookUpload({ onImported }) {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
+
+  const handleMonthChange = (value) => {
+    setUploadMonth(value);
+    setExchangeRates(rates => ({ ...rates, USD: getUsdZarRateForMonth(value) }));
+  };
+
+  const handleRateChange = (currency, value) => {
+    setExchangeRates(rates => ({ ...rates, [currency]: value }));
+    if (currency === 'USD') saveUsdZarRateForMonth(uploadMonth, value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,7 +107,7 @@ function MonthlyWorkbookUpload({ onImported }) {
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
         <div className="space-y-1.5">
           <Label>Upload Month</Label>
-          <Input type="month" value={uploadMonth} onChange={e => setUploadMonth(e.target.value)} required />
+          <Input type="month" value={uploadMonth} onChange={e => handleMonthChange(e.target.value)} required />
         </div>
         <div className="space-y-1.5">
           <Label>Spreadsheet File (.xlsx)</Label>
@@ -106,7 +116,7 @@ function MonthlyWorkbookUpload({ onImported }) {
         <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-4 space-y-3">
           <div>
             <p className="text-sm font-semibold text-blue-950">Exchange Rates (Optional)</p>
-            <p className="text-xs text-blue-800 mt-1">Entered rates override workbook-detected rates for non-ZAR currencies.</p>
+            <p className="text-xs text-blue-800 mt-1">USD uses the shared month rate. Entered rates override workbook-detected rates for non-ZAR currencies.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {['USD', 'EUR', 'GBP'].map(currency => (
@@ -116,7 +126,7 @@ function MonthlyWorkbookUpload({ onImported }) {
                   <Input
                     type="number" step="0.0001" min="0" placeholder={currency === 'USD' ? DEFAULT_USD_ZAR_RATE : 'e.g. 18.50'}
                     value={exchangeRates[currency]}
-                    onChange={e => setExchangeRates(rates => ({ ...rates, [currency]: e.target.value }))}
+                    onChange={e => handleRateChange(currency, e.target.value)}
                     className="h-9"
                   />
                   <span className="text-xs text-muted-foreground">ZAR</span>
