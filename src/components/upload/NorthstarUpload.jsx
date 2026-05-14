@@ -8,6 +8,145 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpe
 import DeleteMonthData from './DeleteMonthData';
 
 const DEFAULT_USD_ZAR_RATE = '16.668';
+const BATCH_SIZE = 25;
+
+const cleanText = value => String(value || '').trim();
+const normalizeText = value => cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+const parseAmount = value => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const raw = cleanText(value);
+  const negative = raw.startsWith('(') && raw.endsWith(')');
+  const parsed = Number(raw.replace(/[$,\s()]/g, ''));
+  if (!Number.isFinite(parsed)) return 0;
+  return negative ? -parsed : parsed;
+};
+
+const fileNameClient = fileName => {
+  const name = cleanText(fileName).replace(/\.pdf$/i, '');
+  const match = name.match(/Northstar Monthly Statement\s+.+?-\s+(.+?)\s+-\s+\d{1,2}\s+\w+$/i) ||
+    name.match(/Northstar Monthly Statement\s+.+?-\s+(.+)$/i);
+  return cleanText(match?.[1]);
+};
+
+const displayClientName = name => {
+  const cleaned = cleanText(name);
+  if (!cleaned) return 'Northstar Client';
+  if (cleaned.includes(',')) return cleaned;
+  const parts = cleaned.replace(/^(mr|mrs|ms|miss|dr|prof)\.?\s+/i, '').split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return cleaned;
+  return `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+};
+
+const slugAccount = value => {
+  const slug = cleanText(value)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 60);
+  return slug ? `NORTHSTAR_${slug}` : 'NORTHSTAR_UNKNOWN';
+};
+
+const northstarCurrency = holding => {
+  const explicit = cleanText(holding.currency).toUpperCase();
+  const evidence = [
+    holding.value_label,
+    holding.currency_context,
+    holding.asset_class,
+    holding.holding_name,
+  ].map(cleanText).join(' ').toUpperCase();
+  if (explicit === 'USD' && /\b(USD|US DOLLAR|DOLLAR)\b/.test(evidence)) return 'USD';
+  return 'ZAR';
+};
+
+const dedupeHoldings = holdings => {
+  const map = new Map();
+  holdings.forEach(holding => {
+    const value = Math.round(parseAmount(holding.market_value) * 100) / 100;
+    const key = `${normalizeText(holding.holding_name)}||${value}`;
+    const currency = northstarCurrency(holding);
+    const current = { ...holding, currency };
+    const existing = map.get(key);
+    if (!existing || (currency === 'ZAR' && existing.currency !== 'ZAR')) {
+      map.set(key, current);
+    }
+  });
+  return [...map.values()];
+};
+
+const extractNorthstarHoldings = async ({ fileUrl, fallbackClient }) => {
+  return base44.integrations.Core.InvokeLLM({
+    file_urls: [fileUrl],
+    prompt: `
+Extract portfolio holdings from this Northstar monthly statement PDF.
+
+Read all pages and extract every individual holding/fund line from the portfolio valuation or holdings tables. Do not return summary-only asset-class rows if individual holdings are present.
+
+Currency rules:
+- Northstar local statement values are usually ZAR/Rand. Use currency ZAR unless the holding value column explicitly says USD or US Dollar.
+- Never convert values. Extract the displayed value exactly and identify its displayed currency.
+- If a holding appears twice with the same value, once as USD and once as ZAR, return only the ZAR row.
+
+Statement fields:
+- client_name: investor/client name. If unclear use "${fallbackClient}".
+- account_number: account, portfolio, investor, policy, product, or reference number if shown.
+- report_date: valuation/report date in YYYY-MM-DD if shown.
+
+For each holding:
+- holding_name: full fund/security/instrument name.
+- asset_class: section/category if shown.
+- currency: ZAR or USD using the currency rules above.
+- value_label: the exact column/header text where market_value came from, for example "Market Value ZAR" or "Current Value".
+- currency_context: any nearby currency text/symbol from the row or table.
+- units: units/shares/quantity if shown.
+- unit_price: price/NAV if shown.
+- market_value: numeric value exactly as displayed.
+
+Return JSON exactly:
+{
+  "client_name": string,
+  "account_number": string,
+  "report_date": string,
+  "holdings": [
+    {
+      "holding_name": string,
+      "asset_class": string,
+      "currency": string,
+      "value_label": string,
+      "currency_context": string,
+      "units": number or null,
+      "unit_price": number or null,
+      "market_value": number
+    }
+  ]
+}
+`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        client_name: { type: 'string' },
+        account_number: { type: 'string' },
+        report_date: { type: 'string' },
+        holdings: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              holding_name: { type: 'string' },
+              asset_class: { type: 'string' },
+              currency: { type: 'string' },
+              value_label: { type: 'string' },
+              currency_context: { type: 'string' },
+              units: { type: ['number', 'null'] },
+              unit_price: { type: ['number', 'null'] },
+              market_value: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  });
+};
 
 export default function NorthstarUpload({ onImported }) {
   const queryClient = useQueryClient();
@@ -32,25 +171,26 @@ export default function NorthstarUpload({ onImported }) {
 
   const removeFile = (name) => setFiles(prev => prev.filter(f => f.name !== name));
 
-  const assertNorthstarBackendReady = async () => {
-    try {
-      const response = await base44.functions.invoke('importCredoPdf', { action: 'capabilities' });
-      if (!response.data?.northstar_supported) {
-        throw new Error('Northstar backend update is not live yet. Publish the latest Base44 build, then retry.');
-      }
-    } catch (error) {
-      throw new Error('Northstar backend update is not live yet. Publish the latest Base44 build, then retry.');
+  const deleteExistingRows = async ({ uploadMonth, replaceAll, clientName, rawClientName, accountCode }) => {
+    const rows = await base44.entities.PortfolioValuation.list('-created_date', 5000);
+    const clientNames = new Set([normalizeText(clientName), normalizeText(rawClientName)].filter(Boolean));
+    const accountCodes = new Set([cleanText(accountCode)].filter(Boolean));
+    const stale = rows.filter(row => {
+      if (row.upload_month !== uploadMonth) return false;
+      if (replaceAll && row.platform === 'Northstar') return true;
+      if (row.platform !== 'Credo') return false;
+      return clientNames.has(normalizeText(row.portfolio_name)) || accountCodes.has(cleanText(row.account_code));
+    });
+    for (const row of stale) {
+      await base44.entities.PortfolioValuation.delete(row.id);
     }
   };
 
-  const invokeNorthstarImport = async ({ file_url, exchangeRate, replaceExisting }) => {
-    return base44.functions.invoke('importCredoPdf', {
-      provider: 'Northstar',
-      file_url,
-      upload_month: month,
-      exchange_rate: exchangeRate,
-      replace_existing: replaceExisting,
-    });
+  const createRows = async rows => {
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(row => base44.entities.PortfolioValuation.create(row)));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -60,13 +200,6 @@ export default function NorthstarUpload({ onImported }) {
     setResults([]);
 
     const exchangeRate = parseFloat(rate);
-    try {
-      await assertNorthstarBackendReady();
-    } catch (err) {
-      setResults(files.map(file => ({ name: file.name, status: 'error', message: err.message })));
-      setStatus('done');
-      return;
-    }
 
     for (let i = 0; i < files.length; i += 1) {
       const file = files[i];
@@ -75,19 +208,74 @@ export default function NorthstarUpload({ onImported }) {
 
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const response = await invokeNorthstarImport({ file_url, exchangeRate, replaceExisting: replace && i === 0 });
-        const result = response.data;
-        if (!result.success) throw new Error(result.error || 'Import failed');
-        if (result.platform !== 'Northstar') throw new Error('Northstar import returned an unexpected platform. Publish the latest Base44 build, then retry.');
+        const fallbackClient = fileNameClient(file.name);
+        const extracted = await extractNorthstarHoldings({ fileUrl: file_url, fallbackClient });
+        const holdings = dedupeHoldings((extracted.holdings || []).filter(h => cleanText(h.holding_name) && parseAmount(h.market_value) !== 0));
+        if (holdings.length === 0) throw new Error('No Northstar holdings extracted from PDF.');
+
+        const clientName = displayClientName(extracted.client_name || fallbackClient);
+        const accountCode = cleanText(extracted.account_number) || slugAccount(clientName);
+
+        await deleteExistingRows({
+          uploadMonth: month,
+          replaceAll: replace && i === 0,
+          clientName,
+          rawClientName: fallbackClient,
+          accountCode,
+        });
+
+        const valuationRows = holdings.map(holding => {
+          const currency = northstarCurrency(holding);
+          const originalValue = parseAmount(holding.market_value);
+          const fxRate = currency === 'ZAR' ? 1 : exchangeRate;
+          return {
+            upload_month: month,
+            account_code: accountCode,
+            portfolio_name: clientName,
+            platform: 'Northstar',
+            investment_name: cleanText(holding.holding_name) || cleanText(holding.asset_class) || 'Northstar Holding',
+            currency,
+            original_currency_value: originalValue,
+            month_end_market_value: originalValue,
+            exchange_rate_to_zar: fxRate,
+            zar_value: originalValue * fxRate,
+            exchange_rate_date: cleanText(extracted.report_date) || null,
+            exchange_rate_source: currency === 'ZAR' ? 'N/A' : 'Manual Upload Rate',
+            conversion_status: currency === 'ZAR' ? 'ZAR Base Currency' : 'Converted',
+            number_of_units: holding.units ?? null,
+            month_end_unit_price: holding.unit_price ?? null,
+            has_missing_account_code: !accountCode,
+            has_missing_identity_no: true,
+            has_missing_market_value: originalValue === 0,
+            is_duplicate: false,
+            is_flagged: originalValue === 0,
+          };
+        });
+
+        await createRows(valuationRows);
+
+        await base44.entities.MonthlyUpload.create({
+          upload_month: month,
+          file_name: file.name,
+          upload_date: new Date().toISOString(),
+          total_rows: valuationRows.length,
+          rows_imported: valuationRows.length,
+          rows_skipped: 0,
+          import_status: 'Imported',
+          notes: `Northstar browser import. Client: ${clientName}. Account: ${accountCode}.`,
+        });
+
+        const usdTotal = valuationRows.filter(r => r.currency === 'USD').reduce((sum, row) => sum + row.original_currency_value, 0);
+        const zarTotal = valuationRows.reduce((sum, row) => sum + row.zar_value, 0);
 
         const entry = {
           name: file.name,
           status: 'success',
-          message: `${result.rows_imported} holdings imported`,
-          client_name: result.client_name,
-          account_code: result.account_code,
-          usd_total: result.usd_total,
-          zar_total: result.zar_total,
+          message: `${valuationRows.length} holdings imported`,
+          client_name: clientName,
+          account_code: accountCode,
+          usd_total: usdTotal,
+          zar_total: zarTotal,
         };
         setResults(prev => [...prev.filter(r => r.name !== file.name), entry]);
       } catch (err) {
