@@ -84,9 +84,16 @@ export function formatClientName(name) {
   cleaned = cleaned.replace(TRAILING_TITLES, '').trim();
 
   if (!cleaned) return name;
+
+  // If it's a comma-formatted name, split and return as-is
   if (cleaned.includes(',')) {
     const [surname, ...rest] = cleaned.split(',');
     return [titleCaseName(surname), titleCaseName(rest.join(' ').trim())].filter(Boolean).join(', ');
+  }
+
+  // If it looks like a legal entity (no comma), preserve word order — don't reorder
+  if (ENTITY_MARKERS.test(cleaned)) {
+    return titleCaseName(cleaned);
   }
 
   const words = cleaned.split(/\s+/);
