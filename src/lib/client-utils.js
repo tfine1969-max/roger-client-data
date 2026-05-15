@@ -1,6 +1,6 @@
 const TITLES = /^(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?\s+/i;
 const TRAILING_TITLES = /\s+(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?$/i;
-const ENTITY_MARKERS = /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof)\b/i;
+const ENTITY_MARKERS = /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof|management|consulting|services|solutions|enterprises|group|associates|capital|advisory|logistics|transport|construction|technologies|technology|media|imaging|images|systems|engineering|healthcare|clinic|pharmacy|pharmacy|retail|distributors|distribution)\b/i;
 const ENTITY_PREFIX = /^(ltd|limited|cc|inc|plc),?\s+/i;
 
 function titleCaseWord(word) {
@@ -29,13 +29,19 @@ function normaliseLegalEntity(value) {
     cleaned = cleaned.replace(ENTITY_PREFIX, '').trim();
     cleaned = `${cleaned} ${prefix}`;
   }
-  return cleaned
-    .replace(/\(\s*pty\s*\)/ig, '(PTY)')
-    .replace(/\bpty\b/ig, 'PTY')
-    .replace(/\bltd\b/ig, 'LTD')
-    .replace(/\blimited\b/ig, 'LIMITED')
-    .replace(/\bcc\b/ig, 'CC')
-    .toUpperCase();
+  // Only fully uppercase if it contains formal legal suffixes (PTY, LTD, CC, etc.)
+  const FORMAL_SUFFIX = /\b(pty|ltd|limited|cc|inc|plc|corp|corporation)\b/i;
+  if (FORMAL_SUFFIX.test(cleaned)) {
+    return cleaned
+      .replace(/\(\s*pty\s*\)/ig, '(PTY)')
+      .replace(/\bpty\b/ig, 'PTY')
+      .replace(/\bltd\b/ig, 'LTD')
+      .replace(/\blimited\b/ig, 'LIMITED')
+      .replace(/\bcc\b/ig, 'CC')
+      .toUpperCase();
+  }
+  // Otherwise just title-case it, preserving word order
+  return titleCaseName(cleaned);
 }
 
 export function splitClientName(name) {
