@@ -15,8 +15,9 @@ const PLATFORM_LABELS = {
   credo: 'Credo',
   gryphon: 'Gryphon',
   prime: 'Prime',
-  'northstar-fnb': 'Northstar FNB',
-  'northstar-sanlam': 'Northstar Sanlam',
+  northstar: 'Northstar',
+  'northstar-fnb': 'FNB',
+  'northstar-sanlam': 'Sanlam',
   peresec: 'Peresec',
   prescient: 'Prescient',
 };
@@ -27,6 +28,7 @@ const PLATFORM_IDS = {
   gryphon: 'gryphon',
   prime: 'prime',
   'prime investments': 'prime',
+  northstar: 'northstar',
   'northstar fnb': 'northstar-fnb',
   'northstar sanlam': 'northstar-sanlam',
   peresec: 'peresec',
@@ -42,6 +44,8 @@ const monthToControlId = (month) => {
 };
 
 const platformId = (platform) => PLATFORM_IDS[String(platform || '').trim().toLowerCase()] || String(platform || 'unknown').trim().toLowerCase().replace(/\s+/g, '-');
+const platformGroupId = (id) => String(id || '').startsWith('northstar') ? 'northstar' : id;
+const rowPlatformId = (row) => platformGroupId(platformId(row?.platform));
 const platformLabel = (id, fallback) => PLATFORM_LABELS[id] || fallback || id;
 const controlForMonth = (month) => monthlyClientData.find(m => m.id === monthToControlId(month));
 const compactKey = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -69,6 +73,12 @@ const addControlClientCounts = (row, clients = []) => {
   });
 };
 
+const addSourceLabel = (row, id) => {
+  if (!row.sourceLabels) row.sourceLabels = new Set();
+  const label = platformLabel(id, id);
+  if (label && label !== row.platform) row.sourceLabels.add(label);
+};
+
 export default function Platforms() {
   const navigate = useNavigate();
   const [filterMonth, setFilterMonth] = useState('');
@@ -89,29 +99,33 @@ export default function Platforms() {
     const map = {};
 
     current.forEach(r => {
-      const id = platformId(r.platform);
+      const rawId = platformId(r.platform);
+      const id = platformGroupId(rawId);
       const p = platformLabel(id, r.platform || 'Unknown');
-      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
+      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set(), sourceLabels: new Set() };
+      addSourceLabel(map[id], rawId);
       map[id].totalZar += zarVal(r);
       if (r.account_code) map[id].clients.add(r.account_code);
       if (r.investment_name) map[id].funds.add(r.investment_name);
     });
 
-    Object.entries(currentControl?.providerSourceTotals || {}).forEach(([id, total]) => {
+    Object.entries(currentControl?.providerSourceTotals || {}).forEach(([rawId, total]) => {
+      const id = platformGroupId(rawId);
       const p = platformLabel(id, total.providerName);
-      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set() };
-      map[id].totalZar = total.zarTotal;
-      addControlClientCounts(map[id], currentControl.clients?.filter(client => client.providerId === id));
+      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set(), sourceLabels: new Set() };
+      addSourceLabel(map[id], rawId);
+      map[id].totalZar += total.zarTotal;
+      addControlClientCounts(map[id], currentControl.clients?.filter(client => platformGroupId(client.providerId) === id));
     });
 
     return Object.values(map)
-      .map(p => ({ ...p, clients: p.clients.size, funds: p.funds.size }))
+      .map(p => ({ ...p, clients: p.clients.size, funds: p.funds.size, sourceLabels: [...p.sourceLabels].sort() }))
       .sort((a, b) => b.totalZar - a.totalZar);
   }, [valuations, latestMonth]);
 
   const fundRows = useMemo(() => {
     if (!selectedPlatform) return [];
-    const current = valuations.filter(v => v.upload_month === latestMonth && v.platform === selectedPlatform);
+    const current = valuations.filter(v => v.upload_month === latestMonth && rowPlatformId(v) === selectedPlatform);
     const map = {};
 
     current.forEach(r => {
@@ -128,7 +142,7 @@ export default function Platforms() {
 
   const clientRows = useMemo(() => {
     if (!selectedPlatform) return [];
-    const current = valuations.filter(v => v.upload_month === latestMonth && v.platform === selectedPlatform);
+    const current = valuations.filter(v => v.upload_month === latestMonth && rowPlatformId(v) === selectedPlatform);
     const map = {};
 
     current.forEach(row => {
@@ -152,6 +166,35 @@ export default function Platforms() {
       .sort((a, b) => b.totalZar - a.totalZar);
   }, [valuations, latestMonth, selectedPlatform]);
 
+  const sourceLabelRows = useMemo(() => {
+    if (!selectedPlatform) return [];
+    const current = valuations.filter(v => v.upload_month === latestMonth && rowPlatformId(v) === selectedPlatform);
+    const map = {};
+
+    current.forEach(row => {
+      const rawId = platformId(row.platform);
+      const label = platformLabel(rawId, row.platform || 'Unknown');
+      if (!map[label]) map[label] = { label, totalZar: 0, clients: new Set(), funds: new Set() };
+      map[label].totalZar += zarVal(row);
+      if (row.account_code) map[label].clients.add(row.account_code);
+      if (row.investment_name) map[label].funds.add(row.investment_name);
+    });
+
+    const currentControl = controlForMonth(latestMonth);
+    Object.entries(currentControl?.providerSourceTotals || {})
+      .filter(([rawId]) => platformGroupId(rawId) === selectedPlatform)
+      .forEach(([rawId, total]) => {
+        const label = platformLabel(rawId, total.providerName);
+        if (!map[label]) map[label] = { label, totalZar: 0, clients: new Set(), funds: new Set() };
+        map[label].totalZar += total.zarTotal;
+        addControlClientCounts(map[label], currentControl.clients?.filter(client => client.providerId === rawId));
+      });
+
+    return Object.values(map)
+      .map(row => ({ ...row, clients: row.clients.size, funds: row.funds.size }))
+      .sort((a, b) => b.totalZar - a.totalZar);
+  }, [valuations, latestMonth, selectedPlatform]);
+
   const totalAUM = useMemo(() => platformRows.reduce((s, r) => s + r.totalZar, 0), [platformRows]);
   const largestPlatform = platformRows[0];
 
@@ -168,7 +211,10 @@ export default function Platforms() {
   );
 
   if (selectedPlatform) {
-    const platformTotal = clientRows.reduce((s, r) => s + r.totalZar, 0);
+    const selectedPlatformName = platformLabel(selectedPlatform, selectedPlatform);
+    const platformTotal = sourceLabelRows.length
+      ? sourceLabelRows.reduce((s, r) => s + r.totalZar, 0)
+      : clientRows.reduce((s, r) => s + r.totalZar, 0);
     return (
       <div className="space-y-6">
         <div>
@@ -178,8 +224,8 @@ export default function Platforms() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="flex items-center gap-3 text-2xl font-semibold">
-                <ProviderLogo provider={selectedPlatform} logoClassName="max-h-8 max-w-[120px]" logoBoxClassName="h-12 w-36" showName={false} />
-                <span>{selectedPlatform}</span>
+                <ProviderLogo providerId={selectedPlatform} provider={selectedPlatformName} logoClassName="max-h-8 max-w-[120px]" logoBoxClassName="h-12 w-36" showName={false} />
+                <span>{selectedPlatformName}</span>
               </h1>
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <MonthBadge month={latestMonth} />
@@ -203,6 +249,14 @@ export default function Platforms() {
           >
             Funds
           </button>
+          {sourceLabelRows.length > 1 && (
+            <button
+              onClick={() => setProviderView('labels')}
+              className={`border-l px-4 py-2 font-medium transition-colors ${providerView === 'labels' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/40'}`}
+            >
+              Labels
+            </button>
+          )}
         </div>
 
         <div className="overflow-hidden rounded-lg border bg-white">
@@ -247,7 +301,7 @@ export default function Platforms() {
                 </tr>
               </tfoot>
             </table>
-            ) : (
+            ) : providerView === 'funds' ? (
             <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b bg-muted/40">
@@ -287,6 +341,40 @@ export default function Platforms() {
                   <td />
                   <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
                   <td />
+                </tr>
+              </tfoot>
+            </table>
+            ) : (
+            <table className="w-full table-fixed text-sm">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  <th className="w-[46%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Label</th>
+                  <th className="w-[18%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
+                  <th className="w-[18%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Funds</th>
+                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM (ZAR)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {sourceLabelRows.map(row => (
+                  <tr key={row.label} className="hover:bg-muted/20">
+                    <td className="px-4 py-3">
+                      <div className="inline-flex items-center gap-3">
+                        <ProviderLogo providerId="northstar" provider="Northstar" logoBoxClassName="h-9 w-24" logoClassName="max-h-6 max-w-[76px]" showName={false} />
+                        <span className="font-medium">{row.label}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{row.clients}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{row.funds}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(row.totalZar)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 bg-muted/30 font-semibold">
+                  <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
+                  <td />
+                  <td />
+                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -349,7 +437,7 @@ export default function Platforms() {
                   onClick={() => {
                     if (r.platformId === 'prime') navigate('/providers/prime');
                     else {
-                      setSelectedPlatform(r.platform);
+                      setSelectedPlatform(r.platformId);
                       setProviderView('clients');
                     }
                   }}
