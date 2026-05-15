@@ -4,9 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload as UploadIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
+import ProviderLogo from '@/components/shared/ProviderLogo';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
 import GreyphonUpload from '@/components/upload/GreyphonUpload';
@@ -19,13 +20,13 @@ import DeleteMonthData from '@/components/upload/DeleteMonthData';
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
 const PROVIDERS = [
-  { id: 'monthly', label: 'Monthly Workbook' },
-  { id: 'julius-baer', label: 'Julius Baer' },
-  { id: 'prime', label: 'Prime Investments' },
   { id: 'credo', label: 'Credo' },
   { id: 'gryphon', label: 'Gryphon' },
+  { id: 'julius-baer', label: 'Julius Baer' },
+  { id: 'monthly', label: 'Monthly Workbook', type: 'workbook' },
   { id: 'northstar', label: 'Northstar' },
   { id: 'peresec', label: 'Peresec' },
+  { id: 'prime', label: 'Prime Investments' },
   { id: 'prescient', label: 'Prescient' },
 ];
 
@@ -176,26 +177,54 @@ export default function Upload() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Data Imports</h1>
         <p className="text-sm text-muted-foreground mt-1">Upload monthly data for each provider.</p>
       </div>
 
-      {/* Provider tab bar */}
-      <div className="flex flex-wrap gap-1 border-b pb-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {PROVIDERS.map(p => (
           <button
             key={p.id}
             onClick={() => setActiveTab(p.id)}
             className={cn(
-              'px-4 py-2 text-sm font-medium border-b-2 transition-all -mb-px whitespace-nowrap',
+              'group rounded-lg border bg-white p-3 text-left transition-all hover:border-primary/40 hover:shadow-sm',
               activeTab === p.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-primary shadow-sm ring-1 ring-primary/20'
+                : 'border-border'
             )}
           >
-            {p.label}
+            <div className="flex items-center gap-3">
+              {p.type === 'workbook' ? (
+                <div className={cn(
+                  'flex h-10 w-24 items-center justify-center rounded-md border bg-muted/30',
+                  activeTab === p.id && 'border-primary/30 bg-primary/5'
+                )}>
+                  <FileSpreadsheet className="h-5 w-5 text-primary" />
+                </div>
+              ) : (
+                <ProviderLogo
+                  providerId={p.id}
+                  provider={p.label}
+                  logoBoxClassName={cn(
+                    'h-10 w-24 bg-white transition-colors',
+                    activeTab === p.id && 'border-primary/30 bg-primary/5'
+                  )}
+                  logoClassName="max-h-6 max-w-[78px]"
+                  showName={false}
+                />
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{p.label}</p>
+                <p className={cn(
+                  'mt-0.5 text-[11px] font-medium',
+                  activeTab === p.id ? 'text-primary' : 'text-muted-foreground'
+                )}>
+                  {activeTab === p.id ? 'Selected' : 'Upload'}
+                </p>
+              </div>
+            </div>
           </button>
         ))}
       </div>
