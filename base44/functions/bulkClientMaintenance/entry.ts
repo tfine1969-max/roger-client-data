@@ -81,32 +81,11 @@ Deno.serve(async (req) => {
         if (updated % 25 === 0) await new Promise(res => setTimeout(res, 100));
       }
 
-      let ruleSaved = false;
-      let ruleWarning = '';
-      try {
-        await base44.asServiceRole.entities.ClientMergeRule.create({
-          merged_name: String(merged_name).trim(),
-          primary_key,
-          client_keys: compactUnique(client_keys).join('|'),
-          account_codes: compactUnique(targetRows.map((row: Record<string, unknown>) => row.account_code)).join('|'),
-          identity_numbers: compactUnique(targetRows.map((row: Record<string, unknown>) => row.identity_no)).join('|'),
-          source_names: compactUnique(targetRows.map((row: Record<string, unknown>) => row.portfolio_name)).join('|'),
-          created_by: user.email || user.full_name || 'Unknown',
-        });
-        ruleSaved = true;
-      } catch (error) {
-        ruleWarning = `The selected rows were merged, but the future-import merge rule could not be saved: ${errorMessage(error)}`;
-      }
-
       return Response.json({
         success: true,
         action,
         updated_records: updated,
-        rule_saved: ruleSaved,
-        warning: ruleWarning,
-        message: ruleSaved
-          ? `${action === 'merge' ? 'Merged' : 'Renamed'} ${client_keys.length} client${client_keys.length === 1 ? '' : 's'} to ${String(merged_name).trim()} and saved the rule for future uploads`
-          : `${action === 'merge' ? 'Merged' : 'Renamed'} ${client_keys.length} client${client_keys.length === 1 ? '' : 's'} to ${String(merged_name).trim()}. ${ruleWarning}`,
+        message: `${action === 'merge' ? 'Merged' : 'Renamed'} ${client_keys.length} client${client_keys.length === 1 ? '' : 's'} to "${String(merged_name).trim()}" — ${updated} records updated`,
       });
     }
 

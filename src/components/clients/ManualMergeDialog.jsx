@@ -54,7 +54,7 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
       if (!res.data.success) throw new Error(res.data.error || 'Merge failed');
 
       setStatus('success');
-      setMessage(res.data.warning || res.data.message || `Merged ${selectedClients.length} clients.`);
+      setMessage(res.data.message || `Merged ${selectedClients.length} clients.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
 
