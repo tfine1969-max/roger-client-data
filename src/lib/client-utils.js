@@ -63,7 +63,12 @@ export function buildStructuredClientName(surname, firstNames = '') {
   const cleanSurname = String(surname || '').trim();
   const cleanFirstNames = String(firstNames || '').trim();
   if (!cleanSurname) return '';
-  if (!cleanFirstNames) return formatClientName(cleanSurname);
+  if (!cleanFirstNames) {
+    // No first names — treat as entity/single name, preserve as-is with title case (no reordering)
+    return ENTITY_MARKERS.test(cleanSurname) || ENTITY_PREFIX.test(cleanSurname)
+      ? normaliseLegalEntity(cleanSurname)
+      : titleCaseName(cleanSurname);
+  }
   return `${titleCaseName(cleanSurname)}, ${titleCaseName(cleanFirstNames)}`;
 }
 
