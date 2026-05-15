@@ -43,6 +43,7 @@ const compact = value => norm(value).replace(/[^a-z0-9]+/g, '');
 const providerId = value => PLATFORM_IDS[norm(value)] || norm(value).replace(/\s+/g, '-');
 const diffClass = value => Math.abs(value || 0) > 1 ? 'text-destructive font-semibold' : 'text-positive';
 const pctFromControl = value => Number(value || 0);
+const LOCAL_CONTROL_KEY = 'control_sheet_rows_v1';
 
 function functionErrorMessage(err, fallback = 'Upload failed') {
   const data = err?.response?.data || err?.data || err?.cause?.response?.data;
@@ -61,6 +62,25 @@ async function invokeFunction(name, payload) {
     throw new Error(response.data.error || `${name} failed`);
   }
   return response.data;
+}
+
+function getLocalControlRows() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_CONTROL_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalControlRows(uploadMonth, provider, records) {
+  if (!records?.length) return;
+  const otherRows = getLocalControlRows().filter(row => !(row.upload_month === uploadMonth && row.provider_id === provider.id));
+  const rows = records.map((row, index) => ({
+    ...row,
+    id: `local-${uploadMonth}-${provider.id}-${index}`,
+    _localOnly: true,
+  }));
+  localStorage.setItem(LOCAL_CONTROL_KEY, JSON.stringify([...otherRows, ...rows]));
 }
 
 function rowKey(client, investment) {
@@ -90,7 +110,8 @@ function UploadControl({ provider, uploadMonth, onImported }) {
         replace_existing: true,
       });
       setStatus('success');
-      setMessage(`${result.rows_imported} rows · ZAR ${fmtNum(result.total_nav_zar || 0)}`);
+      if (result.persisted === false) saveLocalControlRows(uploadMonth, provider, result.records);
+      setMessage(`${result.rows_imported} rows · ZAR ${fmtNum(result.total_nav_zar || 0)}${result.persisted === false ? ' · temporary until entity is published' : ''}`);
       setFile(null);
       onImported();
     } catch (err) {
@@ -131,10 +152,16 @@ export default function Control() {
   const { data: controlValues = [] } = useQuery({
     queryKey: ['controlValues'],
     queryFn: async () => {
+      const localRows = getLocalControlRows();
       try {
-        return await base44.entities.ControlValue.list('-upload_month', 5000);
+        const remoteRows = await base44.entities.ControlValue.list('-upload_month', 5000);
+        const remoteKeys = new Set(remoteRows.map(row => `${row.upload_month}|${row.provider_id}|${row.client_name}|${row.investment_name}`));
+        return [
+          ...remoteRows,
+          ...localRows.filter(row => !remoteKeys.has(`${row.upload_month}|${row.provider_id}|${row.client_name}|${row.investment_name}`)),
+        ];
       } catch {
-        return [];
+        return localRows;
       }
     },
   });

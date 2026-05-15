@@ -170,21 +170,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No control rows found. Expected Client, Investment Name, Service Provider, NAV - month, Rebate, and Advisory Fee columns.' }, { status: 400 });
     }
 
-    try {
-      if (replace_existing) await deleteExisting(base44, upload_month, provider_id);
-    } catch (error) {
-      return Response.json({ error: `ControlValue delete failed. Confirm the ControlValue entity is published. ${error.message || String(error)}` }, { status: 500 });
-    }
-
     let created = 0;
     try {
+      if (replace_existing) await deleteExisting(base44, upload_month, provider_id);
       for (let i = 0; i < records.length; i += BATCH) {
         const batch = records.slice(i, i + BATCH);
         await base44.asServiceRole.entities.ControlValue.bulkCreate(batch);
         created += batch.length;
       }
     } catch (error) {
-      return Response.json({ error: `ControlValue create failed. Confirm the ControlValue entity is published. ${error.message || String(error)}` }, { status: 500 });
+      const totals = {
+        total_nav_zar: records.reduce((sum, row: any) => sum + (Number(row.nav_zar) || 0), 0),
+        rebate_monthly_zar: records.reduce((sum, row: any) => sum + (Number(row.rebate_monthly_zar) || 0), 0),
+        advisory_monthly_zar: records.reduce((sum, row: any) => sum + (Number(row.advisory_monthly_zar) || 0), 0),
+      };
+      return Response.json({
+        success: true,
+        provider_id,
+        provider_name: providerName,
+        upload_month,
+        rows_imported: records.length,
+        persisted: false,
+        warning: `ControlValue entity is not published yet, so this control sheet was loaded into this browser session only. Publish the ControlValue entity to store it permanently. ${error.message || String(error)}`,
+        records,
+        ...totals,
+      });
     }
 
     return Response.json({
