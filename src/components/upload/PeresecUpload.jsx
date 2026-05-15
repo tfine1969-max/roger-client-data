@@ -10,6 +10,28 @@ import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'peresec_last_upload';
 
+function uploadErrorMessage(err, fallback = 'Upload failed') {
+  const data = err?.response?.data || err?.data || err?.cause?.response?.data;
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  if (err?.response?.status) return `${err.response.status}: ${err.message || fallback}`;
+  return err?.message || fallback;
+}
+
+async function invokeFunction(name, payload) {
+  const response = await base44.functions.invoke(name, payload).catch((err) => {
+    const status = err?.response?.status;
+    const message = uploadErrorMessage(err, `${name} failed`);
+    const wrapped = new Error(message);
+    wrapped.status = status;
+    throw wrapped;
+  });
+  const result = response.data;
+  if (!result?.success) throw new Error(result?.error || `${name} failed`);
+  return result;
+}
+
 export default function PeresecUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
@@ -44,14 +66,24 @@ export default function PeresecUpload({ onImported }) {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Extracting Peresec valuations...');
-      const res = await base44.functions.invoke('importProviderWorkbook', {
+      const payload = {
         provider: 'peresec',
         file_url,
         upload_month: uploadMonth,
         replace_existing: replaceExisting,
-      });
-      const result = res.data;
-      if (!result.success) throw new Error(result.error || 'Peresec import failed');
+      };
+      let result;
+      try {
+        result = await invokeFunction('importProviderWorkbook', payload);
+      } catch (err) {
+        if (err.status !== 404) throw err;
+        setMessage('Shared importer is not published yet; trying Peresec importer...');
+        result = await invokeFunction('importPeresecFile', {
+          file_url,
+          upload_month: uploadMonth,
+          replace_existing: replaceExisting,
+        });
+      }
 
       const info = {
         file_name: file.name,
@@ -73,7 +105,7 @@ export default function PeresecUpload({ onImported }) {
       if (input) input.value = '';
     } catch (err) {
       setStatus('error');
-      setMessage(err.message || 'Upload failed');
+      setMessage(uploadErrorMessage(err));
     }
   };
 

@@ -10,6 +10,24 @@ import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'prescient_last_upload';
 
+function uploadErrorMessage(err, fallback = 'Upload failed') {
+  const data = err?.response?.data || err?.data || err?.cause?.response?.data;
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  if (err?.response?.status) return `${err.response.status}: ${err.message || fallback}`;
+  return err?.message || fallback;
+}
+
+async function invokeFunction(name, payload) {
+  const response = await base44.functions.invoke(name, payload).catch((err) => {
+    throw new Error(uploadErrorMessage(err, `${name} failed`));
+  });
+  const result = response.data;
+  if (!result?.success) throw new Error(result?.error || `${name} failed`);
+  return result;
+}
+
 export default function PrescientUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
@@ -44,14 +62,12 @@ export default function PrescientUpload({ onImported }) {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Extracting Prescient valuations...');
-      const res = await base44.functions.invoke('importProviderWorkbook', {
+      const result = await invokeFunction('importProviderWorkbook', {
         provider: 'prescient',
         file_url,
         upload_month: uploadMonth,
         replace_existing: replaceExisting,
       });
-      const result = res.data;
-      if (!result.success) throw new Error(result.error || 'Prescient import failed');
 
       const info = {
         file_name: file.name,
@@ -73,7 +89,7 @@ export default function PrescientUpload({ onImported }) {
       if (input) input.value = '';
     } catch (err) {
       setStatus('error');
-      setMessage(err.message || 'Upload failed');
+      setMessage(uploadErrorMessage(err));
     }
   };
 
