@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as XLSX from 'npm:xlsx@0.18.5';
 import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
-const PLATFORM = 'Prescient';
+const PLATFORM = 'Peresec';
 const BATCH = 100;
 
 function cleanText(value: unknown) {
@@ -93,7 +93,8 @@ function parseRows(workbook: XLSX.WorkBook, uploadMonth: string, platform: strin
       const investmentName = cleanText(getCell(row, headers, ['investment name', 'investment']));
       const serviceProvider = cleanText(getCell(row, headers, ['service provider']));
       if (!client || !investmentName) continue;
-      if (serviceProvider && !normaliseHeader(serviceProvider).includes(normaliseHeader(platform))) continue;
+      const providerText = normaliseHeader(serviceProvider);
+      if (serviceProvider && !(providerText.includes('peresec') || providerText.includes(normaliseHeader(platform)))) continue;
 
       const navValue = toNumber(getCell(row, headers, navCandidates));
       if (navValue == null) continue;
@@ -150,7 +151,7 @@ Deno.serve(async (req) => {
     const rows = parseRows(workbook, upload_month, PLATFORM, mergeRules);
 
     if (rows.length === 0) {
-      return Response.json({ error: 'No Prescient rows found. Check that the file has Client, Investment Name, Service Provider, and NAV columns for the selected month.' }, { status: 400 });
+      return Response.json({ error: 'No Peresec rows found. Check that the file has Client, Investment Name, Service Provider, and NAV columns for the selected month.' }, { status: 400 });
     }
 
     if (replace_existing) {

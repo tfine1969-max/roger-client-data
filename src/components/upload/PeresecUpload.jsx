@@ -8,9 +8,9 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucid
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 
-const LAST_UPLOAD_KEY = 'prescient_last_upload';
+const LAST_UPLOAD_KEY = 'peresec_last_upload';
 
-export default function PrescientUpload({ onImported }) {
+export default function PeresecUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
   const [uploadMonth, setUploadMonth] = useState('');
@@ -38,19 +38,19 @@ export default function PrescientUpload({ onImported }) {
     e.preventDefault();
     if (!file || !uploadMonth) return;
     setStatus('uploading');
-    setMessage('Uploading Prescient workbook...');
+    setMessage('Uploading Peresec workbook...');
     setDetail(null);
 
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setMessage('Extracting Prescient valuations...');
-      const res = await base44.functions.invoke('importPrescientFile', {
+      setMessage('Extracting Peresec valuations...');
+      const res = await base44.functions.invoke('importPeresecFile', {
         file_url,
         upload_month: uploadMonth,
         replace_existing: replaceExisting,
       });
       const result = res.data;
-      if (!result.success) throw new Error(result.error || 'Prescient import failed');
+      if (!result.success) throw new Error(result.error || 'Peresec import failed');
 
       const info = {
         file_name: file.name,
@@ -62,13 +62,13 @@ export default function PrescientUpload({ onImported }) {
       setLastUpload(info);
 
       setStatus('success');
-      setMessage(`Imported ${result.rows_imported} Prescient valuation row${result.rows_imported === 1 ? '' : 's'} for ${formatMonth(uploadMonth)}.`);
+      setMessage(`Imported ${result.rows_imported} Peresec valuation row${result.rows_imported === 1 ? '' : 's'} for ${formatMonth(uploadMonth)}.`);
       setDetail(result);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
       if (onImported) onImported();
       setFile(null);
-      const input = document.getElementById('prescient-file-input');
+      const input = document.getElementById('peresec-file-input');
       if (input) input.value = '';
     } catch (err) {
       setStatus('error');
@@ -79,14 +79,14 @@ export default function PrescientUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload the Prescient workbook with Client, Investment Name, Service Provider, NAV, Rebate, and Advisory Fee columns.
+        Upload the Peresec workbook with Client, Investment Name, Service Provider, NAV, Rebate, and Advisory Fee columns.
       </p>
 
       {lastUpload && (
         <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
           <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
           <div className="text-xs text-muted-foreground space-y-0.5">
-            <p className="font-semibold text-foreground">Last uploaded Prescient file</p>
+            <p className="font-semibold text-foreground">Last uploaded Peresec file</p>
             <p>
               <span className="font-medium">{lastUpload.file_name}</span> - {formatMonth(lastUpload.upload_month)} - {lastUpload.rows_imported} rows
             </p>
@@ -107,9 +107,9 @@ export default function PrescientUpload({ onImported }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Prescient File (.xlsx)</Label>
+          <Label>Peresec File (.xlsx)</Label>
           <Input
-            id="prescient-file-input"
+            id="peresec-file-input"
             type="file"
             accept=".xlsx,.xls"
             onChange={handleFileChange}
@@ -125,7 +125,7 @@ export default function PrescientUpload({ onImported }) {
             onChange={e => setReplaceExisting(e.target.checked)}
             className="rounded border-border"
           />
-          <span>Replace existing Prescient data for this month</span>
+          <span>Replace existing Peresec data for this month</span>
         </label>
 
         <Button
@@ -160,7 +160,7 @@ export default function PrescientUpload({ onImported }) {
         )}
       </form>
 
-      <DeleteMonthData provider="prescient" />
+      <DeleteMonthData provider="peresec" />
     </div>
   );
 }
