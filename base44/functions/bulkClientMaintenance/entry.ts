@@ -69,11 +69,17 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'No valuation rows matched the selected clients' }, { status: 404 });
       }
 
+      // Determine the unified identity_no: use primary's identity if it has one,
+      // otherwise collect all identities across selected clients and pick the first non-null one.
+      // All rows will be set to the same identity so they share the same clientKey after merge.
+      const allIdentities = targetRows.map((row: Record<string, unknown>) => row.identity_no).filter(Boolean);
+      const unifiedIdentity = primaryIdentity || allIdentities[0] || null;
+
       let updated = 0;
       for (const row of targetRows) {
         await base44.asServiceRole.entities.PortfolioValuation.update(row.id, {
           portfolio_name: String(merged_name).trim(),
-          ...(primaryIdentity ? { identity_no: primaryIdentity } : {}),
+          identity_no: unifiedIdentity || row.identity_no || null,
           has_unknown_value: false,
           is_flagged: !!row.has_missing_account_code || !!row.has_missing_market_value || !!row.is_duplicate,
         });
