@@ -39,24 +39,20 @@ function normaliseLegalEntity(value) {
 }
 
 export function splitClientName(name) {
-  const formatted = formatClientName(name || '');
-  if (!formatted) return { surname: '', firstNames: '' };
-  if (ENTITY_MARKERS.test(formatted) || ENTITY_PREFIX.test(formatted)) {
-    return { surname: formatted, firstNames: '' };
-  }
-  if (formatted.includes(',')) {
-    const [surname, ...rest] = formatted.split(',');
+  const raw = String(name || '').trim();
+  if (!raw) return { surname: '', firstNames: '' };
+
+  // If already in "Surname, Firstnames" format, split on the comma
+  if (raw.includes(',')) {
+    const [surname, ...rest] = raw.split(',');
     return {
       surname: surname.trim(),
       firstNames: rest.join(',').trim(),
     };
   }
-  const words = formatted.split(/\s+/).filter(Boolean);
-  if (words.length < 2) return { surname: formatted, firstNames: '' };
-  return {
-    surname: words[words.length - 1],
-    firstNames: words.slice(0, -1).join(' '),
-  };
+
+  // No comma — treat the whole name as the entity/surname field (no reordering)
+  return { surname: raw, firstNames: '' };
 }
 
 export function buildStructuredClientName(surname, firstNames = '') {
