@@ -44,11 +44,11 @@ export default function PeresecUpload({ onImported }) {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Extracting Peresec valuations...');
-      const res = await base44.functions.invoke('importMonthlyFile', {
+      const res = await base44.functions.invoke('importProviderWorkbook', {
+        provider: 'peresec',
         file_url,
         upload_month: uploadMonth,
         replace_existing: replaceExisting,
-        provider_filter: 'Peresec',
       });
       const result = res.data;
       if (!result.success) throw new Error(result.error || 'Peresec import failed');

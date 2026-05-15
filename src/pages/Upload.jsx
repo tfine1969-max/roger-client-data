@@ -29,21 +29,6 @@ const PROVIDERS = [
   { id: 'prescient', label: 'Prescient' },
 ];
 
-function ComingSoon({ provider, providerId }) {
-  return (
-    <div className="space-y-0">
-      <div className="bg-white border rounded-lg p-10 flex flex-col items-center justify-center text-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-          <UploadIcon className="w-5 h-5 text-muted-foreground" />
-        </div>
-        <p className="text-sm font-medium text-foreground">{provider} import coming soon</p>
-        <p className="text-xs text-muted-foreground">Use the Monthly Workbook tab to import this provider's data for now.</p>
-      </div>
-      <DeleteMonthData provider={providerId} />
-    </div>
-  );
-}
-
 function MonthlyWorkbookUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
