@@ -44,10 +44,11 @@ export default function PrescientUpload({ onImported }) {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Extracting Prescient valuations...');
-      const res = await base44.functions.invoke('importPrescientFile', {
+      const res = await base44.functions.invoke('importMonthlyFile', {
         file_url,
         upload_month: uploadMonth,
         replace_existing: replaceExisting,
+        provider_filter: 'Prescient',
       });
       const result = res.data;
       if (!result.success) throw new Error(result.error || 'Prescient import failed');
