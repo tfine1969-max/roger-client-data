@@ -83,8 +83,19 @@ function saveLocalControlRows(uploadMonth, provider, records) {
   localStorage.setItem(LOCAL_CONTROL_KEY, JSON.stringify([...otherRows, ...rows]));
 }
 
+function investmentKey(value) {
+  return norm(value)
+    .replace(/\bfof\b/g, 'fund of funds')
+    .replace(/\bfund of fund\b/g, 'fund of funds')
+    .replace(/\b(class|cls)\s+[a-z0-9]+\b/g, ' ')
+    .replace(/\b[a-z]\b$/, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 function rowKey(client, investment) {
-  return `${compact(client)}||${compact(investment)}`;
+  return `${compact(client)}||${investmentKey(investment)}`;
 }
 
 function monthName(month) {
@@ -144,6 +155,7 @@ export default function Control() {
   const [selectedMonth, setSelectedMonth] = useState('2026-04');
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [aligning, setAligning] = useState(false);
+  const [alignMessage, setAlignMessage] = useState(null);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -257,10 +269,15 @@ export default function Control() {
   const alignActiveProvider = async () => {
     if (!active) return;
     setAligning(true);
+    setAlignMessage(null);
     try {
       let updated = 0;
+      let skipped = 0;
       for (const row of detailRows) {
-        if (!row.control || row.dbRows.length !== 1) continue;
+        if (!row.control || row.dbRows.length !== 1) {
+          skipped++;
+          continue;
+        }
         const target = row.dbRows[0];
         const currency = String(target.currency || 'ZAR').toUpperCase();
         const rate = currency === 'USD' ? effectiveExchangeRate(target) : 1;
@@ -284,17 +301,20 @@ export default function Control() {
       }
       await queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       setAligning(false);
-      alert(`Aligned ${updated} matching row${updated === 1 ? '' : 's'}. Rows with no match or multiple matches were left for review.`);
+      setAlignMessage({
+        type: 'success',
+        text: `Aligned ${updated} matching row${updated === 1 ? '' : 's'}. ${skipped} row${skipped === 1 ? '' : 's'} still need review because they have no match or multiple matches.`,
+      });
     } catch (err) {
       setAligning(false);
-      alert(err.message || 'Failed to align values');
+      setAlignMessage({ type: 'error', text: err.message || 'Failed to align values' });
     }
   };
 
   if (active) {
     return (
       <div className="space-y-6">
-        <button onClick={() => setSelectedProvider(null)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <button onClick={() => { setSelectedProvider(null); setAlignMessage(null); }} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to Control Summary
         </button>
         <div className="flex items-start justify-between gap-4">
@@ -309,6 +329,15 @@ export default function Control() {
             <RefreshCw className="h-4 w-4" /> {aligning ? 'Aligning...' : 'Align Matched Rows'}
           </Button>
         </div>
+        {alignMessage && (
+          <div className={`rounded-lg border px-4 py-3 text-sm ${
+            alignMessage.type === 'error'
+              ? 'border-destructive/20 bg-destructive/5 text-destructive'
+              : 'border-green-200 bg-green-50 text-green-800'
+          }`}>
+            {alignMessage.text}
+          </div>
+        )}
 
         <div className="overflow-hidden rounded-lg border bg-white">
           <div className="overflow-x-auto">
