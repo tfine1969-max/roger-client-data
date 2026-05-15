@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
+import { importProviderWorkbook } from '@/lib/provider-workbook-import';
 import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'prescient_last_upload';
@@ -17,15 +17,6 @@ function uploadErrorMessage(err, fallback = 'Upload failed') {
   if (data?.message) return data.message;
   if (err?.response?.status) return `${err.response.status}: ${err.message || fallback}`;
   return err?.message || fallback;
-}
-
-async function invokeFunction(name, payload) {
-  const response = await base44.functions.invoke(name, payload).catch((err) => {
-    throw new Error(uploadErrorMessage(err, `${name} failed`));
-  });
-  const result = response.data;
-  if (!result?.success) throw new Error(result?.error || `${name} failed`);
-  return result;
 }
 
 export default function PrescientUpload({ onImported }) {
@@ -60,14 +51,14 @@ export default function PrescientUpload({ onImported }) {
     setDetail(null);
 
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Extracting Prescient valuations...');
-      const result = await invokeFunction('importProviderWorkbook', {
-        provider: 'prescient',
-        file_url,
-        upload_month: uploadMonth,
-        replace_existing: replaceExisting,
+      const result = await importProviderWorkbook({
+        file,
+        uploadMonth,
+        provider: 'Prescient',
+        replaceExisting,
       });
+      if (!result.success) throw new Error(result.error || 'Prescient import failed');
 
       const info = {
         file_name: file.name,
