@@ -10,7 +10,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
-import ProviderLogo from '@/components/shared/ProviderLogo';
 
 function mappedAumForMonth(month) {
   return feeMappingRows.reduce((sum, row) => sum + (row.navByMonth?.[month] ?? 0), 0);
@@ -82,17 +81,6 @@ export default function Dashboard() {
     current.forEach(r => {
       if (!map[r.account_code]) map[r.account_code] = { name: r.portfolio_name, code: r.account_code, total: 0 };
       map[r.account_code].total += zarVal(r);
-    });
-    return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
-  }, [feeRows, latestMonth]);
-
-  const platformBreakdown = useMemo(() => {
-    const current = feeRows.filter(v => v.upload_month === latestMonth);
-    const map = {};
-    current.forEach(row => {
-      const platform = row.platform || 'Unknown';
-      if (!map[platform]) map[platform] = { platform, total: 0 };
-      map[platform].total += zarVal(row);
     });
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
   }, [feeRows, latestMonth]);
@@ -190,20 +178,6 @@ export default function Dashboard() {
                 </span>
               </div>
             )}
-            <div className="mt-4 space-y-2">
-              {platformBreakdown.map(row => (
-                <div key={row.platform} className="grid grid-cols-[96px_1fr_auto] items-center gap-2 text-xs">
-                  <ProviderLogo provider={row.platform} logoBoxClassName="h-8 w-20" logoClassName="max-h-5 max-w-[64px]" showName={false} />
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${stats.totalAUM ? Math.max(4, (row.total / stats.totalAUM) * 100) : 0}%` }}
-                    />
-                  </div>
-                  <span className="font-numbers text-muted-foreground">{stats.totalAUM ? `${((row.total / stats.totalAUM) * 100).toFixed(0)}%` : '-'}</span>
-                </div>
-              ))}
-            </div>
             <div className="mt-4 pt-4 border-t w-full">
               <p className="text-xs text-muted-foreground">Across {stats.platforms} platform{stats.platforms !== 1 ? 's' : ''}</p>
               <p className="text-sm font-medium mt-0.5 text-muted-foreground">View by platform →</p>
