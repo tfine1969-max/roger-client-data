@@ -1,0 +1,64 @@
+{
+  "name": "ControlValue",
+  "type": "object",
+  "properties": {
+    "upload_month": {
+      "type": "string",
+      "description": "Month in YYYY-MM format"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "Canonical provider id"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Provider display name"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client name from control sheet"
+    },
+    "class_label": {
+      "type": "string",
+      "description": "Class or category from control sheet"
+    },
+    "investment_name": {
+      "type": "string",
+      "description": "Investment/fund name from control sheet"
+    },
+    "service_provider": {
+      "type": "string",
+      "description": "Service provider from control sheet"
+    },
+    "nav_zar": {
+      "type": "number",
+      "description": "Control NAV/correct value in ZAR"
+    },
+    "rebate_annual_percent": {
+      "type": "number",
+      "description": "Annual rebate percentage stored as percent, e.g. 0.5 for 0.5%"
+    },
+    "advisory_annual_percent": {
+      "type": "number",
+      "description": "Annual advisory percentage stored as percent, e.g. 0.75 for 0.75%"
+    },
+    "rebate_monthly_zar": {
+      "type": "number",
+      "description": "Monthly rebate amount in ZAR"
+    },
+    "advisory_monthly_zar": {
+      "type": "number",
+      "description": "Monthly advisory amount in ZAR"
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Uploaded control workbook"
+    }
+  },
+  "required": [
+    "upload_month",
+    "provider_id",
+    "client_name",
+    "investment_name"
+  ]
+}

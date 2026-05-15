@@ -1,7 +1,7 @@
-export const DEFAULT_USD_ZAR_RATE = '16.7766';
+export const DEFAULT_USD_ZAR_RATE = '16.776';
 
 export const MONTHLY_USD_ZAR_RATES = {
-  '2026-04': '16.7766',
+  '2026-04': '16.776',
 };
 
 const STORAGE_KEY = 'wealthworks_monthly_usd_zar_rates';
