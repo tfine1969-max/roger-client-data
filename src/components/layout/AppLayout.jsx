@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal, ClipboardCheck, LineChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/control', label: 'Control', icon: ClipboardCheck },
   { path: '/upload', label: 'Upload', icon: Upload },
   { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
+  { path: '/investment-summary', label: 'Reports', icon: LineChart },
 ];
 
 const platformsSubNav = [

@@ -1,0 +1,79 @@
+{
+  "name": "InvestmentSummaryReport",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Client display name e.g. Marc Hoar"
+    },
+    "portfolio": {
+      "type": "string",
+      "enum": [
+        "LOCAL",
+        "OFFSHORE"
+      ],
+      "description": "Which portfolio this fund belongs to"
+    },
+    "fund_name": {
+      "type": "string",
+      "description": "Fund / investment name"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "ZAR",
+        "USD"
+      ],
+      "description": "Currency of the values"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Display order within the portfolio"
+    },
+    "dec_2025": {
+      "type": "number"
+    },
+    "jan_2026": {
+      "type": "number"
+    },
+    "feb_2026": {
+      "type": "number"
+    },
+    "mar_2026": {
+      "type": "number"
+    },
+    "apr_2026": {
+      "type": "number"
+    },
+    "may_2026": {
+      "type": "number"
+    },
+    "jun_2026": {
+      "type": "number"
+    },
+    "jul_2026": {
+      "type": "number"
+    },
+    "aug_2026": {
+      "type": "number"
+    },
+    "sep_2026": {
+      "type": "number"
+    },
+    "oct_2026": {
+      "type": "number"
+    },
+    "nov_2026": {
+      "type": "number"
+    },
+    "dec_2026": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "client_name",
+    "portfolio",
+    "fund_name",
+    "currency"
+  ]
+}
