@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       merged_name,
     } = await req.json();
 
-    if (!Array.isArray(client_keys) || client_keys.length === 0) {
+    if (action !== 'fix_entity_names' && (!Array.isArray(client_keys) || client_keys.length === 0)) {
       return Response.json({ error: 'Select at least one client' }, { status: 400 });
     }
 
@@ -128,6 +128,58 @@ Deno.serve(async (req) => {
         action,
         deleted_records: deleted,
         message: `Deleted ${deleted} zero-balance valuation records for ${upload_month}`,
+      });
+    }
+
+    if (action === 'fix_entity_names') {
+      // Find all rows with comma-formatted names that look like entities (not real people)
+      // e.g. "Management, BSM" → "BSM Management", "Images, Apex" → "Apex Images"
+      // We target names provided in the request, or auto-detect via entity markers.
+      const ENTITY_MARKERS = /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof|management|consulting|services|solutions|enterprises|group|associates|images|media|construction|logistics|transport|finance|advisory|capital|wealth|asset|technology|tech|systems|engineering|health|clinic|pharmacy)\b/i;
+
+      const allRows = await base44.asServiceRole.entities.PortfolioValuation.list('portfolio_name', 5000);
+      const allRows2 = await base44.asServiceRole.entities.PortfolioValuation.list('-portfolio_name', 5000);
+      const combined = [...allRows, ...allRows2];
+      const seen = new Set();
+      const uniqueRows = combined.filter((row: Record<string, unknown>) => {
+        if (seen.has(row.id)) return false;
+        seen.add(row.id);
+        return true;
+      });
+
+      const commaRows = uniqueRows.filter((row: Record<string, unknown>) => {
+        const name = String(row.portfolio_name || '');
+        return name.includes(',') && ENTITY_MARKERS.test(name);
+      });
+
+      // Group by current portfolio_name to batch-fix
+      const nameGroups: Record<string, { rows: Record<string, unknown>[], fixed: string }> = {};
+      for (const row of commaRows) {
+        const name = String(row.portfolio_name || '');
+        if (!nameGroups[name]) {
+          const [surname, ...rest] = name.split(',');
+          const firstNames = rest.join(',').trim();
+          const fixed = firstNames ? `${firstNames.trim()} ${surname.trim()}` : surname.trim();
+          nameGroups[name] = { rows: [], fixed };
+        }
+        nameGroups[name].rows.push(row as Record<string, unknown>);
+      }
+
+      let updated = 0;
+      for (const { rows: groupRows, fixed } of Object.values(nameGroups)) {
+        for (const row of groupRows) {
+          await base44.asServiceRole.entities.PortfolioValuation.update(row.id, { portfolio_name: fixed });
+          updated++;
+          if (updated % 25 === 0) await new Promise(res => setTimeout(res, 100));
+        }
+      }
+
+      return Response.json({
+        success: true,
+        action,
+        updated_records: updated,
+        fixed_names: Object.entries(nameGroups).map(([original, { fixed }]) => ({ original, fixed })),
+        message: `Fixed ${updated} records across ${Object.keys(nameGroups).length} entity names`,
       });
     }
 
