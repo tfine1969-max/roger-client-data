@@ -44,6 +44,14 @@ const providerId = value => PLATFORM_IDS[norm(value)] || norm(value).replace(/\s
 const diffClass = value => Math.abs(value || 0) > 1 ? 'text-destructive font-semibold' : 'text-positive';
 const pctFromControl = value => Number(value || 0);
 
+async function invokeFunction(name, payload) {
+  const response = await base44.functions.invoke(name, payload);
+  if (response?.data?.success === false || response?.data?.error) {
+    throw new Error(response.data.error || `${name} failed`);
+  }
+  return response.data;
+}
+
 function rowKey(client, investment) {
   return `${compact(client)}||${compact(investment)}`;
 }
@@ -64,14 +72,12 @@ function UploadControl({ provider, uploadMonth, onImported }) {
     setMessage('Uploading control sheet...');
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const response = await base44.functions.invoke('importControlSheet', {
+      const result = await invokeFunction('importControlSheet', {
         provider_id: provider.id,
         file_url,
         upload_month: uploadMonth,
         replace_existing: true,
       });
-      const result = response.data;
-      if (!result.success) throw new Error(result.error || 'Control import failed');
       setStatus('success');
       setMessage(`${result.rows_imported} rows · ZAR ${fmtNum(result.total_nav_zar || 0)}`);
       setFile(null);
@@ -113,7 +119,13 @@ export default function Control() {
   });
   const { data: controlValues = [] } = useQuery({
     queryKey: ['controlValues'],
-    queryFn: () => base44.entities.ControlValue.list('-upload_month', 5000),
+    queryFn: async () => {
+      try {
+        return await base44.entities.ControlValue.list('-upload_month', 5000);
+      } catch {
+        return [];
+      }
+    },
   });
   const { data: feeConfigs = [] } = useQuery({
     queryKey: ['feeConfigs'],

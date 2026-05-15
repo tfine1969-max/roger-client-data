@@ -96,7 +96,7 @@ async function deleteExisting(base44: any, uploadMonth: string, providerId: stri
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { provider_id, file_url, upload_month, replace_existing = true } = await req.json();
@@ -108,7 +108,12 @@ Deno.serve(async (req) => {
     if (!fileRes.ok) return Response.json({ error: `Could not fetch uploaded file (${fileRes.status})` }, { status: 400 });
 
     const buffer = await fileRes.arrayBuffer();
-    const workbook = xlsx.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
+    let workbook;
+    try {
+      workbook = xlsx.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
+    } catch (error) {
+      return Response.json({ error: `Could not read control workbook: ${error.message || String(error)}` }, { status: 400 });
+    }
     const fileName = fileNameFromUrl(file_url);
     const records: Record<string, unknown>[] = [];
 
@@ -165,13 +170,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No control rows found. Expected Client, Investment Name, Service Provider, NAV - month, Rebate, and Advisory Fee columns.' }, { status: 400 });
     }
 
-    if (replace_existing) await deleteExisting(base44, upload_month, provider_id);
+    try {
+      if (replace_existing) await deleteExisting(base44, upload_month, provider_id);
+    } catch (error) {
+      return Response.json({ error: `ControlValue delete failed. Confirm the ControlValue entity is published. ${error.message || String(error)}` }, { status: 500 });
+    }
 
     let created = 0;
-    for (let i = 0; i < records.length; i += BATCH) {
-      const batch = records.slice(i, i + BATCH);
-      await base44.asServiceRole.entities.ControlValue.bulkCreate(batch);
-      created += batch.length;
+    try {
+      for (let i = 0; i < records.length; i += BATCH) {
+        const batch = records.slice(i, i + BATCH);
+        await base44.asServiceRole.entities.ControlValue.bulkCreate(batch);
+        created += batch.length;
+      }
+    } catch (error) {
+      return Response.json({ error: `ControlValue create failed. Confirm the ControlValue entity is published. ${error.message || String(error)}` }, { status: 500 });
     }
 
     return Response.json({
