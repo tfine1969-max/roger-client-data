@@ -442,21 +442,21 @@ export default function Platforms() {
                     }
                   }}
                 >
-                  <td className="px-5 py-4 text-center">
-                   <div className="inline-flex flex-col items-center gap-1.5">
-                     <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-12 w-36" logoClassName="max-h-8 max-w-[120px]" showName={false} />
+                  <td className="px-5 py-2.5">
+                   <div className="inline-flex items-center gap-3">
+                     <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-8 w-24" logoClassName="max-h-6 max-w-[80px]" showName={false} />
                      <span className="text-sm font-semibold text-foreground">{r.platform}</span>
                    </div>
                   </td>
-                  <td className="px-5 py-4 text-center font-numbers text-lg font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
-                  <td className="px-5 py-4 text-center">
+                  <td className="px-5 py-2.5 text-center font-numbers text-base font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
+                  <td className="px-5 py-2.5 text-center">
                     <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
                       {totalAUM ? `${((r.totalZar / totalAUM) * 100).toFixed(1)}%` : '-'}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-center text-muted-foreground">{r.clients}</td>
-                  <td className="px-5 py-4 text-center text-muted-foreground">{r.funds}</td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-2.5 text-center text-muted-foreground">{r.clients}</td>
+                  <td className="px-5 py-2.5 text-center text-muted-foreground">{r.funds}</td>
+                  <td className="px-5 py-2.5">
                     <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
                   </td>
                 </tr>
