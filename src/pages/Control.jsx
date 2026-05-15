@@ -44,8 +44,19 @@ const providerId = value => PLATFORM_IDS[norm(value)] || norm(value).replace(/\s
 const diffClass = value => Math.abs(value || 0) > 1 ? 'text-destructive font-semibold' : 'text-positive';
 const pctFromControl = value => Number(value || 0);
 
+function functionErrorMessage(err, fallback = 'Upload failed') {
+  const data = err?.response?.data || err?.data || err?.cause?.response?.data;
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  if (err?.response?.status) return `${err.response.status}: ${err.message || fallback}`;
+  return err?.message || fallback;
+}
+
 async function invokeFunction(name, payload) {
-  const response = await base44.functions.invoke(name, payload);
+  const response = await base44.functions.invoke(name, payload).catch((err) => {
+    throw new Error(functionErrorMessage(err, `${name} failed`));
+  });
   if (response?.data?.success === false || response?.data?.error) {
     throw new Error(response.data.error || `${name} failed`);
   }
@@ -84,7 +95,7 @@ function UploadControl({ provider, uploadMonth, onImported }) {
       onImported();
     } catch (err) {
       setStatus('error');
-      setMessage(err.message || 'Upload failed');
+      setMessage(functionErrorMessage(err));
     }
   };
 
