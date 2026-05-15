@@ -12,6 +12,7 @@ import PrimeUpload from '@/components/upload/PrimeUpload';
 import GreyphonUpload from '@/components/upload/GreyphonUpload';
 import CredoUpload from '@/components/upload/CredoUpload';
 import NorthstarUpload from '@/components/upload/NorthstarUpload';
+import PrescientUpload from '@/components/upload/PrescientUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
@@ -222,7 +223,7 @@ export default function Upload() {
         {activeTab === 'gryphon' && <GreyphonUpload onImported={handleImported} />}
         {activeTab === 'northstar' && <NorthstarUpload onImported={handleImported} />}
         {activeTab === 'peresec' && <ComingSoon provider="Peresec" providerId="peresec" />}
-        {activeTab === 'prescient' && <ComingSoon provider="Prescient" providerId="prescient" />}
+        {activeTab === 'prescient' && <PrescientUpload onImported={handleImported} />}
       </div>
     </div>
   );
