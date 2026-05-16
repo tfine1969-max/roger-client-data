@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { feeMappingRows } from '@/data/feeMapping';
 import { formatClientName, normalizeClientText } from '@/lib/client-utils';
 
 export const CLIENT_BLUEPRINT_MONTH = '2026-04';
@@ -10,7 +11,11 @@ const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
 const cleanAccount = value => clean(value).toLowerCase();
 const cleanIdentity = value => clean(value).replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
 const cleanPlatform = value => normalizeClientText(value).replace(/\b(asset management|investments|securities)\b/g, '').trim();
-const feeNumber = value => Number.isFinite(Number(value)) ? Number(value) : null;
+const feeNumber = value => {
+  if (value == null || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
 
 const addToMap = (map, key, value) => {
   if (key && value && !map.has(key)) map.set(key, value);
@@ -52,21 +57,41 @@ function voteWinner(votes) {
   return winner ? Number(winner[0]) : null;
 }
 
-function buildFeeBlueprint(rows) {
+function rowPlatform(row) {
+  return row.platform ?? row.provider ?? row.sourceProvider;
+}
+
+function rowInvestment(row) {
+  return row.investment_name ?? row.investmentKey ?? row.investment;
+}
+
+function rowClientName(row) {
+  return row.portfolio_name ?? row.client;
+}
+
+function rowRebate(row) {
+  return row.rebate_fee_annual_percent ?? row.rebateAnnualPercent;
+}
+
+function rowAdvisory(row) {
+  return row.advisory_fee_annual_percent ?? row.advisoryAnnualPercent;
+}
+
+function buildFeeBlueprint(rows, fallbackRows = []) {
   const rebateByPlatformFundVotes = new Map();
   const rebateByFundVotes = new Map();
   const advisoryByPlatformAccountVotes = new Map();
   const advisoryByPlatformIdentityVotes = new Map();
   const advisoryByPlatformNameVotes = new Map();
 
-  rows.forEach(row => {
-    const platform = cleanPlatform(row.platform);
-    const investment = compact(row.investment_name);
+  [...rows, ...fallbackRows].forEach(row => {
+    const platform = cleanPlatform(rowPlatform(row));
+    const investment = compact(rowInvestment(row));
     const account = cleanAccount(row.account_code);
     const identity = cleanIdentity(row.identity_no);
-    const name = compact(row.portfolio_name);
-    const rebate = feeNumber(row.rebate_fee_annual_percent);
-    const advisory = feeNumber(row.advisory_fee_annual_percent);
+    const name = compact(rowClientName(row));
+    const rebate = feeNumber(rowRebate(row));
+    const advisory = feeNumber(rowAdvisory(row));
 
     addVote(rebateByPlatformFundVotes, `${platform}||${investment}`, rebate);
     addVote(rebateByFundVotes, investment, rebate);
@@ -165,7 +190,7 @@ export async function applyClientBlueprint(uploadMonth, options = {}) {
   ]);
 
   const blueprint = buildBlueprint(blueprintRows || []);
-  const feeBlueprint = buildFeeBlueprint(blueprintRows || []);
+  const feeBlueprint = buildFeeBlueprint(blueprintRows || [], feeMappingRows || []);
   const provider = clean(options.provider).toLowerCase();
 
   const changes = (targetRows || [])
