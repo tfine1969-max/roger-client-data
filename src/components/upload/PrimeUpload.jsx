@@ -10,6 +10,15 @@ import DeleteMonthData from './DeleteMonthData';
 
 const LAST_UPLOAD_KEY = 'prime_last_upload';
 
+function uploadErrorMessage(err, fallback = 'Upload failed') {
+  const data = err?.response?.data || err?.data || err?.cause?.response?.data;
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  if (err?.response?.status) return `${err.response.status}: ${err.message || fallback}`;
+  return err?.message || fallback;
+}
+
 export default function PrimeUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
@@ -65,7 +74,7 @@ export default function PrimeUpload({ onImported }) {
       document.getElementById('prime-file-input').value = '';
     } catch (err) {
       setStatus('error');
-      setMessage(err.message || 'Upload failed');
+      setMessage(uploadErrorMessage(err));
     }
   };
 
