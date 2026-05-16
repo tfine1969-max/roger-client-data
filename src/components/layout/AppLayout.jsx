@@ -127,15 +127,15 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
-        <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
+        <div className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-5">
           <div className="flex min-h-16 flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-            <Link to="/" className="group flex w-fit items-center gap-3">
+            <Link to="/" className="group flex w-fit items-center gap-4">
               <img
                 src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png"
                 alt="Wealth Works"
-                className="h-9 w-auto transition-transform group-hover:scale-[1.01]"
+                className="h-12 w-auto transition-transform group-hover:scale-[1.01] sm:h-14"
               />
-              <p className="hidden text-[10px] font-medium uppercase leading-none tracking-[0.2em] text-slate-500 sm:block">
+              <p className="hidden text-[11px] font-medium uppercase leading-none tracking-[0.24em] text-slate-500 sm:block">
                 Cape Town Client Management
               </p>
             </Link>
@@ -175,7 +175,7 @@ export default function AppLayout() {
 
         {inPlatformsSection && (
           <div className="border-t border-slate-200/80 bg-white">
-            <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
+            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-5">
               <div className="flex h-11 items-center gap-2 overflow-x-auto">
                 {platformsSubNav.map(({ path, label }) => {
                   const active = path === '/platforms'
