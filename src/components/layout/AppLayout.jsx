@@ -115,7 +115,6 @@ function NavDropdown({ group, location }) {
 
 const platformsSubNav = [
   { path: '/platforms', label: 'All Platforms' },
-  { path: '/providers/prime', label: 'Prime Investments' },
 ];
 
 export default function AppLayout() {
