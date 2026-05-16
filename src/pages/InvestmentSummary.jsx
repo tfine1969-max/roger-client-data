@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Plus, Save, Loader2, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { FileDown, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MONTHS = [

@@ -64,28 +64,30 @@ function NavDropdown({ group, location }) {
 
   const Icon = group.icon;
 
-  const btnStyle = isGroupActive
-    ? { backgroundColor: group.color, color: '#fff' }
-    : hovered
-    ? { backgroundColor: group.color + '44', color: group.color }
-    : { backgroundColor: group.color + '22', color: group.color };
-
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={btnStyle}
-        className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap"
+        className={cn(
+          "group relative flex h-9 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition-all whitespace-nowrap",
+          isGroupActive
+            ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
+            : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm",
+          hovered && !isGroupActive && "bg-white"
+        )}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className={cn("h-4 w-4 transition-colors", isGroupActive ? "text-primary" : "text-slate-400 group-hover:text-slate-700")} />
         <span className="hidden md:inline">{group.label}</span>
         <ChevronDown className={cn("w-3 h-3 transition-transform hidden md:block", open && "rotate-180")} />
+        {isGroupActive && (
+          <span className="absolute inset-x-3 -bottom-1.5 h-0.5 rounded-full bg-primary" />
+        )}
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1 left-0 z-50 min-w-[160px] rounded-lg border bg-white shadow-lg py-1">
+        <div className="absolute left-0 top-full z-50 mt-2 min-w-[190px] rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10">
           {group.items.map(({ path, label, icon: ItemIcon }) => {
             const active = location.pathname.startsWith(path);
             return (
@@ -96,8 +98,8 @@ function NavDropdown({ group, location }) {
                 className={cn(
                   "flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
                   active
-                    ? "text-primary font-semibold bg-primary/5"
-                    : "text-foreground hover:bg-muted/60"
+                    ? "text-primary font-semibold bg-primary/5 rounded-lg"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950 rounded-lg"
                 )}
               >
                 <ItemIcon className="w-4 h-4" />
@@ -123,16 +125,22 @@ export default function AppLayout() {
     location.pathname === '/platforms' || location.pathname.startsWith('/providers/');
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-white shadow-sm">
-        <div className="max-w-screen-xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png" alt="Wealth Works" className="h-9 w-auto" />
-              <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Cape Town Client Management</p>
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
+        <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
+          <div className="flex min-h-16 flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <Link to="/" className="group flex w-fit items-center gap-3">
+              <img
+                src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png"
+                alt="Wealth Works"
+                className="h-9 w-auto transition-transform group-hover:scale-[1.01]"
+              />
+              <p className="hidden text-[10px] font-medium uppercase leading-none tracking-[0.2em] text-slate-500 sm:block">
+                Cape Town Client Management
+              </p>
             </Link>
-            <nav className="flex items-center gap-1">
-              {singleItems.map(({ path, label, icon: Icon, color }) => {
+            <nav className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5">
+              {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
                     ? location.pathname === '/'
@@ -143,16 +151,18 @@ export default function AppLayout() {
                   <Link
                     key={path}
                     to={path}
-                    className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap"
-                    style={active
-                      ? { backgroundColor: color, color: '#fff' }
-                      : { backgroundColor: color + '22', color: color }
-                    }
-                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = color + '44'; }}
-                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = active ? color : color + '22'; }}
+                    className={cn(
+                      "group relative flex h-9 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition-all",
+                      active
+                        ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
+                        : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                    )}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className={cn("h-4 w-4 transition-colors", active ? "text-primary" : "text-slate-400 group-hover:text-slate-700")} />
                     <span className="hidden md:inline">{label}</span>
+                    {active && (
+                      <span className="absolute inset-x-3 -bottom-1.5 h-0.5 rounded-full bg-primary" />
+                    )}
                   </Link>
                 );
               })}
@@ -164,9 +174,9 @@ export default function AppLayout() {
         </div>
 
         {inPlatformsSection && (
-          <div className="border-t bg-muted/40">
-            <div className="max-w-screen-xl mx-auto px-6">
-              <div className="flex items-center gap-1 h-10">
+          <div className="border-t border-slate-200/80 bg-white">
+            <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
+              <div className="flex h-11 items-center gap-2 overflow-x-auto">
                 {platformsSubNav.map(({ path, label }) => {
                   const active = path === '/platforms'
                     ? location.pathname === '/platforms'
@@ -176,10 +186,10 @@ export default function AppLayout() {
                       key={path}
                       to={path}
                       className={cn(
-                        "px-3 py-1 rounded text-xs font-medium transition-all",
+                        "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap",
                         active
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-primary/10 text-primary"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                       )}
                     >
                       {label}
@@ -191,7 +201,7 @@ export default function AppLayout() {
           </div>
         )}
       </header>
-      <main className="max-w-screen-xl mx-auto px-6 py-8">
+      <main className="max-w-screen-xl mx-auto px-5 py-8 sm:px-6">
         <Outlet />
       </main>
     </div>
