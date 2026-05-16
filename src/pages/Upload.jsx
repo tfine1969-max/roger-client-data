@@ -17,6 +17,7 @@ import PrescientUpload from '@/components/upload/PrescientUpload';
 import PeresecUpload from '@/components/upload/PeresecUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
+import { formatMonth } from '@/lib/valuation-utils';
 
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
@@ -182,14 +183,18 @@ export default function Upload() {
 
   const handleRepairMonth = async () => {
     if (!repairMonth) return;
-    setRepairStatus('Applying April 2026 client blueprint...');
+    setRepairStatus('Checking client names against April 2026...');
     try {
       const result = await applyClientBlueprint(repairMonth);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-      setRepairStatus(`Updated ${result.updated} valuation row${result.updated === 1 ? '' : 's'} for ${formatMonth(repairMonth)}.`);
+      if (result.skipped) {
+        setRepairStatus('Choose May 2026 or a later month. April 2026 is the master list and does not need to be fixed.');
+      } else {
+        setRepairStatus(`Checked ${formatMonth(repairMonth)}. Updated ${result.updated} row${result.updated === 1 ? '' : 's'} to the April client names.`);
+      }
     } catch (err) {
-      setRepairStatus(err.message || 'Could not apply April client blueprint.');
+      setRepairStatus(err.message || 'Could not fix client names for this month.');
     }
   };
 
@@ -200,12 +205,15 @@ export default function Upload() {
         <p className="text-sm text-muted-foreground mt-1">Upload monthly data for each provider.</p>
       </div>
 
-      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-amber-950">Client naming lock</p>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-amber-800">
-              April 2026 is used as the client-name blueprint. After each new import, matching rows are automatically mapped back to those corrected client names by account code, ID number, or existing name.
+            <p className="text-sm font-semibold text-slate-950">Keep Client Names Fixed</p>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
+              April 2026 is the master client list. New uploads are automatically matched back to those corrected names, so May and future months do not create duplicate clients.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Use the month selector only if a month was already uploaded before this rule was added.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -219,11 +227,11 @@ export default function Upload() {
               className="h-9 w-44 bg-white"
             />
             <Button type="button" variant="outline" className="h-9 bg-white" onClick={handleRepairMonth} disabled={!repairMonth}>
-              Apply April blueprint
+              Fix selected month
             </Button>
           </div>
         </div>
-        {repairStatus && <p className="mt-3 text-xs font-medium text-amber-900">{repairStatus}</p>}
+        {repairStatus && <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700">{repairStatus}</p>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
