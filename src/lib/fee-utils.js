@@ -54,7 +54,7 @@ export function feeKey(accountCode, platform, investmentName) {
 export function normalizeFeeText(value) {
   return String(value || '')
     .toLowerCase()
-    .replace(/\b(mr|mrs|ms|miss|dr|prof)\b/g, ' ')
+    .replace(/\b(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, ' ');
@@ -73,6 +73,8 @@ function clientMatchScore(mappingClient, rowClient) {
 
   const mappingTokens = normalizeFeeText(mappingClient).split(' ').filter(Boolean);
   const rowTokens = normalizeFeeText(rowClient).split(' ').filter(Boolean);
+  const rowInitialKey = clientInitialAlias(rowTokens);
+  if (rowInitialKey && mappingTokens.includes(rowInitialKey)) return 92;
   const [mappingSurname, mappingFirst] = mappingTokens;
   const [rowSurname, rowFirst] = rowTokens;
   if (mappingSurname && rowSurname && mappingSurname === rowSurname) {
@@ -82,6 +84,15 @@ function clientMatchScore(mappingClient, rowClient) {
 
   const overlap = mappingTokens.filter(token => rowTokens.includes(token)).length;
   return overlap ? Math.min(50, overlap * 20) : 0;
+}
+
+function clientInitialAlias(tokens) {
+  if (tokens.length < 3) return '';
+  const surnameParticles = new Set(['de', 'du', 'da', 'van', 'von', 'der', 'den', 'la', 'le']);
+  const surnameStart = surnameParticles.has(tokens[tokens.length - 2]) ? tokens.length - 2 : tokens.length - 1;
+  const surname = tokens.slice(surnameStart).join('');
+  const initials = tokens.slice(0, surnameStart).map(token => token[0]).join('');
+  return surname && initials.length > 1 ? `${surname}${initials}` : '';
 }
 
 function navMatchScore(mapping, row) {

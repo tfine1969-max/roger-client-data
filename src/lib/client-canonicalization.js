@@ -82,6 +82,24 @@ function rowAdvisory(row) {
   return row.advisory_fee_annual_percent ?? row.advisoryAnnualPercent;
 }
 
+function clientInitialAlias(value) {
+  const tokens = normalizeClientText(value).split(' ').filter(Boolean);
+  if (tokens.length < 3) return '';
+  const surnameParticles = new Set(['de', 'du', 'da', 'van', 'von', 'der', 'den', 'la', 'le']);
+  const surnameStart = surnameParticles.has(tokens[tokens.length - 2]) ? tokens.length - 2 : tokens.length - 1;
+  const surname = tokens.slice(surnameStart).join('');
+  const initials = tokens.slice(0, surnameStart).map(token => token[0]).join('');
+  return surname && initials.length > 1 ? `${surname}${initials}` : '';
+}
+
+function clientFeeKeys(value) {
+  return [...new Set([
+    compact(value),
+    sortedClientKey(value),
+    clientInitialAlias(value),
+  ].filter(Boolean))];
+}
+
 function buildFeeBlueprint(rows, fallbackRows = []) {
   const rebateByPlatformFundVotes = new Map();
   const rebateByFundVotes = new Map();
@@ -97,17 +115,19 @@ function buildFeeBlueprint(rows, fallbackRows = []) {
     const investment = compact(rowInvestment(row));
     const account = cleanAccount(row.account_code);
     const identity = cleanIdentity(row.identity_no);
-    const name = compact(rowClientName(row));
+    const nameKeys = clientFeeKeys(rowClientName(row));
     const rebate = feeNumber(rowRebate(row));
     const advisory = feeNumber(rowAdvisory(row));
 
     addVote(rebateByPlatformFundVotes, `${platform}||${investment}`, rebate);
     addVote(rebateByFundVotes, investment, rebate);
-    addVote(rebateByPlatformNameFundVotes, `${platform}||${name}||${investment}`, rebate);
-    addVote(rebateByPlatformNameVotes, `${platform}||${name}`, rebate);
+    nameKeys.forEach(name => {
+      addVote(rebateByPlatformNameFundVotes, `${platform}||${name}||${investment}`, rebate);
+      addVote(rebateByPlatformNameVotes, `${platform}||${name}`, rebate);
+    });
     addVote(advisoryByPlatformAccountVotes, `${platform}||${account}`, advisory);
     addVote(advisoryByPlatformIdentityVotes, `${platform}||${identity}`, advisory);
-    addVote(advisoryByPlatformNameVotes, `${platform}||${name}`, advisory);
+    nameKeys.forEach(name => addVote(advisoryByPlatformNameVotes, `${platform}||${name}`, advisory));
     addVote(advisoryByPlatformSortedNameVotes, `${platform}||${sortedClientKey(rowClientName(row))}`, advisory);
   });
 
@@ -137,24 +157,21 @@ function matchFeeRates(row, feeBlueprint) {
   const investment = compact(row.investment_name);
   const account = cleanAccount(row.account_code);
   const identity = cleanIdentity(row.identity_no);
-  const name = compact(row.portfolio_name);
-  const sortedName = sortedClientKey(row.portfolio_name);
+  const nameKeys = clientFeeKeys(row.portfolio_name);
 
   const platformFundKey = `${platform}||${investment}`;
   const platformAccountKey = `${platform}||${account}`;
   const platformIdentityKey = `${platform}||${identity}`;
-  const platformNameKey = `${platform}||${name}`;
-  const platformSortedNameKey = `${platform}||${sortedName}`;
-  const platformNameFundKey = `${platform}||${name}||${investment}`;
+  const firstNameMatch = map => nameKeys.map(name => map.get(`${platform}||${name}`)).find(value => value != null);
+  const firstNameFundMatch = map => nameKeys.map(name => map.get(`${platform}||${name}||${investment}`)).find(value => value != null);
   const rebate = feeBlueprint.rebateByPlatformFund.get(platformFundKey)
-    ?? feeBlueprint.rebateByPlatformNameFund.get(platformNameFundKey)
+    ?? firstNameFundMatch(feeBlueprint.rebateByPlatformNameFund)
     ?? feeBlueprint.rebateByFund.get(investment)
-    ?? feeBlueprint.rebateByPlatformName.get(platformNameKey);
+    ?? firstNameMatch(feeBlueprint.rebateByPlatformName);
 
   const advisory = feeBlueprint.advisoryByPlatformAccount.get(platformAccountKey)
     ?? feeBlueprint.advisoryByPlatformIdentity.get(platformIdentityKey)
-    ?? feeBlueprint.advisoryByPlatformName.get(platformNameKey)
-    ?? feeBlueprint.advisoryByPlatformSortedName.get(platformSortedNameKey);
+    ?? firstNameMatch(feeBlueprint.advisoryByPlatformName);
 
   return {
     rebate,

@@ -113,7 +113,7 @@ export function formatClientName(name) {
 export function normalizeClientText(value) {
   return String(value || '')
     .toLowerCase()
-    .replace(/\b(mr|mrs|ms|miss|dr|prof)\b/g, ' ')
+    .replace(/\b(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, ' ');
