@@ -55,7 +55,7 @@ const rateLabel = (rows) => {
     .map(row => effectiveExchangeRate(row))
     .filter(rate => Number.isFinite(rate) && rate > 0);
   const uniqueRates = [...new Set(nonZarRates.map(rate => Number(rate).toFixed(4)))];
-  if (uniqueRates.length === 0) return 'ZAR base';
+  if (uniqueRates.length === 0) return 'Rand base';
   if (uniqueRates.length === 1) return uniqueRates[0];
   return 'Mixed';
 };
@@ -78,6 +78,8 @@ const addSourceLabel = (row, id) => {
   const label = platformLabel(id, id);
   if (label && label !== row.platform) row.sourceLabels.add(label);
 };
+
+const rand = value => `R ${fmtNum(value)}`;
 
 export default function Platforms() {
   const navigate = useNavigate();
@@ -229,7 +231,7 @@ export default function Platforms() {
               </h1>
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <MonthBadge month={latestMonth} />
-                <span>{clientRows.length} clients - {fundRows.length} funds - Total AUM: <strong className="text-foreground">ZAR {fmtNum(platformTotal)}</strong></span>
+                <span>{clientRows.length} clients - {fundRows.length} funds - Total AUM: <strong className="text-foreground">{rand(platformTotal)}</strong></span>
               </div>
             </div>
             <MonthFilter />
@@ -268,7 +270,7 @@ export default function Platforms() {
                   <th className="w-[46%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client</th>
                   <th className="w-[19%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (Orig. CCY)</th>
                   <th className="w-[15%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">FX Rate</th>
-                  <th className="w-[20%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (ZAR)</th>
+                  <th className="w-[20%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (R)</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -283,7 +285,7 @@ export default function Platforms() {
                     </td>
                     <td className="px-4 py-3 text-right font-numbers whitespace-nowrap">{r.originalDisplay}</td>
                     <td className="px-4 py-3 text-right font-numbers text-muted-foreground whitespace-nowrap">{r.rateDisplay}</td>
-                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">{rand(r.totalZar)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -297,7 +299,7 @@ export default function Platforms() {
                     })()}
                   </td>
                   <td />
-                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
+                  <td className="px-4 py-3 text-right font-numbers">{rand(platformTotal)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -308,7 +310,7 @@ export default function Platforms() {
                   <th className="w-[42%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Investment Name</th>
                   <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (Orig. CCY)</th>
                   <th className="w-[14%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">FX Rate</th>
-                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (ZAR)</th>
+                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Value (R)</th>
                   <th className="w-[8%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
                 </tr>
               </thead>
@@ -324,7 +326,7 @@ export default function Platforms() {
                     </td>
                     <td className="px-4 py-3 text-right font-numbers whitespace-nowrap">{fmtCcy(r.totalOrig, r.currency)}</td>
                     <td className="px-4 py-3 text-right font-numbers text-muted-foreground whitespace-nowrap">{r.rateDisplay}</td>
-                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">{rand(r.totalZar)}</td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{r.clients}</td>
                   </tr>
                 ))}
@@ -339,7 +341,7 @@ export default function Platforms() {
                     })()}
                   </td>
                   <td />
-                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
+                  <td className="px-4 py-3 text-right font-numbers">{rand(platformTotal)}</td>
                   <td />
                 </tr>
               </tfoot>
@@ -351,7 +353,7 @@ export default function Platforms() {
                   <th className="w-[46%] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Label</th>
                   <th className="w-[18%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
                   <th className="w-[18%] px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Funds</th>
-                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM (ZAR)</th>
+                  <th className="w-[18%] px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -365,7 +367,7 @@ export default function Platforms() {
                     </td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{row.clients}</td>
                     <td className="px-4 py-3 text-center text-muted-foreground">{row.funds}</td>
-                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">ZAR {fmtNum(row.totalZar)}</td>
+                    <td className="px-4 py-3 text-right font-numbers font-semibold whitespace-nowrap">{rand(row.totalZar)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -374,7 +376,7 @@ export default function Platforms() {
                   <td className="px-4 py-3 text-xs uppercase tracking-wider">Total</td>
                   <td />
                   <td />
-                  <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(platformTotal)}</td>
+                  <td className="px-4 py-3 text-right font-numbers">{rand(platformTotal)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -386,54 +388,69 @@ export default function Platforms() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Platforms</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">Total assets under management by platform</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">Private client reporting</p>
+          <h1 className="mt-1 font-playfair text-4xl font-semibold tracking-normal text-slate-950">Platform Allocation</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Consolidated assets under management by provider</p>
         </div>
         <MonthFilter />
       </div>
 
       {latestMonth && (
-        <div className="grid gap-3 md:grid-cols-3">
-          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reporting Month</p>
-            <p className="mt-2 text-2xl font-bold text-primary">{latestMonth ? new Date(+latestMonth.split('-')[0], +latestMonth.split('-')[1] - 1, 1).toLocaleString('en-ZA', { month: 'long', year: 'numeric' }) : '—'}</p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Reporting Month</p>
+            <p className="mt-3 font-playfair text-3xl font-semibold text-slate-950">{latestMonth ? new Date(+latestMonth.split('-')[0], +latestMonth.split('-')[1] - 1, 1).toLocaleString('en-ZA', { month: 'long', year: 'numeric' }) : '-'}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Latest reconciled valuation month</p>
           </div>
-          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total AUM</p>
-            <p className="mt-1 font-numbers text-2xl font-semibold">ZAR {fmtNum(totalAUM)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Total AUM</p>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-base font-semibold text-accent">R</span>
+              <span className="font-numbers text-3xl font-semibold tracking-normal text-slate-950">{fmtNum(totalAUM)}</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Across all active platforms</p>
           </div>
-          <div className="rounded-lg border bg-white p-4 flex flex-col items-center justify-center text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platforms</p>
-            <p className="mt-1 text-2xl font-semibold">{platformRows.length}</p>
-
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Provider Mix</p>
+            <div className="mt-3 flex items-baseline gap-3">
+              <span className="font-numbers text-3xl font-semibold text-slate-950">{platformRows.length}</span>
+              <span className="text-sm font-medium text-muted-foreground">platforms</span>
+            </div>
+            <p className="mt-1 truncate text-xs text-muted-foreground">Largest allocation: {largestPlatform?.platform || '-'}</p>
           </div>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg border bg-white">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/[0.03]">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-600">Provider Allocation</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Review each provider's share of the month-end book.</p>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40">
-                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Provider</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">AUM (ZAR)</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Share</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Clients</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Funds</th>
+              <tr className="border-b border-slate-200 bg-slate-50/80">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 whitespace-nowrap">Provider</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 whitespace-nowrap">AUM</th>
+                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 whitespace-nowrap">Share</th>
+                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 whitespace-nowrap">Clients</th>
+                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 whitespace-nowrap">Funds</th>
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-slate-200">
               {platformRows.length === 0 && (
                 <tr><td colSpan={6} className="py-12 text-center text-sm text-muted-foreground">No data.</td></tr>
               )}
               {platformRows.map(r => (
                 <tr
                   key={r.platform}
-                  className="group cursor-pointer transition-colors hover:bg-muted/20"
+                  className="group cursor-pointer transition-colors hover:bg-slate-50/80"
                   onClick={() => {
                     if (r.platformId === 'prime') navigate('/providers/prime');
                     else {
@@ -442,21 +459,29 @@ export default function Platforms() {
                     }
                   }}
                 >
-                  <td className="px-5 py-2.5">
-                   <div className="inline-flex items-center gap-3">
-                     <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-8 w-24" logoClassName="max-h-6 max-w-[80px]" showName={false} />
-                     <span className="text-sm font-semibold text-foreground">{r.platform}</span>
-                   </div>
+                  <td className="px-5 py-4">
+                    <div className="inline-flex items-center gap-4">
+                      <ProviderLogo provider={r.platform} providerId={r.platformId} logoBoxClassName="h-10 w-28 rounded-lg border-slate-200 bg-white" logoClassName="max-h-7 max-w-[92px]" showName={false} />
+                      <div>
+                        <span className="text-base font-semibold text-slate-950">{r.platform}</span>
+                        {r.sourceLabels?.length > 0 && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">{r.sourceLabels.join(' / ')}</p>
+                        )}
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-5 py-2.5 text-center font-numbers text-base font-semibold whitespace-nowrap">ZAR {fmtNum(r.totalZar)}</td>
-                  <td className="px-5 py-2.5 text-center">
-                    <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                  <td className="px-5 py-4 text-right whitespace-nowrap">
+                    <span className="mr-2 text-xs font-semibold text-accent">R</span>
+                    <span className="font-numbers text-base font-semibold text-slate-950">{fmtNum(r.totalZar)}</span>
+                  </td>
+                  <td className="px-5 py-4 text-center">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
                       {totalAUM ? `${((r.totalZar / totalAUM) * 100).toFixed(1)}%` : '-'}
                     </span>
                   </td>
-                  <td className="px-5 py-2.5 text-center text-muted-foreground">{r.clients}</td>
-                  <td className="px-5 py-2.5 text-center text-muted-foreground">{r.funds}</td>
-                  <td className="px-5 py-2.5">
+                  <td className="px-5 py-4 text-center font-numbers text-slate-600">{r.clients}</td>
+                  <td className="px-5 py-4 text-center font-numbers text-slate-600">{r.funds}</td>
+                  <td className="px-5 py-4">
                     <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
                   </td>
                 </tr>

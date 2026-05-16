@@ -71,8 +71,9 @@
     letter-spacing: 0;
   }
   .font-numbers {
-    font-family: 'Aptos', 'Aptos Narrow', 'Arial', monospace;
+    font-family: 'Aptos', 'Segoe UI', 'Arial', system-ui, sans-serif;
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
   }
 }
 
