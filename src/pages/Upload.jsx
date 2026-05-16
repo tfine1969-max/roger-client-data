@@ -17,7 +17,6 @@ import PrescientUpload from '@/components/upload/PrescientUpload';
 import PeresecUpload from '@/components/upload/PeresecUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
-import { formatMonth } from '@/lib/valuation-utils';
 
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
@@ -172,8 +171,6 @@ function MonthlyWorkbookUpload({ onImported }) {
 export default function Upload() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('julius-baer');
-  const [repairMonth, setRepairMonth] = useState('');
-  const [repairStatus, setRepairStatus] = useState(null);
 
   const handleImported = async (uploadMonth) => {
     if (uploadMonth) await applyClientBlueprint(uploadMonth);
@@ -181,57 +178,11 @@ export default function Upload() {
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
   };
 
-  const handleRepairMonth = async () => {
-    if (!repairMonth) return;
-    setRepairStatus('Checking client names and fees against April 2026...');
-    try {
-      const result = await applyClientBlueprint(repairMonth);
-      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
-      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-      if (result.skipped) {
-        setRepairStatus('Choose May 2026 or a later month. April 2026 is the master list and does not need to be fixed.');
-      } else {
-        setRepairStatus(`Checked ${formatMonth(repairMonth)}. Updated ${result.updated} row${result.updated === 1 ? '' : 's'} to the April client names and fee rules.`);
-      }
-    } catch (err) {
-      setRepairStatus(err.message || 'Could not fix client names for this month.');
-    }
-  };
-
   return (
     <div className="max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Data Imports</h1>
         <p className="text-sm text-muted-foreground mt-1">Upload monthly data for each provider.</p>
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-slate-950">Keep Client Names & Fees Fixed</p>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-              April 2026 is the master client and fee list. New uploads are automatically matched back to those corrected names, fund rebates, and client/provider advisory fees.
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Use the month selector only if a month was already uploaded before this rule was added.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Input
-              type="month"
-              value={repairMonth}
-              onChange={event => {
-                setRepairMonth(event.target.value);
-                setRepairStatus(null);
-              }}
-              className="h-9 w-44 bg-white"
-            />
-            <Button type="button" variant="outline" className="h-9 bg-white" onClick={handleRepairMonth} disabled={!repairMonth}>
-              Fix selected month
-            </Button>
-          </div>
-        </div>
-        {repairStatus && <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700">{repairStatus}</p>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

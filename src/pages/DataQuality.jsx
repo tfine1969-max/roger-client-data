@@ -3,9 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { hasUnknownValue, rowHasUnknown } from '@/lib/client-utils';
+import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { AlertTriangle, CheckCircle, Trash2, Wrench } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +33,8 @@ export default function DataQuality() {
   const [filterMonth, setFilterMonth] = useState('');
   const [filterFlag, setFilterFlag] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [repairMonth, setRepairMonth] = useState('');
+  const [repairStatus, setRepairStatus] = useState(null);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -77,8 +81,25 @@ export default function DataQuality() {
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
   };
 
+  const handleRepairMonth = async () => {
+    if (!repairMonth) return;
+    setRepairStatus('Checking names and fees against the April blueprint...');
+    try {
+      const result = await applyClientBlueprint(repairMonth);
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      if (result.skipped) {
+        setRepairStatus('Choose May 2026 or a later month. April 2026 is the blueprint month.');
+      } else {
+        setRepairStatus(`Checked ${formatMonth(repairMonth)}. Updated ${result.updated} row${result.updated === 1 ? '' : 's'}.`);
+      }
+    } catch (err) {
+      setRepairStatus(err.message || 'Could not repair the selected month.');
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Data Quality</h1>
@@ -87,7 +108,7 @@ export default function DataQuality() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: 'Total Flagged', value: summary.total, color: 'border-l-amber-400' },
           { label: 'Contains UNKNOWN', value: summary.unknown, color: 'border-l-yellow-400' },
@@ -95,17 +116,48 @@ export default function DataQuality() {
           { label: 'Missing ID Number', value: summary.missing_id, color: 'border-l-orange-400' },
           { label: 'Duplicate Rows', value: summary.duplicates, color: 'border-l-rose-400' },
         ].map(s => (
-          <div key={s.label} className={cn("bg-white border rounded-lg border-l-4 p-4", s.color)}>
-            <p className="text-2xl font-semibold">{s.value}</p>
+          <div key={s.label} className={cn("bg-white border rounded-lg border-l-4 p-3", s.color)}>
+            <p className="text-xl font-semibold">{s.value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
+      <div className="rounded-lg border bg-white p-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-2">
+            <div className="mt-0.5 rounded-md bg-slate-100 p-1.5 text-slate-700">
+              <Wrench className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Repair Existing Month</p>
+              <p className="text-xs text-muted-foreground">
+                Reapply April 2026 client names, fund rebates, and client/provider advisory fees to an already uploaded month.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="month"
+              value={repairMonth}
+              onChange={event => {
+                setRepairMonth(event.target.value);
+                setRepairStatus(null);
+              }}
+              className="h-8 w-40"
+            />
+            <Button type="button" size="sm" variant="outline" onClick={handleRepairMonth} disabled={!repairMonth}>
+              Repair month
+            </Button>
+          </div>
+        </div>
+        {repairStatus && <p className="mt-2 rounded-md bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700">{repairStatus}</p>}
+      </div>
+
       {/* Filters */}
-      <div className="flex gap-3 bg-white border rounded-lg p-4">
+      <div className="flex gap-2 bg-white border rounded-lg p-3">
         <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="w-40 h-9">
+          <SelectTrigger className="w-36 h-8">
             <SelectValue placeholder="All months" />
           </SelectTrigger>
           <SelectContent>
@@ -114,7 +166,7 @@ export default function DataQuality() {
           </SelectContent>
         </Select>
         <Select value={filterFlag} onValueChange={setFilterFlag}>
-          <SelectTrigger className="w-56 h-9">
+          <SelectTrigger className="w-48 h-8">
             <SelectValue placeholder="All flags" />
           </SelectTrigger>
           <SelectContent>
@@ -127,11 +179,24 @@ export default function DataQuality() {
       {/* Table */}
       <div className="bg-white border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-xs">
+            <colgroup>
+              <col className="w-20" />
+              <col className="w-[22%]" />
+              <col className="w-36" />
+              <col className="w-[26%]" />
+              <col className="w-24" />
+              <col className="w-24" />
+              <col className="w-40" />
+              <col className="w-32" />
+            </colgroup>
             <thead>
               <tr className="border-b bg-muted/40">
                 {['Month', 'Portfolio Name', 'Account Code', 'Investment Name', 'Platform', 'Value', 'Flags', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                  <th key={h} className={cn(
+                    "text-left px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+                    h === 'Actions' && 'sticky right-0 z-10 bg-muted/40'
+                  )}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -147,21 +212,21 @@ export default function DataQuality() {
               )}
               {flagged.map(row => (
                 <tr key={row.id} className="hover:bg-muted/20">
-                  <td className="px-4 py-2.5"><MonthBadge month={row.upload_month} /></td>
-                  <td className="px-4 py-2.5 font-medium text-sm">
+                  <td className="px-3 py-2"><MonthBadge month={row.upload_month} /></td>
+                  <td className="px-3 py-2 font-medium text-xs leading-4">
                     {row.portfolio_name ? <span className={unknownClass(row.portfolio_name)}>{row.portfolio_name}</span> : <span className="text-muted-foreground italic">Missing</span>}
                   </td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                  <td className="px-3 py-2 font-numbers text-xs text-muted-foreground">
                     {row.account_code ? <span className={unknownClass(row.account_code)}>{row.account_code}</span> : <span className="text-red-500">Missing</span>}
                   </td>
-                  <td className="px-4 py-2.5 max-w-xs truncate">
+                  <td className="px-3 py-2 truncate">
                     {row.investment_name ? <span className={unknownClass(row.investment_name)}>{row.investment_name}</span> : '-'}
                   </td>
-                  <td className="px-4 py-2.5 text-muted-foreground text-xs">
+                  <td className="px-3 py-2 text-muted-foreground">
                     {row.platform ? <span className={unknownClass(row.platform)}>{row.platform}</span> : '-'}
                   </td>
-                  <td className="px-4 py-2.5 font-mono">{row.month_end_market_value !== null ? fmtNum(row.month_end_market_value) : <span className="text-red-500">Missing</span>}</td>
-                  <td className="px-4 py-2.5">
+                  <td className="px-3 py-2 text-right font-numbers">{row.month_end_market_value !== null ? fmtNum(row.month_end_market_value) : <span className="text-red-500">Missing</span>}</td>
+                  <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
                       {row.has_missing_account_code && <span className="text-xs bg-red-50 text-red-700 px-1.5 py-0.5 rounded">No Account</span>}
                       {row.has_missing_identity_no && <span className="text-xs bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded">No ID</span>}
@@ -170,10 +235,10 @@ export default function DataQuality() {
                       {hasFlag(row, 'has_unknown_value') && <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded"><AlertTriangle className="w-3 h-3" />UNKNOWN</span>}
                     </div>
                   </td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-1">
+                  <td className="sticky right-0 bg-white px-2 py-2 shadow-[-8px_0_10px_-12px_rgba(15,23,42,0.4)]">
+                    <div className="flex items-center justify-end gap-1">
                       <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => handleMarkClean(row)}>
-                        <CheckCircle className="w-3 h-3 mr-1" /> Mark Clean
+                        <CheckCircle className="w-3 h-3 mr-1" /> Clean
                       </Button>
                       <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => handleDelete(row.id)} disabled={deletingId === row.id}>
                         <Trash2 className="w-3 h-3" />
