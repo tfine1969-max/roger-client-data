@@ -59,7 +59,7 @@ export default function PrimeUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['primeHoldings'] });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
       setFile(null);
       // reset file input
       document.getElementById('prime-file-input').value = '';

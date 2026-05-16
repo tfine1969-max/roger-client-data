@@ -81,7 +81,7 @@ export default function JuliusBaerUpload({ onImported }) {
     }
 
     setStatus('done');
-    if (onImported) onImported();
+    if (onImported) await onImported(month);
   };
 
   const successCount = results.filter(r => r.status === 'success').length;

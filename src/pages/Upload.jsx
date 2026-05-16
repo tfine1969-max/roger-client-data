@@ -16,6 +16,7 @@ import NorthstarUpload from '@/components/upload/NorthstarUpload';
 import PrescientUpload from '@/components/upload/PrescientUpload';
 import PeresecUpload from '@/components/upload/PeresecUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
+import { applyClientBlueprint } from '@/lib/client-canonicalization';
 
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 
@@ -79,7 +80,7 @@ function MonthlyWorkbookUpload({ onImported }) {
         exchange_rates_detected: result.exchange_rates_detected,
         rows_skipped: result.rows_skipped,
       });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
@@ -170,10 +171,26 @@ function MonthlyWorkbookUpload({ onImported }) {
 export default function Upload() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('julius-baer');
+  const [repairMonth, setRepairMonth] = useState('');
+  const [repairStatus, setRepairStatus] = useState(null);
 
-  const handleImported = () => {
+  const handleImported = async (uploadMonth) => {
+    if (uploadMonth) await applyClientBlueprint(uploadMonth);
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+  };
+
+  const handleRepairMonth = async () => {
+    if (!repairMonth) return;
+    setRepairStatus('Applying April 2026 client blueprint...');
+    try {
+      const result = await applyClientBlueprint(repairMonth);
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      setRepairStatus(`Updated ${result.updated} valuation row${result.updated === 1 ? '' : 's'} for ${formatMonth(repairMonth)}.`);
+    } catch (err) {
+      setRepairStatus(err.message || 'Could not apply April client blueprint.');
+    }
   };
 
   return (
@@ -181,6 +198,32 @@ export default function Upload() {
       <div>
         <h1 className="text-2xl font-semibold">Data Imports</h1>
         <p className="text-sm text-muted-foreground mt-1">Upload monthly data for each provider.</p>
+      </div>
+
+      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-amber-950">Client naming lock</p>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-amber-800">
+              April 2026 is used as the client-name blueprint. After each new import, matching rows are automatically mapped back to those corrected client names by account code, ID number, or existing name.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              type="month"
+              value={repairMonth}
+              onChange={event => {
+                setRepairMonth(event.target.value);
+                setRepairStatus(null);
+              }}
+              className="h-9 w-44 bg-white"
+            />
+            <Button type="button" variant="outline" className="h-9 bg-white" onClick={handleRepairMonth} disabled={!repairMonth}>
+              Apply April blueprint
+            </Button>
+          </div>
+        </div>
+        {repairStatus && <p className="mt-3 text-xs font-medium text-amber-900">{repairStatus}</p>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

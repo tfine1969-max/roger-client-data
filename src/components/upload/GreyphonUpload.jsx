@@ -71,7 +71,7 @@ export default function GreyphonUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
       setFile(null);
       document.getElementById('gryphon-file-input').value = '';
     } catch (err) {

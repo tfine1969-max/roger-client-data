@@ -74,7 +74,7 @@ export default function PrescientUpload({ onImported }) {
       setDetail(result);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
       setFile(null);
       const input = document.getElementById('prescient-file-input');
       if (input) input.value = '';

@@ -125,7 +125,7 @@ export default function CredoUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${totalRows} holdings from ${files.length} file${files.length > 1 ? 's' : ''} for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
       setFiles([]);
       setUploadMonth('');
       document.getElementById('credo-file-input').value = '';

@@ -74,7 +74,7 @@ export default function PeresecUpload({ onImported }) {
       setDetail(result);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-      if (onImported) onImported();
+      if (onImported) await onImported(uploadMonth);
       setFile(null);
       const input = document.getElementById('peresec-file-input');
       if (input) input.value = '';

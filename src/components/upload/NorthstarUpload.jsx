@@ -297,7 +297,7 @@ export default function NorthstarUpload({ onImported }) {
     setStatus('done');
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-    if (onImported) onImported();
+    if (onImported) await onImported(month);
   };
 
   const successCount = results.filter(r => r.status === 'success').length;
