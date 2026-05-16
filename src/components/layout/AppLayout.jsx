@@ -108,13 +108,8 @@ export default function AppLayout() {
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
-                <span className="text-white text-xs font-bold tracking-wider">WW</span>
-              </div>
-              <div>
-                <span className="text-sm font-semibold text-primary tracking-tight">Wealth Works</span>
-                <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Portfolio Management</p>
-              </div>
+              <img src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png" alt="Wealth Works" className="h-9 w-auto" />
+              <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Cape Town Client Management</p>
             </Link>
             <nav className="flex items-center gap-0.5">
               {singleItems.map(({ path, label, icon: Icon }) => {
