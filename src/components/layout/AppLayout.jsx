@@ -7,17 +7,23 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// WealthWorks corporate palette
+// Blue: #26547C | 55% tint: #6B97B8 | 35% tint: #94B5CE
+// Grey: #777772 | 55% tint: #A3A39F | 35% tint: #BCBCB9
+
 const singleItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/clients', label: 'Clients', icon: Users },
-  { path: '/platforms', label: 'Platforms', icon: BarChart3 },
-  { path: '/funds', label: 'Funds', icon: Briefcase },
-  { path: '/investment-summary', label: 'Reports', icon: LineChart },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard, activeColor: 'bg-[#26547C] text-white', hoverColor: 'hover:bg-[#26547C]/10 hover:text-[#26547C]' },
+  { path: '/clients', label: 'Clients', icon: Users, activeColor: 'bg-[#777772] text-white', hoverColor: 'hover:bg-[#777772]/10 hover:text-[#777772]' },
+  { path: '/platforms', label: 'Platforms', icon: BarChart3, activeColor: 'bg-[#6B97B8] text-white', hoverColor: 'hover:bg-[#6B97B8]/10 hover:text-[#6B97B8]' },
+  { path: '/funds', label: 'Funds', icon: Briefcase, activeColor: 'bg-[#A3A39F] text-white', hoverColor: 'hover:bg-[#A3A39F]/10 hover:text-[#A3A39F]' },
+  { path: '/investment-summary', label: 'Reports', icon: LineChart, activeColor: 'bg-[#94B5CE] text-white', hoverColor: 'hover:bg-[#94B5CE]/10 hover:text-[#94B5CE]' },
 ];
 
 const feesGroup = {
   label: 'Fees',
   icon: Percent,
+  activeColor: 'bg-[#26547C] text-white',
+  hoverColor: 'hover:bg-[#26547C]/10 hover:text-[#26547C]',
   items: [
     { path: '/fees', label: 'Fees', icon: Percent },
     { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
@@ -27,6 +33,8 @@ const feesGroup = {
 const dataGroup = {
   label: 'Data',
   icon: Upload,
+  activeColor: 'bg-[#777772] text-white',
+  hoverColor: 'hover:bg-[#777772]/10 hover:text-[#777772]',
   items: [
     { path: '/control', label: 'Control', icon: ClipboardCheck },
     { path: '/upload', label: 'Upload', icon: Upload },
@@ -53,10 +61,10 @@ function NavDropdown({ group, location }) {
       <button
         onClick={() => setOpen(o => !o)}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all",
+          "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap",
           isGroupActive
-            ? "bg-primary text-white"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            ? group.activeColor
+            : `text-muted-foreground ${group.hoverColor}`
         )}
       >
         <Icon className="w-4 h-4" />
@@ -112,7 +120,7 @@ export default function AppLayout() {
               <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Cape Town Client Management</p>
             </Link>
             <nav className="flex items-center gap-1">
-              {singleItems.map(({ path, label, icon: Icon }) => {
+              {singleItems.map(({ path, label, icon: Icon, activeColor, hoverColor }) => {
                 const active =
                   path === '/'
                     ? location.pathname === '/'
@@ -126,8 +134,8 @@ export default function AppLayout() {
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap",
                       active
-                        ? "bg-primary text-white"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? activeColor
+                        : `text-muted-foreground ${hoverColor}`
                     )}
                   >
                     <Icon className="w-4 h-4" />
