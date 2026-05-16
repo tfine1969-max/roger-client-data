@@ -4,9 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileSpreadsheet, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
+import { DEFAULT_USD_ZAR_RATE, fetchMonthEndUsdZarRate, getConfiguredUsdZarRateForMonth, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import JuliusBaerUpload from '@/components/upload/JuliusBaerUpload';
 import PrimeUpload from '@/components/upload/PrimeUpload';
@@ -30,6 +30,8 @@ const PROVIDERS = [
   { id: 'prime', label: 'Prime Investments' },
   { id: 'prescient', label: 'Prescient' },
 ];
+
+const USD_RATE_PROVIDER_IDS = new Set(['credo', 'julius-baer', 'northstar', 'monthly']);
 
 function MonthlyWorkbookUpload({ onImported }) {
   const queryClient = useQueryClient();
@@ -171,6 +173,10 @@ function MonthlyWorkbookUpload({ onImported }) {
 export default function Upload() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('julius-baer');
+  const [rateMonth, setRateMonth] = useState('');
+  const [usdZarRate, setUsdZarRate] = useState('');
+  const [rateStatus, setRateStatus] = useState(null);
+  const [fetchingRate, setFetchingRate] = useState(false);
 
   const handleImported = async (uploadMonth) => {
     if (uploadMonth) await applyClientBlueprint(uploadMonth);
@@ -178,11 +184,74 @@ export default function Upload() {
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
   };
 
+  const handleRateMonthChange = (value) => {
+    setRateMonth(value);
+    setUsdZarRate(getUsdZarRateForMonth(value));
+    setRateStatus(null);
+  };
+
+  const handleRateChange = (value) => {
+    setUsdZarRate(value);
+    saveUsdZarRateForMonth(rateMonth, value);
+    setRateStatus(value ? `Saved USD/ZAR ${value} for ${formatMonth(rateMonth)}.` : null);
+  };
+
+  const handleFetchRate = async () => {
+    if (!rateMonth) return;
+    setFetchingRate(true);
+    setRateStatus('Fetching month-end USD/ZAR rate...');
+    try {
+      const result = await fetchMonthEndUsdZarRate(rateMonth);
+      setUsdZarRate(result.rate);
+      setRateStatus(`Fetched USD/ZAR ${result.rate} for ${formatMonth(rateMonth)} using ${result.rateDate}${result.rateDate !== result.requestedDate ? ' (last available market day)' : ''}.`);
+    } catch (err) {
+      setRateStatus(err.message || 'Could not fetch the month-end rate.');
+    } finally {
+      setFetchingRate(false);
+    }
+  };
+
+  const displayedRate = rateMonth ? getConfiguredUsdZarRateForMonth(rateMonth) || usdZarRate || getUsdZarRateForMonth(rateMonth) : '';
+
   return (
     <div className="max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Data Imports</h1>
         <p className="text-sm text-muted-foreground mt-1">Upload monthly data for each provider.</p>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-950">Month-End USD/ZAR Rate</p>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
+              Set the universal month-end exchange rate used by USD uploads such as Credo, Julius Baer, Northstar, and multi-currency monthly workbooks.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[150px_170px_auto] sm:items-end">
+            <div className="space-y-1">
+              <Label className="text-xs">Month</Label>
+              <Input type="month" value={rateMonth} onChange={event => handleRateMonthChange(event.target.value)} className="h-9 bg-white" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">USD/ZAR</Label>
+              <Input
+                type="number"
+                step="0.0001"
+                min="0"
+                placeholder={DEFAULT_USD_ZAR_RATE}
+                value={usdZarRate}
+                onChange={event => handleRateChange(event.target.value)}
+                className="h-9 bg-white"
+              />
+            </div>
+            <Button type="button" variant="outline" className="h-9 gap-2 bg-white" onClick={handleFetchRate} disabled={!rateMonth || fetchingRate}>
+              <RefreshCw className={cn('h-4 w-4', fetchingRate && 'animate-spin')} />
+              Fetch month-end
+            </Button>
+          </div>
+        </div>
+        {rateStatus && <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700">{rateStatus}</p>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -225,6 +294,11 @@ export default function Upload() {
                 )}>
                   {activeTab === p.id ? 'Selected' : 'Upload'}
                 </p>
+                {rateMonth && USD_RATE_PROVIDER_IDS.has(p.id) && displayedRate && (
+                  <p className="mt-1 truncate text-[11px] font-semibold text-slate-500">
+                    USD/ZAR {displayedRate}
+                  </p>
+                )}
               </div>
             </div>
           </button>

@@ -37,3 +37,40 @@ export function saveUsdZarRateForMonth(month, rate) {
     [key]: value,
   }));
 }
+
+function monthEndDate(month) {
+  const [year, monthNumber] = String(month || '').split('-').map(Number);
+  if (!year || !monthNumber) return null;
+  return new Date(Date.UTC(year, monthNumber, 0));
+}
+
+function formatDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+export async function fetchMonthEndUsdZarRate(month) {
+  const monthEnd = monthEndDate(month);
+  if (!monthEnd) throw new Error('Choose a valid month first.');
+
+  for (let offset = 0; offset < 8; offset += 1) {
+    const date = new Date(monthEnd);
+    date.setUTCDate(monthEnd.getUTCDate() - offset);
+    const dateText = formatDate(date);
+    const response = await fetch(`https://api.frankfurter.dev/v1/${dateText}?base=USD&symbols=ZAR`);
+    if (!response.ok) continue;
+    const data = await response.json();
+    const rate = Number(data?.rates?.ZAR);
+    if (Number.isFinite(rate) && rate > 0) {
+      const value = rate.toFixed(4);
+      saveUsdZarRateForMonth(month, value);
+      return {
+        rate: value,
+        rateDate: data.date || dateText,
+        requestedDate: formatDate(monthEnd),
+        source: 'Frankfurter / ECB reference rates',
+      };
+    }
+  }
+
+  throw new Error('No USD/ZAR month-end rate was available from the live source.');
+}
