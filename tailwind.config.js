@@ -92,6 +92,11 @@ module.exports = {
   },
   safelist: [
     'text-positive', 'text-negative', 'bg-positive', 'bg-negative',
+    'bg-[#26547C]', 'hover:bg-[#26547C]/10', 'hover:text-[#26547C]',
+    'bg-[#777772]', 'hover:bg-[#777772]/10', 'hover:text-[#777772]',
+    'bg-[#6B97B8]', 'hover:bg-[#6B97B8]/10', 'hover:text-[#6B97B8]',
+    'bg-[#A3A39F]', 'hover:bg-[#A3A39F]/10', 'hover:text-[#A3A39F]',
+    'bg-[#94B5CE]', 'hover:bg-[#94B5CE]/10', 'hover:text-[#94B5CE]',
   ],
   plugins: [require("tailwindcss-animate")],
 };
