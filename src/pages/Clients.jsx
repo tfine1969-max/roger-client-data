@@ -450,19 +450,23 @@ export default function Clients() {
             <Button type="button" variant="ghost" size="sm" onClick={clearSelection} disabled={selectedClients.length === 0}>
               Clear
             </Button>
-            <Button type="button" size="sm" className="gap-1.5" onClick={() => setMergeDialogOpen(true)} disabled={selectedClients.length < 2}>
-              <Merge className="h-3.5 w-3.5" />
+            <Button
+              type="button"
+              className="h-10 min-w-40 cursor-pointer gap-2 px-5"
+              onClick={() => setMergeDialogOpen(true)}
+              disabled={selectedClients.length < 2}
+            >
+              <Merge className="h-4 w-4" />
               Merge selected
             </Button>
             <Button
               type="button"
               variant="destructive"
-              size="sm"
-              className="gap-1.5"
+              className="h-10 min-w-48 cursor-pointer gap-2 px-5"
               onClick={() => setDeleteDialogOpen(true)}
               disabled={deleteTargetClients.length === 0}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
               Delete zero balances
             </Button>
           </div>
