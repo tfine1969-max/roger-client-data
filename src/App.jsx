@@ -18,6 +18,7 @@ import BulkFees from '@/pages/BulkFees';
 import PrimeProvider from '@/pages/PrimeProvider';
 import Control from '@/pages/Control';
 import InvestmentSummary from '@/pages/InvestmentSummary';
+import PullRequests from '@/pages/PullRequests';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +51,7 @@ const AuthenticatedApp = () => {
         <Route path="/control" element={<Control />} />
         <Route path="/providers/prime" element={<PrimeProvider />} />
         <Route path="/investment-summary" element={<InvestmentSummary />} />
+        <Route path="/pull-requests" element={<PullRequests />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
