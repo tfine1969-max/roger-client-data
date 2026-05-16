@@ -8,6 +8,11 @@ const BATCH_SIZE = 20;
 
 const clean = value => String(value ?? '').trim();
 const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
+const sortedClientKey = value => normalizeClientText(value)
+  .split(' ')
+  .filter(Boolean)
+  .sort()
+  .join('');
 const cleanAccount = value => clean(value).toLowerCase();
 const cleanIdentity = value => clean(value).replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
 const cleanPlatform = value => normalizeClientText(value).replace(/\b(asset management|investments|securities)\b/g, '').trim();
@@ -80,9 +85,12 @@ function rowAdvisory(row) {
 function buildFeeBlueprint(rows, fallbackRows = []) {
   const rebateByPlatformFundVotes = new Map();
   const rebateByFundVotes = new Map();
+  const rebateByPlatformNameFundVotes = new Map();
+  const rebateByPlatformNameVotes = new Map();
   const advisoryByPlatformAccountVotes = new Map();
   const advisoryByPlatformIdentityVotes = new Map();
   const advisoryByPlatformNameVotes = new Map();
+  const advisoryByPlatformSortedNameVotes = new Map();
 
   [...rows, ...fallbackRows].forEach(row => {
     const platform = cleanPlatform(rowPlatform(row));
@@ -95,18 +103,24 @@ function buildFeeBlueprint(rows, fallbackRows = []) {
 
     addVote(rebateByPlatformFundVotes, `${platform}||${investment}`, rebate);
     addVote(rebateByFundVotes, investment, rebate);
+    addVote(rebateByPlatformNameFundVotes, `${platform}||${name}||${investment}`, rebate);
+    addVote(rebateByPlatformNameVotes, `${platform}||${name}`, rebate);
     addVote(advisoryByPlatformAccountVotes, `${platform}||${account}`, advisory);
     addVote(advisoryByPlatformIdentityVotes, `${platform}||${identity}`, advisory);
     addVote(advisoryByPlatformNameVotes, `${platform}||${name}`, advisory);
+    addVote(advisoryByPlatformSortedNameVotes, `${platform}||${sortedClientKey(rowClientName(row))}`, advisory);
   });
 
   const toWinnerMap = votesMap => new Map([...votesMap.entries()].map(([key, votes]) => [key, voteWinner(votes)]));
   return {
     rebateByPlatformFund: toWinnerMap(rebateByPlatformFundVotes),
     rebateByFund: toWinnerMap(rebateByFundVotes),
+    rebateByPlatformNameFund: toWinnerMap(rebateByPlatformNameFundVotes),
+    rebateByPlatformName: toWinnerMap(rebateByPlatformNameVotes),
     advisoryByPlatformAccount: toWinnerMap(advisoryByPlatformAccountVotes),
     advisoryByPlatformIdentity: toWinnerMap(advisoryByPlatformIdentityVotes),
     advisoryByPlatformName: toWinnerMap(advisoryByPlatformNameVotes),
+    advisoryByPlatformSortedName: toWinnerMap(advisoryByPlatformSortedNameVotes),
   };
 }
 
@@ -124,17 +138,23 @@ function matchFeeRates(row, feeBlueprint) {
   const account = cleanAccount(row.account_code);
   const identity = cleanIdentity(row.identity_no);
   const name = compact(row.portfolio_name);
+  const sortedName = sortedClientKey(row.portfolio_name);
 
   const platformFundKey = `${platform}||${investment}`;
   const platformAccountKey = `${platform}||${account}`;
   const platformIdentityKey = `${platform}||${identity}`;
   const platformNameKey = `${platform}||${name}`;
+  const platformSortedNameKey = `${platform}||${sortedName}`;
+  const platformNameFundKey = `${platform}||${name}||${investment}`;
   const rebate = feeBlueprint.rebateByPlatformFund.get(platformFundKey)
-    ?? feeBlueprint.rebateByFund.get(investment);
+    ?? feeBlueprint.rebateByPlatformNameFund.get(platformNameFundKey)
+    ?? feeBlueprint.rebateByFund.get(investment)
+    ?? feeBlueprint.rebateByPlatformName.get(platformNameKey);
 
   const advisory = feeBlueprint.advisoryByPlatformAccount.get(platformAccountKey)
     ?? feeBlueprint.advisoryByPlatformIdentity.get(platformIdentityKey)
-    ?? feeBlueprint.advisoryByPlatformName.get(platformNameKey);
+    ?? feeBlueprint.advisoryByPlatformName.get(platformNameKey)
+    ?? feeBlueprint.advisoryByPlatformSortedName.get(platformSortedNameKey);
 
   return {
     rebate,

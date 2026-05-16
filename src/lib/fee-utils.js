@@ -117,19 +117,26 @@ function rankFeeMapping(mapping, row, fallback) {
 export function findFeeMappingForRow(row, feeMappings = []) {
   const providerKey = compactFeeText(row.platform);
   const investmentKey = compactFeeText(row.investment_name);
-  const candidates = feeMappings.filter(mapping => {
+  const providerMatches = mapping => {
     const mappingProvider = compactFeeText(mapping.provider);
+    return mappingProvider === providerKey || providerKey.includes(mappingProvider) || mappingProvider.includes(providerKey);
+  };
+  const candidates = feeMappings.filter(mapping => {
     const mappingInvestment = mapping.investmentKey || compactFeeText(mapping.investment);
-    const providerMatches = mappingProvider === providerKey || providerKey.includes(mappingProvider) || mappingProvider.includes(providerKey);
     const investmentMatches = mappingInvestment === investmentKey || investmentKey.includes(mappingInvestment) || mappingInvestment.includes(investmentKey);
-    return providerMatches && investmentMatches;
+    return providerMatches(mapping) && investmentMatches;
   });
 
   if (candidates.length === 0) {
+    const clientFallback = feeMappings
+      .filter(providerMatches)
+      .map(mapping => rankFeeMapping(mapping, row, 'Client/provider'))
+      .filter(mapping => mapping.clientMatchScore >= 75)
+      .sort((a, b) => b.clientMatchScore - a.clientMatchScore || b.navMatchScore - a.navMatchScore)[0];
+    if (clientFallback) return clientFallback;
+
     const equityFallbacks = feeMappings.filter(mapping => {
-      const mappingProvider = compactFeeText(mapping.provider);
-      const providerMatches = mappingProvider === providerKey || providerKey.includes(mappingProvider) || mappingProvider.includes(providerKey);
-      return providerMatches && (mapping.investmentKey || compactFeeText(mapping.investment)) === 'equities';
+      return providerMatches(mapping) && (mapping.investmentKey || compactFeeText(mapping.investment)) === 'equities';
     });
     const equityMatch = equityFallbacks
       .map(mapping => rankFeeMapping(mapping, row, 'Equities'))
