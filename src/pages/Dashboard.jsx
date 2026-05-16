@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { withCalculatedFees } from '@/lib/fee-utils';
@@ -8,6 +8,7 @@ import { clientKey } from '@/lib/client-utils';
 import { feeMappingRows } from '@/data/feeMapping';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
 
@@ -25,6 +26,8 @@ function mappedFeesForMonth(month) {
 }
 
 export default function Dashboard() {
+  const [selectedMonth, setSelectedMonth] = useState('');
+
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
     queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
@@ -46,11 +49,13 @@ export default function Dashboard() {
   );
 
   const months = useMemo(() => getSortedMonths(feeRows), [feeRows]);
-  const latestMonth = months[0] || '';
-  const prevMonth = months[1] || '';
+  const latestDataMonth = months[0] || '';
+  const activeMonth = selectedMonth || latestDataMonth;
+  const activeMonthIndex = months.indexOf(activeMonth);
+  const prevMonth = activeMonthIndex >= 0 ? months[activeMonthIndex + 1] || '' : '';
 
   const stats = useMemo(() => {
-    const current = feeRows.filter(v => v.upload_month === latestMonth);
+    const current = feeRows.filter(v => v.upload_month === activeMonth);
     const prev = feeRows.filter(v => v.upload_month === prevMonth);
 
     // Group by client key (identity/portfolio name) like Clients page
@@ -73,17 +78,17 @@ export default function Dashboard() {
     const platforms = new Set(current.map(v => v.platform).filter(Boolean)).size;
 
     return { clients: clientCount, totalAUM, aumChange, totalFees, feeChange, feeRequired, platforms, investmentCount: current.length };
-  }, [feeRows, latestMonth, prevMonth]);
+  }, [feeRows, activeMonth, prevMonth]);
 
   const topClients = useMemo(() => {
-    const current = feeRows.filter(v => v.upload_month === latestMonth);
+    const current = feeRows.filter(v => v.upload_month === activeMonth);
     const map = {};
     current.forEach(r => {
       if (!map[r.account_code]) map[r.account_code] = { name: r.portfolio_name, code: r.account_code, total: 0 };
       map[r.account_code].total += zarVal(r);
     });
     return Object.values(map).sort((a, b) => b.total - a.total).slice(0, 5);
-  }, [feeRows, latestMonth]);
+  }, [feeRows, activeMonth]);
 
   const chartData = useMemo(() => {
     const valuationMonths = getSortedMonths(feeRows);
@@ -124,11 +129,24 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Overview</h1>
-          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-            Latest data: {latestMonth ? <MonthBadge month={latestMonth} /> : '—'}
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold">Overview</h1>
+            <Select value={activeMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="h-9 w-40 bg-white">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+            Viewing: {activeMonth ? <MonthBadge month={activeMonth} /> : '—'}
+            {activeMonth !== latestDataMonth && latestDataMonth && (
+              <span>Latest data: <MonthBadge month={latestDataMonth} /></span>
+            )}
           </div>
         </div>
         <Link to="/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
