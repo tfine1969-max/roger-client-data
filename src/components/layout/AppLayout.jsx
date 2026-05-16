@@ -67,8 +67,8 @@ function NavDropdown({ group, location }) {
   const btnStyle = isGroupActive
     ? { backgroundColor: group.color, color: '#fff' }
     : hovered
-    ? { backgroundColor: group.color + '1a', color: group.color }
-    : { color: '#6b7280' };
+    ? { backgroundColor: group.color + '44', color: group.color }
+    : { backgroundColor: group.color + '22', color: group.color };
 
   return (
     <div ref={ref} className="relative">
@@ -146,10 +146,10 @@ export default function AppLayout() {
                     className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap"
                     style={active
                       ? { backgroundColor: color, color: '#fff' }
-                      : { color: '#6b7280' }
+                      : { backgroundColor: color + '22', color: color }
                     }
-                    onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = color + '1a'; e.currentTarget.style.color = color; } }}
-                    onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#6b7280'; } }}
+                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = color + '44'; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = active ? color : color + '22'; }}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="hidden md:inline">{label}</span>
