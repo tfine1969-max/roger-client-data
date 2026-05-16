@@ -111,7 +111,7 @@ export default function AppLayout() {
               <img src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png" alt="Wealth Works" className="h-9 w-auto" />
               <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Cape Town Client Management</p>
             </Link>
-            <nav className="flex items-center gap-0.5">
+            <nav className="flex items-center gap-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
@@ -124,7 +124,7 @@ export default function AppLayout() {
                     key={path}
                     to={path}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all",
+                      "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap",
                       active
                         ? "bg-primary text-white"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
