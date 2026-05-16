@@ -183,7 +183,7 @@ export default function Upload() {
 
   const handleRepairMonth = async () => {
     if (!repairMonth) return;
-    setRepairStatus('Checking client names against April 2026...');
+    setRepairStatus('Checking client names and fees against April 2026...');
     try {
       const result = await applyClientBlueprint(repairMonth);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
@@ -191,7 +191,7 @@ export default function Upload() {
       if (result.skipped) {
         setRepairStatus('Choose May 2026 or a later month. April 2026 is the master list and does not need to be fixed.');
       } else {
-        setRepairStatus(`Checked ${formatMonth(repairMonth)}. Updated ${result.updated} row${result.updated === 1 ? '' : 's'} to the April client names.`);
+        setRepairStatus(`Checked ${formatMonth(repairMonth)}. Updated ${result.updated} row${result.updated === 1 ? '' : 's'} to the April client names and fee rules.`);
       }
     } catch (err) {
       setRepairStatus(err.message || 'Could not fix client names for this month.');
@@ -208,9 +208,9 @@ export default function Upload() {
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold text-slate-950">Keep Client Names Fixed</p>
+            <p className="text-sm font-semibold text-slate-950">Keep Client Names & Fees Fixed</p>
             <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-              April 2026 is the master client list. New uploads are automatically matched back to those corrected names, so May and future months do not create duplicate clients.
+              April 2026 is the master client and fee list. New uploads are automatically matched back to those corrected names, fund rebates, and client/provider advisory fees.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               Use the month selector only if a month was already uploaded before this rule was added.

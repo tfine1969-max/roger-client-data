@@ -9,6 +9,8 @@ const clean = value => String(value ?? '').trim();
 const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
 const cleanAccount = value => clean(value).toLowerCase();
 const cleanIdentity = value => clean(value).replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+const cleanPlatform = value => normalizeClientText(value).replace(/\b(asset management|investments|securities)\b/g, '').trim();
+const feeNumber = value => Number.isFinite(Number(value)) ? Number(value) : null;
 
 const addToMap = (map, key, value) => {
   if (key && value && !map.has(key)) map.set(key, value);
@@ -36,6 +38,53 @@ function buildBlueprint(rows) {
   return { byAccount, byIdentity, byName };
 }
 
+function addVote(map, key, value) {
+  if (!key || value == null) return;
+  if (!map.has(key)) map.set(key, new Map());
+  const votes = map.get(key);
+  const voteKey = Number(value).toFixed(6);
+  votes.set(voteKey, (votes.get(voteKey) || 0) + 1);
+}
+
+function voteWinner(votes) {
+  if (!votes) return null;
+  const [winner] = [...votes.entries()].sort((a, b) => b[1] - a[1]);
+  return winner ? Number(winner[0]) : null;
+}
+
+function buildFeeBlueprint(rows) {
+  const rebateByPlatformFundVotes = new Map();
+  const rebateByFundVotes = new Map();
+  const advisoryByPlatformAccountVotes = new Map();
+  const advisoryByPlatformIdentityVotes = new Map();
+  const advisoryByPlatformNameVotes = new Map();
+
+  rows.forEach(row => {
+    const platform = cleanPlatform(row.platform);
+    const investment = compact(row.investment_name);
+    const account = cleanAccount(row.account_code);
+    const identity = cleanIdentity(row.identity_no);
+    const name = compact(row.portfolio_name);
+    const rebate = feeNumber(row.rebate_fee_annual_percent);
+    const advisory = feeNumber(row.advisory_fee_annual_percent);
+
+    addVote(rebateByPlatformFundVotes, `${platform}||${investment}`, rebate);
+    addVote(rebateByFundVotes, investment, rebate);
+    addVote(advisoryByPlatformAccountVotes, `${platform}||${account}`, advisory);
+    addVote(advisoryByPlatformIdentityVotes, `${platform}||${identity}`, advisory);
+    addVote(advisoryByPlatformNameVotes, `${platform}||${name}`, advisory);
+  });
+
+  const toWinnerMap = votesMap => new Map([...votesMap.entries()].map(([key, votes]) => [key, voteWinner(votes)]));
+  return {
+    rebateByPlatformFund: toWinnerMap(rebateByPlatformFundVotes),
+    rebateByFund: toWinnerMap(rebateByFundVotes),
+    advisoryByPlatformAccount: toWinnerMap(advisoryByPlatformAccountVotes),
+    advisoryByPlatformIdentity: toWinnerMap(advisoryByPlatformIdentityVotes),
+    advisoryByPlatformName: toWinnerMap(advisoryByPlatformNameVotes),
+  };
+}
+
 function matchCanonicalName(row, blueprint) {
   return blueprint.byAccount.get(cleanAccount(row.account_code))
     || blueprint.byIdentity.get(cleanIdentity(row.identity_no))
@@ -44,12 +93,61 @@ function matchCanonicalName(row, blueprint) {
     || '';
 }
 
+function matchFeeRates(row, feeBlueprint) {
+  const platform = cleanPlatform(row.platform);
+  const investment = compact(row.investment_name);
+  const account = cleanAccount(row.account_code);
+  const identity = cleanIdentity(row.identity_no);
+  const name = compact(row.portfolio_name);
+
+  const platformFundKey = `${platform}||${investment}`;
+  const platformAccountKey = `${platform}||${account}`;
+  const platformIdentityKey = `${platform}||${identity}`;
+  const platformNameKey = `${platform}||${name}`;
+  const rebate = feeBlueprint.rebateByPlatformFund.get(platformFundKey)
+    ?? feeBlueprint.rebateByFund.get(investment);
+
+  const advisory = feeBlueprint.advisoryByPlatformAccount.get(platformAccountKey)
+    ?? feeBlueprint.advisoryByPlatformIdentity.get(platformIdentityKey)
+    ?? feeBlueprint.advisoryByPlatformName.get(platformNameKey);
+
+  return {
+    rebate,
+    advisory,
+    rebateMatched: rebate != null,
+    advisoryMatched: advisory != null,
+  };
+}
+
+function feeFields(row, rebate, advisory, feeRequired = false) {
+  const originalValue = Number(row.original_currency_value ?? row.month_end_market_value ?? 0) || 0;
+  const zarValue = Number(row.zar_value ?? row.month_end_market_value ?? 0) || 0;
+  const rebateOrig = originalValue * (rebate / 100) / 12;
+  const advisoryOrig = originalValue * (advisory / 100) / 12;
+  const rebateZar = zarValue * (rebate / 100) / 12;
+  const advisoryZar = zarValue * (advisory / 100) / 12;
+
+  return {
+    rebate_fee_annual_percent: rebate,
+    advisory_fee_annual_percent: advisory,
+    rebate_fee_monthly_percent: rebate / 12,
+    advisory_fee_monthly_percent: advisory / 12,
+    rebate_fee_monthly_amount_original_currency: rebateOrig,
+    advisory_fee_monthly_amount_original_currency: advisoryOrig,
+    rebate_fee_monthly_amount_zar: rebateZar,
+    advisory_fee_monthly_amount_zar: advisoryZar,
+    total_monthly_fee_original_currency: rebateOrig + advisoryOrig,
+    total_monthly_fee_zar: rebateZar + advisoryZar,
+    fee_required: feeRequired,
+  };
+}
+
 async function updateRows(rows) {
   let updated = 0;
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
-    await Promise.all(batch.map(({ id, portfolio_name }) =>
-      base44.entities.PortfolioValuation.update(id, { portfolio_name })
+    await Promise.all(batch.map(({ id, update }) =>
+      base44.entities.PortfolioValuation.update(id, update)
     ));
     updated += batch.length;
   }
@@ -67,15 +165,29 @@ export async function applyClientBlueprint(uploadMonth, options = {}) {
   ]);
 
   const blueprint = buildBlueprint(blueprintRows || []);
+  const feeBlueprint = buildFeeBlueprint(blueprintRows || []);
   const provider = clean(options.provider).toLowerCase();
 
   const changes = (targetRows || [])
     .filter(row => !provider || clean(row.platform).toLowerCase() === provider)
     .map(row => {
       const nextName = matchCanonicalName(row, blueprint);
-      return nextName && nextName !== clean(row.portfolio_name)
-        ? { id: row.id, portfolio_name: nextName }
-        : null;
+      const normalizedRow = nextName ? { ...row, portfolio_name: nextName } : row;
+      const currentRebate = feeNumber(row.rebate_fee_annual_percent) ?? 0;
+      const currentAdvisory = feeNumber(row.advisory_fee_annual_percent) ?? 0;
+      const feeMatch = matchFeeRates(normalizedRow, feeBlueprint);
+      const rebate = feeMatch.rebateMatched ? feeMatch.rebate : currentRebate;
+      const advisory = feeMatch.advisoryMatched ? feeMatch.advisory : currentAdvisory;
+      const feeRequired = !feeMatch.advisoryMatched;
+      const update = {
+        ...feeFields(normalizedRow, rebate, advisory, feeRequired),
+      };
+      if (nextName && nextName !== clean(row.portfolio_name)) update.portfolio_name = nextName;
+
+      const nameChanged = update.portfolio_name != null;
+      const feeChanged = currentRebate !== rebate || currentAdvisory !== advisory || Boolean(row.fee_required) !== feeRequired;
+
+      return nameChanged || feeChanged ? { id: row.id, update } : null;
     })
     .filter(Boolean);
 
