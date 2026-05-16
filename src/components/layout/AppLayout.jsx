@@ -1,19 +1,95 @@
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Upload, BarChart3, AlertTriangle, Percent, Briefcase, SlidersHorizontal, ClipboardCheck, LineChart } from 'lucide-react';
+import {
+  LayoutDashboard, Users, BarChart3, Briefcase,
+  Percent, SlidersHorizontal, ClipboardCheck,
+  Upload, AlertTriangle, LineChart, ChevronDown
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const navItems = [
+const singleItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/clients', label: 'Clients', icon: Users },
   { path: '/platforms', label: 'Platforms', icon: BarChart3 },
   { path: '/funds', label: 'Funds', icon: Briefcase },
-  { path: '/fees', label: 'Fees', icon: Percent },
-  { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
-  { path: '/control', label: 'Control', icon: ClipboardCheck },
-  { path: '/upload', label: 'Upload', icon: Upload },
-  { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
   { path: '/investment-summary', label: 'Reports', icon: LineChart },
 ];
+
+const feesGroup = {
+  label: 'Fees',
+  icon: Percent,
+  items: [
+    { path: '/fees', label: 'Fees', icon: Percent },
+    { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
+  ],
+};
+
+const dataGroup = {
+  label: 'Data',
+  icon: Upload,
+  items: [
+    { path: '/control', label: 'Control', icon: ClipboardCheck },
+    { path: '/upload', label: 'Upload', icon: Upload },
+    { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
+  ],
+};
+
+function NavDropdown({ group, location }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const isGroupActive = group.items.some(item => location.pathname.startsWith(item.path));
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const Icon = group.icon;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={cn(
+          "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all",
+          isGroupActive
+            ? "bg-primary text-white"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        )}
+      >
+        <Icon className="w-4 h-4" />
+        <span className="hidden md:inline">{group.label}</span>
+        <ChevronDown className={cn("w-3 h-3 transition-transform hidden md:block", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full mt-1 left-0 z-50 min-w-[160px] rounded-lg border bg-white shadow-lg py-1">
+          {group.items.map(({ path, label, icon: ItemIcon }) => {
+            const active = location.pathname.startsWith(path);
+            return (
+              <Link
+                key={path}
+                to={path}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
+                  active
+                    ? "text-primary font-semibold bg-primary/5"
+                    : "text-foreground hover:bg-muted/60"
+                )}
+              >
+                <ItemIcon className="w-4 h-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const platformsSubNav = [
   { path: '/platforms', label: 'All Platforms' },
@@ -41,7 +117,7 @@ export default function AppLayout() {
               </div>
             </Link>
             <nav className="flex items-center gap-0.5">
-              {navItems.map(({ path, label, icon: Icon }) => {
+              {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
                     ? location.pathname === '/'
@@ -64,11 +140,13 @@ export default function AppLayout() {
                   </Link>
                 );
               })}
+
+              <NavDropdown group={feesGroup} location={location} />
+              <NavDropdown group={dataGroup} location={location} />
             </nav>
           </div>
         </div>
 
-        {/* Platforms sub-nav */}
         {inPlatformsSection && (
           <div className="border-t bg-muted/40">
             <div className="max-w-screen-xl mx-auto px-6">
