@@ -26,6 +26,91 @@ const addToMap = (map, key, value) => {
   if (key && value && !map.has(key)) map.set(key, value);
 };
 
+const unique = values => [...new Set(values.filter(Boolean))];
+
+function accountKeys(value) {
+  const raw = clean(value);
+  if (!raw) return [];
+  const pieces = raw
+    .split(/[\s,;/|_]+/)
+    .map(piece => piece.trim())
+    .filter(Boolean);
+
+  return unique([
+    cleanAccount(raw),
+    raw.replace(/[^a-zA-Z0-9.]+/g, '').toLowerCase(),
+    raw.replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+    ...pieces.flatMap(piece => [
+      cleanAccount(piece),
+      piece.replace(/[^a-zA-Z0-9.]+/g, '').toLowerCase(),
+      piece.replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+    ]),
+  ]);
+}
+
+function trailingNameCandidate(value) {
+  const raw = clean(value);
+  if (!raw || !raw.includes('-')) return '';
+  const last = raw.split('-').map(part => part.trim()).filter(Boolean).pop();
+  if (!last || /\d/.test(last)) return '';
+  return last;
+}
+
+function providerlessNameCandidate(value) {
+  const raw = normalizeClientText(value);
+  if (!raw) return '';
+  const tokens = raw
+    .split(' ')
+    .filter(token => ![
+      'prescient',
+      'peresec',
+      'prime',
+      'gryphon',
+      'credo',
+      'julius',
+      'baer',
+      'northstar',
+      'bci',
+      'boutique',
+      'ci',
+      'dma',
+      'jse',
+      'jsfs',
+    ].includes(token));
+  if (tokens.length < 2 || tokens.some(token => /\d/.test(token))) return '';
+  return tokens.join(' ');
+}
+
+function surnameFirstKey(value) {
+  const formatted = formatClientName(value);
+  const normalized = normalizeClientText(formatted);
+  if (!normalized) return '';
+  const words = normalized.split(' ').filter(Boolean);
+  if (words.length < 2) return compact(formatted);
+  return `${words[0]}${words[1]}`;
+}
+
+function nameKeys(value) {
+  const raw = clean(value);
+  const trailing = trailingNameCandidate(raw);
+  const providerless = providerlessNameCandidate(raw);
+  const candidates = unique([
+    raw,
+    formatClientName(raw),
+    trailing,
+    trailing ? formatClientName(trailing) : '',
+    providerless,
+    providerless ? formatClientName(providerless) : '',
+  ]);
+
+  return unique(candidates.flatMap(candidate => [
+    compact(candidate),
+    compact(formatClientName(candidate)),
+    sortedClientKey(candidate),
+    surnameFirstKey(candidate),
+  ]));
+}
+
 function canonicalName(row) {
   return clean(row?.portfolio_name) || '';
 }
@@ -39,10 +124,9 @@ function buildBlueprint(rows) {
     const name = canonicalName(row);
     if (!name) return;
 
-    addToMap(byAccount, cleanAccount(row.account_code), name);
+    accountKeys(row.account_code).forEach(key => addToMap(byAccount, key, name));
     addToMap(byIdentity, cleanIdentity(row.identity_no), name);
-    addToMap(byName, compact(name), name);
-    addToMap(byName, compact(formatClientName(name)), name);
+    nameKeys(name).forEach(key => addToMap(byName, key, name));
   });
 
   return { byAccount, byIdentity, byName };
@@ -145,11 +229,20 @@ function buildFeeBlueprint(rows, fallbackRows = []) {
 }
 
 function matchCanonicalName(row, blueprint) {
-  return blueprint.byAccount.get(cleanAccount(row.account_code))
-    || blueprint.byIdentity.get(cleanIdentity(row.identity_no))
-    || blueprint.byName.get(compact(row.portfolio_name))
-    || blueprint.byName.get(compact(formatClientName(row.portfolio_name)))
-    || '';
+  const accountMatch = accountKeys(row.account_code)
+    .map(key => blueprint.byAccount.get(key))
+    .find(Boolean);
+  if (accountMatch) return accountMatch;
+
+  const identityMatch = blueprint.byIdentity.get(cleanIdentity(row.identity_no));
+  if (identityMatch) return identityMatch;
+
+  return unique([
+    ...nameKeys(row.portfolio_name),
+    ...nameKeys(row.account_code),
+  ])
+    .map(key => blueprint.byName.get(key))
+    .find(Boolean) || '';
 }
 
 function matchFeeRates(row, feeBlueprint) {

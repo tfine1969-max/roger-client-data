@@ -17,6 +17,7 @@ import PrescientUpload from '@/components/upload/PrescientUpload';
 import PeresecUpload from '@/components/upload/PeresecUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
+import { formatMonth } from '@/lib/valuation-utils';
 
 const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
 

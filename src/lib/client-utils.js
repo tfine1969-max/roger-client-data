@@ -119,8 +119,19 @@ export function normalizeClientText(value) {
     .replace(/\s+/g, ' ');
 }
 
+function sortedNameKey(value) {
+  return normalizeClientText(value)
+    .split(' ')
+    .filter(Boolean)
+    .sort()
+    .join('');
+}
+
 export function clientKey(row) {
-  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
+  const formattedName = formatClientName(row?.portfolio_name || '');
+  const name = normalizeClientText(formattedName).replace(/[^a-z0-9]+/g, '');
+  const sortedName = sortedNameKey(formattedName);
+  if (sortedName && !sortedName.includes('unknown')) return `name-${sortedName}`;
   if (name && !name.includes('unknown')) return `name-${name}`;
   const identity = String(row?.identity_no || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
   if (identity) return `id-${identity}`;

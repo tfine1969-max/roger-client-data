@@ -35,6 +35,7 @@ export default function DataQuality() {
   const [deletingId, setDeletingId] = useState(null);
   const [repairMonth, setRepairMonth] = useState('');
   const [repairStatus, setRepairStatus] = useState(null);
+  const [repairingAll, setRepairingAll] = useState(false);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -98,6 +99,27 @@ export default function DataQuality() {
     }
   };
 
+  const handleRepairAllMonths = async () => {
+    const targetMonths = months.filter(month => month > '2026-04');
+    if (targetMonths.length === 0) return;
+    setRepairingAll(true);
+    setRepairStatus('Checking every month after April against the blueprint...');
+    try {
+      let updated = 0;
+      for (const month of targetMonths) {
+        const result = await applyClientBlueprint(month);
+        updated += result.updated || 0;
+      }
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      setRepairStatus(`Checked ${targetMonths.length} month${targetMonths.length === 1 ? '' : 's'}. Updated ${updated} row${updated === 1 ? '' : 's'} across all client mappings.`);
+    } catch (err) {
+      setRepairStatus(err.message || 'Could not repair all months.');
+    } finally {
+      setRepairingAll(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -148,6 +170,9 @@ export default function DataQuality() {
             />
             <Button type="button" size="sm" variant="outline" onClick={handleRepairMonth} disabled={!repairMonth}>
               Repair month
+            </Button>
+            <Button type="button" size="sm" onClick={handleRepairAllMonths} disabled={repairingAll || months.every(month => month <= '2026-04')}>
+              {repairingAll ? 'Repairing...' : 'Repair all months'}
             </Button>
           </div>
         </div>
