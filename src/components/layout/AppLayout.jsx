@@ -11,19 +11,27 @@ import { cn } from '@/lib/utils';
 // Blue: #26547C | 55% tint: #6B97B8 | 35% tint: #94B5CE
 // Grey: #777772 | 55% tint: #A3A39F | 35% tint: #BCBCB9
 
+const COLORS = {
+  blue:      '#26547C',
+  grey:      '#777772',
+  blueTint55: '#6B97B8',
+  greyTint55: '#A3A39F',
+  blueTint35: '#94B5CE',
+  greyTint35: '#BCBCB9',
+};
+
 const singleItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard, activeColor: 'bg-[#26547C] text-white', hoverColor: 'hover:bg-[#26547C]/10 hover:text-[#26547C]' },
-  { path: '/clients', label: 'Clients', icon: Users, activeColor: 'bg-[#777772] text-white', hoverColor: 'hover:bg-[#777772]/10 hover:text-[#777772]' },
-  { path: '/platforms', label: 'Platforms', icon: BarChart3, activeColor: 'bg-[#6B97B8] text-white', hoverColor: 'hover:bg-[#6B97B8]/10 hover:text-[#6B97B8]' },
-  { path: '/funds', label: 'Funds', icon: Briefcase, activeColor: 'bg-[#A3A39F] text-white', hoverColor: 'hover:bg-[#A3A39F]/10 hover:text-[#A3A39F]' },
-  { path: '/investment-summary', label: 'Reports', icon: LineChart, activeColor: 'bg-[#94B5CE] text-white', hoverColor: 'hover:bg-[#94B5CE]/10 hover:text-[#94B5CE]' },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard, color: COLORS.blue },
+  { path: '/clients', label: 'Clients', icon: Users, color: COLORS.grey },
+  { path: '/platforms', label: 'Platforms', icon: BarChart3, color: COLORS.blueTint55 },
+  { path: '/funds', label: 'Funds', icon: Briefcase, color: COLORS.greyTint55 },
+  { path: '/investment-summary', label: 'Reports', icon: LineChart, color: COLORS.blueTint35 },
 ];
 
 const feesGroup = {
   label: 'Fees',
   icon: Percent,
-  activeColor: 'bg-[#26547C] text-white',
-  hoverColor: 'hover:bg-[#26547C]/10 hover:text-[#26547C]',
+  color: COLORS.blue,
   items: [
     { path: '/fees', label: 'Fees', icon: Percent },
     { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
@@ -33,8 +41,7 @@ const feesGroup = {
 const dataGroup = {
   label: 'Data',
   icon: Upload,
-  activeColor: 'bg-[#777772] text-white',
-  hoverColor: 'hover:bg-[#777772]/10 hover:text-[#777772]',
+  color: COLORS.grey,
   items: [
     { path: '/control', label: 'Control', icon: ClipboardCheck },
     { path: '/upload', label: 'Upload', icon: Upload },
@@ -44,6 +51,7 @@ const dataGroup = {
 
 function NavDropdown({ group, location }) {
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const ref = useRef(null);
 
   const isGroupActive = group.items.some(item => location.pathname.startsWith(item.path));
@@ -56,16 +64,20 @@ function NavDropdown({ group, location }) {
 
   const Icon = group.icon;
 
+  const btnStyle = isGroupActive
+    ? { backgroundColor: group.color, color: '#fff' }
+    : hovered
+    ? { backgroundColor: group.color + '1a', color: group.color }
+    : { color: '#6b7280' };
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap",
-          isGroupActive
-            ? group.activeColor
-            : `text-muted-foreground ${group.hoverColor}`
-        )}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={btnStyle}
+        className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap"
       >
         <Icon className="w-4 h-4" />
         <span className="hidden md:inline">{group.label}</span>
@@ -120,7 +132,7 @@ export default function AppLayout() {
               <p className="text-[10px] text-muted-foreground leading-none tracking-widest uppercase">Cape Town Client Management</p>
             </Link>
             <nav className="flex items-center gap-1">
-              {singleItems.map(({ path, label, icon: Icon, activeColor, hoverColor }) => {
+              {singleItems.map(({ path, label, icon: Icon, color }) => {
                 const active =
                   path === '/'
                     ? location.pathname === '/'
@@ -131,12 +143,13 @@ export default function AppLayout() {
                   <Link
                     key={path}
                     to={path}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap",
-                      active
-                        ? activeColor
-                        : `text-muted-foreground ${hoverColor}`
-                    )}
+                    className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all whitespace-nowrap"
+                    style={active
+                      ? { backgroundColor: color, color: '#fff' }
+                      : { color: '#6b7280' }
+                    }
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = color + '1a'; e.currentTarget.style.color = color; } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = '#6b7280'; } }}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="hidden md:inline">{label}</span>
