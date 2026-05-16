@@ -5,16 +5,17 @@ const BATCH_LIMIT = 5000;
 function normalizeClientText(value: unknown) {
   return String(value || '')
     .toLowerCase()
-    .replace(/\b(mr|mrs|ms|miss|dr|prof)\b/g, ' ')
+    .replace(/\b(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
     .replace(/\s+/g, ' ');
 }
 
 function clientKey(row: Record<string, unknown>) {
+  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
+  if (name && !name.includes('unknown')) return `name-${name}`;
   const identity = String(row?.identity_no || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
   if (identity) return `id-${identity}`;
-  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
   return name ? `name-${name}` : `account-${row?.account_code || 'unknown'}`;
 }
 

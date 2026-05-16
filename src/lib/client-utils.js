@@ -120,9 +120,10 @@ export function normalizeClientText(value) {
 }
 
 export function clientKey(row) {
+  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
+  if (name && !name.includes('unknown')) return `name-${name}`;
   const identity = String(row?.identity_no || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
   if (identity) return `id-${identity}`;
-  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
   return name ? `name-${name}` : `account-${row?.account_code || 'unknown'}`;
 }
 
