@@ -290,6 +290,32 @@ export default function InvestmentSummary() {
   );
   const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
   const selectedFundCount = selectedFundKeys.size;
+  const selectedFundItems = useMemo(() => {
+    const items = [];
+    const seen = new Set();
+    summary.entities.forEach(entity => {
+      entity.investments.forEach(item => {
+        if (!item.rawKeys.some(key => selectedFundKeys.has(key)) || seen.has(item.key)) return;
+        seen.add(item.key);
+        items.push(item);
+      });
+    });
+    return items;
+  }, [summary, selectedFundKeys]);
+  const selectedFundNames = useMemo(() => {
+    const names = [];
+    const seen = new Set();
+    selectedFundItems.forEach(item => {
+      const sourceNames = item.sourceNames?.length ? item.sourceNames : [item.name];
+      sourceNames.forEach(name => {
+        const cleanName = name?.trim();
+        if (!cleanName || seen.has(cleanName)) return;
+        seen.add(cleanName);
+        names.push(cleanName);
+      });
+    });
+    return names;
+  }, [selectedFundItems]);
 
   const toggleFundSelection = (item) => {
     setSelectedFundKeys(prev => {
@@ -306,10 +332,7 @@ export default function InvestmentSummary() {
 
   const openFundMerge = () => {
     if (selectedFundKeys.size < 2) return;
-    const selectedItems = summary.entities.flatMap(entity => entity.investments).filter(item =>
-      item.rawKeys.some(key => selectedFundKeys.has(key))
-    );
-    setMergeFundName(selectedItems[0]?.name || '');
+    setMergeFundName(selectedFundNames[0] || selectedFundItems[0]?.name || '');
     setMergeDialogOpen(true);
   };
 
@@ -327,7 +350,7 @@ export default function InvestmentSummary() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Reports</h1>
@@ -566,15 +589,64 @@ export default function InvestmentSummary() {
         </section>
       </div>
 
+      {selectedFundCount > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur">
+          <div className="mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">{selectedFundCount} selected fund source row{selectedFundCount === 1 ? '' : 's'}</p>
+              <p className="text-xs text-muted-foreground">Select at least two fund rows, then choose the correct reporting name.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-4"
+                onClick={() => setSelectedFundKeys(new Set())}
+              >
+                Clear selection
+              </Button>
+              <Button
+                type="button"
+                className="h-9 px-5"
+                onClick={openFundMerge}
+                disabled={selectedFundCount < 2}
+              >
+                Merge selected funds
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Dialog open={mergeDialogOpen} onOpenChange={setMergeDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Merge Selected Funds</DialogTitle>
             <DialogDescription>
-              Enter the reporting name to use for the selected fund rows. This only changes how this report groups the funds.
+              Choose the correct existing fund name or edit the reporting name below. This only changes how this report groups the funds.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Selected fund names</p>
+              <div className="max-h-56 overflow-y-auto rounded-lg border bg-slate-50 p-2">
+                {selectedFundNames.map(name => (
+                  <label
+                    key={name}
+                    className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-2 text-sm hover:bg-white"
+                  >
+                    <input
+                      type="radio"
+                      name="correctFundName"
+                      checked={mergeFundName === name}
+                      onChange={() => setMergeFundName(name)}
+                      className="mt-0.5 h-4 w-4 cursor-pointer accent-primary"
+                    />
+                    <span className="leading-5">{name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <label className="text-sm font-medium">Correct fund name</label>
             <Input
               value={mergeFundName}
