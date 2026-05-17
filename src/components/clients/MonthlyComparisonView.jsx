@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { formatClientName, clientKey, hasUnknownValue } from '@/lib/client-utils';
-import { formatMonth } from '@/lib/valuation-utils';
+import { fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { cn } from '@/lib/utils';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ChevronRight } from 'lucide-react';
 
 /**
  * Shows a cross-month matrix: rows = unique clients (alphabetical), columns = months (ascending).
@@ -19,12 +20,13 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
     valuations.forEach(row => {
       const key = clientKey(row);
       if (!map[key]) {
-        map[key] = { client_key: key, name: '', account_codes: new Set(), monthsPresent: new Set(), hasUnknown: false };
+        map[key] = { client_key: key, name: '', account_codes: new Set(), monthsPresent: new Set(), totalsByMonth: {}, hasUnknown: false };
       }
       const c = map[key];
       if (!c.name || hasUnknownValue(c.name)) c.name = row.portfolio_name || c.name;
       if (row.account_code) c.account_codes.add(row.account_code);
       c.monthsPresent.add(row.upload_month);
+      c.totalsByMonth[row.upload_month] = (c.totalsByMonth[row.upload_month] || 0) + zarVal(row);
       if (!c.hasUnknown && (hasUnknownValue(row.portfolio_name) || hasUnknownValue(row.account_code))) {
         c.hasUnknown = true;
       }
@@ -44,6 +46,8 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
     return counts;
   }, [allClients, sortedMonths]);
 
+  const latestMonth = sortedMonths[sortedMonths.length - 1] || '';
+
   if (sortedMonths.length === 0) {
     return <div className="py-12 text-center text-sm text-muted-foreground">No data available.</div>;
   }
@@ -62,6 +66,10 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                   {formatMonth(m)}
                 </th>
               ))}
+              <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">
+                Latest value
+              </th>
+              <th className="px-3 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -109,13 +117,21 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                           <button type="button" onClick={() => setEditingKey(null)} className="rounded px-1.5 py-0.5 text-xs border hover:bg-muted">Cancel</button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => startEditingName(client)}
-                          className="text-left text-sm font-medium text-foreground hover:text-primary hover:underline"
-                        >
-                          {formatClientName(client.name) || client.name || '—'}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            to={`/clients/${encodeURIComponent(client.client_key)}`}
+                            className="text-left text-sm font-medium text-foreground hover:text-primary hover:underline"
+                          >
+                            {formatClientName(client.name) || client.name || '-'}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => startEditingName(client)}
+                            className="rounded px-1 text-[11px] text-muted-foreground opacity-0 hover:bg-muted group-hover:opacity-100"
+                          >
+                            Edit
+                          </button>
+                        </div>
                       )}
                     </div>
                   </td>
@@ -129,6 +145,18 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                       )}
                     </td>
                   ))}
+                  <td className="px-3 py-2 text-right font-numbers text-sm font-semibold whitespace-nowrap">
+                    {client.monthsPresent.has(latestMonth) ? (
+                      <>R {fmtNum(client.totalsByMonth[latestMonth] || 0)}</>
+                    ) : (
+                      <span className="text-xs font-medium text-amber-700">Missing latest</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <Link to={`/clients/${encodeURIComponent(client.client_key)}`} className="inline-flex rounded p-1 hover:bg-muted" title="Open client history">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
@@ -143,6 +171,8 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                   {countPerMonth[m]}
                 </td>
               ))}
+              <td className="px-3 py-2"></td>
+              <td className="px-3 py-2"></td>
             </tr>
           </tfoot>
         </table>

@@ -40,8 +40,10 @@ export default function ClientDetail() {
 
   const decodedKey = decodeURIComponent(accountCode || '');
   const clientRows = useMemo(() => valuations.filter(v => v.account_code === decodedKey || clientKey(v) === decodedKey), [valuations, decodedKey]);
-  const months = useMemo(() => getSortedMonths(clientRows), [clientRows]);
-  const latestMonth = months[0] || '';
+  const allMonths = useMemo(() => getSortedMonths(valuations), [valuations]);
+  const clientMonths = useMemo(() => getSortedMonths(clientRows), [clientRows]);
+  const latestMonth = allMonths[0] || clientMonths[0] || '';
+  const latestClientMonth = clientMonths[0] || '';
   const currentRows = useMemo(() => clientRows.filter(v => v.upload_month === latestMonth), [clientRows, latestMonth]);
   const currentFeeRows = useMemo(
     () => currentRows.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
@@ -79,11 +81,11 @@ export default function ClientDetail() {
   }, [currentRows]);
 
   const trendData = useMemo(() => {
-    return months.map(month => ({
+    return allMonths.map(month => ({
       month,
       total: clientRows.filter(v => v.upload_month === month).reduce((s, v) => s + zarVal(v), 0),
     })).reverse();
-  }, [clientRows, months]);
+  }, [clientRows, allMonths]);
 
   const funds = useMemo(() => {
     return [...new Set(clientRows.map(r => `${r.account_code}||${r.investment_name}||${r.platform}||${r.currency}`))].map(k => {
@@ -96,7 +98,7 @@ export default function ClientDetail() {
     if (!selectedFund) return [];
     const [account_code, investment_name, platform, currency] = selectedFund.split('||');
     const rows = clientRows.filter(r => r.account_code === account_code && r.investment_name === investment_name && r.platform === platform && r.currency === currency);
-    return [...getSortedMonths(rows)].reverse().map(m => {
+    return [...allMonths].reverse().map(m => {
       const row = rows.find(r => r.upload_month === m);
       return {
         month: formatMonth(m),
@@ -104,7 +106,7 @@ export default function ClientDetail() {
         unit_price: row?.month_end_unit_price ?? 0,
       };
     });
-  }, [selectedFund, clientRows]);
+  }, [selectedFund, clientRows, allMonths]);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
@@ -223,6 +225,11 @@ export default function ClientDetail() {
               {totalUsd > 0 && <span>USD Value: <strong className="text-foreground font-mono">$ {fmtNum(totalUsd)}</strong></span>}
               <span>Total: <strong className="text-foreground font-mono">R {fmtNum(totalZar)}</strong></span>
             </div>
+            {latestMonth && currentRows.length === 0 && (
+              <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                No valuation rows were found for {formatMonth(latestMonth)}. Last client data appears in {latestClientMonth ? formatMonth(latestClientMonth) : 'an earlier month'}, so check whether the latest provider upload omitted this client or whether the client has a zero/no-value position.
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {hasUnknown && (
@@ -242,7 +249,7 @@ export default function ClientDetail() {
         </div>
       </div>
 
-      <InvestmentTable clientRows={clientRows} months={months} />
+      <InvestmentTable clientRows={clientRows} months={allMonths.length ? allMonths : clientMonths} />
 
       <div>
         <h2 className="text-base font-semibold mb-3">Current Month Components and Fees</h2>
