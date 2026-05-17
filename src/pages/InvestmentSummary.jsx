@@ -1,54 +1,45 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FileSpreadsheet, Search, Users } from 'lucide-react';
+import { Download, FileSpreadsheet, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
-import { clientKey, formatClientName, normalizeClientText } from '@/lib/client-utils';
+import { normalizeClientText } from '@/lib/client-utils';
 import MonthBadge from '@/components/shared/MonthBadge';
 import { cn } from '@/lib/utils';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png';
+const ALL_MONTHS = '__all_months__';
 
 const REPORT_GROUPS = [
+  {
+    id: 'marc-anthony-hoar',
+    name: 'Marc Anthony Hoar',
+    type: 'Client',
+    description: 'Individual client portfolio report generated from monthly valuation data.',
+    entities: [
+      {
+        id: 'marc-anthony-hoar',
+        name: 'Marc Anthony Hoar',
+        aliases: ['hoar marc anthony', 'marc anthony hoar', 'hoar marc', 'marc hoar'],
+      },
+    ],
+  },
   {
     id: 'worrall-family-investments',
     name: 'Worrall Family Investments',
     type: 'Client Group',
     description: 'Family investment report across Marula, Sweet Grass, Isla Worrall, and Charlie Worrall.',
     entities: [
-      {
-        id: 'marula-trading',
-        name: 'Marula Trading & Investments',
-        aliases: ['marula trading'],
-      },
-      {
-        id: 'sweet-grass-trading',
-        name: 'Sweet Grass Trading',
-        aliases: ['sweet grass trading 12 pty ltd', 'sweet grass trading pty ltd'],
-      },
-      {
-        id: 'sweet-grass-sub-account',
-        name: 'Sweet Grass Trading SUB Account',
-        aliases: ['sweet grass trading 12 acc 2', 'sweet grass trading pty ltd acc 2', 'sweet grass trading sub account'],
-      },
-      {
-        id: 'isla-worrall',
-        name: 'Isla Worrall',
-        aliases: ['worrall isla', 'isla worrall', 'worrall isla elizabeth'],
-      },
-      {
-        id: 'charlie-worrall',
-        name: 'Charlie Worrall',
-        aliases: ['worrall charlie', 'charlie worrall', 'worrall charlie christopher'],
-      },
+      { id: 'marula-trading', name: 'Marula Trading & Investments', aliases: ['marula trading'] },
+      { id: 'sweet-grass-trading', name: 'Sweet Grass Trading', aliases: ['sweet grass trading 12 pty ltd', 'sweet grass trading pty ltd'] },
+      { id: 'sweet-grass-sub-account', name: 'Sweet Grass Trading SUB Account', aliases: ['sweet grass trading 12 acc 2', 'sweet grass trading pty ltd acc 2', 'sweet grass trading sub account'] },
+      { id: 'isla-worrall', name: 'Isla Worrall', aliases: ['worrall isla', 'isla worrall', 'worrall isla elizabeth'] },
+      { id: 'charlie-worrall', name: 'Charlie Worrall', aliases: ['worrall charlie', 'charlie worrall', 'worrall charlie christopher'] },
     ],
   },
 ];
-
-const ALL_MONTHS = '__all_months__';
 
 const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
 const escapeXml = value => String(value ?? '')
@@ -113,35 +104,6 @@ function entitySummary(entity, rows, months) {
     latestValue: latestMonth ? byMonth[latestMonth] || 0 : 0,
     platforms: [...new Set(entityRows.map(row => row.platform).filter(Boolean))].sort(),
   };
-}
-
-function buildReportGroups(rows) {
-  const used = new Set();
-  const seededGroups = REPORT_GROUPS.map(group => {
-    const entities = group.entities.map(entity => {
-      const matchedRows = rowsForEntity(rows, entity);
-      matchedRows.forEach(row => used.add(row.id));
-      return entity;
-    });
-    return { ...group, entities };
-  });
-
-  const byClient = new Map();
-  rows.forEach(row => {
-    if (used.has(row.id)) return;
-    const key = clientKey(row);
-    if (!byClient.has(key)) {
-      byClient.set(key, {
-        id: key,
-        name: formatClientName(row.portfolio_name) || row.portfolio_name || 'Unknown Client',
-        type: 'Client',
-        description: 'Individual client report generated from monthly valuation data.',
-        entities: [{ id: key, name: formatClientName(row.portfolio_name) || row.portfolio_name || 'Unknown Client', aliases: [row.portfolio_name || key] }],
-      });
-    }
-  });
-
-  return [...seededGroups, ...byClient.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function groupSummary(group, rows, months) {
@@ -274,8 +236,7 @@ ${worksheets.join('')}
 }
 
 export default function InvestmentSummary() {
-  const [search, setSearch] = useState('');
-  const [selectedGroupId, setSelectedGroupId] = useState(REPORT_GROUPS[0].id);
+  const [selectedGroupId, setSelectedGroupId] = useState('marc-anthony-hoar');
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS);
 
   const { data: valuations = [], isLoading } = useQuery({
@@ -284,70 +245,59 @@ export default function InvestmentSummary() {
   });
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
-  const reportGroups = useMemo(() => buildReportGroups(valuations), [valuations]);
-  const selectedGroup = reportGroups.find(group => group.id === selectedGroupId) || reportGroups[0];
+  const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
   const summary = useMemo(
-    () => selectedGroup ? groupSummary(selectedGroup, valuations, months) : null,
+    () => groupSummary(selectedGroup, valuations, months),
     [selectedGroup, valuations, months]
   );
-
-  const visibleGroups = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return reportGroups.filter(group => !q || group.name.toLowerCase().includes(q) || group.description.toLowerCase().includes(q));
-  }, [reportGroups, search]);
-
   const displayMonths = selectedMonth === ALL_MONTHS ? months : months.filter(month => month === selectedMonth);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Reports</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Generate monthly client and family group portfolio reports from imported valuation data.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Generate monthly portfolio reports for approved client profiles.</p>
         </div>
         {summary && (
-          <Button type="button" className="gap-2" onClick={() => exportReport(selectedGroup, summary, months)}>
+          <Button type="button" className="h-9 gap-2" onClick={() => exportReport(selectedGroup, summary, months)}>
             <Download className="h-4 w-4" />
             Export Excel
           </Button>
         )}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
-        <aside className="rounded-xl border bg-white p-4">
-          <div className="mb-4 flex items-center gap-3 border-b pb-4">
-            <img src={LOGO_URL} alt="Wealthworks" className="h-10 w-auto" />
+      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+        <aside className="rounded-xl border bg-white p-3">
+          <div className="mb-3 flex items-center gap-3 border-b pb-3">
+            <img src={LOGO_URL} alt="Wealthworks" className="h-8 w-auto" />
             <div>
               <p className="text-sm font-semibold">Client Reports</p>
-              <p className="text-xs text-muted-foreground">{reportGroups.length} report profiles</p>
+              <p className="text-xs text-muted-foreground">Select a report profile</p>
             </div>
           </div>
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search reports..." className="h-9 pl-9" />
-          </div>
-          <div className="max-h-[620px] space-y-2 overflow-y-auto pr-1">
-            {visibleGroups.map(group => {
+          <div className="space-y-2">
+            {REPORT_GROUPS.map(group => {
               const itemSummary = groupSummary(group, valuations, months);
-              const selected = group.id === selectedGroup?.id;
+              const selected = group.id === selectedGroup.id;
               return (
                 <button
                   key={group.id}
                   type="button"
                   onClick={() => setSelectedGroupId(group.id)}
                   className={cn(
-                    'w-full rounded-lg border p-3 text-left transition-all',
+                    'w-full rounded-lg border p-2.5 text-left transition-all',
                     selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/40 hover:bg-slate-50'
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-slate-950">{group.name}</p>
+                      <p className="text-sm font-semibold text-slate-950">{group.name}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">{group.type}</p>
                     </div>
                     <Users className={cn('h-4 w-4', selected ? 'text-primary' : 'text-slate-400')} />
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground">Entities</p>
                       <p className="font-semibold">{group.entities.length}</p>
@@ -363,24 +313,24 @@ export default function InvestmentSummary() {
           </div>
         </aside>
 
-        <section className="space-y-5">
+        <section className="space-y-3">
           {isLoading && <div className="rounded-xl border bg-white p-10 text-center text-sm text-muted-foreground">Loading report data...</div>}
           {!isLoading && summary && (
             <>
-              <div className="rounded-xl border bg-white p-5">
+              <div className="rounded-xl border bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3">
-                      <img src={LOGO_URL} alt="Wealthworks" className="h-12 w-auto" />
+                      <img src={LOGO_URL} alt="Wealthworks" className="h-9 w-auto" />
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Monthly Portfolio Report</p>
-                        <h2 className="mt-1 text-2xl font-semibold">{summary.name}</h2>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">Monthly Portfolio Report</p>
+                        <h2 className="mt-0.5 text-xl font-semibold">{summary.name}</h2>
                       </div>
                     </div>
-                    <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{summary.description}</p>
+                    <p className="mt-2 max-w-2xl text-xs text-muted-foreground">{summary.description}</p>
                   </div>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="h-9 w-44 bg-white">
+                    <SelectTrigger className="h-8 w-40 bg-white text-xs">
                       <SelectValue placeholder="All months" />
                     </SelectTrigger>
                     <SelectContent>
@@ -390,49 +340,49 @@ export default function InvestmentSummary() {
                   </Select>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-4">
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Latest AUM</p>
-                    <p className="mt-1 font-numbers text-xl font-semibold">R {fmtNum(summary.latestValue)}</p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Latest AUM</p>
+                    <p className="mt-1 font-numbers text-lg font-semibold">R {fmtNum(summary.latestValue)}</p>
                   </div>
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Entities</p>
-                    <p className="mt-1 font-numbers text-xl font-semibold">{summary.entities.length}</p>
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Entities</p>
+                    <p className="mt-1 font-numbers text-lg font-semibold">{summary.entities.length}</p>
                   </div>
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Holdings</p>
-                    <p className="mt-1 font-numbers text-xl font-semibold">{summary.holdings}</p>
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Holdings</p>
+                    <p className="mt-1 font-numbers text-lg font-semibold">{summary.holdings}</p>
                   </div>
-                  <div className="rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Platforms</p>
-                    <p className="mt-1 truncate text-sm font-semibold">{summary.platforms.join(', ') || '-'}</p>
+                  <div className="rounded-lg bg-slate-50 p-2.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Platforms</p>
+                    <p className="mt-1 truncate text-xs font-semibold">{summary.platforms.join(', ') || '-'}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-xl border bg-white">
-                <div className="flex items-center gap-2 border-b px-4 py-3">
+              <div className="overflow-hidden rounded-lg border bg-white">
+                <div className="flex items-center gap-2 border-b px-3 py-2">
                   <FileSpreadsheet className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold">Total Portfolio</p>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b bg-muted/40">
-                        <th className="min-w-64 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Entity</th>
-                        {displayMonths.map(month => <th key={month} className="min-w-36 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
+                        <th className="sticky left-0 z-10 min-w-56 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Entity</th>
+                        {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       {summary.entities.map(entity => (
                         <tr key={entity.id} className="hover:bg-muted/20">
-                          <td className="px-4 py-3 font-semibold">{entity.name}</td>
-                          {displayMonths.map(month => <td key={month} className="px-4 py-3 text-right font-numbers">R {fmtNum(entity.byMonth[month] || 0)}</td>)}
+                          <td className="sticky left-0 z-10 bg-white px-3 py-2 font-semibold">{entity.name}</td>
+                          {displayMonths.map(month => <td key={month} className="px-3 py-2 text-right font-numbers">R {fmtNum(entity.byMonth[month] || 0)}</td>)}
                         </tr>
                       ))}
                       <tr className="bg-slate-50 font-semibold">
-                        <td className="px-4 py-3">TOTAL</td>
-                        {displayMonths.map(month => <td key={month} className="px-4 py-3 text-right font-numbers">R {fmtNum(summary.byMonth[month] || 0)}</td>)}
+                        <td className="sticky left-0 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
+                        {displayMonths.map(month => <td key={month} className="px-3 py-2 text-right font-numbers">R {fmtNum(summary.byMonth[month] || 0)}</td>)}
                       </tr>
                     </tbody>
                   </table>
@@ -440,8 +390,8 @@ export default function InvestmentSummary() {
               </div>
 
               {summary.entities.map(entity => (
-                <div key={entity.id} className="overflow-hidden rounded-xl border bg-white">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+                <div key={entity.id} className="overflow-hidden rounded-lg border bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
                     <div>
                       <p className="text-sm font-semibold">{entity.name}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">{entity.investments.length} holdings · {entity.platforms.join(', ') || '-'}</p>
@@ -449,22 +399,22 @@ export default function InvestmentSummary() {
                     {months[0] && <MonthBadge month={months[0]} />}
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b bg-muted/40">
-                          <th className="min-w-72 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
-                          {displayMonths.map(month => <th key={month} className="min-w-32 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
+                          <th className="sticky left-0 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
+                          <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
+                          <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
+                          {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
                         </tr>
                       </thead>
                       <tbody className="divide-y">
                         {entity.investments.map(item => (
                           <tr key={item.key} className="hover:bg-muted/20">
-                            <td className="px-4 py-3 font-medium">{item.name}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{item.platform}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{item.currency}</td>
-                            {displayMonths.map(month => <td key={month} className="px-4 py-3 text-right font-numbers">R {fmtNum(item.byMonthZar[month] || 0)}</td>)}
+                            <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">{item.name}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
+                            {displayMonths.map(month => <td key={month} className="px-3 py-2 text-right font-numbers">R {fmtNum(item.byMonthZar[month] || 0)}</td>)}
                           </tr>
                         ))}
                       </tbody>
