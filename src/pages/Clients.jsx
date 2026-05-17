@@ -115,10 +115,26 @@ export default function Clients() {
     });
   }, [clients, search, filterPlatform, filterCurrency, needsCorrectionOnly, zeroBalancesOnly]);
 
-  const selectedClients = useMemo(
-    () => clients.filter(client => selectedKeys.has(client.client_key)),
-    [clients, selectedKeys]
-  );
+  // All-months client map — needed so merge works in monthly comparison view
+  const allMonthsClients = useMemo(() => {
+    const map = {};
+    valuations.forEach(row => {
+      const key = clientKey(row);
+      if (!map[key]) {
+        map[key] = { client_key: key, portfolio_name: row.portfolio_name || '', account_codes: new Set(), identity_no: row.identity_no, totalValue: 0 };
+      }
+      const c = map[key];
+      if (!c.portfolio_name || hasUnknownValue(c.portfolio_name)) c.portfolio_name = row.portfolio_name || c.portfolio_name;
+      if (row.account_code) c.account_codes.add(row.account_code);
+    });
+    return Object.values(map).map(c => ({ ...c, account_codes: [...c.account_codes].sort() }));
+  }, [valuations]);
+
+  const selectedClients = useMemo(() => {
+    if (selectedKeys.size === 0) return [];
+    const source = viewMode === 'monthly' ? allMonthsClients : clients;
+    return source.filter(client => selectedKeys.has(client.client_key));
+  }, [clients, allMonthsClients, selectedKeys, viewMode]);
   const selectedZeroClients = selectedClients.filter(client => Math.abs(client.totalValue) < 0.01);
   const visibleKeys = filtered.map(client => client.client_key);
   const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every(key => selectedKeys.has(key));
