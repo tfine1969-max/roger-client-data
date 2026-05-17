@@ -57,6 +57,7 @@ export default function CredoUpload({ onImported }) {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [lastUpload, setLastUpload] = useState(null);
+  const summaryMonth = uploadMonth || lastUpload?.upload_month || '';
 
   useEffect(() => {
     const stored = localStorage.getItem(LAST_UPLOAD_KEY);
@@ -176,7 +177,7 @@ export default function CredoUpload({ onImported }) {
             </div>
             <p className="text-xs text-muted-foreground">Used for all USD uploads in the selected month unless changed here.</p>
           </div>
-          <ProviderUploadSummary provider="Credo" uploadMonth={uploadMonth} />
+          <ProviderUploadSummary provider="Credo" uploadMonth={summaryMonth} />
         </div>
 
         <div className="space-y-1.5">
