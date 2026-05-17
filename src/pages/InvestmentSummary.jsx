@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FileSpreadsheet, Users } from 'lucide-react';
+import { Download, FileSpreadsheet } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { normalizeClientText } from '@/lib/client-utils';
-import MonthBadge from '@/components/shared/MonthBadge';
-import { cn } from '@/lib/utils';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png';
 const ALL_MONTHS = '__all_months__';
@@ -47,6 +46,8 @@ const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
 const isUsd = value => String(value || '').toUpperCase() === 'USD';
 const currencyPrefix = currency => isUsd(currency) ? '$' : 'R';
 const currencyValue = (value, currency) => `${currencyPrefix(currency)} ${fmtNum(value)}`;
+const SORT_BY_SIZE = 'size';
+const SORT_BY_NAME = 'name';
 const escapeXml = value => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -271,6 +272,8 @@ ${worksheets.join('')}
 export default function InvestmentSummary() {
   const [selectedGroupId, setSelectedGroupId] = useState('marc-anthony-hoar');
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS);
+  const [activeReportTab, setActiveReportTab] = useState(defaultReportTab(REPORT_GROUPS[0]));
+  const [fundSort, setFundSort] = useState(SORT_BY_SIZE);
   const [mergeFunds, setMergeFunds] = useState(false);
   const [manualFundMerges, setManualFundMerges] = useState({});
   const [selectedFundKeys, setSelectedFundKeys] = useState(new Set());
@@ -289,6 +292,51 @@ export default function InvestmentSummary() {
     [selectedGroup, valuations, months, mergeFunds, manualFundMerges]
   );
   const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
+  const latestMonth = months[0] || '';
+  const reportTabs = useMemo(() => {
+    if (selectedGroup.id === 'marc-anthony-hoar') {
+      return [
+        { id: 'local', label: 'Local' },
+        { id: 'offshore', label: 'Offshore' },
+        { id: 'combined', label: 'Combined' },
+      ];
+    }
+    return summary.entities.map(entity => ({ id: entity.id, label: entity.name }));
+  }, [selectedGroup.id, summary.entities]);
+  const activeReport = useMemo(() => {
+    const marcEntity = summary.entities[0];
+    if (selectedGroup.id === 'marc-anthony-hoar') {
+      if (activeReportTab === 'offshore') {
+        return {
+          title: 'Offshore Portfolio',
+          entity: marcEntity,
+          currencyMode: 'usd',
+          rows: sortInvestments(marcEntity?.investments.filter(item => isUsd(item.currency)) || [], fundSort, latestMonth, 'usd'),
+        };
+      }
+      if (activeReportTab === 'combined') {
+        return {
+          title: 'Combined Portfolio',
+          entity: marcEntity,
+          currencyMode: 'mixed',
+          rows: sortInvestments(marcEntity?.investments || [], fundSort, latestMonth, 'zar'),
+        };
+      }
+      return {
+        title: 'Local Portfolio',
+        entity: marcEntity,
+        currencyMode: 'zar',
+        rows: sortInvestments(marcEntity?.investments.filter(item => !isUsd(item.currency)) || [], fundSort, latestMonth, 'zar'),
+      };
+    }
+    const entity = summary.entities.find(item => item.id === activeReportTab) || summary.entities[0];
+    return {
+      title: entity?.name || 'Entity Portfolio',
+      entity,
+      currencyMode: 'mixed',
+      rows: sortInvestments(entity?.investments || [], fundSort, latestMonth, 'zar'),
+    };
+  }, [activeReportTab, fundSort, latestMonth, selectedGroup.id, summary.entities]);
   const selectedFundCount = selectedFundKeys.size;
   const selectedFundItems = useMemo(() => {
     const items = [];
@@ -330,6 +378,13 @@ export default function InvestmentSummary() {
 
   const itemSelected = (item) => item.rawKeys.length > 0 && item.rawKeys.every(key => selectedFundKeys.has(key));
 
+  const handleGroupChange = (groupId) => {
+    const group = REPORT_GROUPS.find(item => item.id === groupId) || REPORT_GROUPS[0];
+    setSelectedGroupId(group.id);
+    setActiveReportTab(defaultReportTab(group));
+    setSelectedFundKeys(new Set());
+  };
+
   const openFundMerge = () => {
     if (selectedFundKeys.size < 2) return;
     setMergeFundName(selectedFundNames[0] || selectedFundItems[0]?.name || '');
@@ -364,53 +419,43 @@ export default function InvestmentSummary() {
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <aside className="rounded-xl border bg-white p-3">
-          <div className="mb-3 flex items-center gap-3 border-b pb-3">
-            <img src={LOGO_URL} alt="Wealthworks" className="h-8 w-auto" />
-            <div>
-              <p className="text-sm font-semibold">Client Reports</p>
-              <p className="text-xs text-muted-foreground">Select a report profile</p>
+      <div className="rounded-xl border bg-white p-4">
+        <div className="grid gap-3 lg:grid-cols-[320px_1fr] lg:items-end">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Client report</label>
+            <Select value={selectedGroupId} onValueChange={handleGroupChange}>
+              <SelectTrigger className="h-10 bg-white">
+                <SelectValue placeholder="Select client" />
+              </SelectTrigger>
+              <SelectContent>
+                {REPORT_GROUPS.map(group => (
+                  <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-4">
+            <div className="rounded-lg bg-slate-50 p-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Latest AUM</p>
+              <p className="mt-1 font-numbers text-lg font-semibold">R {fmtNum(summary.latestValue)}</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Entities</p>
+              <p className="mt-1 font-numbers text-lg font-semibold">{summary.entities.length}</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Holdings</p>
+              <p className="mt-1 font-numbers text-lg font-semibold">{summary.holdings}</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Platforms</p>
+              <p className="mt-1 truncate text-xs font-semibold">{summary.platforms.join(', ') || '-'}</p>
             </div>
           </div>
-          <div className="space-y-2">
-            {REPORT_GROUPS.map(group => {
-              const itemSummary = groupSummary(group, valuations, months, mergeFunds, manualFundMerges);
-              const selected = group.id === selectedGroup.id;
-              return (
-                <button
-                  key={group.id}
-                  type="button"
-                  onClick={() => setSelectedGroupId(group.id)}
-                  className={cn(
-                    'w-full rounded-lg border p-2.5 text-left transition-all',
-                    selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-slate-200 hover:border-primary/40 hover:bg-slate-50'
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-950">{group.name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{group.type}</p>
-                    </div>
-                    <Users className={cn('h-4 w-4', selected ? 'text-primary' : 'text-slate-400')} />
-                  </div>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <p className="text-muted-foreground">Entities</p>
-                      <p className="font-semibold">{group.entities.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Latest AUM</p>
-                      <p className="font-numbers font-semibold">R {fmtNum(itemSummary.latestValue)}</p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
+        </div>
+      </div>
 
-        <section className="space-y-3">
+      <section className="space-y-3">
           {isLoading && <div className="rounded-xl border bg-white p-10 text-center text-sm text-muted-foreground">Loading report data...</div>}
           {!isLoading && summary && (
             <>
@@ -443,6 +488,15 @@ export default function InvestmentSummary() {
                     >
                       Merge selected funds{selectedFundCount ? ` (${selectedFundCount})` : ''}
                     </Button>
+                    <Select value={fundSort} onValueChange={setFundSort}>
+                      <SelectTrigger className="h-8 w-40 bg-white text-xs">
+                        <SelectValue placeholder="Sort funds" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={SORT_BY_SIZE}>Sort by latest size</SelectItem>
+                        <SelectItem value={SORT_BY_NAME}>Sort by fund name</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                       <SelectTrigger className="h-8 w-40 bg-white text-xs">
                         <SelectValue placeholder="All months" />
@@ -452,25 +506,6 @@ export default function InvestmentSummary() {
                         {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                  <div className="rounded-lg bg-slate-50 p-2.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Latest AUM</p>
-                    <p className="mt-1 font-numbers text-lg font-semibold">R {fmtNum(summary.latestValue)}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Entities</p>
-                    <p className="mt-1 font-numbers text-lg font-semibold">{summary.entities.length}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Holdings</p>
-                    <p className="mt-1 font-numbers text-lg font-semibold">{summary.holdings}</p>
-                  </div>
-                  <div className="rounded-lg bg-slate-50 p-2.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Platforms</p>
-                    <p className="mt-1 truncate text-xs font-semibold">{summary.platforms.join(', ') || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -504,90 +539,88 @@ export default function InvestmentSummary() {
                 </div>
               </div>
 
-              {summary.entities.map(entity => (
-                <div key={entity.id} className="overflow-hidden rounded-lg border bg-white">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
-                    <div>
-                      <p className="text-sm font-semibold">{entity.name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{entity.investments.length} holdings · {entity.platforms.join(', ') || '-'}</p>
-                    </div>
-                    {months[0] && <MonthBadge month={months[0]} />}
+              <div className="overflow-hidden rounded-lg border bg-white">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2">
+                  <div>
+                    <p className="text-sm font-semibold">{activeReport.title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {activeReport.rows.length} holdings - {activeReport.entity?.platforms.join(', ') || '-'}
+                    </p>
                   </div>
-                  {[
-                    { title: 'LOCAL PORTFOLIO (ZAR)', rows: entity.investments.filter(item => !isUsd(item.currency)), currency: 'ZAR' },
-                    { title: 'OFFSHORE PORTFOLIO (USD)', rows: entity.investments.filter(item => isUsd(item.currency)), currency: 'USD' },
-                  ].map(section => (
-                    <div key={section.title} className="border-t first:border-t-0">
-                      <div className="bg-slate-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                        {section.title}
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="border-b bg-muted/40">
-                              <th className="sticky left-0 z-20 w-10 bg-muted px-3 py-2"></th>
-                              <th className="sticky left-10 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
-                              <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
-                              <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
-                              {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y">
-                            {section.rows.length === 0 && (
-                              <tr>
-                                <td colSpan={displayMonths.length + 4} className="px-3 py-3 text-center text-xs text-muted-foreground">No holdings</td>
-                              </tr>
-                            )}
-                            {section.rows.map(item => (
-                              <tr key={item.key} className="hover:bg-muted/20">
-                                <td className="sticky left-0 z-20 bg-white px-3 py-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={itemSelected(item)}
-                                    onChange={() => toggleFundSelection(item)}
-                                    className="h-4 w-4 cursor-pointer accent-primary"
-                                    aria-label={`Select ${item.name} for merge`}
-                                  />
-                                </td>
-                                <td className="sticky left-10 z-10 bg-white px-3 py-2 font-medium">
-                                  {item.name}
-                                  {mergeFunds && item.sourceNames.length > 1 && (
-                                    <span className="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                                      {item.sourceNames.length} names merged
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
-                                <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
-                                {displayMonths.map(month => {
-                                  const value = section.currency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0;
-                                  return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(value, section.currency)}</td>;
-                                })}
-                              </tr>
-                            ))}
-                            {section.rows.length > 0 && (
-                              <tr className="bg-slate-50 font-semibold">
-                                <td className="sticky left-0 z-20 bg-slate-50 px-3 py-2"></td>
-                                <td className="sticky left-10 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
-                                <td className="px-3 py-2"></td>
-                                <td className="px-3 py-2 text-muted-foreground">{section.currency}</td>
-                                {displayMonths.map(month => {
-                                  const total = section.rows.reduce((sum, item) => sum + (section.currency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0), 0);
-                                  return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(total, section.currency)}</td>;
-                                })}
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  ))}
+                  <Tabs value={activeReportTab} onValueChange={value => { setActiveReportTab(value); setSelectedFundKeys(new Set()); }}>
+                    <TabsList className="h-8 overflow-x-auto">
+                      {reportTabs.map(tab => (
+                        <TabsTrigger key={tab.id} value={tab.id} className="h-6 px-3 text-xs">
+                          {tab.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
                 </div>
-              ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b bg-muted/40">
+                        <th className="sticky left-0 z-20 w-10 bg-muted px-3 py-2"></th>
+                        <th className="sticky left-10 z-10 min-w-72 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
+                        <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
+                        <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
+                        {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {activeReport.rows.length === 0 && (
+                        <tr>
+                          <td colSpan={displayMonths.length + 4} className="px-3 py-6 text-center text-xs text-muted-foreground">No holdings</td>
+                        </tr>
+                      )}
+                      {activeReport.rows.map(item => (
+                        <tr key={item.key} className="hover:bg-muted/20">
+                          <td className="sticky left-0 z-20 bg-white px-3 py-2">
+                            <input
+                              type="checkbox"
+                              checked={itemSelected(item)}
+                              onChange={() => toggleFundSelection(item)}
+                              className="h-4 w-4 cursor-pointer accent-primary"
+                              aria-label={"Select " + item.name + " for merge"}
+                            />
+                          </td>
+                          <td className="sticky left-10 z-10 bg-white px-3 py-2 font-medium">
+                            {item.name}
+                            {mergeFunds && item.sourceNames.length > 1 && (
+                              <span className="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                                {item.sourceNames.length} names merged
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
+                          {displayMonths.map(month => {
+                            const value = activeReport.currencyMode === 'usd' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0;
+                            const displayCurrency = activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR';
+                            return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(value, displayCurrency)}</td>;
+                          })}
+                        </tr>
+                      ))}
+                      {activeReport.rows.length > 0 && (
+                        <tr className="bg-slate-50 font-semibold">
+                          <td className="sticky left-0 z-20 bg-slate-50 px-3 py-2"></td>
+                          <td className="sticky left-10 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
+                          <td className="px-3 py-2"></td>
+                          <td className="px-3 py-2 text-muted-foreground">{activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR'}</td>
+                          {displayMonths.map(month => {
+                            const total = activeReport.rows.reduce((sum, item) => sum + (activeReport.currencyMode === 'usd' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0), 0);
+                            return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(total, activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR')}</td>;
+                          })}
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           )}
-        </section>
-      </div>
+      </section>
 
       {selectedFundCount > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur">
@@ -666,4 +699,21 @@ export default function InvestmentSummary() {
       </Dialog>
     </div>
   );
+}
+
+function defaultReportTab(group) {
+  return group?.id === 'marc-anthony-hoar' ? 'local' : group?.entities?.[0]?.id || 'local';
+}
+
+function latestItemValue(item, latestMonth, currencyMode) {
+  if (!latestMonth) return 0;
+  if (currencyMode === 'usd') return item.byMonthOriginal[latestMonth] || 0;
+  return item.byMonthZar[latestMonth] || 0;
+}
+
+function sortInvestments(items, sortMode, latestMonth, currencyMode) {
+  return [...items].sort((a, b) => {
+    if (sortMode === SORT_BY_NAME) return a.name.localeCompare(b.name);
+    return latestItemValue(b, latestMonth, currencyMode) - latestItemValue(a, latestMonth, currencyMode);
+  });
 }
