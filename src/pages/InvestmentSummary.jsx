@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Download, FileSpreadsheet, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { normalizeClientText } from '@/lib/client-utils';
 import MonthBadge from '@/components/shared/MonthBadge';
@@ -74,44 +76,49 @@ function canonicalFundName(name) {
   return name || 'Unknown';
 }
 
-function canonicalInvestmentKey(row, mergeFunds) {
-  const name = mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name;
+function canonicalInvestmentKey(row, mergeFunds, manualFundMerges) {
+  const rawKey = investmentKey(row);
+  const name = manualFundMerges[rawKey] || (mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name);
   return [row.platform || 'Unknown', name || 'Unknown', row.currency || 'ZAR'].join('||');
 }
 
-function summariseInvestments(rows, months, mergeFunds) {
+function summariseInvestments(rows, months, mergeFunds, manualFundMerges) {
   const map = new Map();
   rows.forEach(row => {
-    const key = mergeFunds ? canonicalInvestmentKey(row, mergeFunds) : investmentKey(row);
+    const rawKey = investmentKey(row);
+    const key = (manualFundMerges[rawKey] || mergeFunds) ? canonicalInvestmentKey(row, mergeFunds, manualFundMerges) : rawKey;
     if (!map.has(key)) {
       map.set(key, {
         key,
         platform: row.platform || 'Unknown',
-        name: mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name || 'Unknown',
+        name: manualFundMerges[rawKey] || (mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name || 'Unknown'),
         currency: row.currency || 'ZAR',
         byMonthOriginal: {},
         byMonthZar: {},
         sourceNames: new Set(),
+        rawKeys: new Set(),
       });
     }
     const item = map.get(key);
     item.byMonthOriginal[row.upload_month] = (item.byMonthOriginal[row.upload_month] || 0) + origVal(row);
     item.byMonthZar[row.upload_month] = (item.byMonthZar[row.upload_month] || 0) + zarVal(row);
     if (row.investment_name) item.sourceNames.add(row.investment_name);
+    item.rawKeys.add(rawKey);
   });
 
   return [...map.values()]
     .map(item => ({
       ...item,
       sourceNames: [...item.sourceNames],
+      rawKeys: [...item.rawKeys],
       latestValue: months.reduce((value, month) => value || item.byMonthZar[month] || 0, 0),
     }))
     .sort((a, b) => b.latestValue - a.latestValue);
 }
 
-function entitySummary(entity, rows, months, mergeFunds) {
+function entitySummary(entity, rows, months, mergeFunds, manualFundMerges) {
   const entityRows = rowsForEntity(rows, entity);
-  const investments = summariseInvestments(entityRows, months, mergeFunds);
+  const investments = summariseInvestments(entityRows, months, mergeFunds, manualFundMerges);
   const byMonth = Object.fromEntries(months.map(month => [
     month,
     entityRows.filter(row => row.upload_month === month).reduce((sum, row) => sum + zarVal(row), 0),
@@ -127,8 +134,8 @@ function entitySummary(entity, rows, months, mergeFunds) {
   };
 }
 
-function groupSummary(group, rows, months, mergeFunds) {
-  const entities = group.entities.map(entity => entitySummary(entity, rows, months, mergeFunds));
+function groupSummary(group, rows, months, mergeFunds, manualFundMerges) {
+  const entities = group.entities.map(entity => entitySummary(entity, rows, months, mergeFunds, manualFundMerges));
   const byMonth = Object.fromEntries(months.map(month => [
     month,
     entities.reduce((sum, entity) => sum + (entity.byMonth[month] || 0), 0),
@@ -264,7 +271,11 @@ ${worksheets.join('')}
 export default function InvestmentSummary() {
   const [selectedGroupId, setSelectedGroupId] = useState('marc-anthony-hoar');
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS);
-  const [mergeFunds, setMergeFunds] = useState(true);
+  const [mergeFunds, setMergeFunds] = useState(false);
+  const [manualFundMerges, setManualFundMerges] = useState({});
+  const [selectedFundKeys, setSelectedFundKeys] = useState(new Set());
+  const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+  const [mergeFundName, setMergeFundName] = useState('');
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -274,10 +285,46 @@ export default function InvestmentSummary() {
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
   const summary = useMemo(
-    () => groupSummary(selectedGroup, valuations, months, mergeFunds),
-    [selectedGroup, valuations, months, mergeFunds]
+    () => groupSummary(selectedGroup, valuations, months, mergeFunds, manualFundMerges),
+    [selectedGroup, valuations, months, mergeFunds, manualFundMerges]
   );
   const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
+  const selectedFundCount = selectedFundKeys.size;
+
+  const toggleFundSelection = (item) => {
+    setSelectedFundKeys(prev => {
+      const next = new Set(prev);
+      item.rawKeys.forEach(key => {
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+      });
+      return next;
+    });
+  };
+
+  const itemSelected = (item) => item.rawKeys.length > 0 && item.rawKeys.every(key => selectedFundKeys.has(key));
+
+  const openFundMerge = () => {
+    if (selectedFundKeys.size < 2) return;
+    const selectedItems = summary.entities.flatMap(entity => entity.investments).filter(item =>
+      item.rawKeys.some(key => selectedFundKeys.has(key))
+    );
+    setMergeFundName(selectedItems[0]?.name || '');
+    setMergeDialogOpen(true);
+  };
+
+  const applyFundMerge = () => {
+    const name = mergeFundName.trim();
+    if (!name || selectedFundKeys.size < 2) return;
+    setManualFundMerges(prev => {
+      const next = { ...prev };
+      selectedFundKeys.forEach(key => { next[key] = name; });
+      return next;
+    });
+    setSelectedFundKeys(new Set());
+    setMergeDialogOpen(false);
+    setMergeFundName('');
+  };
 
   return (
     <div className="space-y-4">
@@ -305,7 +352,7 @@ export default function InvestmentSummary() {
           </div>
           <div className="space-y-2">
             {REPORT_GROUPS.map(group => {
-              const itemSummary = groupSummary(group, valuations, months, mergeFunds);
+              const itemSummary = groupSummary(group, valuations, months, mergeFunds, manualFundMerges);
               const selected = group.id === selectedGroup.id;
               return (
                 <button
@@ -359,11 +406,19 @@ export default function InvestmentSummary() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       type="button"
-                      variant={mergeFunds ? 'default' : 'outline'}
+                      variant="outline"
                       className="h-8 px-3 text-xs"
                       onClick={() => setMergeFunds(value => !value)}
                     >
-                      {mergeFunds ? 'Merged fund names' : 'Merge similar funds'}
+                      {mergeFunds ? 'Auto merge on' : 'Auto merge off'}
+                    </Button>
+                    <Button
+                      type="button"
+                      className="h-8 px-3 text-xs"
+                      onClick={openFundMerge}
+                      disabled={selectedFundCount < 2}
+                    >
+                      Merge selected funds{selectedFundCount ? ` (${selectedFundCount})` : ''}
                     </Button>
                     <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                       <SelectTrigger className="h-8 w-40 bg-white text-xs">
@@ -447,7 +502,8 @@ export default function InvestmentSummary() {
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="border-b bg-muted/40">
-                              <th className="sticky left-0 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
+                              <th className="sticky left-0 z-20 w-10 bg-muted px-3 py-2"></th>
+                              <th className="sticky left-10 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
                               <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
                               <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
                               {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
@@ -456,12 +512,21 @@ export default function InvestmentSummary() {
                           <tbody className="divide-y">
                             {section.rows.length === 0 && (
                               <tr>
-                                <td colSpan={displayMonths.length + 3} className="px-3 py-3 text-center text-xs text-muted-foreground">No holdings</td>
+                                <td colSpan={displayMonths.length + 4} className="px-3 py-3 text-center text-xs text-muted-foreground">No holdings</td>
                               </tr>
                             )}
                             {section.rows.map(item => (
                               <tr key={item.key} className="hover:bg-muted/20">
-                                <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">
+                                <td className="sticky left-0 z-20 bg-white px-3 py-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={itemSelected(item)}
+                                    onChange={() => toggleFundSelection(item)}
+                                    className="h-4 w-4 cursor-pointer accent-primary"
+                                    aria-label={`Select ${item.name} for merge`}
+                                  />
+                                </td>
+                                <td className="sticky left-10 z-10 bg-white px-3 py-2 font-medium">
                                   {item.name}
                                   {mergeFunds && item.sourceNames.length > 1 && (
                                     <span className="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
@@ -479,7 +544,8 @@ export default function InvestmentSummary() {
                             ))}
                             {section.rows.length > 0 && (
                               <tr className="bg-slate-50 font-semibold">
-                                <td className="sticky left-0 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
+                                <td className="sticky left-0 z-20 bg-slate-50 px-3 py-2"></td>
+                                <td className="sticky left-10 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
                                 <td className="px-3 py-2"></td>
                                 <td className="px-3 py-2 text-muted-foreground">{section.currency}</td>
                                 {displayMonths.map(month => {
@@ -499,6 +565,33 @@ export default function InvestmentSummary() {
           )}
         </section>
       </div>
+
+      <Dialog open={mergeDialogOpen} onOpenChange={setMergeDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Merge Selected Funds</DialogTitle>
+            <DialogDescription>
+              Enter the reporting name to use for the selected fund rows. This only changes how this report groups the funds.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Correct fund name</label>
+            <Input
+              value={mergeFundName}
+              onChange={event => setMergeFundName(event.target.value)}
+              placeholder="e.g. Wealthworks Global Flexible Fund"
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">{selectedFundCount} selected source fund row{selectedFundCount === 1 ? '' : 's'} will be grouped under this name.</p>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setMergeDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={applyFundMerge} disabled={!mergeFundName.trim() || selectedFundCount < 2}>
+              Confirm merge
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
