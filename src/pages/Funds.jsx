@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
-import { ChevronDown, ChevronUp, ChevronRight, GitMerge, Search, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronRight, GitMerge, Save, Search, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 
@@ -122,12 +122,18 @@ export default function Funds() {
   const [selectedFunds, setSelectedFunds] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeFundName, setMergeFundName] = useState('');
+  const [isSeedingRules, setIsSeedingRules] = useState(false);
 
   const queryClient = useQueryClient();
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
     queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
+  });
+
+  const { data: savedRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
   });
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
@@ -270,6 +276,74 @@ export default function Funds() {
     mergeMutation.mutate({ sourceNames: selectedFundNames, targetName });
   };
 
+  // Derive implicit merge rules from the current data:
+  // For each fund name that appears in SOME months but not the latest (or vice versa),
+  // we can't auto-detect the mapping. Instead, we scan ALL months and build rules
+  // for any fund names that differ between months for the same platform, where
+  // the latest month's name is treated as the canonical.
+  // 
+  // Practical approach: build rules from all (source_name → canonical) pairs that exist
+  // across months: for each platform+account_code, if the fund name changed across months,
+  // treat the latest month's name as canonical and older names as sources.
+  const handleSeedRules = async () => {
+    setIsSeedingRules(true);
+    try {
+      // Group by (platform, account_code) → collect all fund names with their months
+      const holdingHistory = {};
+      valuations.forEach(row => {
+        if (!row.investment_name || !row.platform) return;
+        const hKey = `${row.platform}||${row.account_code || row.portfolio_name || ''}`;
+        if (!holdingHistory[hKey]) holdingHistory[hKey] = {};
+        const fundName = row.investment_name;
+        if (!holdingHistory[hKey][fundName]) holdingHistory[hKey][fundName] = new Set();
+        holdingHistory[hKey][fundName].add(row.upload_month);
+      });
+
+      // For each holding, find the latest month's fund name — that's the canonical
+      // Any other name for the same holding is a source
+      const allMonthsSorted = [...months]; // already desc
+      const ruleMap = {}; // source_name||platform -> canonical_name
+
+      Object.entries(holdingHistory).forEach(([hKey, nameMonthMap]) => {
+        const platform = hKey.split('||')[0];
+        const namesArr = Object.keys(nameMonthMap);
+        if (namesArr.length < 2) return; // only one name, no rule needed
+
+        // Find which name appears in the most recent month
+        let canonicalName = null;
+        for (const month of allMonthsSorted) {
+          const name = namesArr.find(n => nameMonthMap[n].has(month));
+          if (name) { canonicalName = name; break; }
+        }
+        if (!canonicalName) return;
+
+        namesArr.forEach(name => {
+          if (name === canonicalName) return;
+          const key = `${name.toLowerCase()}||${platform.toLowerCase()}`;
+          if (!ruleMap[key]) ruleMap[key] = { source_name: name, canonical_name: canonicalName, platform };
+        });
+      });
+
+      const rules = Object.values(ruleMap);
+      if (rules.length === 0) {
+        toast({ title: 'No new rules found', description: 'All fund names are consistent across months, or rules already exist.', duration: 3000 });
+        setIsSeedingRules(false);
+        return;
+      }
+
+      const res = await base44.functions.invoke('seedFundMergeRules', { rules });
+      queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
+      toast({
+        title: 'Fund merge rules saved',
+        description: res.data?.message || `${rules.length} rules processed.`,
+        duration: 4000,
+      });
+    } catch (err) {
+      toast({ title: 'Failed to seed rules', description: err?.message || 'Unknown error', variant: 'destructive', duration: 6000 });
+    }
+    setIsSeedingRules(false);
+  };
+
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
@@ -309,6 +383,17 @@ export default function Funds() {
               className="h-8 w-72 pl-8 text-sm"
             />
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-8 gap-2"
+            onClick={handleSeedRules}
+            disabled={isSeedingRules}
+            title={`Save current fund-name mappings as re-apply rules (${savedRules.length} rule${savedRules.length !== 1 ? 's' : ''} saved)`}
+          >
+            <Save className="h-4 w-4" />
+            {isSeedingRules ? 'Saving rules...' : `Seed rules${savedRules.length ? ` (${savedRules.length})` : ''}`}
+          </Button>
           <Button type="button" className="h-8 gap-2" disabled={selectedFundNames.length < 2} onClick={() => openMergeDialog()}>
             <GitMerge className="h-4 w-4" />
             Merge selected{selectedFundNames.length ? ` (${selectedFundNames.length})` : ''}

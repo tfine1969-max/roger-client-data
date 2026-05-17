@@ -1,0 +1,26 @@
+{
+  "name": "FundMergeRule",
+  "type": "object",
+  "properties": {
+    "source_name": {
+      "type": "string",
+      "description": "The raw fund name as it appears in the provider upload (e.g. '36One BCI Flexible Opportunity Fund')"
+    },
+    "canonical_name": {
+      "type": "string",
+      "description": "The target merged fund name to rename to (e.g. '36ONE Flexible')"
+    },
+    "platform": {
+      "type": "string",
+      "description": "Optional: restrict this rule to a specific platform. Leave blank to apply to all platforms."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about why this rule exists"
+    }
+  },
+  "required": [
+    "source_name",
+    "canonical_name"
+  ]
+}

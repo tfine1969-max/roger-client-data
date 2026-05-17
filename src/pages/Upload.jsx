@@ -181,6 +181,14 @@ export default function Upload() {
 
   const handleImported = async (uploadMonth) => {
     if (uploadMonth) await applyClientBlueprint(uploadMonth);
+    // Apply any saved fund merge rules to the newly imported data
+    if (uploadMonth) {
+      try {
+        await base44.functions.invoke('applyFundMergeRules', { upload_month: uploadMonth });
+      } catch (_err) {
+        // Non-fatal
+      }
+    }
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
   };
