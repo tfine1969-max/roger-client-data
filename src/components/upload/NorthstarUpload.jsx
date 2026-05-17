@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpen } from 'lucide-react';
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
+import ProviderUploadSummary from './ProviderUploadSummary';
 
 const BATCH_SIZE = 25;
 
@@ -310,7 +311,7 @@ export default function NorthstarUpload({ onImported }) {
       </p>
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(220px,1fr)_220px_280px]">
           <div className="space-y-1.5">
             <Label>Upload Month</Label>
             <Input type="month" value={month} onChange={e => handleMonthChange(e.target.value)} required />
@@ -330,6 +331,7 @@ export default function NorthstarUpload({ onImported }) {
             </div>
             <p className="text-xs text-muted-foreground">Used for all USD uploads in the selected month unless changed here.</p>
           </div>
+          <ProviderUploadSummary provider="Northstar" uploadMonth={month} />
         </div>
 
         <div className="space-y-2">

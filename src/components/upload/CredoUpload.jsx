@@ -8,6 +8,7 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucid
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
+import ProviderUploadSummary from './ProviderUploadSummary';
 
 const LAST_UPLOAD_KEY = 'credo_last_upload';
 
@@ -154,7 +155,7 @@ export default function CredoUpload({ onImported }) {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(220px,1fr)_220px_280px]">
           <div className="space-y-1.5">
             <Label>Upload Month</Label>
             <Input type="month" value={uploadMonth} onChange={e => handleMonthChange(e.target.value)} required />
@@ -175,6 +176,7 @@ export default function CredoUpload({ onImported }) {
             </div>
             <p className="text-xs text-muted-foreground">Used for all USD uploads in the selected month unless changed here.</p>
           </div>
+          <ProviderUploadSummary provider="Credo" uploadMonth={uploadMonth} />
         </div>
 
         <div className="space-y-1.5">
