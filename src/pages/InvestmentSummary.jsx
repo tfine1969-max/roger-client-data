@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Download, FileSpreadsheet } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSortedMonths, fmtNum, formatMonth, origVal, zarVal } from '@/lib/valuation-utils';
 import { normalizeClientText } from '@/lib/client-utils';
+import { useToast } from '@/components/ui/use-toast';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png';
 const ALL_MONTHS = '__all_months__';
@@ -277,6 +278,8 @@ ${worksheets.join('')}
 }
 
 export default function InvestmentSummary() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedGroupId, setSelectedGroupId] = useState('marc-anthony-hoar');
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS);
   const [activeReportTab, setActiveReportTab] = useState(defaultReportTab(REPORT_GROUPS[0]));
@@ -286,11 +289,44 @@ export default function InvestmentSummary() {
   const [selectedFundKeys, setSelectedFundKeys] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeFundName, setMergeFundName] = useState('');
+  const [isSavingRules, setIsSavingRules] = useState(false);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
     queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
   });
+
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
+  });
+
+  // Pre-populate manualFundMerges from saved FundMergeRule records
+  // rawKey format: platform||investment_name||currency
+  useEffect(() => {
+    if (!fundMergeRules.length || !valuations.length) return;
+    const ruleMap = {};
+    fundMergeRules.forEach(rule => {
+      ruleMap[`${rule.source_name}||${rule.platform || ''}`] = rule.canonical_name;
+    });
+    // Build manualFundMerges keyed by rawKey using the loaded valuations
+    const newMerges = {};
+    const seen = new Set();
+    valuations.forEach(row => {
+      const rawKey = investmentKey(row);
+      if (seen.has(rawKey)) return;
+      seen.add(rawKey);
+      const platformKey = `${row.investment_name || ''}||${row.platform || ''}`;
+      const anyPlatformKey = `${row.investment_name || ''}||`;
+      const canonical = ruleMap[platformKey] || ruleMap[anyPlatformKey];
+      if (canonical && canonical !== row.investment_name) {
+        newMerges[rawKey] = canonical;
+      }
+    });
+    if (Object.keys(newMerges).length > 0) {
+      setManualFundMerges(newMerges);
+    }
+  }, [fundMergeRules, valuations]);
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
@@ -398,9 +434,11 @@ export default function InvestmentSummary() {
     setMergeDialogOpen(true);
   };
 
-  const applyFundMerge = () => {
+  const applyFundMerge = async () => {
     const name = mergeFundName.trim();
     if (!name || selectedFundKeys.size < 2) return;
+
+    // Update local state immediately
     setManualFundMerges(prev => {
       const next = { ...prev };
       selectedFundKeys.forEach(key => { next[key] = name; });
@@ -409,6 +447,52 @@ export default function InvestmentSummary() {
     setSelectedFundKeys(new Set());
     setMergeDialogOpen(false);
     setMergeFundName('');
+
+    // Persist as FundMergeRules in the background
+    // rawKey = platform||investment_name||currency — extract source names from selected keys
+    const rulesToSave = [];
+    selectedFundKeys.forEach(rawKey => {
+      const [platform, investment_name] = rawKey.split('||');
+      if (investment_name && investment_name !== name) {
+        rulesToSave.push({ source_name: investment_name, canonical_name: name, platform: platform || '' });
+      }
+    });
+    if (rulesToSave.length > 0) {
+      try {
+        await base44.functions.invoke('seedFundMergeRules', { rules: rulesToSave });
+        queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
+        toast({ title: 'Fund merge saved', description: `${rulesToSave.length} rule${rulesToSave.length === 1 ? '' : 's'} saved for future uploads.` });
+      } catch {
+        toast({ title: 'Merge applied (not saved)', description: 'Could not persist rules — manual merge applied for this session only.', variant: 'destructive' });
+      }
+    }
+  };
+
+  const handleSaveAllRules = async () => {
+    const rulesToSave = [];
+    const seen = new Set();
+    Object.entries(manualFundMerges).forEach(([rawKey, canonical]) => {
+      const [platform, investment_name] = rawKey.split('||');
+      if (!investment_name || investment_name === canonical) return;
+      const dedupeKey = `${investment_name}||${platform}`;
+      if (seen.has(dedupeKey)) return;
+      seen.add(dedupeKey);
+      rulesToSave.push({ source_name: investment_name, canonical_name: canonical, platform: platform || '' });
+    });
+    if (rulesToSave.length === 0) {
+      toast({ title: 'Nothing to save', description: 'No manual merges to persist.' });
+      return;
+    }
+    setIsSavingRules(true);
+    try {
+      const res = await base44.functions.invoke('seedFundMergeRules', { rules: rulesToSave });
+      queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
+      toast({ title: 'Rules saved', description: res.data?.message || `${rulesToSave.length} rules saved.` });
+    } catch (err) {
+      toast({ title: 'Save failed', description: err.message || 'Could not save rules.', variant: 'destructive' });
+    } finally {
+      setIsSavingRules(false);
+    }
   };
 
   return (
@@ -486,6 +570,17 @@ export default function InvestmentSummary() {
                       onClick={() => setMergeFunds(value => !value)}
                     >
                       {mergeFunds ? 'Auto merge on' : 'Auto merge off'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-8 gap-1.5 px-3 text-xs"
+                      onClick={handleSaveAllRules}
+                      disabled={isSavingRules || Object.keys(manualFundMerges).length === 0}
+                      title="Save all current merges as persistent rules for future uploads"
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                      {isSavingRules ? 'Saving...' : 'Save rules'}
                     </Button>
                     <Button
                       type="button"
@@ -664,7 +759,7 @@ export default function InvestmentSummary() {
           <DialogHeader>
             <DialogTitle>Merge Selected Funds</DialogTitle>
             <DialogDescription>
-              Choose the correct existing fund name or edit the reporting name below. This only changes how this report groups the funds.
+              Choose the correct existing fund name or edit the reporting name below. The merge will be saved as a persistent rule and applied automatically on future uploads.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
