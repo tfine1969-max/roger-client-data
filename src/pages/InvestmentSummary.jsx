@@ -36,15 +36,20 @@ const REPORT_GROUPS = [
       { id: 'marula-trading', name: 'Marula Trading & Investments', aliases: ['marula trading'] },
       { id: 'sweet-grass-trading', name: 'Sweet Grass Trading', aliases: ['sweet grass trading 12 pty ltd', 'sweet grass trading pty ltd'] },
       { id: 'sweet-grass-sub-account', name: 'Sweet Grass Trading SUB Account', aliases: ['sweet grass trading 12 acc 2', 'sweet grass trading pty ltd acc 2', 'sweet grass trading sub account'] },
-      { id: 'isla-worrall', name: 'Isla Worrall', aliases: ['worrall isla', 'isla worrall', 'worrall isla elizabeth'] },
-      { id: 'charlie-worrall', name: 'Charlie Worrall', aliases: ['worrall charlie', 'charlie worrall', 'worrall charlie christopher'] },
+      { id: 'isla-worrall', name: 'Isla Worrall', aliases: ['worrall isla', 'isla worrall', 'worrall isla elizabeth', 'isla elizabeth worrall', 'miss isla elizabeth worrall', 'pri202204040006'] },
+      { id: 'charlie-worrall', name: 'Charlie Worrall', aliases: ['worrall charlie', 'charlie worrall', 'worrall charlie christopher', 'charlie christopher worrall', 'master charlie christopher worrall', 'pri202204040005'] },
     ],
   },
 ];
 
 const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
-const isUsd = value => String(value || '').toUpperCase() === 'USD';
-const currencyPrefix = currency => isUsd(currency) ? '$' : 'R';
+const isZar = value => String(value || '').toUpperCase() === 'ZAR';
+const currencyPrefix = currency => {
+  const normalized = String(currency || '').toUpperCase();
+  if (normalized === 'USD') return '$';
+  if (normalized === 'ZAR' || normalized === 'MIXED') return 'R';
+  return normalized || 'R';
+};
 const currencyValue = (value, currency) => `${currencyPrefix(currency)} ${fmtNum(value)}`;
 const SORT_BY_SIZE = 'size';
 const SORT_BY_NAME = 'name';
@@ -80,7 +85,8 @@ function canonicalFundName(name) {
 function canonicalInvestmentKey(row, mergeFunds, manualFundMerges) {
   const rawKey = investmentKey(row);
   const name = manualFundMerges[rawKey] || (mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name);
-  return [row.platform || 'Unknown', name || 'Unknown', row.currency || 'ZAR'].join('||');
+  const currency = manualFundMerges[rawKey] ? 'Merged' : row.currency || 'ZAR';
+  return [row.platform || 'Unknown', name || 'Unknown', currency].join('||');
 }
 
 function summariseInvestments(rows, months, mergeFunds, manualFundMerges) {
@@ -103,6 +109,7 @@ function summariseInvestments(rows, months, mergeFunds, manualFundMerges) {
     const item = map.get(key);
     item.byMonthOriginal[row.upload_month] = (item.byMonthOriginal[row.upload_month] || 0) + origVal(row);
     item.byMonthZar[row.upload_month] = (item.byMonthZar[row.upload_month] || 0) + zarVal(row);
+    if (String(item.currency || '').toUpperCase() !== String(row.currency || 'ZAR').toUpperCase()) item.currency = 'Mixed';
     if (row.investment_name) item.sourceNames.add(row.investment_name);
     item.rawKeys.add(rawKey);
   });
@@ -310,8 +317,8 @@ export default function InvestmentSummary() {
         return {
           title: 'Offshore Portfolio',
           entity: marcEntity,
-          currencyMode: 'usd',
-          rows: sortInvestments(marcEntity?.investments.filter(item => isUsd(item.currency)) || [], fundSort, latestMonth, 'usd'),
+          currencyMode: 'native',
+          rows: sortInvestments(marcEntity?.investments.filter(item => !isZar(item.currency)) || [], fundSort, latestMonth, 'native'),
         };
       }
       if (activeReportTab === 'combined') {
@@ -326,7 +333,7 @@ export default function InvestmentSummary() {
         title: 'Local Portfolio',
         entity: marcEntity,
         currencyMode: 'zar',
-        rows: sortInvestments(marcEntity?.investments.filter(item => !isUsd(item.currency)) || [], fundSort, latestMonth, 'zar'),
+        rows: sortInvestments(marcEntity?.investments.filter(item => isZar(item.currency)) || [], fundSort, latestMonth, 'zar'),
       };
     }
     const entity = summary.entities.find(item => item.id === activeReportTab) || summary.entities[0];
@@ -596,8 +603,9 @@ export default function InvestmentSummary() {
                           <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
                           <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
                           {displayMonths.map(month => {
-                            const value = activeReport.currencyMode === 'usd' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0;
-                            const displayCurrency = activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR';
+                            const useNative = activeReport.currencyMode === 'native' && String(item.currency).toUpperCase() !== 'MIXED';
+                            const value = useNative ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0;
+                            const displayCurrency = useNative ? item.currency : 'ZAR';
                             return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(value, displayCurrency)}</td>;
                           })}
                         </tr>
@@ -607,10 +615,10 @@ export default function InvestmentSummary() {
                           <td className="sticky left-0 z-20 bg-slate-50 px-3 py-2"></td>
                           <td className="sticky left-10 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
                           <td className="px-3 py-2"></td>
-                          <td className="px-3 py-2 text-muted-foreground">{activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR'}</td>
+                          <td className="px-3 py-2 text-muted-foreground">ZAR</td>
                           {displayMonths.map(month => {
-                            const total = activeReport.rows.reduce((sum, item) => sum + (activeReport.currencyMode === 'usd' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0), 0);
-                            return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(total, activeReport.currencyMode === 'usd' ? 'USD' : 'ZAR')}</td>;
+                            const total = activeReport.rows.reduce((sum, item) => sum + (item.byMonthZar[month] || 0), 0);
+                            return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(total, 'ZAR')}</td>;
                           })}
                         </tr>
                       )}
@@ -707,7 +715,7 @@ function defaultReportTab(group) {
 
 function latestItemValue(item, latestMonth, currencyMode) {
   if (!latestMonth) return 0;
-  if (currencyMode === 'usd') return item.byMonthOriginal[latestMonth] || 0;
+  if (currencyMode === 'native' && String(item.currency).toUpperCase() !== 'MIXED') return item.byMonthOriginal[latestMonth] || 0;
   return item.byMonthZar[latestMonth] || 0;
 }
 
