@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, CheckSquare, ChevronRight, Merge, Pencil, Search, Square, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, Merge, Pencil, Search, Square, Trash2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -208,6 +208,53 @@ export default function Clients() {
 
   const tableColSpan = 8;
 
+  const handleDownloadMonthlyComparison = () => {
+    // Build sorted list of all unique months (ascending = chronological)
+    const sortedMonths = [...months].reverse(); // months is desc, reverse to get asc
+
+    // Collect unique client names across ALL months, grouped by clientKey
+    const allClientMap = {};
+    valuations.forEach(row => {
+      const key = clientKey(row);
+      if (!allClientMap[key]) {
+        allClientMap[key] = { name: row.portfolio_name || '', monthsPresent: new Set() };
+      }
+      // Prefer a non-unknown name
+      if (!allClientMap[key].name || hasUnknownValue(allClientMap[key].name)) {
+        allClientMap[key].name = row.portfolio_name || allClientMap[key].name;
+      }
+      allClientMap[key].monthsPresent.add(row.upload_month);
+    });
+
+    // Sort client names alphabetically
+    const sortedClients = Object.values(allClientMap).sort((a, b) =>
+      (formatClientName(a.name) || '').localeCompare(formatClientName(b.name) || '')
+    );
+
+    // Build CSV
+    const header = ['Client Name', ...sortedMonths.map(m => formatMonth(m))];
+    const rows = sortedClients.map(client => {
+      const name = formatClientName(client.name) || client.name || '—';
+      const cells = sortedMonths.map(m => client.monthsPresent.has(m) ? '✓' : '');
+      return [name, ...cells];
+    });
+
+    // Add count row at bottom
+    const countRow = ['Client Count', ...sortedMonths.map(m => {
+      return sortedClients.filter(c => c.monthsPresent.has(m)).length;
+    })];
+
+    const allRows = [header, ...rows, [], countRow];
+    const csv = allRows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'client_monthly_comparison.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
@@ -217,6 +264,17 @@ export default function Clients() {
             {clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
           </p>
         </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="gap-2"
+          onClick={handleDownloadMonthlyComparison}
+          disabled={valuations.length === 0}
+          title="Download a CSV showing which clients appear in each month"
+        >
+          <Download className="h-4 w-4" />
+          Monthly Comparison
+        </Button>
       </div>
 
       <ClientConsolidation />
