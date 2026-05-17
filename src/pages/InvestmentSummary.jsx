@@ -42,6 +42,9 @@ const REPORT_GROUPS = [
 ];
 
 const compact = value => normalizeClientText(value).replace(/[^a-z0-9]+/g, '');
+const isUsd = value => String(value || '').toUpperCase() === 'USD';
+const currencyPrefix = currency => isUsd(currency) ? '$' : 'R';
+const currencyValue = (value, currency) => `${currencyPrefix(currency)} ${fmtNum(value)}`;
 const escapeXml = value => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -61,36 +64,54 @@ function investmentKey(row) {
   return [row.platform || 'Unknown', row.investment_name || 'Unknown', row.currency || 'ZAR'].join('||');
 }
 
-function summariseInvestments(rows, months) {
+function canonicalFundName(name) {
+  const normalized = normalizeClientText(name);
+  if (!normalized) return 'Unknown';
+  if (normalized.includes('wealthworks prime managed') || normalized.includes('wealthworks managed fund of funds')) return 'Wealthworks Prime Managed Fund of Funds';
+  if (normalized.includes('wealthworks prime cautious')) return 'Wealthworks Prime Cautious Fund of Funds';
+  if (normalized.includes('wealthworks global flexible') || normalized.includes('pim capital pcc wealthworks global flexible')) return 'Wealthworks Global Flexible Fund';
+  if (normalized.includes('diversified trading') || normalized.includes('pim capital specialist pcc diversified trading')) return 'Diversified Trading Fund B1';
+  return name || 'Unknown';
+}
+
+function canonicalInvestmentKey(row, mergeFunds) {
+  const name = mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name;
+  return [row.platform || 'Unknown', name || 'Unknown', row.currency || 'ZAR'].join('||');
+}
+
+function summariseInvestments(rows, months, mergeFunds) {
   const map = new Map();
   rows.forEach(row => {
-    const key = investmentKey(row);
+    const key = mergeFunds ? canonicalInvestmentKey(row, mergeFunds) : investmentKey(row);
     if (!map.has(key)) {
       map.set(key, {
         key,
         platform: row.platform || 'Unknown',
-        name: row.investment_name || 'Unknown',
+        name: mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name || 'Unknown',
         currency: row.currency || 'ZAR',
         byMonthOriginal: {},
         byMonthZar: {},
+        sourceNames: new Set(),
       });
     }
     const item = map.get(key);
     item.byMonthOriginal[row.upload_month] = (item.byMonthOriginal[row.upload_month] || 0) + origVal(row);
     item.byMonthZar[row.upload_month] = (item.byMonthZar[row.upload_month] || 0) + zarVal(row);
+    if (row.investment_name) item.sourceNames.add(row.investment_name);
   });
 
   return [...map.values()]
     .map(item => ({
       ...item,
+      sourceNames: [...item.sourceNames],
       latestValue: months.reduce((value, month) => value || item.byMonthZar[month] || 0, 0),
     }))
     .sort((a, b) => b.latestValue - a.latestValue);
 }
 
-function entitySummary(entity, rows, months) {
+function entitySummary(entity, rows, months, mergeFunds) {
   const entityRows = rowsForEntity(rows, entity);
-  const investments = summariseInvestments(entityRows, months);
+  const investments = summariseInvestments(entityRows, months, mergeFunds);
   const byMonth = Object.fromEntries(months.map(month => [
     month,
     entityRows.filter(row => row.upload_month === month).reduce((sum, row) => sum + zarVal(row), 0),
@@ -106,8 +127,8 @@ function entitySummary(entity, rows, months) {
   };
 }
 
-function groupSummary(group, rows, months) {
-  const entities = group.entities.map(entity => entitySummary(entity, rows, months));
+function groupSummary(group, rows, months, mergeFunds) {
+  const entities = group.entities.map(entity => entitySummary(entity, rows, months, mergeFunds));
   const byMonth = Object.fromEntries(months.map(month => [
     month,
     entities.reduce((sum, entity) => sum + (entity.byMonth[month] || 0), 0),
@@ -148,6 +169,7 @@ function exportReport(group, summary, months) {
       <Style ss:ID="Header"><Interior ss:Color="#26547C" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#FFFFFF"/></Style>
       <Style ss:ID="Section"><Interior ss:Color="#E8EEF5" ss:Pattern="Solid"/><Font ss:Bold="1" ss:Color="#26547C"/></Style>
       <Style ss:ID="Money"><NumberFormat ss:Format="R #,##0.00"/></Style>
+      <Style ss:ID="UsdMoney"><NumberFormat ss:Format="$ #,##0.00"/></Style>
       <Style ss:ID="Total"><Interior ss:Color="#F3F6F9" ss:Pattern="Solid"/><Font ss:Bold="1"/><NumberFormat ss:Format="R #,##0.00"/></Style>
     </Styles>`;
 
@@ -180,9 +202,9 @@ function exportReport(group, summary, months) {
     ];
 
     [
-      ['OFFSHORE PORTFOLIO', offshoreRows],
-      ['LOCAL PORTFOLIO', localRows],
-    ].forEach(([label, items]) => {
+      ['LOCAL PORTFOLIO (ZAR)', localRows, 'ZAR'],
+      ['OFFSHORE PORTFOLIO (USD)', offshoreRows, 'USD'],
+    ].forEach(([label, items, displayCurrency]) => {
       rows.push(xmlRow([xmlCell(label, 'String', 'Section')]));
       rows.push(xmlRow([
         xmlCell('Fund / Investment Name', 'String', 'Header'),
@@ -197,7 +219,11 @@ function exportReport(group, summary, months) {
           xmlCell(item.name),
           xmlCell(item.platform),
           xmlCell(item.currency),
-          ...exportMonths.map(month => xmlCell(item.byMonthZar[month] || 0, 'Number', 'Money')),
+          ...exportMonths.map(month => xmlCell(
+            displayCurrency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0,
+            'Number',
+            displayCurrency === 'USD' ? 'UsdMoney' : 'Money'
+          )),
         ])));
       }
       rows.push(xmlRow([
@@ -205,9 +231,9 @@ function exportReport(group, summary, months) {
         xmlCell(''),
         xmlCell(''),
         ...exportMonths.map(month => xmlCell(
-          items.reduce((sum, item) => sum + (item.byMonthZar[month] || 0), 0),
+          items.reduce((sum, item) => sum + (displayCurrency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0), 0),
           'Number',
-          'Total'
+          displayCurrency === 'USD' ? 'UsdMoney' : 'Total'
         )),
       ]));
       rows.push(xmlRow([]));
@@ -238,6 +264,7 @@ ${worksheets.join('')}
 export default function InvestmentSummary() {
   const [selectedGroupId, setSelectedGroupId] = useState('marc-anthony-hoar');
   const [selectedMonth, setSelectedMonth] = useState(ALL_MONTHS);
+  const [mergeFunds, setMergeFunds] = useState(true);
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -247,10 +274,10 @@ export default function InvestmentSummary() {
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
   const summary = useMemo(
-    () => groupSummary(selectedGroup, valuations, months),
-    [selectedGroup, valuations, months]
+    () => groupSummary(selectedGroup, valuations, months, mergeFunds),
+    [selectedGroup, valuations, months, mergeFunds]
   );
-  const displayMonths = selectedMonth === ALL_MONTHS ? months : months.filter(month => month === selectedMonth);
+  const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
 
   return (
     <div className="space-y-4">
@@ -278,7 +305,7 @@ export default function InvestmentSummary() {
           </div>
           <div className="space-y-2">
             {REPORT_GROUPS.map(group => {
-              const itemSummary = groupSummary(group, valuations, months);
+              const itemSummary = groupSummary(group, valuations, months, mergeFunds);
               const selected = group.id === selectedGroup.id;
               return (
                 <button
@@ -329,15 +356,25 @@ export default function InvestmentSummary() {
                     </div>
                     <p className="mt-2 max-w-2xl text-xs text-muted-foreground">{summary.description}</p>
                   </div>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="h-8 w-40 bg-white text-xs">
-                      <SelectValue placeholder="All months" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_MONTHS}>All months</SelectItem>
-                      {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={mergeFunds ? 'default' : 'outline'}
+                      className="h-8 px-3 text-xs"
+                      onClick={() => setMergeFunds(value => !value)}
+                    >
+                      {mergeFunds ? 'Merged fund names' : 'Merge similar funds'}
+                    </Button>
+                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                      <SelectTrigger className="h-8 w-40 bg-white text-xs">
+                        <SelectValue placeholder="All months" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_MONTHS}>All months</SelectItem>
+                        {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="mt-4 grid gap-2 sm:grid-cols-4">
@@ -398,28 +435,64 @@ export default function InvestmentSummary() {
                     </div>
                     {months[0] && <MonthBadge month={months[0]} />}
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="sticky left-0 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
-                          <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
-                          <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
-                          {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {entity.investments.map(item => (
-                          <tr key={item.key} className="hover:bg-muted/20">
-                            <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">{item.name}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
-                            {displayMonths.map(month => <td key={month} className="px-3 py-2 text-right font-numbers">R {fmtNum(item.byMonthZar[month] || 0)}</td>)}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  {[
+                    { title: 'LOCAL PORTFOLIO (ZAR)', rows: entity.investments.filter(item => !isUsd(item.currency)), currency: 'ZAR' },
+                    { title: 'OFFSHORE PORTFOLIO (USD)', rows: entity.investments.filter(item => isUsd(item.currency)), currency: 'USD' },
+                  ].map(section => (
+                    <div key={section.title} className="border-t first:border-t-0">
+                      <div className="bg-slate-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                        {section.title}
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b bg-muted/40">
+                              <th className="sticky left-0 z-10 min-w-64 bg-muted px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fund / Investment Name</th>
+                              <th className="min-w-24 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Platform</th>
+                              <th className="min-w-20 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Currency</th>
+                              {displayMonths.map(month => <th key={month} className="min-w-32 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{formatMonth(month)}</th>)}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {section.rows.length === 0 && (
+                              <tr>
+                                <td colSpan={displayMonths.length + 3} className="px-3 py-3 text-center text-xs text-muted-foreground">No holdings</td>
+                              </tr>
+                            )}
+                            {section.rows.map(item => (
+                              <tr key={item.key} className="hover:bg-muted/20">
+                                <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium">
+                                  {item.name}
+                                  {mergeFunds && item.sourceNames.length > 1 && (
+                                    <span className="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                                      {item.sourceNames.length} names merged
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2 text-muted-foreground">{item.platform}</td>
+                                <td className="px-3 py-2 text-muted-foreground">{item.currency}</td>
+                                {displayMonths.map(month => {
+                                  const value = section.currency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0;
+                                  return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(value, section.currency)}</td>;
+                                })}
+                              </tr>
+                            ))}
+                            {section.rows.length > 0 && (
+                              <tr className="bg-slate-50 font-semibold">
+                                <td className="sticky left-0 z-10 bg-slate-50 px-3 py-2">TOTAL</td>
+                                <td className="px-3 py-2"></td>
+                                <td className="px-3 py-2 text-muted-foreground">{section.currency}</td>
+                                {displayMonths.map(month => {
+                                  const total = section.rows.reduce((sum, item) => sum + (section.currency === 'USD' ? item.byMonthOriginal[month] || 0 : item.byMonthZar[month] || 0), 0);
+                                  return <td key={month} className="px-3 py-2 text-right font-numbers">{currencyValue(total, section.currency)}</td>;
+                                })}
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </>
