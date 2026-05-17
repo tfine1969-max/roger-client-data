@@ -235,7 +235,7 @@ export default function Clients() {
     const header = ['Client Name', ...sortedMonths.map(m => formatMonth(m))];
     const rows = sortedClients.map(client => {
       const name = formatClientName(client.name) || client.name || '—';
-      const cells = sortedMonths.map(m => client.monthsPresent.has(m) ? '✓' : '');
+      const cells = sortedMonths.map(m => client.monthsPresent.has(m) ? 'Y' : '');
       return [name, ...cells];
     });
 
