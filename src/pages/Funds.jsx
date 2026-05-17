@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
-import { ChevronDown, ChevronUp, ChevronRight, GitMerge, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronRight, GitMerge, Search, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MonthBadge from '@/components/shared/MonthBadge';
 
@@ -117,6 +117,7 @@ function buildSuggestedGroups(rawFunds) {
 export default function Funds() {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [sortBy, setSortBy] = useState('size');
+  const [fundSearch, setFundSearch] = useState('');
   const [expandedFund, setExpandedFund] = useState(null);
   const [selectedFunds, setSelectedFunds] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
@@ -181,6 +182,25 @@ export default function Funds() {
 
   const suggestedGroups = useMemo(() => buildSuggestedGroups(fundData), [fundData]);
   const selectedFundNames = useMemo(() => [...selectedFunds], [selectedFunds]);
+  const searchMatches = useMemo(() => {
+    const query = fundSearch.trim();
+    if (!query) return [];
+    const queryCompact = compactName(query);
+    const queryTokens = fundTokens(query);
+
+    return fundData
+      .map(fund => {
+        const nameCompact = compactName(fund.name);
+        const contains = queryCompact && nameCompact.includes(queryCompact);
+        const tokenHit = queryTokens.some(token => fundTokens(fund.name).includes(token));
+        const score = contains ? 1 : Math.max(tokenSimilarity(fund.name, query), tokenHit ? 0.72 : 0);
+        return { ...fund, searchScore: score };
+      })
+      .filter(fund => fund.searchScore >= 0.28)
+      .sort((a, b) => b.searchScore - a.searchScore || b.totalZar - a.totalZar)
+      .slice(0, 40);
+  }, [fundData, fundSearch]);
+  const visibleFundData = fundSearch.trim() ? searchMatches : fundData;
   const selectedRowCount = useMemo(
     () => valuations.filter(row => selectedFunds.has(row.investment_name || 'Unknown')).length,
     [valuations, selectedFunds]
@@ -201,6 +221,7 @@ export default function Funds() {
       toast({
         title: 'Funds merged',
         description: `${count} valuation rows now use "${targetName}".`,
+        duration: 1800,
       });
     },
     onError: (error) => {
@@ -208,6 +229,7 @@ export default function Funds() {
         title: 'Fund merge failed',
         description: error?.message || 'The selected fund rows could not be updated.',
         variant: 'destructive',
+        duration: 8000,
       });
     },
   });
@@ -229,6 +251,19 @@ export default function Funds() {
     setMergeDialogOpen(true);
   };
 
+  const setMergeNameSelected = (name, checked) => {
+    setSelectedFunds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(name);
+      else next.delete(name);
+      return next;
+    });
+    if (!checked && mergeFundName === name) {
+      const remaining = selectedFundNames.filter(item => item !== name);
+      setMergeFundName(remaining[0] || '');
+    }
+  };
+
   const applyFundMerge = () => {
     const targetName = mergeFundName.trim();
     if (!targetName || selectedFundNames.length < 2) return;
@@ -241,7 +276,7 @@ export default function Funds() {
         <div>
           <h1 className="text-2xl font-semibold">Funds</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {fundData.length} funds · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
+            {fundData.length} funds - {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
           </p>
         </div>
         <Select value={latestMonth} onValueChange={setSelectedMonth}>
@@ -264,11 +299,54 @@ export default function Funds() {
             Size
           </Button>
         </div>
-        <Button type="button" className="h-8 gap-2" disabled={selectedFundNames.length < 2} onClick={() => openMergeDialog()}>
-          <GitMerge className="h-4 w-4" />
-          Merge selected{selectedFundNames.length ? ` (${selectedFundNames.length})` : ''}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={fundSearch}
+              onChange={event => setFundSearch(event.target.value)}
+              placeholder="Search similar funds..."
+              className="h-8 w-72 pl-8 text-sm"
+            />
+          </div>
+          <Button type="button" className="h-8 gap-2" disabled={selectedFundNames.length < 2} onClick={() => openMergeDialog()}>
+            <GitMerge className="h-4 w-4" />
+            Merge selected{selectedFundNames.length ? ` (${selectedFundNames.length})` : ''}
+          </Button>
+        </div>
       </div>
+
+      {fundSearch.trim() && (
+        <div className="rounded-lg border bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold">Search Matches</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {searchMatches.length} likely match{searchMatches.length === 1 ? '' : 'es'} for "{fundSearch.trim()}". Select only the funds that should share one final name.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-8"
+                disabled={searchMatches.length === 0}
+                onClick={() => setSelectedFunds(prev => new Set([...prev, ...searchMatches.map(item => item.name)]))}
+              >
+                Select matches
+              </Button>
+              <Button
+                type="button"
+                className="h-8"
+                disabled={searchMatches.length < 2}
+                onClick={() => openMergeDialog(searchMatches.map(item => item.name))}
+              >
+                Review matches
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {suggestedGroups.length > 0 && (
         <div className="rounded-lg border bg-white p-4">
@@ -285,7 +363,7 @@ export default function Funds() {
             <span className="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{suggestedGroups.length} groups</span>
           </div>
           <div className="grid gap-3 xl:grid-cols-2">
-            {suggestedGroups.slice(0, 6).map(group => (
+            {suggestedGroups.slice(0, 8).map(group => (
               <div key={group.id} className="rounded-lg border bg-slate-50 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -300,7 +378,7 @@ export default function Funds() {
                   {group.items.map(item => (
                     <p key={item.name} className="truncate text-xs text-slate-700">
                       <span className="font-semibold">R {fmtNum(item.totalZar)}</span>
-                      <span className="text-muted-foreground"> · {item.name}</span>
+                      <span className="text-muted-foreground"> - {item.name}</span>
                     </p>
                   ))}
                 </div>
@@ -325,10 +403,10 @@ export default function Funds() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {fundData.length === 0 && (
+              {visibleFundData.length === 0 && (
                 <tr><td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">No funds.</td></tr>
               )}
-              {fundData.map(fund => (
+              {visibleFundData.map(fund => (
                 <Fragment key={fund.name}>
                   <tr className="cursor-pointer hover:bg-muted/20" onClick={() => setExpandedFund(expandedFund === fund.name ? null : fund.name)}>
                     <td className="px-4 py-3" onClick={event => event.stopPropagation()}>
@@ -432,16 +510,28 @@ export default function Funds() {
                 {selectedFundNames.map(name => (
                   <label key={name} className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-2 text-sm hover:bg-white">
                     <input
-                      type="radio"
-                      name="fundMergeName"
-                      checked={mergeFundName === name}
-                      onChange={() => setMergeFundName(name)}
+                      type="checkbox"
+                      checked={selectedFunds.has(name)}
+                      onChange={event => setMergeNameSelected(name, event.target.checked)}
                       className="mt-0.5 h-4 w-4 cursor-pointer accent-primary"
                     />
-                    <span className="leading-5">{name}</span>
+                    <span className="min-w-0 flex-1 leading-5">{name}</span>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded border bg-white px-2 py-0.5 text-[11px] font-semibold text-primary hover:bg-blue-50"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setMergeFundName(name);
+                      }}
+                    >
+                      Use name
+                    </button>
                   </label>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Untick any names that should not be merged now. The remaining names stay separate and can be picked up by search or later suggestions.
+              </p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Final fund name</label>
