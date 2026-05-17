@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, Merge, Pencil, Search, Square, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, LayoutList, Merge, Pencil, Search, Square, Table2, Trash2, X } from 'lucide-react';
+import MonthlyComparisonView from '@/components/clients/MonthlyComparisonView';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,7 @@ export default function Clients() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [actionStatus, setActionStatus] = useState(null);
   const [isDeletingZeroBalances, setIsDeletingZeroBalances] = useState(false);
+  const [viewMode, setViewMode] = useState('single'); // 'single' | 'monthly'
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -264,22 +266,49 @@ export default function Clients() {
             {clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="gap-2"
-          onClick={handleDownloadMonthlyComparison}
-          disabled={valuations.length === 0}
-          title="Download a CSV showing which clients appear in each month"
-        >
-          <Download className="h-4 w-4" />
-          Monthly Comparison
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-md border bg-white overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode('single')}
+              className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors', viewMode === 'single' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              title="Single month view"
+            >
+              <LayoutList className="h-4 w-4" />
+              <span className="hidden sm:inline">Month view</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('monthly')}
+              className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors border-l', viewMode === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              title="All months comparison"
+            >
+              <Table2 className="h-4 w-4" />
+              <span className="hidden sm:inline">All months</span>
+            </button>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2"
+            onClick={handleDownloadMonthlyComparison}
+            disabled={valuations.length === 0}
+            title="Download a CSV showing which clients appear in each month"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ClientConsolidation />
 
-      <div className="flex flex-wrap gap-3 rounded-lg border bg-white p-4">
+      {viewMode === 'monthly' && (
+        <div className="rounded-lg border bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          Showing all clients across all months. Click a client name to edit it, or use the checkbox to select for merging.
+        </div>
+      )}
+
+      <div className={cn('flex flex-wrap gap-3 rounded-lg border bg-white p-4', viewMode === 'monthly' && 'hidden')}>
         <div className="relative min-w-56 flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -351,7 +380,25 @@ export default function Clients() {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border bg-white">
+      {viewMode === 'monthly' && (
+        <MonthlyComparisonView
+          valuations={valuations}
+          months={months}
+          selectedKeys={selectedKeys}
+          toggleSelect={toggleSelect}
+          startEditingName={startEditingName}
+          editingKey={editingKey}
+          editingSurname={editingSurname}
+          editingFirstNames={editingFirstNames}
+          setEditingSurname={setEditingSurname}
+          setEditingFirstNames={setEditingFirstNames}
+          handleSaveName={handleSaveName}
+          setEditingKey={setEditingKey}
+          buildStructuredClientName={buildStructuredClientName}
+        />
+      )}
+
+      {viewMode === 'single' && <div className="overflow-hidden rounded-lg border bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -492,7 +539,7 @@ export default function Clients() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white/95 px-6 py-3 shadow-lg backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
