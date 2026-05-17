@@ -12,11 +12,16 @@ function normalizeClientText(value: unknown) {
 }
 
 function clientKey(row: Record<string, unknown>) {
-  const name = normalizeClientText(row?.portfolio_name || '').replace(/[^a-z0-9]+/g, '');
-  if (name && !name.includes('unknown')) return `name-${name}`;
+  // Must match frontend clientKey in lib/client-utils.js exactly:
+  // uses sorted word key (words alphabetically sorted then joined)
+  const normalized = normalizeClientText(row?.portfolio_name || '');
+  const sortedName = normalized.split(' ').filter(Boolean).sort().join('');
+  if (sortedName && !sortedName.includes('unknown')) return `name-${sortedName}`;
+  const plainName = normalized.replace(/[^a-z0-9]+/g, '');
+  if (plainName && !plainName.includes('unknown')) return `name-${plainName}`;
   const identity = String(row?.identity_no || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
   if (identity) return `id-${identity}`;
-  return name ? `name-${name}` : `account-${row?.account_code || 'unknown'}`;
+  return plainName ? `name-${plainName}` : `account-${row?.account_code || 'unknown'}`;
 }
 
 function compactUnique(values: unknown[]) {
