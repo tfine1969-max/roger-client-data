@@ -259,11 +259,22 @@ export default function Clients() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Clients</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold">Clients</h1>
+            <Select value={filterMonth} onValueChange={setFilterMonth}>
+              <SelectTrigger className="h-9 w-40 bg-white">
+                <SelectValue placeholder="Latest month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={LATEST_VALUE}>Latest month</SelectItem>
+                {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {clients.length} clients · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
+            {clients.length} active client{clients.length === 1 ? '' : 's'} · {latestMonth ? <span>Viewing <MonthBadge month={latestMonth} /></span> : 'No data'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -318,16 +329,6 @@ export default function Clients() {
             className="h-9 pl-9"
           />
         </div>
-
-        <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="h-9 w-40">
-            <SelectValue placeholder="Latest month" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={LATEST_VALUE}>Latest month</SelectItem>
-            {months.map(month => <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>)}
-          </SelectContent>
-        </Select>
 
         <Select value={filterPlatform} onValueChange={setFilterPlatform}>
           <SelectTrigger className="h-9 w-40">
