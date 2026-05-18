@@ -12,25 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
 
-function mappedAumForMonth(month) {
-  return feeMappingRows.reduce((sum, row) => sum + (row.navByMonth?.[month] ?? 0), 0);
-}
-
-function mappedFeesForMonth(month) {
-  return feeMappingRows.reduce((sum, row) => {
-    const nav = row.navByMonth?.[month] ?? 0;
-    const rebate = row.rebateAnnualPercent ?? 0;
-    const advisory = row.advisoryAnnualPercent ?? 0;
-    return sum + (nav * ((rebate + advisory) / 100) / 12);
-  }, 0);
-}
-
 export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState('');
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
+    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
   });
 
   const { data: uploads = [] } = useQuery({
@@ -91,20 +78,13 @@ export default function Dashboard() {
   }, [feeRows, activeMonth]);
 
   const chartData = useMemo(() => {
-    const valuationMonths = getSortedMonths(feeRows);
-    const mappedMonths = Object.keys(feeMappingRows[0]?.navByMonth || {});
-    const monthsForChart = [...new Set([...valuationMonths, ...mappedMonths])].sort();
-
-    return monthsForChart.map(m => {
+    return getSortedMonths(feeRows).reverse().map(m => {
       const monthRows = feeRows.filter(v => v.upload_month === m);
-      const mappedAum = mappedAumForMonth(m);
-      const mappedFees = mappedFeesForMonth(m);
-      const useMappedMonth = mappedAum > 0;
 
       return {
         month: formatMonth(m),
-        total: Math.round(useMappedMonth ? mappedAum : monthRows.reduce((s, v) => s + zarVal(v), 0)),
-        fees: Math.round(useMappedMonth ? mappedFees : monthRows.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
+        total: Math.round(monthRows.reduce((s, v) => s + zarVal(v), 0)),
+        fees: Math.round(monthRows.reduce((s, v) => s + (v.total_monthly_fee_zar ?? 0), 0)),
       };
     }).filter(row => row.total > 0 || row.fees > 0);
   }, [feeRows]);

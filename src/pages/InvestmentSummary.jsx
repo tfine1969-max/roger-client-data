@@ -293,7 +293,7 @@ export default function InvestmentSummary() {
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
+    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
   });
 
   const { data: fundMergeRules = [] } = useQuery({

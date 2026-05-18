@@ -281,7 +281,7 @@ export async function importRogerDataWorkbook({ file, replaceExisting = false, d
   const months = [...new Set(rows.map(row => row.upload_month))];
   if (replaceExisting) {
     for (const month of months) {
-      const existing = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 5000);
+      const existing = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 20000);
       for (const row of existing) {
         await base44.entities.PortfolioValuation.delete(row.id);
       }
@@ -387,7 +387,7 @@ export async function importProviderWorkbook({ file, uploadMonth, provider, repl
   }
 
   if (replaceExisting) {
-    const existing = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: provider }, '-created_date', 5000);
+    const existing = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: provider }, '-created_date', 20000);
     for (const row of existing) {
       await base44.entities.PortfolioValuation.delete(row.id);
     }

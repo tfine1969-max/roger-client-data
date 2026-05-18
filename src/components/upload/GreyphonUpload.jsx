@@ -64,7 +64,7 @@ export default function GreyphonUpload({ onImported }) {
       });
       if (!res.data.success) throw new Error(res.data.error || 'Import failed');
       setMessage('Refreshing Gryphon AUM...');
-      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Gryphon' }, '-created_date', 5000);
+      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Gryphon' }, '-created_date', 20000);
       setProgress({
         clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
         holdings: res.data.rows_imported || rows.length,

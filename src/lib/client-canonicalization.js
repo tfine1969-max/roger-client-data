@@ -315,8 +315,8 @@ export async function applyClientBlueprint(uploadMonth, options = {}) {
   }
 
   const [blueprintRows, targetRows] = await Promise.all([
-    base44.entities.PortfolioValuation.filter({ upload_month: CLIENT_BLUEPRINT_MONTH }, '-created_date', 5000),
-    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth }, '-created_date', 5000),
+    base44.entities.PortfolioValuation.filter({ upload_month: CLIENT_BLUEPRINT_MONTH }, '-created_date', 20000),
+    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth }, '-created_date', 20000),
   ]);
 
   const blueprint = buildBlueprint(blueprintRows || []);

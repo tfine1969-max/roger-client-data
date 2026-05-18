@@ -24,8 +24,8 @@ function duplicateHoldingKey(row) {
 
 async function deleteStaleJuliusDuplicates(uploadMonth, accountNumber, clientName) {
   const [credoRows, juliusRows] = await Promise.all([
-    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 5000),
-    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Julius Baer' }, '-created_date', 5000),
+    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 20000),
+    base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Julius Baer' }, '-created_date', 20000),
   ]);
   const cleanClientName = String(clientName || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const importedCredoRows = (credoRows || []).filter(row =>
@@ -118,7 +118,7 @@ export default function CredoUpload({ onImported }) {
         totalRows += res.data.rows_imported;
         processedFiles++;
         clientKeys.add(res.data.account_number || res.data.client_name || file.name);
-        const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 5000);
+        const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 20000);
         totalAum = rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0);
         setProgress({ processed: processedFiles, clients: clientKeys.size, holdings: totalRows, aum: totalAum });
         queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });

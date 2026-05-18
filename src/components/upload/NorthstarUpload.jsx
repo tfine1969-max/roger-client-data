@@ -185,7 +185,7 @@ export default function NorthstarUpload({ onImported }) {
   const removeFile = (name) => setFiles(prev => prev.filter(f => f.name !== name));
 
   const deleteExistingRows = async ({ uploadMonth, replaceAll, clientName, rawClientName, accountCode }) => {
-    const rows = await base44.entities.PortfolioValuation.list('-created_date', 5000);
+    const rows = await base44.entities.PortfolioValuation.list('-created_date', 20000);
     const clientNames = new Set([normalizeText(clientName), normalizeText(rawClientName)].filter(Boolean));
     const accountCodes = new Set([cleanText(accountCode)].filter(Boolean));
     const stale = rows.filter(row => {

@@ -14,7 +14,7 @@ function matchesProvider(row, provider) {
 export default function ProviderUploadSummary({ provider, uploadMonth }) {
   const { data: rows = [] } = useQuery({
     queryKey: ['providerUploadSummary', provider, uploadMonth],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 5000),
+    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
     enabled: Boolean(provider),
   });
 
