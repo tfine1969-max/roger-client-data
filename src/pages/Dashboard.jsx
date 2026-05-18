@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { withCalculatedFees } from '@/lib/fee-utils';
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [selectedMonth, setSelectedMonth] = useState('');
   const [repairingSource, setRepairingSource] = useState(false);
+  const [sourceRepairAttempted, setSourceRepairAttempted] = useState(false);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -104,7 +105,7 @@ export default function Dashboard() {
     });
   }, [feeRows]);
 
-  const repairSourceData = async () => {
+  const repairSourceData = useCallback(async () => {
     setRepairingSource(true);
     try {
       await syncRogerSourceRows();
@@ -114,7 +115,13 @@ export default function Dashboard() {
     } finally {
       setRepairingSource(false);
     }
-  };
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (!sourceTotalsMismatch || repairingSource || sourceRepairAttempted) return;
+    setSourceRepairAttempted(true);
+    repairSourceData();
+  }, [repairSourceData, repairingSource, sourceRepairAttempted, sourceTotalsMismatch]);
 
   if (!hasData) {
     return (
