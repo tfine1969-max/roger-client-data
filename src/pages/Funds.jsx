@@ -49,6 +49,19 @@ function scoreMatch(source, target) {
   return overlap / union;
 }
 
+function duplicateMasterMatch(source, target) {
+  const sourceKey = canonicalKey(source);
+  const targetKey = canonicalKey(target);
+  if (!sourceKey || !targetKey) return false;
+  if (sourceKey === targetKey) return true;
+
+  const sourceTokens = tokenSet(source);
+  const targetTokens = tokenSet(target);
+  const overlap = [...sourceTokens].filter(token => targetTokens.has(token)).length;
+  const overlapRatio = overlap / Math.max(sourceTokens.size, targetTokens.size, 1);
+  return overlapRatio >= 0.9 && Math.abs(sourceKey.length - targetKey.length) <= 6;
+}
+
 function providerId(value) {
   return clean(value).toLowerCase()
     .replace('julius baer', 'julius-baer')
@@ -189,7 +202,7 @@ export default function Funds() {
   const addMasterFund = (name = newFundName, variantKeyToSelect = null) => {
     const fund = clean(name);
     if (!fund) return;
-    const existing = masterFunds.find(master => canonicalKey(master) === canonicalKey(fund) || scoreMatch(fund, master) >= 0.86);
+    const existing = masterFunds.find(master => duplicateMasterMatch(fund, master));
     if (existing) {
       setSelectedMaster(existing);
       if (variantKeyToSelect) setReviewTargets(current => ({ ...current, [variantKeyToSelect]: existing }));
