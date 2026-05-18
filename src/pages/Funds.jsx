@@ -167,6 +167,7 @@ export default function Funds() {
   const selectedMasterVariants = variants
     .filter(variant => variant.mappedMaster === selectedMaster || variant.suggestions.some(match => match.fund === selectedMaster))
     .filter(variant => canonicalKey(`${variant.platform} ${variant.name}`).includes(canonicalKey(variantSearch)));
+  const selectedMasterPendingVariants = selectedMasterVariants.filter(variant => mappings[variant.key] !== selectedMaster);
   const reviewVariants = variants.filter(variant => !variant.mappedMaster);
   const linkedCount = variants.filter(variant => variant.mappedMaster).length;
 
@@ -331,7 +332,7 @@ export default function Funds() {
         </section>
 
         <section className="space-y-3">
-          <div className="rounded-lg border bg-white">
+          {(selectedMasterPendingVariants.length > 0 || variantSearch) && <div className="rounded-lg border bg-white">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2.5">
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold">Selected Master Review</h2>
@@ -361,7 +362,7 @@ export default function Funds() {
                   {selectedMasterVariants.length === 0 && (
                     <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">No provider instruments suggested for this master fund.</td></tr>
                   )}
-                  {selectedMasterVariants.map(variant => {
+                  {selectedMasterPendingVariants.map(variant => {
                     const linkedHere = mappings[variant.key] === selectedMaster;
                     const suggestedHere = variant.mappedMaster === selectedMaster;
                     const best = variant.suggestions[0];
@@ -407,7 +408,7 @@ export default function Funds() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </div>}
 
           <div className="rounded-lg border bg-white">
             <div className="border-b px-3 py-2.5">
