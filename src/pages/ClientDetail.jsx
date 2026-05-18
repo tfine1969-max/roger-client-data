@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { useMemo, useState } from 'react';
 import { AlertTriangle, ArrowLeft, Download, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,7 @@ export default function ClientDetail() {
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: fetchAllPortfolioValuations,
   });
 
   const { data: feeConfigs = [] } = useQuery({

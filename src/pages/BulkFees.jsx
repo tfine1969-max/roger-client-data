@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { withCalculatedFees, buildFeeMap, feeKey, calcFees } from '@/lib/fee-utils';
 import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
 import { feeMappingRows } from '@/data/feeMapping';
@@ -52,7 +53,7 @@ export default function BulkFees() {
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: fetchAllPortfolioValuations,
   });
   const { data: feeConfigs = [], refetch: refetchFees } = useQuery({
     queryKey: ['feeConfigs'],

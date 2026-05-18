@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { useMemo, useState } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
@@ -21,7 +22,7 @@ export default function Dashboard() {
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: fetchAllPortfolioValuations,
   });
 
   const { data: uploads = [] } = useQuery({

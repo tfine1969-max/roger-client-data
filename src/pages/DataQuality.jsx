@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { hasUnknownValue, rowHasUnknown } from '@/lib/client-utils';
@@ -39,7 +40,7 @@ export default function DataQuality() {
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: fetchAllPortfolioValuations,
   });
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);

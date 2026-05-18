@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, LayoutList, Merge, Pencil, Search, Square, Table2, Trash2, X } from 'lucide-react';
 import MonthlyComparisonView from '@/components/clients/MonthlyComparisonView';
 import { base44 } from '@/api/base44Client';
+import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -48,7 +49,7 @@ export default function Clients() {
 
   const { data: valuations = [], isLoading } = useQuery({
     queryKey: ['portfolioValuations'],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: fetchAllPortfolioValuations,
   });
 
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
