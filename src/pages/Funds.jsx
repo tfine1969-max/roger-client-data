@@ -79,6 +79,7 @@ export default function Funds() {
   const [variantSearch, setVariantSearch] = useState('');
   const [selectedMaster, setSelectedMaster] = useState(masterFundList[0]);
   const [selectedVariants, setSelectedVariants] = useState({});
+  const [reviewTargets, setReviewTargets] = useState({});
   const [newFundName, setNewFundName] = useState('');
   const [message, setMessage] = useState(null);
   const [mappings, setMappings] = useState(() => loadJson(MAPPING_KEY, {}));
@@ -167,6 +168,7 @@ export default function Funds() {
   };
 
   const linkOne = (key, fund) => {
+    if (!fund) return;
     const next = { ...mappings, [key]: fund };
     setMappings(next);
     saveJson(MAPPING_KEY, next);
@@ -184,9 +186,11 @@ export default function Funds() {
   const addMasterFund = (name = newFundName) => {
     const fund = clean(name);
     if (!fund) return;
-    if (masterFunds.some(existing => canonicalKey(existing) === canonicalKey(fund))) {
-      setSelectedMaster(masterFunds.find(existing => canonicalKey(existing) === canonicalKey(fund)));
+    const existing = masterFunds.find(master => canonicalKey(master) === canonicalKey(fund) || scoreMatch(fund, master) >= 0.86);
+    if (existing) {
+      setSelectedMaster(existing);
       setNewFundName('');
+      setMessage({ type: 'success', text: `${fund} already matches ${existing}. Select provider names and confirm the link instead of adding a duplicate master fund.` });
       return;
     }
     const next = [...extraMasterFunds, fund].sort((a, b) => a.localeCompare(b));
@@ -357,7 +361,7 @@ export default function Funds() {
             <div className="border-b px-4 py-3">
               <h2 className="text-sm font-semibold">Unlinked Provider Instruments</h2>
               <p className="text-xs text-muted-foreground">
-                {linkedCount} of {variants.length} imported names linked. Review these after every new upload.
+                {linkedCount} of {variants.length} imported names linked. Choose the correct master fund, then confirm the link.
               </p>
             </div>
             <div className="divide-y">
@@ -369,7 +373,10 @@ export default function Funds() {
                       <p className="truncate text-sm font-medium leading-tight" title={variant.name}>{variant.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
                     </div>
-                    <Select value={best?.fund || ''} onValueChange={fund => linkOne(variant.key, fund)}>
+                    <Select
+                      value={reviewTargets[variant.key] || best?.fund || ''}
+                      onValueChange={fund => setReviewTargets(current => ({ ...current, [variant.key]: fund }))}
+                    >
                       <SelectTrigger className="h-9 bg-white text-xs">
                         <SelectValue placeholder="Choose master fund" />
                       </SelectTrigger>
@@ -382,9 +389,19 @@ export default function Funds() {
                           .map(fund => <SelectItem key={`all-${fund}`} value={fund}>{fund}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Button variant="outline" onClick={() => addMasterFund(variant.name)} className="h-9 gap-1.5 px-3 text-xs">
-                      <Plus className="h-3.5 w-3.5" /> Add as master
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        onClick={() => linkOne(variant.key, reviewTargets[variant.key] || best?.fund || '')}
+                        disabled={!(reviewTargets[variant.key] || best?.fund)}
+                        className="h-9 flex-1 gap-1.5 px-3 text-xs"
+                      >
+                        <Link2 className="h-3.5 w-3.5" /> Confirm
+                      </Button>
+                      <Button variant="outline" onClick={() => addMasterFund(variant.name)} className="h-9 flex-1 gap-1.5 px-3 text-xs">
+                        <Plus className="h-3.5 w-3.5" /> New
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
