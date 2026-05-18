@@ -94,6 +94,8 @@ export default function Funds() {
   const [variantSearch, setVariantSearch] = useState('');
   const [selectedMaster, setSelectedMaster] = useState(masterFundList[0]);
   const [selectedVariants, setSelectedVariants] = useState({});
+  const [selectedReviewVariants, setSelectedReviewVariants] = useState({});
+  const [bulkReviewTarget, setBulkReviewTarget] = useState(NO_MASTER);
   const [reviewTargets, setReviewTargets] = useState({});
   const [newFundName, setNewFundName] = useState('');
   const [newMasterDraft, setNewMasterDraft] = useState(null);
@@ -181,6 +183,23 @@ export default function Funds() {
     saveJson(MAPPING_KEY, next);
     setSelectedVariants({});
     setMessage({ type: 'success', text: `Linked ${keys.length} provider instrument${keys.length === 1 ? '' : 's'} to ${selectedMaster}.` });
+  };
+
+  const selectedReviewKeys = Object.entries(selectedReviewVariants).filter(([, checked]) => checked).map(([key]) => key);
+
+  const toggleReviewVariant = (key) => {
+    setSelectedReviewVariants(current => ({ ...current, [key]: !current[key] }));
+  };
+
+  const linkSelectedReview = () => {
+    if (bulkReviewTarget === NO_MASTER || selectedReviewKeys.length === 0) return;
+    const next = { ...mappings };
+    selectedReviewKeys.forEach(key => { next[key] = bulkReviewTarget; });
+    setMappings(next);
+    saveJson(MAPPING_KEY, next);
+    setSelectedReviewVariants({});
+    setBulkReviewTarget(NO_MASTER);
+    setMessage({ type: 'success', text: `Linked ${selectedReviewKeys.length} provider instrument${selectedReviewKeys.length === 1 ? '' : 's'} to ${bulkReviewTarget}.` });
   };
 
   const linkOne = (key, fund) => {
@@ -392,10 +411,33 @@ export default function Funds() {
 
           <div className="rounded-lg border bg-white">
             <div className="border-b px-3 py-2.5">
-              <h2 className="text-sm font-semibold">Unlinked Provider Instruments</h2>
-              <p className="text-xs text-muted-foreground">
-                {linkedCount} of {variants.length} imported names linked. Choose the correct master fund, then confirm the link.
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-semibold">Unlinked Provider Instruments</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {linkedCount} of {variants.length} imported names linked. Select multiple rows to link them together.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{selectedReviewKeys.length} selected</span>
+                  <Select value={bulkReviewTarget} onValueChange={setBulkReviewTarget}>
+                    <SelectTrigger className="h-8 w-64 bg-white text-xs">
+                      <SelectValue placeholder="Choose master fund" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_MASTER}>Choose master fund</SelectItem>
+                      {masterFunds.map(fund => <SelectItem key={`bulk-${fund}`} value={fund}>{fund}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={linkSelectedReview}
+                    disabled={bulkReviewTarget === NO_MASTER || selectedReviewKeys.length === 0}
+                    className="h-8 gap-1.5 px-3 text-xs"
+                  >
+                    <Link2 className="h-3.5 w-3.5" /> Link selected
+                  </Button>
+                </div>
+              </div>
             </div>
             <div className="divide-y">
               {reviewVariants.slice(0, 12).map(variant => {
@@ -403,9 +445,12 @@ export default function Funds() {
                 const selectedTarget = reviewTargets[variant.key] || best?.fund || NO_MASTER;
                 return (
                   <div key={variant.key} className="grid gap-2 px-3 py-2 md:grid-cols-[minmax(0,1fr)_244px_150px] md:items-center">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium leading-tight" title={variant.name}>{variant.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
+                    <div className="grid min-w-0 grid-cols-[20px_minmax(0,1fr)] items-center gap-2">
+                      <input type="checkbox" checked={!!selectedReviewVariants[variant.key]} onChange={() => toggleReviewVariant(variant.key)} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium leading-tight" title={variant.name}>{variant.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
+                      </div>
                     </div>
                     <Select
                       value={selectedTarget}
