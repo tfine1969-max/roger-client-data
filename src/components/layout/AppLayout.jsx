@@ -44,7 +44,7 @@ const dataGroup = {
   color: COLORS.grey,
   items: [
     { path: '/control', label: 'Control', icon: ClipboardCheck },
-    { path: '/upload', label: 'Upload', icon: Upload },
+    { path: '/upload', label: 'Upload / Delete', icon: Upload },
     { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
   ],
 };
