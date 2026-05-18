@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useMemo, useState } from 'react';
 import { Users, BarChart3, Receipt, ChevronRight, Upload as UploadIcon, TrendingUp, TrendingDown } from 'lucide-react';
@@ -11,9 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MonthBadge from '@/components/shared/MonthBadge';
+import { rogerSourceTotals } from '@/data/rogerSourceRows';
+import { syncRogerSourceRows } from '@/lib/roger-source-sync';
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [repairingSource, setRepairingSource] = useState(false);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -90,6 +94,26 @@ export default function Dashboard() {
   }, [feeRows]);
 
   const hasData = feeRows.length > 0;
+  const sourceTotalsMismatch = useMemo(() => {
+    return Object.entries(rogerSourceTotals).some(([month, expected]) => {
+      const actual = feeRows
+        .filter(row => row.upload_month === month)
+        .reduce((sum, row) => sum + zarVal(row), 0);
+      return Math.abs(actual - expected) > 1;
+    });
+  }, [feeRows]);
+
+  const repairSourceData = async () => {
+    setRepairingSource(true);
+    try {
+      await syncRogerSourceRows();
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
+    } finally {
+      setRepairingSource(false);
+    }
+  };
 
   if (!hasData) {
     return (
@@ -129,7 +153,14 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-        <Link to="/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
+        <div className="flex items-center gap-2">
+          {sourceTotalsMismatch && (
+            <Button size="sm" variant="outline" className="gap-2 bg-amber-50 text-amber-900" onClick={repairSourceData} disabled={repairingSource}>
+              {repairingSource ? 'Repairing...' : 'Repair Jan-Mar'}
+            </Button>
+          )}
+          <Link to="/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
+        </div>
       </div>
 
       {/* Three nav section cards */}

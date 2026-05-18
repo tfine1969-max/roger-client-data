@@ -127,6 +127,19 @@ function investmentMatchesMapping(mapping, row) {
 
 function findSeededFeeRatesForRow(row, feeMappings = []) {
   const providerRows = feeMappings.filter(mapping => providerMatchesMapping(mapping, row));
+  const allFundRows = feeMappings.filter(mapping => investmentMatchesMapping(mapping, row));
+  const mostCommon = (rows, field, { nonZero = false } = {}) => {
+    const counts = new Map();
+    rows.forEach(mapping => {
+      const value = mapping[field];
+      if (value == null) return;
+      if (nonZero && Number(value) === 0) return;
+      const key = Number(value).toFixed(6);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const winner = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return winner ? Number(winner[0]) : undefined;
+  };
 
   const rebateMatch = providerRows
     .filter(mapping => investmentMatchesMapping(mapping, row) && mapping.rebateAnnualPercent != null)
@@ -148,11 +161,18 @@ function findSeededFeeRatesForRow(row, feeMappings = []) {
     .filter(item => item.score >= 55)
     .sort((a, b) => b.score - a.score)[0]?.mapping;
 
+  const providerFundRebate = rebateMatch?.rebateAnnualPercent;
+  const globalFundRebate = mostCommon(allFundRows, 'rebateAnnualPercent');
+  const providerDefaultRebate = mostCommon(providerRows, 'rebateAnnualPercent');
+  const providerClientAdvisory = advisoryMatch?.advisoryAnnualPercent;
+  const providerDefaultAdvisory = mostCommon(providerRows, 'advisoryAnnualPercent', { nonZero: true })
+    ?? mostCommon(providerRows, 'advisoryAnnualPercent');
+
   return {
-    rebate: rebateMatch?.rebateAnnualPercent,
-    advisory: advisoryMatch?.advisoryAnnualPercent,
-    rebateMatched: rebateMatch?.rebateAnnualPercent != null,
-    advisoryMatched: advisoryMatch?.advisoryAnnualPercent != null,
+    rebate: providerFundRebate ?? globalFundRebate ?? providerDefaultRebate,
+    advisory: providerClientAdvisory ?? providerDefaultAdvisory,
+    rebateMatched: providerFundRebate != null || globalFundRebate != null || providerDefaultRebate != null,
+    advisoryMatched: providerClientAdvisory != null || providerDefaultAdvisory != null,
     rebateMapping: rebateMatch,
     advisoryMapping: advisoryMatch,
   };

@@ -20,6 +20,8 @@ import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
 import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
+import { syncRogerSourceRows } from '@/lib/roger-source-sync';
+import { rogerSourceRows } from '@/data/rogerSourceRows';
 
 const PROVIDERS = [
   { id: 'credo', label: 'Credo' },
@@ -145,6 +147,17 @@ function MonthlyWorkbookUpload({ onImported }) {
   const [detail, setDetail] = useState(null);
   const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
 
+  const refreshAfterSourceImport = async (months) => {
+    queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+    queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+    queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
+    if (onImported) {
+      for (const month of months) {
+        await onImported(month);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return;
@@ -165,9 +178,6 @@ function MonthlyWorkbookUpload({ onImported }) {
         holdings: result.rows_imported || 0,
         aum: result.aum_imported || 0,
       });
-      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
-      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
-      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       setStatus('success');
       setMessage(`Successfully imported ${result.rows_imported} source rows across ${result.months_imported.map(formatMonth).join(', ')}.`);
       setDetail({
@@ -175,14 +185,40 @@ function MonthlyWorkbookUpload({ onImported }) {
         rows_skipped: result.rows_skipped,
         sheet_summaries: result.sheet_summaries,
       });
-      if (onImported) {
-        for (const month of result.months_imported) {
-          await onImported(month);
-        }
-      }
+      await refreshAfterSourceImport(result.months_imported);
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
+    }
+  };
+
+  const handleRepairSourceData = async () => {
+    setStatus('uploading');
+    setMessage('Replacing Jan-Mar with embedded Roger source rows...');
+    setDetail(null);
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
+    try {
+      const result = await syncRogerSourceRows();
+      setProgress({
+        clients: result.clients_imported,
+        holdings: result.rows_imported,
+        aum: result.aum_imported,
+      });
+      setStatus('success');
+      setMessage(`Repaired ${result.rows_imported} source rows across ${result.months.map(formatMonth).join(', ')}.`);
+      setDetail({
+        sheets_imported: result.months.map(formatMonth),
+        rows_skipped: 0,
+        sheet_summaries: result.months.map(month => ({
+          sheet: formatMonth(month),
+          rows_imported: rogerSourceRows.filter(row => row.upload_month === month).length,
+          aum: result.totals[month] || 0,
+        })),
+      });
+      await refreshAfterSourceImport(result.months);
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Source repair failed');
     }
   };
 
@@ -191,6 +227,15 @@ function MonthlyWorkbookUpload({ onImported }) {
       <p className="text-sm text-muted-foreground">
         Upload the Roger source workbook. Each month sheet is imported using the ZAR NAV values exactly as supplied, with rebate and advisory fee rates seeded from the workbook.
       </p>
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <p className="text-sm font-semibold text-amber-950">Source Repair</p>
+        <p className="mt-1 text-xs text-amber-800">
+          Replace partial Jan-Mar database rows with the embedded Roger source totals: Jan R 1.168bn, Feb R 1.158bn, Mar R 1.130bn.
+        </p>
+        <Button type="button" variant="outline" className="mt-3 bg-white" onClick={handleRepairSourceData} disabled={status === 'uploading'}>
+          Repair Jan-Mar Source Data
+        </Button>
+      </div>
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
         <div className="space-y-1.5">
           <Label>Roger Source Workbook (.xlsx)</Label>
