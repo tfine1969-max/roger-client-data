@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { rogerSourceTotals } from '@/data/rogerSourceRows';
+import { rogerSourceRows, rogerSourceTotals } from '@/data/rogerSourceRows';
 
 const PAGE_LIMIT = 5000;
 
@@ -14,22 +14,22 @@ function uniqueById(rows) {
 }
 
 export async function fetchAllPortfolioValuations() {
+  // Jan-Mar 2026 data is always served from the embedded file — never the DB.
+  // This prevents the data from disappearing when Base44 resets the database on deployment.
+  const embeddedMonths = new Set(Object.keys(rogerSourceTotals));
+
   const uploads = await base44.entities.MonthlyUpload.list('-upload_month', 200);
-  const months = [
-    ...new Set([
-      ...Object.keys(rogerSourceTotals),
-      ...uploads.map(upload => upload.upload_month).filter(Boolean),
-    ]),
+  const dbMonths = [
+    ...new Set(uploads.map(upload => upload.upload_month).filter(m => m && !embeddedMonths.has(m))),
   ];
 
-  if (months.length === 0) {
-    return base44.entities.PortfolioValuation.list('-upload_month', PAGE_LIMIT);
+  if (dbMonths.length === 0) {
+    return rogerSourceRows;
   }
 
-  const [latestRows, ...monthRows] = await Promise.all([
-    base44.entities.PortfolioValuation.list('-upload_month', PAGE_LIMIT),
-    ...months.map(month => base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)),
-  ]);
+  const monthRows = await Promise.all(
+    dbMonths.map(month => base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT))
+  );
 
-  return uniqueById([latestRows, ...monthRows].flat());
+  return [...rogerSourceRows, ...uniqueById(monthRows.flat())];
 }
