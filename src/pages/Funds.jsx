@@ -12,6 +12,7 @@ import { masterFundList } from '@/data/masterFundList';
 
 const MAPPING_KEY = 'fund_master_mappings_v1';
 const EXTRA_MASTER_KEY = 'fund_master_extra_v1';
+const NO_MASTER = '__none__';
 
 function clean(value) {
   return String(value || '').trim().replace(/\s+/g, ' ');
@@ -183,12 +184,13 @@ export default function Funds() {
     setMessage({ type: 'success', text: 'Removed the manual fund link.' });
   };
 
-  const addMasterFund = (name = newFundName) => {
+  const addMasterFund = (name = newFundName, variantKeyToSelect = null) => {
     const fund = clean(name);
     if (!fund) return;
     const existing = masterFunds.find(master => canonicalKey(master) === canonicalKey(fund) || scoreMatch(fund, master) >= 0.86);
     if (existing) {
       setSelectedMaster(existing);
+      if (variantKeyToSelect) setReviewTargets(current => ({ ...current, [variantKeyToSelect]: existing }));
       setNewFundName('');
       setMessage({ type: 'success', text: `${fund} already matches ${existing}. Select provider names and confirm the link instead of adding a duplicate master fund.` });
       return;
@@ -197,8 +199,9 @@ export default function Funds() {
     setExtraMasterFunds(next);
     saveJson(EXTRA_MASTER_KEY, next);
     setSelectedMaster(fund);
+    if (variantKeyToSelect) setReviewTargets(current => ({ ...current, [variantKeyToSelect]: fund }));
     setNewFundName('');
-    setMessage({ type: 'success', text: `Added ${fund} to the master list.` });
+    setMessage({ type: 'success', text: `Added ${fund} to the master list. Confirm the link to apply it to the provider instrument.` });
   };
 
   return (
@@ -278,31 +281,31 @@ export default function Funds() {
           </div>
         </section>
 
-        <section className="space-y-4">
+        <section className="space-y-3">
           <div className="rounded-lg border bg-white">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2.5">
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold">Link Provider Names</h2>
+                <h2 className="text-sm font-semibold">Selected Master Review</h2>
                 <p className="max-w-[520px] truncate text-xs text-muted-foreground">Selected master fund: <strong>{selectedMaster}</strong></p>
               </div>
               <div className="flex items-center gap-2">
-                <Input value={variantSearch} onChange={e => setVariantSearch(e.target.value)} placeholder="Filter provider names" className="h-9 w-56 text-xs" />
-                <Button onClick={linkSelected} disabled={!Object.values(selectedVariants).some(Boolean)} className="h-9 gap-2 text-xs">
+                <Input value={variantSearch} onChange={e => setVariantSearch(e.target.value)} placeholder="Filter provider names" className="h-8 w-52 text-xs" />
+                <Button onClick={linkSelected} disabled={!Object.values(selectedVariants).some(Boolean)} className="h-8 gap-2 text-xs">
                   <Link2 className="h-3.5 w-3.5" /> Link selected
                 </Button>
               </div>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed text-xs">
+              <table className="w-full table-fixed text-[11px]">
                 <thead>
                   <tr className="border-b bg-muted/40">
-                    <th className="w-9 px-3 py-2"></th>
-                    <th className="w-[36%] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Provider Instrument</th>
-                    <th className="w-[26%] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Link / Suggestion</th>
-                    <th className="w-[16%] px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">AUM</th>
-                    <th className="w-[8%] px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Clients</th>
-                    <th className="w-[14%] px-3 py-2"></th>
+                    <th className="w-8 px-2 py-1.5"></th>
+                    <th className="w-[38%] px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Provider Instrument</th>
+                    <th className="w-[28%] px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="w-[15%] px-2 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">AUM</th>
+                    <th className="w-[7%] px-2 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Clients</th>
+                    <th className="w-[12%] px-2 py-1.5"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -315,19 +318,19 @@ export default function Funds() {
                     const best = variant.suggestions[0];
                     return (
                       <tr key={variant.key} className={linkedHere ? 'bg-green-50/40' : suggestedHere ? 'bg-amber-50/30' : ''}>
-                        <td className="px-3 py-2">
+                        <td className="px-2 py-1.5">
                           <input type="checkbox" checked={!!selectedVariants[variant.key]} onChange={() => toggleVariant(variant.key)} />
                         </td>
-                        <td className="px-3 py-2">
-                          <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] items-center gap-2">
-                            <ProviderLogo providerId={providerId(variant.platform)} provider={variant.platform} logoBoxClassName="h-8 w-[76px]" logoClassName="max-h-5 max-w-[62px]" showName={false} />
+                        <td className="px-2 py-1.5">
+                          <div className="grid min-w-0 grid-cols-[66px_minmax(0,1fr)] items-center gap-2">
+                            <ProviderLogo providerId={providerId(variant.platform)} provider={variant.platform} logoBoxClassName="h-7 w-[66px]" logoClassName="max-h-4 max-w-[54px]" showName={false} />
                             <div className="min-w-0">
                               <p className="truncate font-medium leading-tight text-foreground" title={variant.name}>{variant.name}</p>
-                              <p className="truncate text-[11px] text-muted-foreground">{variant.platform} · {variant.holdings} holdings</p>
+                              <p className="truncate text-[10px] text-muted-foreground">{variant.platform} · {variant.holdings} holdings</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-3 py-2 text-[11px] leading-snug">
+                        <td className="px-2 py-1.5 text-[10px] leading-snug">
                           {linkedHere ? (
                             <span className="line-clamp-2 font-semibold text-green-700" title={variant.mappedMaster}>{variant.mappedMaster}</span>
                           ) : suggestedHere ? (
@@ -338,13 +341,13 @@ export default function Funds() {
                             <span className="text-amber-700">No confident match</span>
                           )}
                         </td>
-                        <td className="px-3 py-2 text-right font-numbers leading-tight"><span className="block text-[10px] text-muted-foreground">ZAR</span>{fmtNum(variant.totalZar)}</td>
-                        <td className="px-3 py-2 text-right">{variant.clients}</td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-2 py-1.5 text-right font-numbers leading-tight"><span className="block text-[9px] text-muted-foreground">ZAR</span>{fmtNum(variant.totalZar)}</td>
+                        <td className="px-2 py-1.5 text-right">{variant.clients}</td>
+                        <td className="px-2 py-1.5 text-right">
                           {linkedHere ? (
-                            <Button variant="outline" size="sm" onClick={() => unlinkOne(variant.key)} className="h-8 px-3 text-xs">Unlink</Button>
+                            <Button variant="outline" size="sm" onClick={() => unlinkOne(variant.key)} className="h-7 px-2 text-[11px]">Unlink</Button>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => linkOne(variant.key, selectedMaster)} className="h-8 px-3 text-xs">
+                            <Button variant="outline" size="sm" onClick={() => linkOne(variant.key, selectedMaster)} className="h-7 px-2 text-[11px]">
                               {suggestedHere ? 'Confirm' : 'Link'}
                             </Button>
                           )}
@@ -358,7 +361,7 @@ export default function Funds() {
           </div>
 
           <div className="rounded-lg border bg-white">
-            <div className="border-b px-4 py-3">
+            <div className="border-b px-3 py-2.5">
               <h2 className="text-sm font-semibold">Unlinked Provider Instruments</h2>
               <p className="text-xs text-muted-foreground">
                 {linkedCount} of {variants.length} imported names linked. Choose the correct master fund, then confirm the link.
@@ -367,20 +370,22 @@ export default function Funds() {
             <div className="divide-y">
               {reviewVariants.slice(0, 12).map(variant => {
                 const best = variant.suggestions[0];
+                const selectedTarget = reviewTargets[variant.key] || best?.fund || NO_MASTER;
                 return (
-                  <div key={variant.key} className="grid gap-2 px-4 py-2.5 md:grid-cols-[minmax(0,1fr)_250px_142px] md:items-center">
+                  <div key={variant.key} className="grid gap-2 px-3 py-2 md:grid-cols-[minmax(0,1fr)_244px_150px] md:items-center">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium leading-tight" title={variant.name}>{variant.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
                     </div>
                     <Select
-                      value={reviewTargets[variant.key] || best?.fund || ''}
+                      value={selectedTarget}
                       onValueChange={fund => setReviewTargets(current => ({ ...current, [variant.key]: fund }))}
                     >
                       <SelectTrigger className="h-9 bg-white text-xs">
                         <SelectValue placeholder="Choose master fund" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={NO_MASTER}>No link selected</SelectItem>
                         {variant.suggestions.map(match => (
                           <SelectItem key={match.fund} value={match.fund}>{match.fund} ({Math.round(match.score * 100)}%)</SelectItem>
                         ))}
@@ -392,14 +397,14 @@ export default function Funds() {
                     <div className="flex gap-2">
                       <Button
                         variant="default"
-                        onClick={() => linkOne(variant.key, reviewTargets[variant.key] || best?.fund || '')}
-                        disabled={!(reviewTargets[variant.key] || best?.fund)}
-                        className="h-9 flex-1 gap-1.5 px-3 text-xs"
+                        onClick={() => linkOne(variant.key, selectedTarget === NO_MASTER ? '' : selectedTarget)}
+                        disabled={selectedTarget === NO_MASTER}
+                        className="h-8 flex-[1.2] gap-1.5 px-2 text-[11px]"
                       >
                         <Link2 className="h-3.5 w-3.5" /> Confirm
                       </Button>
-                      <Button variant="outline" onClick={() => addMasterFund(variant.name)} className="h-9 flex-1 gap-1.5 px-3 text-xs">
-                        <Plus className="h-3.5 w-3.5" /> New
+                      <Button variant="outline" onClick={() => addMasterFund(variant.name, variant.key)} className="h-8 flex-1 gap-1 px-2 text-[11px]">
+                        <Plus className="h-3 w-3" /> New
                       </Button>
                     </div>
                   </div>
