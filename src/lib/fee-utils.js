@@ -113,6 +113,51 @@ function navMatchScore(mapping, row) {
   return 0;
 }
 
+function providerMatchesMapping(mapping, row) {
+  const providerKey = compactFeeText(row.platform);
+  const mappingProvider = compactFeeText(mapping.provider);
+  return mappingProvider === providerKey || providerKey.includes(mappingProvider) || mappingProvider.includes(providerKey);
+}
+
+function investmentMatchesMapping(mapping, row) {
+  const investmentKey = compactFeeText(row.investment_name);
+  const mappingInvestment = mapping.investmentKey || compactFeeText(mapping.investment);
+  return mappingInvestment === investmentKey || investmentKey.includes(mappingInvestment) || mappingInvestment.includes(investmentKey);
+}
+
+function findSeededFeeRatesForRow(row, feeMappings = []) {
+  const providerRows = feeMappings.filter(mapping => providerMatchesMapping(mapping, row));
+
+  const rebateMatch = providerRows
+    .filter(mapping => investmentMatchesMapping(mapping, row) && mapping.rebateAnnualPercent != null)
+    .map(mapping => ({
+      mapping,
+      score: Math.max(
+        mapping.investmentKey === compactFeeText(row.investment_name) ? 100 : 80,
+        clientMatchScore(mapping.client, row.portfolio_name || '')
+      ),
+    }))
+    .sort((a, b) => b.score - a.score)[0]?.mapping;
+
+  const advisoryMatch = providerRows
+    .filter(mapping => mapping.advisoryAnnualPercent != null)
+    .map(mapping => ({
+      mapping,
+      score: clientMatchScore(mapping.client, row.portfolio_name || ''),
+    }))
+    .filter(item => item.score >= 55)
+    .sort((a, b) => b.score - a.score)[0]?.mapping;
+
+  return {
+    rebate: rebateMatch?.rebateAnnualPercent,
+    advisory: advisoryMatch?.advisoryAnnualPercent,
+    rebateMatched: rebateMatch?.rebateAnnualPercent != null,
+    advisoryMatched: advisoryMatch?.advisoryAnnualPercent != null,
+    rebateMapping: rebateMatch,
+    advisoryMapping: advisoryMatch,
+  };
+}
+
 function rankFeeMapping(mapping, row, fallback) {
   const clientScore = clientMatchScore(mapping.client, row.portfolio_name || '');
   const navScore = navMatchScore(mapping, row);
@@ -128,10 +173,7 @@ function rankFeeMapping(mapping, row, fallback) {
 export function findFeeMappingForRow(row, feeMappings = []) {
   const providerKey = compactFeeText(row.platform);
   const investmentKey = compactFeeText(row.investment_name);
-  const providerMatches = mapping => {
-    const mappingProvider = compactFeeText(mapping.provider);
-    return mappingProvider === providerKey || providerKey.includes(mappingProvider) || mappingProvider.includes(providerKey);
-  };
+  const providerMatches = mapping => providerMatchesMapping(mapping, row);
   const candidates = feeMappings.filter(mapping => {
     const mappingInvestment = mapping.investmentKey || compactFeeText(mapping.investment);
     const investmentMatches = mappingInvestment === investmentKey || investmentKey.includes(mappingInvestment) || mappingInvestment.includes(investmentKey);
@@ -176,11 +218,21 @@ export function findEffectiveFeeConfig(row, feeConfigs = []) {
 
 export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const config = findEffectiveFeeConfig(row, feeConfigs);
+  const seeded = findSeededFeeRatesForRow(row, feeMappings);
   const mapping = findFeeMappingForRow(row, feeMappings);
   const hasStoredRate = row.rebate_fee_annual_percent != null || row.advisory_fee_annual_percent != null;
-  const source = config || mapping || (hasStoredRate ? row : null);
-  const rebate = source?.rebate_fee_annual_percent ?? source?.rebateAnnualPercent ?? 0;
-  const advisory = source?.advisory_fee_annual_percent ?? source?.advisoryAnnualPercent ?? 0;
+  const seedMatched = seeded.rebateMatched || seeded.advisoryMatched;
+  const source = config || (seedMatched ? seeded : null) || mapping || (hasStoredRate ? row : null);
+  const rebate = config
+    ? (config.rebate_fee_annual_percent ?? 0)
+    : seeded.rebateMatched
+      ? seeded.rebate
+      : mapping?.rebateAnnualPercent ?? row.rebate_fee_annual_percent ?? 0;
+  const advisory = config
+    ? (config.advisory_fee_annual_percent ?? 0)
+    : seeded.advisoryMatched
+      ? seeded.advisory
+      : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
   const mappedNav = mapping?.navByMonth?.[row.upload_month];
   const feeBaseZar = mappedNav ?? zarVal(row);
 
@@ -189,7 +241,7 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   // Explicitly setting 0 is valid and clears the flag.
   const advisoryNeverSet = config
     ? config.advisory_fee_annual_percent == null
-    : !mapping && !hasStoredRate;
+    : !seeded.advisoryMatched && !mapping && !hasStoredRate;
   const feeRequired = !source || advisoryNeverSet;
 
   return {
@@ -198,8 +250,8 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
     fee_base_zar: feeBaseZar,
     fee_base_source: mappedNav !== undefined ? 'mapping-nav' : 'valuation',
     fee_required: feeRequired,
-    fee_source: config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
-    fee_mapping_client: mapping?.client,
+    fee_source: config ? 'override' : seedMatched ? 'seeded' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
+    fee_mapping_client: seeded.advisoryMapping?.client || mapping?.client,
     fee_mapping_match_score: mapping?.matchScore ?? null,
   };
 }
