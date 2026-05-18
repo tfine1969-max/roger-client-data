@@ -16,6 +16,7 @@ import NorthstarUpload from '@/components/upload/NorthstarUpload';
 import PrescientUpload from '@/components/upload/PrescientUpload';
 import PeresecUpload from '@/components/upload/PeresecUpload';
 import DeleteMonthData from '@/components/upload/DeleteMonthData';
+import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
 
@@ -145,6 +146,7 @@ function MonthlyWorkbookUpload({ onImported }) {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
+  const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
 
   const handleMonthChange = (value) => {
     setUploadMonth(value);
@@ -162,6 +164,7 @@ function MonthlyWorkbookUpload({ onImported }) {
     setStatus('uploading');
     setMessage('Uploading file...');
     setDetail(null);
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Processing spreadsheet...');
@@ -175,8 +178,16 @@ function MonthlyWorkbookUpload({ onImported }) {
       });
       const result = response.data;
       if (!result.success) throw new Error(result.error || 'Import failed');
+      setMessage('Refreshing monthly AUM...');
+      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth }, '-created_date', 5000);
+      setProgress({
+        clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
+        holdings: result.rows_imported || rows.length,
+        aum: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
+      });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       setStatus('success');
       setMessage(`Successfully imported ${result.rows_imported} rows for ${uploadMonth}.`);
       setDetail({
@@ -262,6 +273,15 @@ function MonthlyWorkbookUpload({ onImported }) {
             )}
           </div>
         )}
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={status === 'success' ? 1 : 0}
+          total={file ? 1 : 0}
+          clients={progress.clients}
+          holdings={progress.holdings}
+          aum={progress.aum}
+          message={message}
+        />
         {status === 'error' && (
           <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded p-3">
             <AlertCircle className="w-4 h-4 shrink-0" /> {message}

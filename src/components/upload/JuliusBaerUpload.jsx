@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +8,17 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpe
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 export default function JuliusBaerUpload({ onImported }) {
+  const queryClient = useQueryClient();
   const [month, setMonth] = useState('');
   const [rate, setRate] = useState(DEFAULT_USD_ZAR_RATE);
   const [replace, setReplace] = useState(false);
   const [files, setFiles] = useState([]); // array of File objects
   const [results, setResults] = useState([]); // per-file results
   const [status, setStatus] = useState(null); // null | 'uploading' | 'done'
+  const [progressMessage, setProgressMessage] = useState('');
   const folderRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -45,15 +49,18 @@ export default function JuliusBaerUpload({ onImported }) {
     if (!files.length || !month || !rate) return;
     setStatus('uploading');
     setResults([]);
+    setProgressMessage(`Starting import for ${files.length} PDF${files.length > 1 ? 's' : ''}...`);
 
     const exchangeRate = parseFloat(rate);
     const newResults = [];
 
     for (const file of files) {
+      setProgressMessage(`Uploading ${file.name}...`);
       const resultEntry = { name: file.name, status: 'uploading', message: '' };
       setResults(prev => [...prev.filter(r => r.name !== file.name), { ...resultEntry }]);
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setProgressMessage(`Extracting holdings from ${file.name}...`);
         const response = await base44.functions.invoke('importJuliusBaerPdf', {
           file_url,
           upload_month: month,
@@ -74,6 +81,9 @@ export default function JuliusBaerUpload({ onImported }) {
         };
         newResults.push(entry);
         setResults(prev => [...prev.filter(r => r.name !== file.name), entry]);
+        setProgressMessage(`Imported ${entry.client_name || file.name}. Refreshing AUM...`);
+        queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+        queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       } catch (err) {
         const entry = { name: file.name, status: 'error', message: err.message || 'Failed' };
         newResults.push(entry);
@@ -82,11 +92,16 @@ export default function JuliusBaerUpload({ onImported }) {
     }
 
     setStatus('done');
+    setProgressMessage('Import complete.');
     if (onImported) await onImported(month);
   };
 
   const successCount = results.filter(r => r.status === 'success').length;
   const errorCount = results.filter(r => r.status === 'error').length;
+  const successResults = results.filter(r => r.status === 'success');
+  const clientsProcessed = new Set(successResults.map(r => r.account_code || r.client_name || r.name).filter(Boolean)).size;
+  const holdingsImported = successResults.reduce((sum, r) => sum + (parseInt(r.message, 10) || 0), 0);
+  const aumAdded = successResults.reduce((sum, r) => sum + (Number(r.zar_total) || 0), 0);
 
   return (
     <div className="space-y-5">
@@ -211,6 +226,16 @@ export default function JuliusBaerUpload({ onImported }) {
             ? `Processing ${results.length} / ${files.length}…`
             : `Upload & Import ${files.length > 0 ? `(${files.length} PDF${files.length > 1 ? 's' : ''})` : 'PDFs'}`}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={successCount + errorCount}
+          total={files.length}
+          clients={clientsProcessed}
+          holdings={holdingsImported}
+          aum={aumAdded}
+          message={progressMessage}
+        />
 
         {/* Summary after done */}
         {status === 'done' && (

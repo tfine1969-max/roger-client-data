@@ -8,6 +8,7 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucid
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 const LAST_UPLOAD_KEY = 'prime_last_upload';
 
@@ -27,6 +28,7 @@ export default function PrimeUpload({ onImported }) {
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
   const [lastUpload, setLastUpload] = useState(null);
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function PrimeUpload({ onImported }) {
     setFile(e.target.files?.[0] || null);
     setStatus(null);
     setMessage('');
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
   };
 
   const handleSubmit = async (e) => {
@@ -47,6 +50,7 @@ export default function PrimeUpload({ onImported }) {
     if (!file || !uploadMonth) return;
     setStatus('uploading');
     setMessage('Uploading file...');
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Processing...');
@@ -56,6 +60,13 @@ export default function PrimeUpload({ onImported }) {
         replace_existing: replaceExisting,
       });
       if (!res.data.success) throw new Error(res.data.error || 'Import failed');
+      setMessage('Refreshing Prime AUM...');
+      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Prime' }, '-created_date', 5000);
+      setProgress({
+        clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
+        holdings: res.data.rows_imported || rows.length,
+        aum: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
+      });
       
       const info = {
         file_name: file.name,
@@ -69,6 +80,8 @@ export default function PrimeUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['primeHoldings'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       if (onImported) await onImported(uploadMonth);
       setFile(null);
       // reset file input
@@ -138,6 +151,17 @@ export default function PrimeUpload({ onImported }) {
           <UploadIcon className="w-4 h-4" />
           {status === 'uploading' ? 'Processing...' : 'Upload & Import'}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={status === 'success' ? 1 : 0}
+          total={file ? 1 : 0}
+          clients={progress.clients}
+          holdings={progress.holdings}
+          aum={progress.aum}
+          message={message}
+        />
+
         {status === 'success' && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
             <CheckCircle2 className="w-4 h-4 shrink-0" /> {message}

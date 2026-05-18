@@ -230,6 +230,8 @@ export async function importProviderWorkbook({ file, uploadMonth, provider, repl
   return {
     success: true,
     rows_imported: rows.length,
+    clients_imported: new Set(rows.map(row => row.account_code || row.portfolio_name).filter(Boolean)).size,
+    aum_imported: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
     platform: provider,
   };
 }

@@ -9,6 +9,7 @@ import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 const LAST_UPLOAD_KEY = 'credo_last_upload';
 
@@ -54,8 +55,10 @@ export default function CredoUpload({ onImported }) {
   const [files, setFiles] = useState([]);
   const [uploadMonth, setUploadMonth] = useState('');
   const [rate, setRate] = useState(DEFAULT_USD_ZAR_RATE);
+  const [replaceExisting, setReplaceExisting] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState({ processed: 0, clients: 0, holdings: 0, aum: 0 });
   const [lastUpload, setLastUpload] = useState(null);
   const summaryMonth = uploadMonth || lastUpload?.upload_month || '';
 
@@ -76,6 +79,7 @@ export default function CredoUpload({ onImported }) {
     setFiles(newFiles);
     setStatus(null);
     setMessage('');
+    setProgress({ processed: 0, clients: 0, holdings: 0, aum: 0 });
   };
 
   const handleMonthChange = (value) => {
@@ -93,9 +97,12 @@ export default function CredoUpload({ onImported }) {
     if (files.length === 0 || !uploadMonth || !rate) return;
     setStatus('uploading');
     setMessage(`Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`);
+    setProgress({ processed: 0, clients: 0, holdings: 0, aum: 0 });
     try {
       let totalRows = 0;
       let processedFiles = 0;
+      const clientKeys = new Set();
+      let totalAum = 0;
       
       for (const file of files) {
         setMessage(`Processing ${processedFiles + 1} of ${files.length}: ${file.name}...`);
@@ -104,12 +111,18 @@ export default function CredoUpload({ onImported }) {
           file_url,
           upload_month: uploadMonth,
           exchange_rate: parseFloat(rate),
-          replace_existing: processedFiles === 0,
+          replace_existing: replaceExisting && processedFiles === 0,
         });
         if (!res.data.success) throw new Error(`${file.name}: ${res.data.error || 'Import failed'}`);
         await deleteStaleJuliusDuplicates(uploadMonth, res.data.account_number, res.data.client_name);
         totalRows += res.data.rows_imported;
         processedFiles++;
+        clientKeys.add(res.data.account_number || res.data.client_name || file.name);
+        const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Credo' }, '-created_date', 5000);
+        totalAum = rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0);
+        setProgress({ processed: processedFiles, clients: clientKeys.size, holdings: totalRows, aum: totalAum });
+        queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+        queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
         
         if (processedFiles === 1) {
           const info = {
@@ -127,6 +140,7 @@ export default function CredoUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${totalRows} holdings from ${files.length} file${files.length > 1 ? 's' : ''} for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       if (onImported) await onImported(uploadMonth);
       setFiles([]);
       setUploadMonth('');
@@ -232,6 +246,16 @@ export default function CredoUpload({ onImported }) {
           </div>
         )}
 
+        <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={replaceExisting}
+            onChange={e => setReplaceExisting(e.target.checked)}
+            className="rounded border-border"
+          />
+          <span>Replace existing Credo data for this month</span>
+        </label>
+
         <Button
           type="submit"
           disabled={files.length === 0 || !uploadMonth || !rate || status === 'uploading'}
@@ -240,6 +264,16 @@ export default function CredoUpload({ onImported }) {
           <UploadIcon className="w-4 h-4" />
           {status === 'uploading' ? 'Processing...' : 'Upload & Extract'}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={progress.processed}
+          total={files.length}
+          clients={progress.clients}
+          holdings={progress.holdings}
+          aum={progress.aum}
+          message={message}
+        />
 
         {status === 'success' && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">

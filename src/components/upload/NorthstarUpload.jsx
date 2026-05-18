@@ -8,6 +8,7 @@ import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpe
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 const BATCH_SIZE = 25;
 
@@ -157,6 +158,7 @@ export default function NorthstarUpload({ onImported }) {
   const [files, setFiles] = useState([]);
   const [results, setResults] = useState([]);
   const [status, setStatus] = useState(null);
+  const [progressMessage, setProgressMessage] = useState('');
   const folderRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -209,16 +211,19 @@ export default function NorthstarUpload({ onImported }) {
     if (!files.length || !month || !rate) return;
     setStatus('uploading');
     setResults([]);
+    setProgressMessage(`Starting import for ${files.length} PDF${files.length > 1 ? 's' : ''}...`);
 
     const exchangeRate = parseFloat(rate);
 
     for (let i = 0; i < files.length; i += 1) {
       const file = files[i];
+      setProgressMessage(`Uploading ${file.name}...`);
       const resultEntry = { name: file.name, status: 'uploading', message: '' };
       setResults(prev => [...prev.filter(r => r.name !== file.name), { ...resultEntry }]);
 
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setProgressMessage(`Extracting holdings from ${file.name}...`);
         const fallbackClient = fileNameClient(file.name);
         const extracted = await extractNorthstarHoldings({ fileUrl: file_url, fallbackClient });
         const holdings = dedupeHoldings((extracted.holdings || []).filter(h => cleanText(h.holding_name) && parseAmount(h.market_value) !== 0));
@@ -289,6 +294,10 @@ export default function NorthstarUpload({ onImported }) {
           zar_total: zarTotal,
         };
         setResults(prev => [...prev.filter(r => r.name !== file.name), entry]);
+        setProgressMessage(`Imported ${clientName}. Refreshing AUM...`);
+        queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+        queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+        queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       } catch (err) {
         const entry = { name: file.name, status: 'error', message: err.message || 'Failed' };
         setResults(prev => [...prev.filter(r => r.name !== file.name), entry]);
@@ -296,6 +305,7 @@ export default function NorthstarUpload({ onImported }) {
     }
 
     setStatus('done');
+    setProgressMessage('Import complete.');
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
     if (onImported) await onImported(month);
@@ -303,6 +313,10 @@ export default function NorthstarUpload({ onImported }) {
 
   const successCount = results.filter(r => r.status === 'success').length;
   const errorCount = results.filter(r => r.status === 'error').length;
+  const successResults = results.filter(r => r.status === 'success');
+  const clientsProcessed = new Set(successResults.map(r => r.account_code || r.client_name || r.name).filter(Boolean)).size;
+  const holdingsImported = successResults.reduce((sum, r) => sum + (parseInt(r.message, 10) || 0), 0);
+  const aumAdded = successResults.reduce((sum, r) => sum + (Number(r.zar_total) || 0), 0);
 
   return (
     <div className="space-y-5">
@@ -389,6 +403,16 @@ export default function NorthstarUpload({ onImported }) {
             ? `Processing ${results.length} / ${files.length}...`
             : `Upload & Import ${files.length > 0 ? `(${files.length} PDF${files.length > 1 ? 's' : ''})` : 'PDFs'}`}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={successCount + errorCount}
+          total={files.length}
+          clients={clientsProcessed}
+          holdings={holdingsImported}
+          aum={aumAdded}
+          message={progressMessage}
+        />
 
         {status === 'done' && (
           <div className="space-y-3">

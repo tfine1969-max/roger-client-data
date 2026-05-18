@@ -8,6 +8,7 @@ import { formatMonth } from '@/lib/valuation-utils';
 import { importProviderWorkbook } from '@/lib/provider-workbook-import';
 import DeleteMonthData from './DeleteMonthData';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 const LAST_UPLOAD_KEY = 'peresec_last_upload';
 
@@ -28,6 +29,7 @@ export default function PeresecUpload({ onImported }) {
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
+  const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
   const [lastUpload, setLastUpload] = useState(null);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export default function PeresecUpload({ onImported }) {
     setStatus(null);
     setMessage('');
     setDetail(null);
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
   };
 
   const handleSubmit = async (e) => {
@@ -50,6 +53,7 @@ export default function PeresecUpload({ onImported }) {
     setStatus('uploading');
     setMessage('Uploading Peresec workbook...');
     setDetail(null);
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
 
     try {
       setMessage('Extracting Peresec valuations...');
@@ -73,8 +77,14 @@ export default function PeresecUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${result.rows_imported} Peresec valuation row${result.rows_imported === 1 ? '' : 's'} for ${formatMonth(uploadMonth)}.`);
       setDetail(result);
+      setProgress({
+        clients: result.clients_imported || 0,
+        holdings: result.rows_imported || 0,
+        aum: result.aum_imported || 0,
+      });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       if (onImported) await onImported(uploadMonth);
       setFile(null);
       const input = document.getElementById('peresec-file-input');
@@ -148,6 +158,16 @@ export default function PeresecUpload({ onImported }) {
           <UploadIcon className="w-4 h-4" />
           {status === 'uploading' ? 'Processing...' : 'Upload & Extract'}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={status === 'success' ? 1 : 0}
+          total={file ? 1 : 0}
+          clients={progress.clients}
+          holdings={progress.holdings}
+          aum={progress.aum}
+          message={message}
+        />
 
         {status === 'success' && (
           <div className="space-y-2">

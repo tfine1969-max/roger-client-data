@@ -9,6 +9,7 @@ import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderUploadSummary from './ProviderUploadSummary';
+import UploadProgressSummary from './UploadProgressSummary';
 
 const LAST_UPLOAD_KEY = 'gryphon_last_upload';
 
@@ -20,6 +21,7 @@ export default function GreyphonUpload({ onImported }) {
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
   const [lastUpload, setLastUpload] = useState(null);
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function GreyphonUpload({ onImported }) {
     setFile(e.target.files?.[0] || null);
     setStatus(null);
     setMessage('');
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
   };
 
   const handleMonthChange = (value) => {
@@ -50,6 +53,7 @@ export default function GreyphonUpload({ onImported }) {
     if (!file || !uploadMonth) return;
     setStatus('uploading');
     setMessage('Uploading file...');
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setMessage('Processing...');
@@ -59,6 +63,13 @@ export default function GreyphonUpload({ onImported }) {
         replace_existing: replaceExisting,
       });
       if (!res.data.success) throw new Error(res.data.error || 'Import failed');
+      setMessage('Refreshing Gryphon AUM...');
+      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Gryphon' }, '-created_date', 5000);
+      setProgress({
+        clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
+        holdings: res.data.rows_imported || rows.length,
+        aum: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
+      });
 
       const info = {
         file_name: file.name,
@@ -72,6 +83,7 @@ export default function GreyphonUpload({ onImported }) {
       setStatus('success');
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       if (onImported) await onImported(uploadMonth);
       setFile(null);
       document.getElementById('gryphon-file-input').value = '';
@@ -154,6 +166,17 @@ export default function GreyphonUpload({ onImported }) {
           <UploadIcon className="w-4 h-4" />
           {status === 'uploading' ? 'Processing...' : 'Upload & Import'}
         </Button>
+
+        <UploadProgressSummary
+          active={status === 'uploading'}
+          processed={status === 'success' ? 1 : 0}
+          total={file ? 1 : 0}
+          clients={progress.clients}
+          holdings={progress.holdings}
+          aum={progress.aum}
+          message={message}
+        />
+
         {status === 'success' && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
             <CheckCircle2 className="w-4 h-4 shrink-0" /> {message}
