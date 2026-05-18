@@ -242,30 +242,30 @@ export default function Funds() {
         </div>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(320px,420px)_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(300px,360px)_1fr]">
         <section className="rounded-lg border bg-white">
-          <div className="border-b p-4">
+          <div className="border-b p-3">
             <h2 className="text-sm font-semibold">Master List</h2>
-            <div className="relative mt-3">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search master funds" className="pl-9" />
+            <div className="relative mt-2">
+              <Search className="absolute left-3 top-2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search master funds" className="h-8 pl-8 text-xs" />
             </div>
-            <div className="mt-3 flex gap-2">
-              <Input value={newFundName} onChange={e => setNewFundName(e.target.value)} placeholder="Add new master fund" />
-              <Button onClick={() => addMasterFund()} className="gap-2"><Plus className="h-4 w-4" /> Add</Button>
+            <div className="mt-2 flex gap-2">
+              <Input value={newFundName} onChange={e => setNewFundName(e.target.value)} placeholder="Add new master fund" className="h-8 text-xs" />
+              <Button onClick={() => addMasterFund()} className="h-8 gap-1.5 px-3 text-xs"><Plus className="h-3.5 w-3.5" /> Add</Button>
             </div>
           </div>
-          <div className="max-h-[680px] overflow-y-auto divide-y">
+          <div className="max-h-[650px] overflow-y-auto divide-y">
             {filteredMasterFunds.map(fund => {
               const stats = masterStats[fund] || { variants: 0, totalZar: 0 };
               return (
                 <button
                   key={fund}
                   onClick={() => { setSelectedMaster(fund); setSelectedVariants({}); }}
-                  className={`w-full px-4 py-3 text-left transition hover:bg-muted/30 ${selectedMaster === fund ? 'bg-primary/5' : ''}`}
+                  className={`w-full px-3 py-2 text-left transition hover:bg-muted/30 ${selectedMaster === fund ? 'bg-primary/5' : ''}`}
                 >
-                  <p className="text-sm font-semibold text-foreground">{fund}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="line-clamp-2 text-xs font-semibold leading-snug text-foreground">{fund}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {stats.variants} linked names · ZAR {fmtNum(stats.totalZar)}
                   </p>
                 </button>
@@ -276,29 +276,29 @@ export default function Funds() {
 
         <section className="space-y-4">
           <div className="rounded-lg border bg-white">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
-              <div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+              <div className="min-w-0">
                 <h2 className="text-sm font-semibold">Link Provider Names</h2>
-                <p className="text-xs text-muted-foreground">Selected master fund: <strong>{selectedMaster}</strong></p>
+                <p className="max-w-[520px] truncate text-xs text-muted-foreground">Selected master fund: <strong>{selectedMaster}</strong></p>
               </div>
               <div className="flex items-center gap-2">
-                <Input value={variantSearch} onChange={e => setVariantSearch(e.target.value)} placeholder="Filter provider names" className="w-56" />
-                <Button onClick={linkSelected} disabled={!Object.values(selectedVariants).some(Boolean)} className="gap-2">
-                  <Link2 className="h-4 w-4" /> Link selected
+                <Input value={variantSearch} onChange={e => setVariantSearch(e.target.value)} placeholder="Filter provider names" className="h-9 w-56 text-xs" />
+                <Button onClick={linkSelected} disabled={!Object.values(selectedVariants).some(Boolean)} className="h-9 gap-2 text-xs">
+                  <Link2 className="h-3.5 w-3.5" /> Link selected
                 </Button>
               </div>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-xs">
                 <thead>
                   <tr className="border-b bg-muted/40">
-                    <th className="w-10 px-4 py-3"></th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Provider Instrument</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Link / Suggestion</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">AUM</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Clients</th>
-                    <th className="w-32 px-4 py-3"></th>
+                    <th className="w-9 px-3 py-2"></th>
+                    <th className="w-[36%] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Provider Instrument</th>
+                    <th className="w-[26%] px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Link / Suggestion</th>
+                    <th className="w-[16%] px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">AUM</th>
+                    <th className="w-[8%] px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Clients</th>
+                    <th className="w-[14%] px-3 py-2"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -311,36 +311,36 @@ export default function Funds() {
                     const best = variant.suggestions[0];
                     return (
                       <tr key={variant.key} className={linkedHere ? 'bg-green-50/40' : suggestedHere ? 'bg-amber-50/30' : ''}>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           <input type="checkbox" checked={!!selectedVariants[variant.key]} onChange={() => toggleVariant(variant.key)} />
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <ProviderLogo providerId={providerId(variant.platform)} provider={variant.platform} logoBoxClassName="h-9 w-24" logoClassName="max-h-6 max-w-[76px]" showName={false} />
-                            <div>
-                              <p className="font-medium text-foreground">{variant.name}</p>
-                              <p className="text-xs text-muted-foreground">{variant.platform} · {variant.holdings} holdings</p>
+                        <td className="px-3 py-2">
+                          <div className="grid min-w-0 grid-cols-[76px_minmax(0,1fr)] items-center gap-2">
+                            <ProviderLogo providerId={providerId(variant.platform)} provider={variant.platform} logoBoxClassName="h-8 w-[76px]" logoClassName="max-h-5 max-w-[62px]" showName={false} />
+                            <div className="min-w-0">
+                              <p className="truncate font-medium leading-tight text-foreground" title={variant.name}>{variant.name}</p>
+                              <p className="truncate text-[11px] text-muted-foreground">{variant.platform} · {variant.holdings} holdings</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-xs">
+                        <td className="px-3 py-2 text-[11px] leading-snug">
                           {linkedHere ? (
-                            <span className="font-semibold text-green-700">{variant.mappedMaster}</span>
+                            <span className="line-clamp-2 font-semibold text-green-700" title={variant.mappedMaster}>{variant.mappedMaster}</span>
                           ) : suggestedHere ? (
-                            <span className="font-semibold text-amber-700">Suggested: {variant.mappedMaster}</span>
+                            <span className="line-clamp-2 font-semibold text-amber-700" title={variant.mappedMaster}>Suggested: {variant.mappedMaster}</span>
                           ) : best ? (
-                            <span className="text-muted-foreground">Suggested: <strong className="text-foreground">{best.fund}</strong> ({Math.round(best.score * 100)}%)</span>
+                            <span className="line-clamp-2 text-muted-foreground" title={best.fund}>Suggested: <strong className="text-foreground">{best.fund}</strong> ({Math.round(best.score * 100)}%)</span>
                           ) : (
                             <span className="text-amber-700">No confident match</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-numbers">ZAR {fmtNum(variant.totalZar)}</td>
-                        <td className="px-4 py-3 text-right">{variant.clients}</td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-3 py-2 text-right font-numbers leading-tight"><span className="block text-[10px] text-muted-foreground">ZAR</span>{fmtNum(variant.totalZar)}</td>
+                        <td className="px-3 py-2 text-right">{variant.clients}</td>
+                        <td className="px-3 py-2 text-right">
                           {linkedHere ? (
-                            <Button variant="outline" size="sm" onClick={() => unlinkOne(variant.key)}>Unlink</Button>
+                            <Button variant="outline" size="sm" onClick={() => unlinkOne(variant.key)} className="h-8 px-3 text-xs">Unlink</Button>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => linkOne(variant.key, selectedMaster)}>
+                            <Button variant="outline" size="sm" onClick={() => linkOne(variant.key, selectedMaster)} className="h-8 px-3 text-xs">
                               {suggestedHere ? 'Confirm' : 'Link'}
                             </Button>
                           )}
@@ -354,7 +354,7 @@ export default function Funds() {
           </div>
 
           <div className="rounded-lg border bg-white">
-            <div className="border-b p-4">
+            <div className="border-b px-4 py-3">
               <h2 className="text-sm font-semibold">Unlinked Provider Instruments</h2>
               <p className="text-xs text-muted-foreground">
                 {linkedCount} of {variants.length} imported names linked. Review these after every new upload.
@@ -364,13 +364,13 @@ export default function Funds() {
               {reviewVariants.slice(0, 12).map(variant => {
                 const best = variant.suggestions[0];
                 return (
-                  <div key={variant.key} className="grid gap-3 px-4 py-3 md:grid-cols-[1fr_260px_170px] md:items-center">
+                  <div key={variant.key} className="grid gap-2 px-4 py-2.5 md:grid-cols-[minmax(0,1fr)_250px_142px] md:items-center">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{variant.name}</p>
-                      <p className="text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
+                      <p className="truncate text-sm font-medium leading-tight" title={variant.name}>{variant.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)} · {variant.clients} clients</p>
                     </div>
                     <Select value={best?.fund || ''} onValueChange={fund => linkOne(variant.key, fund)}>
-                      <SelectTrigger className="bg-white">
+                      <SelectTrigger className="h-9 bg-white text-xs">
                         <SelectValue placeholder="Choose master fund" />
                       </SelectTrigger>
                       <SelectContent>
@@ -382,8 +382,8 @@ export default function Funds() {
                           .map(fund => <SelectItem key={`all-${fund}`} value={fund}>{fund}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Button variant="outline" onClick={() => addMasterFund(variant.name)} className="gap-2">
-                      <Plus className="h-4 w-4" /> Add as master
+                    <Button variant="outline" onClick={() => addMasterFund(variant.name)} className="h-9 gap-1.5 px-3 text-xs">
+                      <Plus className="h-3.5 w-3.5" /> Add as master
                     </Button>
                   </div>
                 );
