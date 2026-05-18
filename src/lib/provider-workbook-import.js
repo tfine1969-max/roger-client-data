@@ -36,8 +36,13 @@ const monthEndDate = uploadMonth => {
 
 const normalPlatform = value => {
   const text = normalize(value);
+  if (text.includes('gryphon')) return 'Gryphon';
+  if (text.includes('julius')) return 'Julius Baer';
+  if (text.includes('northstar')) return 'Northstar';
   if (text.includes('peresec')) return 'Peresec';
   if (text.includes('prescient')) return 'Prescient';
+  if (text.includes('credo')) return 'Credo';
+  if (text.includes('prime')) return 'Prime';
   return cleanText(value);
 };
 
@@ -135,6 +140,183 @@ const getCell = (row, headers, candidates) => {
   const index = headers.findIndex(header => candidates.some(candidate => header === candidate || header.includes(candidate)));
   return index >= 0 ? row[index] : null;
 };
+
+const sheetMonth = (sheetName, defaultYear = 2026) => {
+  const text = normalize(sheetName);
+  const aliases = {
+    jan: 1,
+    january: 1,
+    feb: 2,
+    february: 2,
+    mar: 3,
+    march: 3,
+    apr: 4,
+    april: 4,
+    may: 5,
+    jun: 6,
+    june: 6,
+    jul: 7,
+    july: 7,
+    aug: 8,
+    august: 8,
+    sep: 9,
+    sept: 9,
+    september: 9,
+    oct: 10,
+    october: 10,
+    nov: 11,
+    november: 11,
+    dec: 12,
+    december: 12,
+  };
+  const month = aliases[text] || MONTHS.findIndex(monthName => text.includes(monthName)) + 1;
+  return month > 0 ? `${defaultYear}-${String(month).padStart(2, '0')}` : '';
+};
+
+export async function parseRogerDataWorkbook(file, defaultYear = 2026) {
+  const zip = unzipSync(new Uint8Array(await file.arrayBuffer()));
+  const strings = sharedStrings(zip);
+  const sheets = workbookSheets(zip);
+  const rows = [];
+  const sheetSummaries = [];
+
+  for (const sheet of sheets) {
+    const uploadMonth = sheetMonth(sheet.name, defaultYear);
+    if (!uploadMonth) continue;
+
+    const matrix = sheetMatrix(zip, sheet.path, strings);
+    const headerIndex = matrix.findIndex(row => {
+      const headers = (row || []).map(normalize);
+      return headers.includes('client') && headers.some(header => header.includes('investment name')) && headers.some(header => header.includes('service provider'));
+    });
+    if (headerIndex === -1) continue;
+
+    const headers = matrix[headerIndex].map(normalize);
+    let imported = 0;
+    let skipped = 0;
+    let aum = 0;
+    let rebateTotal = 0;
+    let advisoryTotal = 0;
+
+    for (const row of matrix.slice(headerIndex + 1)) {
+      const client = cleanText(getCell(row || [], headers, ['client']));
+      const investmentName = cleanText(getCell(row || [], headers, ['investment name', 'investment']));
+      const investmentClass = cleanText(getCell(row || [], headers, ['class']));
+      const platform = normalPlatform(getCell(row || [], headers, ['service provider', 'provider', 'platform']));
+      const navValue = parseNumber(getCell(row || [], headers, ['nav']));
+      if (!client || !investmentName || !platform || navValue == null) {
+        skipped += client || investmentName || platform ? 1 : 0;
+        continue;
+      }
+
+      const rebateAnnualPercent = annualPercent(getCell(row || [], headers, ['rebate']));
+      const advisoryAnnualPercent = annualPercent(getCell(row || [], headers, ['advisory fee', 'advisory']));
+      const rebateMonthly = parseNumber(getCell(row || [], headers, ['rebates'])) ?? (navValue * (rebateAnnualPercent / 100) / 12);
+      const advisoryMonthly = parseNumber(getCell(row || [], headers, ['advisory jan', 'advisory feb', 'advisory mar', 'advisory apr', 'advisory may'])) ?? (navValue * (advisoryAnnualPercent / 100) / 12);
+      const accountCode = generatedAccountCode(platform, client);
+
+      rows.push({
+        upload_month: uploadMonth,
+        account_code: accountCode,
+        identity_no: null,
+        portfolio_name: client,
+        platform,
+        source_provider: cleanText(getCell(row || [], headers, ['service provider', 'provider', 'platform'])),
+        investment_name: investmentName,
+        investment_class: investmentClass,
+        currency: 'ZAR',
+        month_end_market_value: navValue,
+        original_currency_value: navValue,
+        exchange_rate_to_zar: 1,
+        zar_value: navValue,
+        exchange_rate_date: monthEndDate(uploadMonth),
+        exchange_rate_source: 'Roger source workbook',
+        conversion_status: 'ZAR Source Value',
+        rebate_fee_annual_percent: rebateAnnualPercent,
+        advisory_fee_annual_percent: advisoryAnnualPercent,
+        rebate_fee_monthly_percent: rebateAnnualPercent / 12,
+        advisory_fee_monthly_percent: advisoryAnnualPercent / 12,
+        rebate_fee_monthly_amount_original_currency: rebateMonthly,
+        advisory_fee_monthly_amount_original_currency: advisoryMonthly,
+        rebate_fee_monthly_amount_zar: rebateMonthly,
+        advisory_fee_monthly_amount_zar: advisoryMonthly,
+        total_monthly_fee_original_currency: rebateMonthly + advisoryMonthly,
+        total_monthly_fee_zar: rebateMonthly + advisoryMonthly,
+        fee_required: false,
+        fee_source: 'roger-source',
+        has_missing_account_code: false,
+        has_missing_identity_no: true,
+        has_missing_market_value: navValue === 0,
+        has_unknown_value: /unknown/i.test(`${client} ${investmentName} ${accountCode}`),
+        is_duplicate: false,
+        is_flagged: false,
+      });
+
+      imported += 1;
+      aum += navValue;
+      rebateTotal += rebateMonthly;
+      advisoryTotal += advisoryMonthly;
+    }
+
+    sheetSummaries.push({
+      sheet: sheet.name,
+      upload_month: uploadMonth,
+      rows_imported: imported,
+      rows_skipped: skipped,
+      aum,
+      rebate: rebateTotal,
+      advisory: advisoryTotal,
+    });
+  }
+
+  return { rows, sheetSummaries };
+}
+
+export async function importRogerDataWorkbook({ file, replaceExisting = false, defaultYear = 2026 }) {
+  const { rows, sheetSummaries } = await parseRogerDataWorkbook(file, defaultYear);
+  if (rows.length === 0) {
+    throw new Error('No Roger source rows found. Expected sheets such as Jan, Feb, March with Client, Investment Name, Service Provider, NAV, Rebate, and Advisory Fee columns.');
+  }
+
+  const months = [...new Set(rows.map(row => row.upload_month))];
+  if (replaceExisting) {
+    for (const month of months) {
+      const existing = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 5000);
+      for (const row of existing) {
+        await base44.entities.PortfolioValuation.delete(row.id);
+      }
+    }
+  }
+
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map(row => base44.entities.PortfolioValuation.create(row)));
+  }
+
+  for (const summary of sheetSummaries) {
+    await base44.entities.MonthlyUpload.create({
+      upload_month: summary.upload_month,
+      file_name: file.name,
+      upload_date: new Date().toISOString(),
+      total_rows: summary.rows_imported + summary.rows_skipped,
+      rows_imported: summary.rows_imported,
+      rows_skipped: summary.rows_skipped,
+      import_status: 'Imported',
+      notes: `Roger source workbook import. Sheet: ${summary.sheet}. AUM: ${summary.aum.toFixed(2)}.`,
+    });
+  }
+
+  return {
+    success: true,
+    rows_imported: rows.length,
+    clients_imported: new Set(rows.map(row => row.account_code || row.portfolio_name).filter(Boolean)).size,
+    aum_imported: rows.reduce((sum, row) => sum + row.zar_value, 0),
+    sheets_imported: sheetSummaries.map(summary => summary.sheet),
+    months_imported: months,
+    sheet_summaries: sheetSummaries,
+    rows_skipped: sheetSummaries.reduce((sum, summary) => sum + summary.rows_skipped, 0),
+  };
+}
 
 export async function parseProviderWorkbook(file, uploadMonth, provider) {
   const zip = unzipSync(new Uint8Array(await file.arrayBuffer()));

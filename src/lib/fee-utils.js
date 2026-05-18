@@ -233,8 +233,7 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
     : seeded.advisoryMatched
       ? seeded.advisory
       : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
-  const mappedNav = mapping?.navByMonth?.[row.upload_month];
-  const feeBaseZar = mappedNav ?? zarVal(row);
+  const feeBaseZar = zarVal(row);
 
   // fee_required = true when there's no source at all, OR when a config exists
   // but advisory_fee_annual_percent has never been explicitly set (null = not yet touched).
@@ -246,9 +245,9 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
 
   return {
     ...row,
-    ...calcFees(mappedNav ?? origVal(row), feeBaseZar, rebate, advisory),
+    ...calcFees(origVal(row), feeBaseZar, rebate, advisory),
     fee_base_zar: feeBaseZar,
-    fee_base_source: mappedNav !== undefined ? 'mapping-nav' : 'valuation',
+    fee_base_source: 'valuation',
     fee_required: feeRequired,
     fee_source: config ? 'override' : seedMatched ? 'seeded' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
     fee_mapping_client: seeded.advisoryMapping?.client || mapping?.client,

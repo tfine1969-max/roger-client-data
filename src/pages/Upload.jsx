@@ -19,8 +19,7 @@ import DeleteMonthData from '@/components/upload/DeleteMonthData';
 import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
-
-const EMPTY_RATES = { USD: DEFAULT_USD_ZAR_RATE, EUR: '', GBP: '' };
+import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
 
 const PROVIDERS = [
   { id: 'credo', label: 'Credo' },
@@ -140,63 +139,47 @@ function ProviderUploadHistory() {
 function MonthlyWorkbookUpload({ onImported }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
-  const [uploadMonth, setUploadMonth] = useState('');
   const [replaceExisting, setReplaceExisting] = useState(false);
-  const [exchangeRates, setExchangeRates] = useState(EMPTY_RATES);
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState('');
   const [detail, setDetail] = useState(null);
   const [progress, setProgress] = useState({ clients: 0, holdings: 0, aum: 0 });
 
-  const handleMonthChange = (value) => {
-    setUploadMonth(value);
-    setExchangeRates(rates => ({ ...rates, USD: getUsdZarRateForMonth(value) }));
-  };
-
-  const handleRateChange = (currency, value) => {
-    setExchangeRates(rates => ({ ...rates, [currency]: value }));
-    if (currency === 'USD') saveUsdZarRateForMonth(uploadMonth, value);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !uploadMonth) return;
+    if (!file) return;
     setStatus('uploading');
-    setMessage('Uploading file...');
+    setMessage('Reading Roger source workbook...');
     setDetail(null);
     setProgress({ clients: 0, holdings: 0, aum: 0 });
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setMessage('Processing spreadsheet...');
-      const response = await base44.functions.invoke('importMonthlyFile', {
-        file_url,
-        upload_month: uploadMonth,
-        replace_existing: replaceExisting,
-        exchange_rates: Object.fromEntries(
-          Object.entries(exchangeRates).filter(([, v]) => String(v).trim() !== '')
-        ),
+      const result = await importRogerDataWorkbook({
+        file,
+        replaceExisting,
+        defaultYear: 2026,
       });
-      const result = response.data;
       if (!result.success) throw new Error(result.error || 'Import failed');
-      setMessage('Refreshing monthly AUM...');
-      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth }, '-created_date', 5000);
+      setMessage('Refreshing source AUM...');
       setProgress({
-        clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
-        holdings: result.rows_imported || rows.length,
-        aum: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
+        clients: result.clients_imported || 0,
+        holdings: result.rows_imported || 0,
+        aum: result.aum_imported || 0,
       });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
       queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       setStatus('success');
-      setMessage(`Successfully imported ${result.rows_imported} rows for ${uploadMonth}.`);
+      setMessage(`Successfully imported ${result.rows_imported} source rows across ${result.months_imported.map(formatMonth).join(', ')}.`);
       setDetail({
         sheets_imported: result.sheets_imported,
-        manual_rates_applied: result.manual_rates_applied,
-        exchange_rates_detected: result.exchange_rates_detected,
         rows_skipped: result.rows_skipped,
+        sheet_summaries: result.sheet_summaries,
       });
-      if (onImported) await onImported(uploadMonth);
+      if (onImported) {
+        for (const month of result.months_imported) {
+          await onImported(month);
+        }
+      }
     } catch (err) {
       setStatus('error');
       setMessage(err.message || 'Upload failed');
@@ -206,47 +189,21 @@ function MonthlyWorkbookUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload a multi-sheet Excel workbook to import portfolio valuations for a given month.
-        Enter exchange rates when the file contains non-ZAR currencies.
+        Upload the Roger source workbook. Each month sheet is imported using the ZAR NAV values exactly as supplied, with rebate and advisory fee rates seeded from the workbook.
       </p>
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
         <div className="space-y-1.5">
-          <Label>Upload Month</Label>
-          <Input type="month" value={uploadMonth} onChange={e => handleMonthChange(e.target.value)} required />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Spreadsheet File (.xlsx)</Label>
-          <Input type="file" accept=".xlsx,.xls" onChange={e => { setFile(e.target.files?.[0] || null); setExchangeRates(EMPTY_RATES); }} required />
-        </div>
-        <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-4 space-y-3">
-          <div>
-            <p className="text-sm font-semibold text-blue-950">Exchange Rates (Optional)</p>
-            <p className="text-xs text-blue-800 mt-1">USD uses the shared month rate. Entered rates override workbook-detected rates for non-ZAR currencies.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {['USD', 'EUR', 'GBP'].map(currency => (
-              <div key={currency} className="space-y-1">
-                <Label className="text-xs font-semibold">{currency}</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number" step="0.0001" min="0" placeholder={currency === 'USD' ? DEFAULT_USD_ZAR_RATE : 'e.g. 18.50'}
-                    value={exchangeRates[currency]}
-                    onChange={e => handleRateChange(currency, e.target.value)}
-                    className="h-9"
-                  />
-                  <span className="text-xs text-muted-foreground">ZAR</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Label>Roger Source Workbook (.xlsx)</Label>
+          <Input type="file" accept=".xlsx,.xls" onChange={e => setFile(e.target.files?.[0] || null)} required />
+          {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
         </div>
         <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input type="checkbox" checked={replaceExisting} onChange={e => setReplaceExisting(e.target.checked)} className="rounded border-border" />
-          <span>Replace existing data for this month</span>
+          <span>Replace existing data for all months found in this workbook</span>
         </label>
-        <Button type="submit" disabled={!file || !uploadMonth || status === 'uploading'} className="w-full gap-2">
+        <Button type="submit" disabled={!file || status === 'uploading'} className="w-full gap-2">
           <UploadIcon className="w-4 h-4" />
-          {status === 'uploading' ? 'Processing...' : 'Upload & Import'}
+          {status === 'uploading' ? 'Processing source workbook...' : 'Upload & Import Source Workbook'}
         </Button>
         {status === 'success' && (
           <div className="space-y-2">
@@ -257,18 +214,11 @@ function MonthlyWorkbookUpload({ onImported }) {
               <div className="text-xs text-muted-foreground bg-muted/40 rounded p-3 space-y-1">
                 {detail.sheets_imported?.length > 0 && <p><strong className="text-foreground">Sheets imported:</strong> {detail.sheets_imported.join(', ')}</p>}
                 {detail.rows_skipped > 0 && <p><strong className="text-foreground">Rows skipped:</strong> {detail.rows_skipped}</p>}
-                {detail.manual_rates_applied && Object.keys(detail.manual_rates_applied).length > 0 && (
-                  <p><strong className="text-foreground">Manual rates applied:</strong> {Object.entries(detail.manual_rates_applied).map(([c, r]) => `${c} ${r}`).join(', ')}</p>
-                )}
-                {detail.exchange_rates_detected && Object.keys(detail.exchange_rates_detected).length > 0 && (
-                  <>
-                    <p className="font-semibold text-foreground pt-1">Exchange rates used by account:</p>
-                    {Object.entries(detail.exchange_rates_detected).slice(0, 8).map(([key, r]) => (
-                      <p key={key}>{key.replace('||', ' / ')}: <strong>{r}</strong></p>
-                    ))}
-                    {Object.keys(detail.exchange_rates_detected).length > 8 && <p>+ {Object.keys(detail.exchange_rates_detected).length - 8} more</p>}
-                  </>
-                )}
+                {detail.sheet_summaries?.map(summary => (
+                  <p key={summary.sheet}>
+                    <strong className="text-foreground">{summary.sheet}:</strong> {summary.rows_imported} rows, AUM R {summary.aum.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                ))}
               </div>
             )}
           </div>

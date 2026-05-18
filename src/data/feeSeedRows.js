@@ -1,4 +1,4 @@
-// Generated from fees seeded values.xlsx. Percent fields are annual percentage values, e.g. 0.4 = 0.40% p.a.
+// Generated from Roger Data - Jan to March.xlsx. Percent fields are annual percentage values, e.g. 0.4 = 0.40% p.a.
 export const feeSeedRows = [
   {
     "client": "Abrahams, Denise",
@@ -14,61 +14,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Apex Holdings (Pty) Ltd",
-    "clientKey": "apexholdingsptyltd",
-    "clientTokens": [
-      "apex",
-      "holdings",
-      "pty",
-      "ltd"
-    ],
-    "investment": "Centaur Bci Flexible Fund ( C )",
-    "investmentClass": "",
-    "investmentKey": "centaurbciflexiblefundc",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Apex Holdings (Pty) Ltd",
-    "clientKey": "apexholdingsptyltd",
-    "clientTokens": [
-      "apex",
-      "holdings",
-      "pty",
-      "ltd"
-    ],
-    "investment": "Wealthworks Prime Cautious Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimecautiousfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Apex Holdings (Pty) Ltd",
-    "clientKey": "apexholdingsptyltd",
-    "clientTokens": [
-      "apex",
-      "holdings",
-      "pty",
-      "ltd"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Apex Holdings (Pty) Ltd",
@@ -86,7 +32,61 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Apex Holdings (Pty) Ltd",
+    "clientKey": "apexholdingsptyltd",
+    "clientTokens": [
+      "apex",
+      "holdings",
+      "pty",
+      "ltd"
+    ],
+    "investment": "Centaur Bci Flexible Fund ( C )",
+    "investmentClass": "",
+    "investmentKey": "centaurbciflexiblefundc",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Apex Holdings (Pty) Ltd",
+    "clientKey": "apexholdingsptyltd",
+    "clientTokens": [
+      "apex",
+      "holdings",
+      "pty",
+      "ltd"
+    ],
+    "investment": "Wealthworks Prime Cautious Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimecautiousfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Apex Holdings (Pty) Ltd",
+    "clientKey": "apexholdingsptyltd",
+    "clientTokens": [
+      "apex",
+      "holdings",
+      "pty",
+      "ltd"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Apex Images CC",
@@ -103,24 +103,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Apex Images CC",
-    "clientKey": "apeximagescc",
-    "clientTokens": [
-      "apex",
-      "images",
-      "cc"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Apex Images CC",
@@ -137,7 +120,24 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Apex Images CC",
+    "clientKey": "apeximagescc",
+    "clientTokens": [
+      "apex",
+      "images",
+      "cc"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Apex Shark Expeditions (Pty) Ltd",
@@ -156,7 +156,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Bambino International (Pty) Ltd",
@@ -174,7 +174,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Blackbeard, G Mrs",
@@ -191,7 +191,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Blackbeard, G Mrs",
@@ -208,41 +208,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Blackbeard, G Mrs",
-    "clientKey": "blackbeardgmrs",
-    "clientTokens": [
-      "blackbeard",
-      "g",
-      "mrs"
-    ],
-    "investment": "Prescient Income Provider Fund",
-    "investmentClass": "",
-    "investmentKey": "prescientincomeproviderfund",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Blackbeard, G Mrs",
-    "clientKey": "blackbeardgmrs",
-    "clientTokens": [
-      "blackbeard",
-      "g",
-      "mrs"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Blackbeard, G Mrs",
@@ -259,7 +225,41 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Blackbeard, G Mrs",
+    "clientKey": "blackbeardgmrs",
+    "clientTokens": [
+      "blackbeard",
+      "g",
+      "mrs"
+    ],
+    "investment": "Prescient Income Provider Fund",
+    "investmentClass": "",
+    "investmentKey": "prescientincomeproviderfund",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Blackbeard, G Mrs",
+    "clientKey": "blackbeardgmrs",
+    "clientTokens": [
+      "blackbeard",
+      "g",
+      "mrs"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Briggs, Carol-Anne",
@@ -276,7 +276,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Briggs, Carol-Anne",
@@ -293,7 +293,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Chin, Ashley",
@@ -309,7 +309,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Chin, Ashley",
@@ -325,7 +325,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Chin, Ashley",
@@ -341,7 +341,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Commercial Buildings (Pty) Ltd",
@@ -359,7 +359,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prescient",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.79,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Commercial Buildings (Pty) Ltd",
@@ -377,25 +377,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.79,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Commercial Buildings (Pty) Ltd",
-    "clientKey": "commercialbuildingsptyltd",
-    "clientTokens": [
-      "commercial",
-      "buildings",
-      "pty",
-      "ltd"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.79,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Conder, Andrew",
@@ -411,23 +393,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Conder, Andrew",
-    "clientKey": "conderandrew",
-    "clientTokens": [
-      "conder",
-      "andrew"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Conder, Andrew",
@@ -443,7 +409,23 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Conder, Andrew",
+    "clientKey": "conderandrew",
+    "clientTokens": [
+      "conder",
+      "andrew"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Conder, Andrew",
@@ -459,7 +441,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Armelle",
@@ -476,41 +458,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Armelle",
-    "clientKey": "demeyarmelle",
-    "clientTokens": [
-      "de",
-      "mey",
-      "armelle"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Armelle",
-    "clientKey": "demeyarmelle",
-    "clientTokens": [
-      "de",
-      "mey",
-      "armelle"
-    ],
-    "investment": "Julius Baer Trading Account",
-    "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Armelle",
@@ -527,41 +475,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Armelle",
-    "clientKey": "demeyarmelle",
-    "clientTokens": [
-      "de",
-      "mey",
-      "armelle"
-    ],
-    "investment": "Rubrics Enhanced Yield UCITS Fund",
-    "investmentClass": "",
-    "investmentKey": "rubricsenhancedyielducitsfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.25,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Armelle",
-    "clientKey": "demeyarmelle",
-    "clientTokens": [
-      "de",
-      "mey",
-      "armelle"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Armelle",
@@ -578,7 +492,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Armelle",
@@ -588,14 +502,48 @@ export const feeSeedRows = [
       "mey",
       "armelle"
     ],
-    "investment": "Settlement Cash (Global)",
+    "investment": "Julius Baer Trading Account",
     "investmentClass": "",
-    "investmentKey": "settlementcashglobal",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
+    "investmentKey": "juliusbaertradingaccount",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Armelle",
+    "clientKey": "demeyarmelle",
+    "clientTokens": [
+      "de",
+      "mey",
+      "armelle"
+    ],
+    "investment": "Rubrics Enhanced Yield UCITS Fund",
+    "investmentClass": "",
+    "investmentKey": "rubricsenhancedyielducitsfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.25,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Armelle",
+    "clientKey": "demeyarmelle",
+    "clientTokens": [
+      "de",
+      "mey",
+      "armelle"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Armelle",
@@ -612,7 +560,24 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Armelle",
+    "clientKey": "demeyarmelle",
+    "clientTokens": [
+      "de",
+      "mey",
+      "armelle"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Katinga",
@@ -629,7 +594,92 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Katinga",
+    "clientKey": "demeykatinga",
+    "clientTokens": [
+      "de",
+      "mey",
+      "katinga"
+    ],
+    "investment": "Blackrock ICS US Dollar Liquidity Fund",
+    "investmentClass": "",
+    "investmentKey": "blackrockicsusdollarliquidityfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Katinga",
+    "clientKey": "demeykatinga",
+    "clientTokens": [
+      "de",
+      "mey",
+      "katinga"
+    ],
+    "investment": "Julius Baer Trading Account",
+    "investmentClass": "",
+    "investmentKey": "juliusbaertradingaccount",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Katinga",
+    "clientKey": "demeykatinga",
+    "clientTokens": [
+      "de",
+      "mey",
+      "katinga"
+    ],
+    "investment": "Rubrics Enhanced Yield UCITS Fund",
+    "investmentClass": "",
+    "investmentKey": "rubricsenhancedyielducitsfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.25,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Katinga",
+    "clientKey": "demeykatinga",
+    "clientTokens": [
+      "de",
+      "mey",
+      "katinga"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "De Mey, Katinga",
+    "clientKey": "demeykatinga",
+    "clientTokens": [
+      "de",
+      "mey",
+      "katinga"
+    ],
+    "investment": "Xhaos Special Opportunities Fund",
+    "investmentClass": "",
+    "investmentKey": "xhaosspecialopportunitiesfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "De Mey, Katinga",
@@ -646,92 +696,41 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "De Mey, Katinga",
-    "clientKey": "demeykatinga",
+    "client": "Divaris, BN Mrs",
+    "clientKey": "divarisbnmrs",
     "clientTokens": [
-      "de",
-      "mey",
-      "katinga"
+      "divaris",
+      "bn",
+      "mrs"
     ],
-    "investment": "Julius Baer Trading Account",
+    "investment": "Credo Trading Account",
     "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
+    "investmentKey": "credotradingaccount",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "De Mey, Katinga",
-    "clientKey": "demeykatinga",
+    "client": "Divaris, BN Mrs",
+    "clientKey": "divarisbnmrs",
     "clientTokens": [
-      "de",
-      "mey",
-      "katinga"
-    ],
-    "investment": "Blackrock ICS US Dollar Liquidity Fund",
-    "investmentClass": "",
-    "investmentKey": "blackrockicsusdollarliquidityfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Katinga",
-    "clientKey": "demeykatinga",
-    "clientTokens": [
-      "de",
-      "mey",
-      "katinga"
-    ],
-    "investment": "Rubrics Enhanced Yield UCITS Fund",
-    "investmentClass": "",
-    "investmentKey": "rubricsenhancedyielducitsfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.25,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Katinga",
-    "clientKey": "demeykatinga",
-    "clientTokens": [
-      "de",
-      "mey",
-      "katinga"
+      "divaris",
+      "bn",
+      "mrs"
     ],
     "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
     "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "De Mey, Katinga",
-    "clientKey": "demeykatinga",
-    "clientTokens": [
-      "de",
-      "mey",
-      "katinga"
-    ],
-    "investment": "Xhaos Special Opportunities Fund",
-    "investmentClass": "",
-    "investmentKey": "xhaosspecialopportunitiesfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Diva Trust",
@@ -747,7 +746,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Diva Trust",
@@ -763,7 +762,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Diva Trust",
@@ -779,41 +778,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Divaris, BN Mrs",
-    "clientKey": "divarisbnmrs",
-    "clientTokens": [
-      "divaris",
-      "bn",
-      "mrs"
-    ],
-    "investment": "Credo Trading Account",
-    "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Divaris, BN Mrs",
-    "clientKey": "divarisbnmrs",
-    "clientTokens": [
-      "divaris",
-      "bn",
-      "mrs"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Eskinazi, Raymond Nessim",
@@ -830,7 +795,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Eskinazi, Richard David",
@@ -847,7 +812,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Eskinazi, Richard David",
@@ -864,7 +829,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Eskinazi, Richard David",
@@ -881,7 +846,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Eskinazi, Richard David",
@@ -898,24 +863,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Eskinazi, Richard David",
-    "clientKey": "eskinaziricharddavid",
-    "clientTokens": [
-      "eskinazi",
-      "richard",
-      "david"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds (Preservation Pension Plan)",
-    "investmentClass": "Preservation Provident Plan",
-    "investmentKey": "wealthworksprimemanagedfundoffundspreservationpensionplan",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr",
@@ -932,7 +880,7 @@ export const feeSeedRows = [
     "sourceProvider": "Northstar",
     "rebateAnnualPercent": 0.75,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -951,26 +899,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscmrmmrs",
-    "clientTokens": [
-      "fallows",
-      "c",
-      "mr",
-      "m",
-      "mrs"
-    ],
-    "investment": "Volkswagen AG",
-    "investmentClass": "",
-    "investmentKey": "volkswagenag",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -989,26 +918,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscmrmmrs",
-    "clientTokens": [
-      "fallows",
-      "c",
-      "mr",
-      "m",
-      "mrs"
-    ],
-    "investment": "Scottish Mortgage Investment Trust",
-    "investmentClass": "",
-    "investmentKey": "scottishmortgageinvestmenttrust",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1027,7 +937,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1046,7 +956,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1065,7 +975,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1084,7 +994,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1103,26 +1013,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fallows, C Mr & M Mrs",
-    "clientKey": "fallowscmrmmrs",
-    "clientTokens": [
-      "fallows",
-      "c",
-      "mr",
-      "m",
-      "mrs"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -1141,7 +1032,64 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscmrmmrs",
+    "clientTokens": [
+      "fallows",
+      "c",
+      "mr",
+      "m",
+      "mrs"
+    ],
+    "investment": "Scottish Mortgage Investment Trust",
+    "investmentClass": "",
+    "investmentKey": "scottishmortgageinvestmenttrust",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscmrmmrs",
+    "clientTokens": [
+      "fallows",
+      "c",
+      "mr",
+      "m",
+      "mrs"
+    ],
+    "investment": "Volkswagen AG",
+    "investmentClass": "",
+    "investmentKey": "volkswagenag",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fallows, C Mr & M Mrs",
+    "clientKey": "fallowscmrmmrs",
+    "clientTokens": [
+      "fallows",
+      "c",
+      "mr",
+      "m",
+      "mrs"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, ML Mrs",
@@ -1158,7 +1106,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, ML Mrs",
@@ -1175,24 +1123,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fallows, ML Mrs",
-    "clientKey": "fallowsmlmrs",
-    "clientTokens": [
-      "fallows",
-      "ml",
-      "mrs"
-    ],
-    "investment": "Fairtree Equity Prescient Fund",
-    "investmentClass": "",
-    "investmentKey": "fairtreeequityprescientfund",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, ML Mrs",
@@ -1209,7 +1140,24 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fallows, ML Mrs",
+    "clientKey": "fallowsmlmrs",
+    "clientTokens": [
+      "fallows",
+      "ml",
+      "mrs"
+    ],
+    "investment": "Fairtree Equity Prescient Fund",
+    "investmentClass": "",
+    "investmentKey": "fairtreeequityprescientfund",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fallows, ML Mrs",
@@ -1226,55 +1174,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fowler, Merle",
-    "clientKey": "fowlermerle",
-    "clientTokens": [
-      "fowler",
-      "merle"
-    ],
-    "investment": "Prescient Income Provider Fund",
-    "investmentClass": "",
-    "investmentKey": "prescientincomeproviderfund",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fowler, Merle",
-    "clientKey": "fowlermerle",
-    "clientTokens": [
-      "fowler",
-      "merle"
-    ],
-    "investment": "Wealthworks Prime Cautious Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimecautiousfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Fowler, Merle",
-    "clientKey": "fowlermerle",
-    "clientTokens": [
-      "fowler",
-      "merle"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Fowler, Merle",
@@ -1290,7 +1190,55 @@ export const feeSeedRows = [
     "sourceProvider": "Northstar",
     "rebateAnnualPercent": 0.75,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fowler, Merle",
+    "clientKey": "fowlermerle",
+    "clientTokens": [
+      "fowler",
+      "merle"
+    ],
+    "investment": "Cash",
+    "investmentClass": "",
+    "investmentKey": "cash",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fowler, Merle",
+    "clientKey": "fowlermerle",
+    "clientTokens": [
+      "fowler",
+      "merle"
+    ],
+    "investment": "Prescient Income Provider Fund",
+    "investmentClass": "",
+    "investmentKey": "prescientincomeproviderfund",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Fowler, Merle",
+    "clientKey": "fowlermerle",
+    "clientTokens": [
+      "fowler",
+      "merle"
+    ],
+    "investment": "Wealthworks Prime Cautious Fund of Funds",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimecautiousfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Freed, Justin",
@@ -1306,7 +1254,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Freed, Wayne",
@@ -1322,7 +1270,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gennari, Enrico",
@@ -1338,7 +1286,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gennari, Enrico",
@@ -1354,7 +1302,24 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Gennari Family Trust",
+    "clientKey": "gennarifamilytrust",
+    "clientTokens": [
+      "gennari",
+      "family",
+      "trust"
+    ],
+    "investment": "Cash",
+    "investmentClass": "",
+    "investmentKey": "cash",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gennari Family Trust",
@@ -1371,7 +1336,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gennari Family Trust",
@@ -1388,7 +1353,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gennari Family Trust",
@@ -1405,24 +1370,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Gennari Family Trust",
-    "clientKey": "gennarifamilytrust",
-    "clientTokens": [
-      "gennari",
-      "family",
-      "trust"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Globrand Investments (Pty) Ltd",
@@ -1440,7 +1388,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Grufin Properties (Pty) Ltd",
@@ -1458,7 +1406,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gruzd, Marie",
@@ -1474,7 +1422,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Gruzd, Wilfred",
@@ -1490,7 +1438,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hedley, James",
@@ -1506,24 +1454,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, Bianca Leigh",
-    "clientKey": "hoarbiancaleigh",
-    "clientTokens": [
-      "hoar",
-      "bianca",
-      "leigh"
-    ],
-    "investment": "Credo Trading Account",
-    "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1540,7 +1471,24 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, Bianca Leigh",
+    "clientKey": "hoarbiancaleigh",
+    "clientTokens": [
+      "hoar",
+      "bianca",
+      "leigh"
+    ],
+    "investment": "Credo Trading Account",
+    "investmentClass": "",
+    "investmentKey": "credotradingaccount",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1557,7 +1505,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1574,7 +1522,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1584,14 +1532,31 @@ export const feeSeedRows = [
       "m",
       "mr"
     ],
-    "investment": "Julius Baer Trading Account",
+    "investment": "Gryphon Dividend Income Fund",
     "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
+    "investmentKey": "gryphondividendincomefund",
+    "provider": "Gryphon",
+    "sourceProvider": "Gryphon Asset Management",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Diversified Trading Fund B1",
+    "investmentClass": "",
+    "investmentKey": "diversifiedtradingfundb1",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1608,7 +1573,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1625,7 +1590,24 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Gold",
+    "investmentClass": "",
+    "investmentKey": "gold",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1642,7 +1624,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1652,65 +1634,14 @@ export const feeSeedRows = [
       "m",
       "mr"
     ],
-    "investment": "Wealthworks Global Flexible Fund",
+    "investment": "Julius Baer Trading Account",
     "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Diversified Trading Fund B1",
-    "investmentClass": "",
-    "investmentKey": "diversifiedtradingfundb1",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Xhaos Special Opportunities Fund",
-    "investmentClass": "",
-    "investmentKey": "xhaosspecialopportunitiesfund",
+    "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Gold",
-    "investmentClass": "",
-    "investmentKey": "gold",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1727,7 +1658,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1737,31 +1668,14 @@ export const feeSeedRows = [
       "m",
       "mr"
     ],
-    "investment": "Gryphon Dividend Income Fund",
+    "investment": "Wealthworks Global Flexible Fund",
     "investmentClass": "",
-    "investmentKey": "gryphondividendincomefund",
-    "provider": "Gryphon",
-    "sourceProvider": "Gryphon Asset Management",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "Retirement Plan",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1771,82 +1685,14 @@ export const feeSeedRows = [
       "m",
       "mr"
     ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "Investment Plan",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
+    "investment": "Xhaos Special Opportunities Fund",
+    "investmentClass": "",
+    "investmentKey": "xhaosspecialopportunitiesfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Fairtree Equity Prescient (A1)",
-    "investmentClass": "Investment Plan",
-    "investmentKey": "fairtreeequityprescienta1",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "ClucasGray Prescient Equity Fund (B1)",
-    "investmentClass": "Investment Plan",
-    "investmentKey": "clucasgrayprescientequityfundb1",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Laurium Flexible Prescient Fund Fund (B4)",
-    "investmentClass": "Investment Plan",
-    "investmentKey": "lauriumflexibleprescientfundfundb4",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Hoar, M Mr",
-    "clientKey": "hoarmmr",
-    "clientTokens": [
-      "hoar",
-      "m",
-      "mr"
-    ],
-    "investment": "Wealthworks Prime Cautious Fund of Funds",
-    "investmentClass": "Investment Plan",
-    "investmentKey": "wealthworksprimecautiousfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1863,7 +1709,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1880,7 +1726,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1890,14 +1736,14 @@ export const feeSeedRows = [
       "m",
       "mr"
     ],
-    "investment": "Obsidian SCI Equity Fund (B3)",
+    "investment": "ClucasGray Prescient Equity Fund (B1)",
     "investmentClass": "Investment Plan",
-    "investmentKey": "obsidiansciequityfundb3",
+    "investmentKey": "clucasgrayprescientequityfundb1",
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1914,7 +1760,109 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Fairtree Equity Prescient (A1)",
+    "investmentClass": "Investment Plan",
+    "investmentKey": "fairtreeequityprescienta1",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Laurium Flexible Prescient Fund Fund (B4)",
+    "investmentClass": "Investment Plan",
+    "investmentKey": "lauriumflexibleprescientfundfundb4",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Obsidian SCI Equity Fund (B3)",
+    "investmentClass": "Investment Plan",
+    "investmentKey": "obsidiansciequityfundb3",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Wealthworks Prime Cautious Fund of Funds",
+    "investmentClass": "Investment Plan",
+    "investmentKey": "wealthworksprimecautiousfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "Retirement Plan",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Hoar, M Mr",
+    "clientKey": "hoarmmr",
+    "clientTokens": [
+      "hoar",
+      "m",
+      "mr"
+    ],
+    "investment": "Wealthworks Prime Managed Fund of Funds",
+    "investmentClass": "Investment Plan",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, M Mr",
@@ -1931,7 +1879,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hoar, Tayla Leigh",
@@ -1948,7 +1896,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hughes, Carol Violet",
@@ -1965,7 +1913,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Hughes, Carol Violet",
@@ -1982,23 +1930,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Credo Trading Account",
-    "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Ikigai Trust",
@@ -2014,7 +1946,39 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Credo Trading Account",
+    "investmentClass": "",
+    "investmentKey": "credotradingaccount",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Diversified Trading Fund B1",
+    "investmentClass": "",
+    "investmentKey": "diversifiedtradingfundb1",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Ikigai Trust",
@@ -2030,103 +1994,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Nomura Global High Conviction Fund",
-    "investmentClass": "",
-    "investmentKey": "nomuraglobalhighconvictionfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Rubrics Enhanced Yield UCITS Fund",
-    "investmentClass": "",
-    "investmentKey": "rubricsenhancedyielducitsfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.25,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Diversified Trading Fund B1",
-    "investmentClass": "",
-    "investmentKey": "diversifiedtradingfundb1",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Xhaos Special Opportunities Fund",
-    "investmentClass": "",
-    "investmentKey": "xhaosspecialopportunitiesfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Prescient China Balanced Fund",
-    "investmentClass": "",
-    "investmentKey": "prescientchinabalancedfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Ikigai Trust",
-    "clientKey": "ikigaitrust",
-    "clientTokens": [
-      "ikigai",
-      "trust"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Ikigai Trust",
@@ -2142,7 +2010,87 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Nomura Global High Conviction Fund",
+    "investmentClass": "",
+    "investmentKey": "nomuraglobalhighconvictionfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Prescient China Balanced Fund",
+    "investmentClass": "",
+    "investmentKey": "prescientchinabalancedfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Rubrics Enhanced Yield UCITS Fund",
+    "investmentClass": "",
+    "investmentKey": "rubricsenhancedyielducitsfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.25,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Ikigai Trust",
+    "clientKey": "ikigaitrust",
+    "clientTokens": [
+      "ikigai",
+      "trust"
+    ],
+    "investment": "Xhaos Special Opportunities Fund",
+    "investmentClass": "",
+    "investmentKey": "xhaosspecialopportunitiesfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Irving Trust",
@@ -2158,23 +2106,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Irving Trust",
-    "clientKey": "irvingtrust",
-    "clientTokens": [
-      "irving",
-      "trust"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Irving Trust",
@@ -2190,7 +2122,23 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Irving Trust",
+    "clientKey": "irvingtrust",
+    "clientTokens": [
+      "irving",
+      "trust"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Jackson, Matt",
@@ -2206,7 +2154,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Jackson, Matt",
@@ -2222,24 +2170,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Keren, Avi & Glynis",
-    "clientKey": "kerenaviglynis",
-    "clientTokens": [
-      "keren",
-      "avi",
-      "glynis"
-    ],
-    "investment": "Julius Baer Trading Account",
-    "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Keren, Avi & Glynis",
@@ -2256,24 +2187,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Keren, Avi & Glynis",
-    "clientKey": "kerenaviglynis",
-    "clientTokens": [
-      "keren",
-      "avi",
-      "glynis"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Keren, Avi & Glynis",
@@ -2290,7 +2204,41 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Keren, Avi & Glynis",
+    "clientKey": "kerenaviglynis",
+    "clientTokens": [
+      "keren",
+      "avi",
+      "glynis"
+    ],
+    "investment": "Julius Baer Trading Account",
+    "investmentClass": "",
+    "investmentKey": "juliusbaertradingaccount",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Keren, Avi & Glynis",
+    "clientKey": "kerenaviglynis",
+    "clientTokens": [
+      "keren",
+      "avi",
+      "glynis"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Keren, S Ms",
@@ -2307,7 +2255,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Keren, S Ms",
@@ -2324,7 +2272,7 @@ export const feeSeedRows = [
     "sourceProvider": "Peresec Securities",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Keurboom Trust",
@@ -2340,26 +2288,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Kovacs Investments 492 (Pty) Ltd",
-    "clientKey": "kovacsinvestments492ptyltd",
-    "clientTokens": [
-      "kovacs",
-      "investments",
-      "492",
-      "pty",
-      "ltd"
-    ],
-    "investment": "Prescient Income Provider (A2)",
-    "investmentClass": "",
-    "investmentKey": "prescientincomeprovidera2",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Kovacs Investments 492 (Pty) Ltd",
@@ -2378,7 +2307,26 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Kovacs Investments 492 (Pty) Ltd",
+    "clientKey": "kovacsinvestments492ptyltd",
+    "clientTokens": [
+      "kovacs",
+      "investments",
+      "492",
+      "pty",
+      "ltd"
+    ],
+    "investment": "Prescient Income Provider (A2)",
+    "investmentClass": "",
+    "investmentKey": "prescientincomeprovidera2",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Kovacs Investments 492 (Pty) Ltd",
@@ -2397,7 +2345,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Lancaster, Dean",
@@ -2413,7 +2361,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Louw, Delia",
@@ -2429,7 +2377,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Louw, Delia",
@@ -2445,7 +2393,25 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Mackay Davidson, Charles Stuart",
+    "clientKey": "mackaydavidsoncharlesstuart",
+    "clientTokens": [
+      "mackay",
+      "davidson",
+      "charles",
+      "stuart"
+    ],
+    "investment": "Cash",
+    "investmentClass": "",
+    "investmentKey": "cash",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Mackay Davidson, Charles Stuart",
@@ -2463,7 +2429,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Mackay Davidson, Charles Stuart",
@@ -2481,25 +2447,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Mackay Davidson, Charles Stuart",
-    "clientKey": "mackaydavidsoncharlesstuart",
-    "clientTokens": [
-      "mackay",
-      "davidson",
-      "charles",
-      "stuart"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Malby, Francoise",
@@ -2515,7 +2463,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Malby, Francoise",
@@ -2531,7 +2479,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Mandy, Sean Gary",
@@ -2548,24 +2496,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Mandy, Shelley Anne",
-    "clientKey": "mandyshelleyanne",
-    "clientTokens": [
-      "mandy",
-      "shelley",
-      "anne"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Mandy, Shelley Anne",
@@ -2582,23 +2513,24 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Manolas, Viron",
-    "clientKey": "manolasviron",
+    "client": "Mandy, Shelley Anne",
+    "clientKey": "mandyshelleyanne",
     "clientTokens": [
-      "manolas",
-      "viron"
+      "mandy",
+      "shelley",
+      "anne"
     ],
-    "investment": "Credo Trading Account",
+    "investment": "Wealthworks Prime Managed Fund of Funds",
     "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Manolas, Viron",
@@ -2614,7 +2546,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Manolas, Viron",
@@ -2630,7 +2562,23 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Manolas, Viron",
+    "clientKey": "manolasviron",
+    "clientTokens": [
+      "manolas",
+      "viron"
+    ],
+    "investment": "Credo Trading Account",
+    "investmentClass": "",
+    "investmentKey": "credotradingaccount",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Manolas, Viron",
@@ -2646,39 +2594,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Manolas, Viron",
-    "clientKey": "manolasviron",
-    "clientTokens": [
-      "manolas",
-      "viron"
-    ],
-    "investment": "Invesco Nasdaq 100 ETF",
-    "investmentClass": "",
-    "investmentKey": "invesconasdaq100etf",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Manolas, Viron",
-    "clientKey": "manolasviron",
-    "clientTokens": [
-      "manolas",
-      "viron"
-    ],
-    "investment": "Invesco S&P 500 Momentum ETF",
-    "investmentClass": "",
-    "investmentKey": "invescosp500momentumetf",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Manolas, Viron",
@@ -2694,7 +2610,39 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Manolas, Viron",
+    "clientKey": "manolasviron",
+    "clientTokens": [
+      "manolas",
+      "viron"
+    ],
+    "investment": "Invesco Nasdaq 100 ETF",
+    "investmentClass": "",
+    "investmentKey": "invesconasdaq100etf",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Manolas, Viron",
+    "clientKey": "manolasviron",
+    "clientTokens": [
+      "manolas",
+      "viron"
+    ],
+    "investment": "Invesco S&P 500 Momentum ETF",
+    "investmentClass": "",
+    "investmentKey": "invescosp500momentumetf",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Manolas, Viron",
@@ -2710,97 +2658,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Marula Trading & Investments Limited",
-    "clientKey": "marulatradinginvestmentslimited",
-    "clientTokens": [
-      "marula",
-      "trading",
-      "investments",
-      "limited"
-    ],
-    "investment": "Julius Baer Trading Account",
-    "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Marula Trading & Investments Limited",
-    "clientKey": "marulatradinginvestmentslimited",
-    "clientTokens": [
-      "marula",
-      "trading",
-      "investments",
-      "limited"
-    ],
-    "investment": "Blackrock ICS US Dollar Liquidity Fund",
-    "investmentClass": "",
-    "investmentKey": "blackrockicsusdollarliquidityfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Marula Trading & Investments Limited",
-    "clientKey": "marulatradinginvestmentslimited",
-    "clientTokens": [
-      "marula",
-      "trading",
-      "investments",
-      "limited"
-    ],
-    "investment": "Rubrics Enhanced Yield UCITS Fund",
-    "investmentClass": "",
-    "investmentKey": "rubricsenhancedyielducitsfund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.25,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Marula Trading & Investments Limited",
-    "clientKey": "marulatradinginvestmentslimited",
-    "clientTokens": [
-      "marula",
-      "trading",
-      "investments",
-      "limited"
-    ],
-    "investment": "Meituan",
-    "investmentClass": "",
-    "investmentKey": "meituan",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Marula Trading & Investments Limited",
-    "clientKey": "marulatradinginvestmentslimited",
-    "clientTokens": [
-      "marula",
-      "trading",
-      "investments",
-      "limited"
-    ],
-    "investment": "Tencent Holdings Limited",
-    "investmentClass": "",
-    "investmentKey": "tencentholdingslimited",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Marula Trading & Investments Limited",
@@ -2818,7 +2676,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Marula Trading & Investments Limited",
@@ -2829,14 +2687,14 @@ export const feeSeedRows = [
       "investments",
       "limited"
     ],
-    "investment": "Wealthworks Global Flexible Fund",
+    "investment": "Blackrock ICS US Dollar Liquidity Fund",
     "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
+    "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
+    "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Marula Trading & Investments Limited",
@@ -2854,7 +2712,97 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Marula Trading & Investments Limited",
+    "clientKey": "marulatradinginvestmentslimited",
+    "clientTokens": [
+      "marula",
+      "trading",
+      "investments",
+      "limited"
+    ],
+    "investment": "Julius Baer Trading Account",
+    "investmentClass": "",
+    "investmentKey": "juliusbaertradingaccount",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Marula Trading & Investments Limited",
+    "clientKey": "marulatradinginvestmentslimited",
+    "clientTokens": [
+      "marula",
+      "trading",
+      "investments",
+      "limited"
+    ],
+    "investment": "Meituan",
+    "investmentClass": "",
+    "investmentKey": "meituan",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Marula Trading & Investments Limited",
+    "clientKey": "marulatradinginvestmentslimited",
+    "clientTokens": [
+      "marula",
+      "trading",
+      "investments",
+      "limited"
+    ],
+    "investment": "Rubrics Enhanced Yield UCITS Fund",
+    "investmentClass": "",
+    "investmentKey": "rubricsenhancedyielducitsfund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.25,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Marula Trading & Investments Limited",
+    "clientKey": "marulatradinginvestmentslimited",
+    "clientTokens": [
+      "marula",
+      "trading",
+      "investments",
+      "limited"
+    ],
+    "investment": "Tencent Holdings Limited",
+    "investmentClass": "",
+    "investmentKey": "tencentholdingslimited",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Marula Trading & Investments Limited",
+    "clientKey": "marulatradinginvestmentslimited",
+    "clientTokens": [
+      "marula",
+      "trading",
+      "investments",
+      "limited"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Marula Trading & Investments Limited",
@@ -2872,55 +2820,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
-    "clientTokens": [
-      "maxwell",
-      "dave"
-    ],
-    "investment": "Credo Trading Account",
-    "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
-    "clientTokens": [
-      "maxwell",
-      "dave"
-    ],
-    "investment": "iShares Global 100 ETF",
-    "investmentClass": "",
-    "investmentKey": "isharesglobal100etf",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Maxwell, Dave",
-    "clientKey": "maxwelldave",
-    "clientTokens": [
-      "maxwell",
-      "dave"
-    ],
-    "investment": "iShares Physical Gold ETF",
-    "investmentClass": "",
-    "investmentKey": "isharesphysicalgoldetf",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Maxwell, Dave",
@@ -2936,7 +2836,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Maxwell, Dave",
@@ -2945,30 +2845,46 @@ export const feeSeedRows = [
       "maxwell",
       "dave"
     ],
-    "investment": "Royal Mint Physical Gold",
+    "investment": "Credo Trading Account",
     "investmentClass": "",
-    "investmentKey": "royalmintphysicalgold",
+    "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "McGuirk, Pamela",
-    "clientKey": "mcguirkpamela",
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
     "clientTokens": [
-      "mcguirk",
-      "pamela"
+      "maxwell",
+      "dave"
     ],
-    "investment": "Gryphon Dividend Income Fund",
+    "investment": "iShares Global 100 ETF",
     "investmentClass": "",
-    "investmentKey": "gryphondividendincomefund",
-    "provider": "Gryphon",
-    "sourceProvider": "Gryphon Asset Management",
-    "rebateAnnualPercent": 0.4,
+    "investmentKey": "isharesglobal100etf",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Maxwell, Dave",
+    "clientKey": "maxwelldave",
+    "clientTokens": [
+      "maxwell",
+      "dave"
+    ],
+    "investment": "iShares Physical Gold ETF",
+    "investmentClass": "",
+    "investmentKey": "isharesphysicalgoldetf",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "McGuirk, Pamela",
@@ -2984,7 +2900,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "McGuirk, Pamela",
@@ -3000,7 +2916,23 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "McGuirk, Pamela",
+    "clientKey": "mcguirkpamela",
+    "clientTokens": [
+      "mcguirk",
+      "pamela"
+    ],
+    "investment": "Gryphon Dividend Income Fund",
+    "investmentClass": "",
+    "investmentKey": "gryphondividendincomefund",
+    "provider": "Gryphon",
+    "sourceProvider": "Gryphon Asset Management",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.0,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Moyo, Thithibele",
@@ -3016,7 +2948,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Robinson, Cheryl",
@@ -3032,7 +2964,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Robinson, Cheryl",
@@ -3048,7 +2980,23 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Smuts, Hanny",
+    "clientKey": "smutshanny",
+    "clientTokens": [
+      "smuts",
+      "hanny"
+    ],
+    "investment": "Cash",
+    "investmentClass": "",
+    "investmentKey": "cash",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Smuts, Hanny",
@@ -3064,7 +3012,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Smuts, Hanny",
@@ -3080,7 +3028,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Smuts, Hanny",
@@ -3096,23 +3044,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Smuts, Hanny",
-    "clientKey": "smutshanny",
-    "clientTokens": [
-      "smuts",
-      "hanny"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Snitcher, LR Ms",
@@ -3129,41 +3061,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Snitcher, LR Ms",
-    "clientKey": "snitcherlrms",
-    "clientTokens": [
-      "snitcher",
-      "lr",
-      "ms"
-    ],
-    "investment": "Prescient Income Provider Fund",
-    "investmentClass": "",
-    "investmentKey": "prescientincomeproviderfund",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.55,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Snitcher, LR Ms",
-    "clientKey": "snitcherlrms",
-    "clientTokens": [
-      "snitcher",
-      "lr",
-      "ms"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.55,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Snitcher, LR Ms",
@@ -3180,75 +3078,41 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.55,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
+    "client": "Snitcher, LR Ms",
+    "clientKey": "snitcherlrms",
     "clientTokens": [
-      "sommer",
-      "am",
+      "snitcher",
+      "lr",
       "ms"
     ],
-    "investment": "Credo Trading Account",
+    "investment": "Prescient Income Provider Fund",
     "investmentClass": "",
-    "investmentKey": "credotradingaccount",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
+    "investmentKey": "prescientincomeproviderfund",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "advisoryAnnualPercent": 0.55,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
+    "client": "Snitcher, LR Ms",
+    "clientKey": "snitcherlrms",
     "clientTokens": [
-      "sommer",
-      "am",
+      "snitcher",
+      "lr",
       "ms"
     ],
-    "investment": "Digihost Technology Inc",
+    "investment": "Wealthworks Prime Managed Fund of Funds",
     "investmentClass": "",
-    "investmentKey": "digihosttechnologyinc",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
-    "clientTokens": [
-      "sommer",
-      "am",
-      "ms"
-    ],
-    "investment": "HG Capital Trust",
-    "investmentClass": "",
-    "investmentKey": "hgcapitaltrust",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
-    "clientTokens": [
-      "sommer",
-      "am",
-      "ms"
-    ],
-    "investment": "Blackrock ICS US Dollar Liquidity Fund",
-    "investmentClass": "",
-    "investmentKey": "blackrockicsusdollarliquidityfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.55,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3265,7 +3129,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3275,14 +3139,14 @@ export const feeSeedRows = [
       "am",
       "ms"
     ],
-    "investment": "Global X Copper Miners ETF",
+    "investment": "Blackrock ICS US Dollar Liquidity Fund",
     "investmentClass": "",
-    "investmentKey": "globalxcopperminersetf",
+    "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3292,14 +3156,14 @@ export const feeSeedRows = [
       "am",
       "ms"
     ],
-    "investment": "Dodge & Cox Worldwide Funds",
+    "investment": "Credo Trading Account",
     "investmentClass": "",
-    "investmentKey": "dodgecoxworldwidefunds",
+    "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3309,48 +3173,14 @@ export const feeSeedRows = [
       "am",
       "ms"
     ],
-    "investment": "Nomura Global High Conviction Fund",
+    "investment": "Digihost Technology Inc",
     "investmentClass": "",
-    "investmentKey": "nomuraglobalhighconvictionfund",
+    "investmentKey": "digihosttechnologyinc",
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
-    "clientTokens": [
-      "sommer",
-      "am",
-      "ms"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeramms",
-    "clientTokens": [
-      "sommer",
-      "am",
-      "ms"
-    ],
-    "investment": "Rubrics Enhanced Yield UCITS Fund",
-    "investmentClass": "",
-    "investmentKey": "rubricsenhancedyielducitsfund",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.25,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3367,7 +3197,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3377,14 +3207,48 @@ export const feeSeedRows = [
       "am",
       "ms"
     ],
-    "investment": "Xhaos Special Opportunities Fund",
+    "investment": "Dodge & Cox Worldwide Funds",
     "investmentClass": "",
-    "investmentKey": "xhaosspecialopportunitiesfund",
+    "investmentKey": "dodgecoxworldwidefunds",
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "Global X Copper Miners ETF",
+    "investmentClass": "",
+    "investmentKey": "globalxcopperminersetf",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "HG Capital Trust",
+    "investmentClass": "",
+    "investmentKey": "hgcapitaltrust",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sommer, AM Ms",
@@ -3401,7 +3265,75 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "Nomura Global High Conviction Fund",
+    "investmentClass": "",
+    "investmentKey": "nomuraglobalhighconvictionfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "Rubrics Enhanced Yield UCITS Fund",
+    "investmentClass": "",
+    "investmentKey": "rubricsenhancedyielducitsfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.25,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sommer, AM Ms",
+    "clientKey": "sommeramms",
+    "clientTokens": [
+      "sommer",
+      "am",
+      "ms"
+    ],
+    "investment": "Xhaos Special Opportunities Fund",
+    "investmentClass": "",
+    "investmentKey": "xhaosspecialopportunitiesfund",
+    "provider": "Credo",
+    "sourceProvider": "Credo",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Stingray Accessory Manufacturers (Pty) Ltd",
@@ -3420,7 +3352,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3439,7 +3371,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3458,7 +3390,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3477,7 +3409,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3496,7 +3428,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3515,7 +3447,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3534,7 +3466,70 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
+    "clientKey": "sweetgrasstradingptyltdacc2",
+    "clientTokens": [
+      "sweet",
+      "grass",
+      "trading",
+      "pty",
+      "ltd",
+      "acc",
+      "2"
+    ],
+    "investment": "36One Bci Flexible Opportunity Fund (A)",
+    "investmentClass": "",
+    "investmentKey": "36onebciflexibleopportunityfunda",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.65,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
+    "clientKey": "sweetgrasstradingptyltdacc2",
+    "clientTokens": [
+      "sweet",
+      "grass",
+      "trading",
+      "pty",
+      "ltd",
+      "acc",
+      "2"
+    ],
+    "investment": "Centaur Bci Flexible Fund (C)",
+    "investmentClass": "",
+    "investmentKey": "centaurbciflexiblefundc",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.65,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
+    "clientKey": "sweetgrasstradingptyltdacc2",
+    "clientTokens": [
+      "sweet",
+      "grass",
+      "trading",
+      "pty",
+      "ltd",
+      "acc",
+      "2"
+    ],
+    "investment": "Fairtree Equity Prescient (A1)",
+    "investmentClass": "",
+    "investmentKey": "fairtreeequityprescienta1",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.65,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
@@ -3555,7 +3550,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
@@ -3576,7 +3571,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
@@ -3597,121 +3592,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
-    "clientKey": "sweetgrasstradingptyltdacc2",
-    "clientTokens": [
-      "sweet",
-      "grass",
-      "trading",
-      "pty",
-      "ltd",
-      "acc",
-      "2"
-    ],
-    "investment": "Centaur Bci Flexible Fund (C)",
-    "investmentClass": "",
-    "investmentKey": "centaurbciflexiblefundc",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
-    "clientKey": "sweetgrasstradingptyltdacc2",
-    "clientTokens": [
-      "sweet",
-      "grass",
-      "trading",
-      "pty",
-      "ltd",
-      "acc",
-      "2"
-    ],
-    "investment": "36One Bci Flexible Opportunity Fund (A)",
-    "investmentClass": "",
-    "investmentKey": "36onebciflexibleopportunityfunda",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Sweet Grass Trading (Pty) Ltd Acc 2",
-    "clientKey": "sweetgrasstradingptyltdacc2",
-    "clientTokens": [
-      "sweet",
-      "grass",
-      "trading",
-      "pty",
-      "ltd",
-      "acc",
-      "2"
-    ],
-    "investment": "Fairtree Equity Prescient (A1)",
-    "investmentClass": "",
-    "investmentKey": "fairtreeequityprescienta1",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.65,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Terra-Mater Limited",
-    "clientKey": "terramaterlimited",
-    "clientTokens": [
-      "terra",
-      "mater",
-      "limited"
-    ],
-    "investment": "Julius Baer Trading Account",
-    "investmentClass": "",
-    "investmentKey": "juliusbaertradingaccount",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Terra-Mater Limited",
-    "clientKey": "terramaterlimited",
-    "clientTokens": [
-      "terra",
-      "mater",
-      "limited"
-    ],
-    "investment": "Scottish Mortgage Investment Trust",
-    "investmentClass": "",
-    "investmentKey": "scottishmortgageinvestmenttrust",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Terra-Mater Limited",
-    "clientKey": "terramaterlimited",
-    "clientTokens": [
-      "terra",
-      "mater",
-      "limited"
-    ],
-    "investment": "Wealthworks Global Flexible Fund",
-    "investmentClass": "",
-    "investmentKey": "wealthworksglobalflexiblefund",
-    "provider": "Julius Baer",
-    "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Terra-Mater Limited",
@@ -3728,7 +3609,58 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Terra-Mater Limited",
+    "clientKey": "terramaterlimited",
+    "clientTokens": [
+      "terra",
+      "mater",
+      "limited"
+    ],
+    "investment": "Julius Baer Trading Account",
+    "investmentClass": "",
+    "investmentKey": "juliusbaertradingaccount",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Terra-Mater Limited",
+    "clientKey": "terramaterlimited",
+    "clientTokens": [
+      "terra",
+      "mater",
+      "limited"
+    ],
+    "investment": "Scottish Mortgage Investment Trust",
+    "investmentClass": "",
+    "investmentKey": "scottishmortgageinvestmenttrust",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Terra-Mater Limited",
+    "clientKey": "terramaterlimited",
+    "clientTokens": [
+      "terra",
+      "mater",
+      "limited"
+    ],
+    "investment": "Wealthworks Global Flexible Fund",
+    "investmentClass": "",
+    "investmentKey": "wealthworksglobalflexiblefund",
+    "provider": "Julius Baer",
+    "sourceProvider": "Julius Baer",
+    "rebateAnnualPercent": 0.5,
+    "advisoryAnnualPercent": 0.7,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Terra-Mater Limited",
@@ -3745,7 +3677,7 @@ export const feeSeedRows = [
     "sourceProvider": "Julius Baer",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.7,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Thomas, Mayne",
@@ -3761,71 +3693,7 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Thomas, Mayne",
-    "clientKey": "thomasmayne",
-    "clientTokens": [
-      "thomas",
-      "mayne"
-    ],
-    "investment": "Coronation Global Emerging Markets Flexible (P)",
-    "investmentClass": "",
-    "investmentKey": "coronationglobalemergingmarketsflexiblep",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Thomas, Mayne",
-    "clientKey": "thomasmayne",
-    "clientTokens": [
-      "thomas",
-      "mayne"
-    ],
-    "investment": "Centaur Bci Flexible Fund (C)",
-    "investmentClass": "",
-    "investmentKey": "centaurbciflexiblefundc",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Thomas, Mayne",
-    "clientKey": "thomasmayne",
-    "clientTokens": [
-      "thomas",
-      "mayne"
-    ],
-    "investment": "Laurium Flexible Prescient Fund Fund (B4)",
-    "investmentClass": "",
-    "investmentKey": "lauriumflexibleprescientfundfundb4",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Thomas, Mayne",
-    "clientKey": "thomasmayne",
-    "clientTokens": [
-      "thomas",
-      "mayne"
-    ],
-    "investment": "Wealthworks Prime Cautious FOF (A)",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimecautiousfofa",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Thomas, Mayne",
@@ -3841,7 +3709,39 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Thomas, Mayne",
+    "clientKey": "thomasmayne",
+    "clientTokens": [
+      "thomas",
+      "mayne"
+    ],
+    "investment": "Centaur Bci Flexible Fund (C)",
+    "investmentClass": "",
+    "investmentKey": "centaurbciflexiblefundc",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Thomas, Mayne",
+    "clientKey": "thomasmayne",
+    "clientTokens": [
+      "thomas",
+      "mayne"
+    ],
+    "investment": "Coronation Global Emerging Markets Flexible (P)",
+    "investmentClass": "",
+    "investmentKey": "coronationglobalemergingmarketsflexiblep",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Thomas, Mayne",
@@ -3857,7 +3757,39 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Thomas, Mayne",
+    "clientKey": "thomasmayne",
+    "clientTokens": [
+      "thomas",
+      "mayne"
+    ],
+    "investment": "Laurium Flexible Prescient Fund Fund (B4)",
+    "investmentClass": "",
+    "investmentKey": "lauriumflexibleprescientfundfundb4",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Thomas, Mayne",
+    "clientKey": "thomasmayne",
+    "clientTokens": [
+      "thomas",
+      "mayne"
+    ],
+    "investment": "Wealthworks Prime Cautious FOF (A)",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimecautiousfofa",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Thomas, Mayne",
@@ -3873,7 +3805,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Three Sisters Trust",
@@ -3890,7 +3822,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Van Niekerk, Ann",
@@ -3907,7 +3839,24 @@ export const feeSeedRows = [
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Van Niekerk, Ann",
+    "clientKey": "vanniekerkann",
+    "clientTokens": [
+      "van",
+      "niekerk",
+      "ann"
+    ],
+    "investment": "Cash",
+    "investmentClass": "",
+    "investmentKey": "cash",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Van Niekerk, Ann",
@@ -3924,7 +3873,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Van Niekerk, Ann",
@@ -3941,42 +3890,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Van Niekerk, Ann",
-    "clientKey": "vanniekerkann",
-    "clientTokens": [
-      "van",
-      "niekerk",
-      "ann"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Von Arnim, AAG Mr",
-    "clientKey": "vonarnimaagmr",
-    "clientTokens": [
-      "von",
-      "arnim",
-      "aag",
-      "mr"
-    ],
-    "investment": "Wealthworks Prime Managed Fund of Funds",
-    "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfundoffunds",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Von Arnim, AAG Mr",
@@ -3994,16 +3908,16 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Von Arnim, HHK Mrs",
-    "clientKey": "vonarnimhhkmrs",
+    "client": "Von Arnim, AAG Mr",
+    "clientKey": "vonarnimaagmr",
     "clientTokens": [
       "von",
       "arnim",
-      "hhk",
-      "mrs"
+      "aag",
+      "mr"
     ],
     "investment": "Wealthworks Prime Managed Fund of Funds",
     "investmentClass": "",
@@ -4012,25 +3926,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
-  },
-  {
-    "client": "Von Arnim, HHK Mrs",
-    "clientKey": "vonarnimhhkmrs",
-    "clientTokens": [
-      "von",
-      "arnim",
-      "hhk",
-      "mrs"
-    ],
-    "investment": "Cash",
-    "investmentClass": "",
-    "investmentKey": "cash",
-    "provider": "Prime",
-    "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Von Arnim, Achim & Hildegard",
@@ -4048,7 +3944,7 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Von Arnim, Achim & Hildegard",
@@ -4066,39 +3962,43 @@ export const feeSeedRows = [
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
     "advisoryAnnualPercent": 0.75,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Wilmans, Joshua",
-    "clientKey": "wilmansjoshua",
+    "client": "Von Arnim, HHK Mrs",
+    "clientKey": "vonarnimhhkmrs",
     "clientTokens": [
-      "wilmans",
-      "joshua"
+      "von",
+      "arnim",
+      "hhk",
+      "mrs"
     ],
-    "investment": "Coronation Global Emerging Markets Flexible (P)",
+    "investment": "Cash",
     "investmentClass": "",
-    "investmentKey": "coronationglobalemergingmarketsflexiblep",
+    "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
-    "client": "Wilmans, Joshua",
-    "clientKey": "wilmansjoshua",
+    "client": "Von Arnim, HHK Mrs",
+    "clientKey": "vonarnimhhkmrs",
     "clientTokens": [
-      "wilmans",
-      "joshua"
+      "von",
+      "arnim",
+      "hhk",
+      "mrs"
     ],
-    "investment": "Wealthworks Prime Managed FOF (A)",
+    "investment": "Wealthworks Prime Managed Fund of Funds",
     "investmentClass": "",
-    "investmentKey": "wealthworksprimemanagedfofa",
+    "investmentKey": "wealthworksprimemanagedfundoffunds",
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "advisoryAnnualPercent": 0.75,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Wilmans, Joshua",
@@ -4114,7 +4014,39 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.5,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Wilmans, Joshua",
+    "clientKey": "wilmansjoshua",
+    "clientTokens": [
+      "wilmans",
+      "joshua"
+    ],
+    "investment": "Coronation Global Emerging Markets Flexible (P)",
+    "investmentClass": "",
+    "investmentKey": "coronationglobalemergingmarketsflexiblep",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.0,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
+  },
+  {
+    "client": "Wilmans, Joshua",
+    "clientKey": "wilmansjoshua",
+    "clientTokens": [
+      "wilmans",
+      "joshua"
+    ],
+    "investment": "Wealthworks Prime Managed FOF (A)",
+    "investmentClass": "",
+    "investmentKey": "wealthworksprimemanagedfofa",
+    "provider": "Prime",
+    "sourceProvider": "Prime",
+    "rebateAnnualPercent": 0.4,
+    "advisoryAnnualPercent": 0.5,
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Worrall, Charlie Christopher",
@@ -4131,7 +4063,7 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   },
   {
     "client": "Worrall, Isla Elizabeth",
@@ -4148,6 +4080,6 @@ export const feeSeedRows = [
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
     "advisoryAnnualPercent": 0.0,
-    "source": "fees seeded values.xlsx"
+    "source": "Roger Data - Jan to March.xlsx"
   }
 ];
