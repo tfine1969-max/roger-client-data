@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
 import DeleteMonthData from './DeleteMonthData';
+import ProviderUploadSummary from './ProviderUploadSummary';
 
 const LAST_UPLOAD_KEY = 'prime_last_upload';
 
@@ -97,14 +98,17 @@ export default function PrimeUpload({ onImported }) {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
-        <div className="space-y-1.5">
-          <Label>Upload Month</Label>
-          <Input
-            type="month"
-            value={uploadMonth}
-            onChange={e => setUploadMonth(e.target.value)}
-            required
-          />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(220px,1fr)_280px]">
+          <div className="space-y-1.5">
+            <Label>Upload Month</Label>
+            <Input
+              type="month"
+              value={uploadMonth}
+              onChange={e => setUploadMonth(e.target.value)}
+              required
+            />
+          </div>
+          <ProviderUploadSummary provider="Prime" uploadMonth={uploadMonth} />
         </div>
         <div className="space-y-1.5">
           <Label>Prime Holdings File (.xlsx)</Label>

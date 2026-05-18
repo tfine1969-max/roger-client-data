@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,108 @@ const PROVIDERS = [
 ];
 
 const USD_RATE_PROVIDER_IDS = new Set(['credo', 'julius-baer', 'northstar', 'monthly']);
+
+const LAST_UPLOAD_KEYS = {
+  credo: 'credo_last_upload',
+  gryphon: 'gryphon_last_upload',
+  peresec: 'peresec_last_upload',
+  prescient: 'prescient_last_upload',
+  prime: 'prime_last_upload',
+};
+
+function providerAliases(provider) {
+  const label = provider.label.toLowerCase();
+  const id = provider.id.toLowerCase();
+  if (id === 'julius-baer') return ['julius baer', 'julius'];
+  if (id === 'prime') return ['prime', 'prime investments'];
+  if (id === 'monthly') return ['monthly workbook', 'sheets imported'];
+  return [id, label];
+}
+
+function uploadMatchesProvider(upload, provider) {
+  const haystack = `${upload.file_name || ''} ${upload.notes || ''}`.toLowerCase();
+  return providerAliases(provider).some(alias => haystack.includes(alias));
+}
+
+function readLocalUpload(provider) {
+  const key = LAST_UPLOAD_KEYS[provider.id];
+  if (!key) return null;
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return {
+      file_name: parsed.file_name,
+      upload_month: parsed.upload_month,
+      rows_imported: parsed.rows_imported,
+      upload_date: parsed.uploaded_at,
+      import_status: 'Imported',
+      notes: parsed.client_name ? `Client: ${parsed.client_name}` : 'Local upload record',
+      source: 'local',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function ProviderUploadHistory() {
+  const { data: uploads = [] } = useQuery({
+    queryKey: ['monthlyUploads'],
+    queryFn: () => base44.entities.MonthlyUpload.list('-upload_date', 500),
+  });
+
+  const rows = useMemo(() => {
+    return PROVIDERS.map(provider => {
+      const remoteUploads = uploads
+        .filter(upload => uploadMatchesProvider(upload, provider))
+        .sort((a, b) => String(b.upload_date || b.created_date || '').localeCompare(String(a.upload_date || a.created_date || '')));
+      const localUpload = readLocalUpload(provider);
+      const combined = [localUpload, ...remoteUploads].filter(Boolean)
+        .sort((a, b) => String(b.upload_date || b.created_date || '').localeCompare(String(a.upload_date || a.created_date || '')));
+      return { provider, latest: combined[0], count: combined.length };
+    });
+  }, [uploads]);
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-950">Provider Upload History</h2>
+          <p className="text-xs text-muted-foreground">Latest imported file, date, month and row count by provider.</p>
+        </div>
+      </div>
+      <div className="overflow-hidden rounded-lg border">
+        <table className="w-full text-xs">
+          <thead className="bg-muted/40">
+            <tr>
+              <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-muted-foreground">Provider</th>
+              <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-muted-foreground">Last File</th>
+              <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-muted-foreground">Month</th>
+              <th className="px-3 py-2 text-left font-semibold uppercase tracking-wider text-muted-foreground">Uploaded</th>
+              <th className="px-3 py-2 text-right font-semibold uppercase tracking-wider text-muted-foreground">Rows</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map(({ provider, latest }) => (
+              <tr key={provider.id}>
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    {provider.type === 'workbook' ? <FileSpreadsheet className="h-4 w-4 text-primary" /> : <ProviderLogo providerId={provider.id} provider={provider.label} logoBoxClassName="h-7 w-16" logoClassName="max-h-4 max-w-[50px]" showName={false} />}
+                    <span className="font-medium">{provider.label}</span>
+                  </div>
+                </td>
+                <td className="max-w-[300px] truncate px-3 py-2 text-muted-foreground" title={latest?.file_name || ''}>{latest?.file_name || 'No upload recorded'}</td>
+                <td className="px-3 py-2">{latest?.upload_month ? formatMonth(latest.upload_month) : '-'}</td>
+                <td className="px-3 py-2 text-muted-foreground">{latest?.upload_date ? new Date(latest.upload_date).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</td>
+                <td className="px-3 py-2 text-right font-numbers">{latest?.rows_imported ?? '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 function MonthlyWorkbookUpload({ onImported }) {
   const queryClient = useQueryClient();
@@ -191,6 +293,7 @@ export default function Upload() {
     }
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+    queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
   };
 
   const handleRateMonthChange = (value) => {
@@ -262,6 +365,8 @@ export default function Upload() {
         </div>
         {rateStatus && <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700">{rateStatus}</p>}
       </div>
+
+      <ProviderUploadHistory />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {PROVIDERS.map(p => (
