@@ -5,6 +5,7 @@ import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-ut
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle2, Link2, Plus, Search, X } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
@@ -82,6 +83,7 @@ export default function Funds() {
   const [selectedVariants, setSelectedVariants] = useState({});
   const [reviewTargets, setReviewTargets] = useState({});
   const [newFundName, setNewFundName] = useState('');
+  const [newMasterDraft, setNewMasterDraft] = useState(null);
   const [message, setMessage] = useState(null);
   const [mappings, setMappings] = useState(() => loadJson(MAPPING_KEY, {}));
   const [extraMasterFunds, setExtraMasterFunds] = useState(() => loadJson(EXTRA_MASTER_KEY, []));
@@ -202,6 +204,21 @@ export default function Funds() {
     if (variantKeyToSelect) setReviewTargets(current => ({ ...current, [variantKeyToSelect]: fund }));
     setNewFundName('');
     setMessage({ type: 'success', text: `Added ${fund} to the master list. Confirm the link to apply it to the provider instrument.` });
+  };
+
+  const openNewMasterModal = (variant) => {
+    setNewMasterDraft({
+      variantKey: variant.key,
+      originalName: variant.name,
+      editedName: variant.name,
+      platform: variant.platform,
+    });
+  };
+
+  const confirmNewMaster = () => {
+    if (!newMasterDraft) return;
+    addMasterFund(newMasterDraft.editedName, newMasterDraft.variantKey);
+    setNewMasterDraft(null);
   };
 
   return (
@@ -403,7 +420,7 @@ export default function Funds() {
                       >
                         <Link2 className="h-3.5 w-3.5" /> Confirm
                       </Button>
-                      <Button variant="outline" onClick={() => addMasterFund(variant.name, variant.key)} className="h-8 flex-1 gap-1 px-2 text-[11px]">
+                      <Button variant="outline" onClick={() => openNewMasterModal(variant)} className="h-8 flex-1 gap-1 px-2 text-[11px]">
                         <Plus className="h-3 w-3" /> New
                       </Button>
                     </div>
@@ -417,6 +434,36 @@ export default function Funds() {
           </div>
         </section>
       </div>
+
+      <Dialog open={!!newMasterDraft} onOpenChange={open => { if (!open) setNewMasterDraft(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Master Fund</DialogTitle>
+            <DialogDescription>
+              Edit the name before adding it to the master list. After adding, confirm the link in the row.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="rounded-md border bg-muted/30 p-3 text-xs">
+              <p className="font-semibold text-foreground">Imported provider name</p>
+              <p className="mt-1 text-muted-foreground">{newMasterDraft?.originalName}</p>
+              <p className="mt-1 text-muted-foreground">{newMasterDraft?.platform}</p>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">Master fund name</label>
+              <Input
+                value={newMasterDraft?.editedName || ''}
+                onChange={e => setNewMasterDraft(current => current ? { ...current, editedName: e.target.value } : current)}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewMasterDraft(null)}>Cancel</Button>
+            <Button onClick={confirmNewMaster} disabled={!clean(newMasterDraft?.editedName)}>Add to master list</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
