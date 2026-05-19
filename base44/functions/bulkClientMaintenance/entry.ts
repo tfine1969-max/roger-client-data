@@ -2,6 +2,24 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const BATCH_LIMIT = 5000;
 
+const TITLES_RE = /^(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?\s+/gi;
+const TRAILING_TITLES_RE = /\s+(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?$/gi;
+const ENTITY_MARKERS_RE = /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof|management|consulting|services|solutions|enterprises|group|associates|capital|advisory|logistics|transport|construction|technologies|technology|media|imaging|images|systems|engineering|healthcare|clinic|pharmacy|retail|distributors|distribution)\b/i;
+
+function formatClientName(name: string): string {
+  if (!name) return name;
+  let cleaned = name.trim();
+  if (ENTITY_MARKERS_RE.test(cleaned)) return cleaned;
+  // Strip titles
+  let prev: string;
+  do {
+    prev = cleaned;
+    cleaned = cleaned.replace(TITLES_RE, '').trim();
+  } while (cleaned !== prev);
+  cleaned = cleaned.replace(TRAILING_TITLES_RE, '').trim();
+  return cleaned || name;
+}
+
 function normalizeClientText(value: unknown) {
   return String(value || '')
     .toLowerCase()
@@ -13,8 +31,9 @@ function normalizeClientText(value: unknown) {
 
 function clientKey(row: Record<string, unknown>) {
   // Must match frontend clientKey in lib/client-utils.js exactly:
-  // uses sorted word key (words alphabetically sorted then joined)
-  const normalized = normalizeClientText(row?.portfolio_name || '');
+  // frontend calls formatClientName first, then normalises and sorts words
+  const formattedName = formatClientName(String(row?.portfolio_name || ''));
+  const normalized = normalizeClientText(formattedName);
   const sortedName = normalized.split(' ').filter(Boolean).sort().join('');
   if (sortedName && !sortedName.includes('unknown')) return `name-${sortedName}`;
   const plainName = normalized.replace(/[^a-z0-9]+/g, '');
