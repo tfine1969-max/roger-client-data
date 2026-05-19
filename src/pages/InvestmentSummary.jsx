@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
+import { getFundMappings } from '@/lib/fund-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -302,14 +303,26 @@ export default function InvestmentSummary() {
     queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
   });
 
-  // Pre-populate manualFundMerges from saved FundMergeRule records
+  // Pre-populate manualFundMerges from saved FundMergeRule records + Funds page localStorage mappings.
   // rawKey format: platform||investment_name||currency
   useEffect(() => {
-    if (!fundMergeRules.length || !valuations.length) return;
+    if (!valuations.length) return;
     const ruleMap = {};
+    // DB rules
     fundMergeRules.forEach(rule => {
       ruleMap[`${rule.source_name}||${rule.platform || ''}`] = rule.canonical_name;
     });
+    // Funds page localStorage mappings: { "Platform||Investment Name": "Canonical Name" }
+    const localMappings = getFundMappings();
+    Object.entries(localMappings).forEach(([key, canonical]) => {
+      const sepIdx = key.indexOf('||');
+      if (sepIdx < 0) return;
+      const platform = key.slice(0, sepIdx);
+      const investmentName = key.slice(sepIdx + 2);
+      ruleMap[`${investmentName}||${platform}`] = canonical;
+      ruleMap[`${investmentName}||`] = ruleMap[`${investmentName}||`] || canonical;
+    });
+    if (!Object.keys(ruleMap).length) return;
     // Build manualFundMerges keyed by rawKey using the loaded valuations
     const newMerges = {};
     const seen = new Set();

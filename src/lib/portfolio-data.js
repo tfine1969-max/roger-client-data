@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { rogerSourceRows, rogerSourceTotals } from '@/data/rogerSourceRows';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 
 const PAGE_LIMIT = 5000;
 
@@ -23,13 +24,20 @@ export async function fetchAllPortfolioValuations() {
     ...new Set(uploads.map(upload => upload.upload_month).filter(m => m && !embeddedMonths.has(m))),
   ];
 
-  if (dbMonths.length === 0) {
-    return rogerSourceRows;
-  }
+  const raw =
+    dbMonths.length === 0
+      ? rogerSourceRows
+      : [
+          ...rogerSourceRows,
+          ...uniqueById(
+            (await Promise.all(
+              dbMonths.map(month =>
+                base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)
+              )
+            )).flat()
+          ),
+        ];
 
-  const monthRows = await Promise.all(
-    dbMonths.map(month => base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT))
-  );
-
-  return [...rogerSourceRows, ...uniqueById(monthRows.flat())];
+  // Apply fund name mappings so canonical master-fund names are used everywhere.
+  return applyMappingsToRows(raw);
 }
