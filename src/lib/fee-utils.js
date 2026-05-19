@@ -120,8 +120,11 @@ function providerMatchesMapping(mapping, row) {
 }
 
 function investmentMatchesMapping(mapping, row) {
-  const investmentKey = compactFeeText(row.investment_name);
-  const mappingInvestment = mapping.investmentKey || compactFeeText(mapping.investment);
+  // Strip 'class' before comparing — JB PDFs often include 'Class B1' where
+  // the seed has just 'B1', making the compact strings diverge in the middle.
+  const strip = s => s.replace(/class/g, '');
+  const investmentKey = strip(compactFeeText(row.investment_name));
+  const mappingInvestment = strip(mapping.investmentKey || compactFeeText(mapping.investment));
   return mappingInvestment === investmentKey || investmentKey.includes(mappingInvestment) || mappingInvestment.includes(investmentKey);
 }
 
@@ -171,7 +174,10 @@ function findSeededFeeRatesForRow(row, feeMappings = []) {
   return {
     rebate: providerFundRebate ?? globalFundRebate ?? providerDefaultRebate,
     advisory: providerClientAdvisory ?? providerDefaultAdvisory,
-    rebateMatched: providerFundRebate != null || globalFundRebate != null || providerDefaultRebate != null,
+    // rebateMatched is only true when there is an investment-level or global-fund match.
+    // providerDefaultRebate (the mode across all provider rows) is 0 for Julius Baer — it
+    // must not count as a match, otherwise seeded.rebate=0 silently overrides stored rates.
+    rebateMatched: providerFundRebate != null || globalFundRebate != null,
     advisoryMatched: providerClientAdvisory != null || providerDefaultAdvisory != null,
     rebateMapping: rebateMatch,
     advisoryMapping: advisoryMatch,
@@ -247,7 +253,10 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
       ? seeded.rebate
       : config
         ? (config.rebate_fee_annual_percent ?? 0)
-        : mapping?.rebateAnnualPercent ?? row.rebate_fee_annual_percent ?? 0;
+        // Prefer stored DB value over mapping clientFallback — the clientFallback picks
+        // the best-scoring client row regardless of fund, so it can apply a rebate rate
+        // for a different fund (e.g. De Mey's Rubrics rate applied to her Trading Account).
+        : row.rebate_fee_annual_percent ?? mapping?.rebateAnnualPercent ?? 0;
   const advisory = seeded.advisoryMatched
       ? seeded.advisory
       : config
