@@ -20,7 +20,7 @@ import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
 import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
-import { syncRogerSourceRows } from '@/lib/roger-source-sync';
+import { syncRogerSourceRows, purgeEmbeddedMonthsFromDB } from '@/lib/roger-source-sync';
 import { rogerSourceRows } from '@/data/rogerSourceRows';
 
 const PROVIDERS = [
@@ -192,6 +192,27 @@ function MonthlyWorkbookUpload({ onImported }) {
     }
   };
 
+  const handlePurgeEmbeddedMonths = async () => {
+    setStatus('uploading');
+    setMessage('Removing Jan-Mar 2026 database copies...');
+    setDetail(null);
+    setProgress({ clients: 0, holdings: 0, aum: 0 });
+    try {
+      const result = await purgeEmbeddedMonthsFromDB();
+      setStatus('success');
+      setMessage(
+        `Removed ${result.portfolioRowsDeleted} portfolio rows and ${result.uploadRecordsDeleted} upload records for ${result.months.map(formatMonth).join(', ')}. Data is now served exclusively from the embedded file.`
+      );
+      setDetail(null);
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Purge failed');
+    }
+  };
+
   const handleRepairSourceData = async () => {
     setStatus('uploading');
     setMessage('Replacing Jan-Mar with embedded Roger source rows...');
@@ -230,11 +251,16 @@ function MonthlyWorkbookUpload({ onImported }) {
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <p className="text-sm font-semibold text-amber-950">Source Repair</p>
         <p className="mt-1 text-xs text-amber-800">
-          Replace partial Jan-Mar database rows with the embedded Roger source totals: Jan R 1.168bn, Feb R 1.158bn, Mar R 1.130bn.
+          Jan-Mar 2026 data is served from the embedded file. Use <strong>Remove DB Duplicates</strong> to delete any database copies that cause double-counting. Use <strong>Repair</strong> only if the embedded data itself looks wrong.
         </p>
-        <Button type="button" variant="outline" className="mt-3 bg-white" onClick={handleRepairSourceData} disabled={status === 'uploading'}>
-          Repair Jan-Mar Source Data
-        </Button>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="outline" className="bg-white" onClick={handlePurgeEmbeddedMonths} disabled={status === 'uploading'}>
+            Remove DB Duplicates (Jan-Mar)
+          </Button>
+          <Button type="button" variant="outline" className="bg-white" onClick={handleRepairSourceData} disabled={status === 'uploading'}>
+            Repair Jan-Mar Source Data
+          </Button>
+        </div>
       </div>
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-6 space-y-5">
         <div className="space-y-1.5">
