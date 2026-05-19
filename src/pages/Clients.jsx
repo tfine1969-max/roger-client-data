@@ -175,7 +175,8 @@ export default function Clients() {
 
   const handleSaveName = async (key) => {
     const trimmedName = buildStructuredClientName(editingSurname, editingFirstNames);
-    const currentClient = clients.find(client => client.client_key === key);
+    const currentClient = clients.find(client => client.client_key === key)
+      || allMonthsClients.find(client => client.client_key === key);
     if (!trimmedName || !currentClient || trimmedName === currentClient.portfolio_name) {
       setEditingKey(null);
       return;
