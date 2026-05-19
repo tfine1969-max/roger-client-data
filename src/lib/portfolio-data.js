@@ -13,6 +13,28 @@ function uniqueById(rows) {
   });
 }
 
+// Build a set of (upload_month||platform_lower||account_code) keys from embedded rows.
+// Any DB row matching an embedded key is superseded and excluded to prevent double-counting.
+const embeddedKeys = new Set(
+  rogerSourceRows.map(r =>
+    `${r.upload_month}||${String(r.platform || '').toLowerCase().trim()}||${String(r.account_code || '').toLowerCase().trim()}`
+  )
+);
+
+function dbRowSuperseded(row) {
+  const key = `${row.upload_month}||${String(row.platform || '').toLowerCase().trim()}||${String(row.account_code || '').toLowerCase().trim()}`;
+  if (embeddedKeys.has(key)) return true;
+  // Catch the incorrectly aggregated April 2026 Prime row for Marc Hoar (~R59M total).
+  // The correct per-fund data is in the embedded rogerSourceRows.
+  const val = row.zar_value || row.month_end_market_value || 0;
+  if (
+    row.upload_month === '2026-04' &&
+    String(row.platform || '').toLowerCase() === 'prime' &&
+    val > 50_000_000
+  ) return true;
+  return false;
+}
+
 // Returns raw rows only — fund-name mappings are applied at render time by each
 // consumer (via applyMappingsToRows / resolveInvestmentName from fund-utils.js)
 // so that localStorage changes take effect immediately without a cache bust.
@@ -28,14 +50,13 @@ export async function fetchAllPortfolioValuations() {
 
   if (dbMonths.length === 0) return rogerSourceRows;
 
-  return [
-    ...rogerSourceRows,
-    ...uniqueById(
-      (await Promise.all(
-        dbMonths.map(month =>
-          base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)
-        )
-      )).flat()
-    ),
-  ];
+  const dbRows = uniqueById(
+    (await Promise.all(
+      dbMonths.map(month =>
+        base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)
+      )
+    )).flat()
+  ).filter(row => !dbRowSuperseded(row));
+
+  return [...rogerSourceRows, ...dbRows];
 }
