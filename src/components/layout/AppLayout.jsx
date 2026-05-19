@@ -149,7 +149,7 @@ export default function AppLayout() {
                 Cape Town Client Management
               </p>
             </Link>
-            <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
+            <nav className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
