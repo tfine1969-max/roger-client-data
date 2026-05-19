@@ -1,5 +1,5 @@
 import { base44 } from '@/api/base44Client';
-import { rogerSourceRows, rogerSourceTotals } from '@/data/rogerSourceRows';
+import { rogerSourceRows } from '@/data/rogerSourceRows';
 
 const PAGE_LIMIT = 5000;
 
@@ -39,24 +39,17 @@ function dbRowSuperseded(row) {
 // consumer (via applyMappingsToRows / resolveInvestmentName from fund-utils.js)
 // so that localStorage changes take effect immediately without a cache bust.
 export async function fetchAllPortfolioValuations() {
-  // Jan-Mar 2026 data is always served from the embedded file — never the DB.
-  // This prevents the data from disappearing when Base44 resets the database on deployment.
-  const embeddedMonths = new Set(Object.keys(rogerSourceTotals));
+  // Embedded data (Jan-Mar 2026 plus any other months in rogerSourceRows) is always
+  // included. DB rows are fetched directly from PortfolioValuation rather than going
+  // through MonthlyUpload as an index — this ensures data imported before MonthlyUpload
+  // records were created still appears.
+  try {
+    const dbRows = uniqueById(
+      await base44.entities.PortfolioValuation.list('-upload_month', PAGE_LIMIT)
+    ).filter(row => !dbRowSuperseded(row));
 
-  const uploads = await base44.entities.MonthlyUpload.list('-upload_month', 200);
-  const dbMonths = [
-    ...new Set(uploads.map(upload => upload.upload_month).filter(m => m && !embeddedMonths.has(m))),
-  ];
-
-  if (dbMonths.length === 0) return rogerSourceRows;
-
-  const dbRows = uniqueById(
-    (await Promise.all(
-      dbMonths.map(month =>
-        base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)
-      )
-    )).flat()
-  ).filter(row => !dbRowSuperseded(row));
-
-  return [...rogerSourceRows, ...dbRows];
+    return [...rogerSourceRows, ...dbRows];
+  } catch (_err) {
+    return rogerSourceRows;
+  }
 }
