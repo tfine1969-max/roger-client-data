@@ -12,6 +12,7 @@ import MonthBadge from '@/components/shared/MonthBadge';
 import { effectiveExchangeRate, fmtNum, getSortedMonths, zarVal } from '@/lib/valuation-utils';
 import { withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { clientKey } from '@/lib/client-utils';
 
 const PROVIDERS = [
@@ -183,7 +184,7 @@ export default function Control() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
-  const feeRows = useMemo(() => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)), [valuations, feeConfigs]);
+  const feeRows = useMemo(() => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)), [valuations, feeConfigs]);
   const months = useMemo(() => [...new Set([...getSortedMonths(valuations), ...getSortedMonths(controlValues), '2026-04'])].filter(Boolean).sort((a, b) => b.localeCompare(a)), [valuations, controlValues]);
   const monthControl = useMemo(() => controlValues.filter(row => row.upload_month === selectedMonth), [controlValues, selectedMonth]);
   const monthDbRows = useMemo(() => feeRows.filter(row => row.upload_month === selectedMonth), [feeRows, selectedMonth]);

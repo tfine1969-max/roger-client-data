@@ -7,6 +7,7 @@ import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-ut
 import { withCalculatedFees } from '@/lib/fee-utils';
 import { clientKey } from '@/lib/client-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,7 +33,7 @@ export default function Dashboard() {
   });
 
   const feeRows = useMemo(
-    () => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    () => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
     [valuations, feeConfigs]
   );
 

@@ -14,6 +14,7 @@ import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/val
 import { clientDisplayName, clientKey, hasUnknownValue, rowHasUnknown } from '@/lib/client-utils';
 import { feeOptionValues, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { exportClientFundCSV } from '@/lib/export-utils';
 import InvestmentTable from '@/components/client/InvestmentTable';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
@@ -47,7 +48,7 @@ export default function ClientDetail() {
   const latestClientMonth = clientMonths[0] || '';
   const currentRows = useMemo(() => clientRows.filter(v => v.upload_month === latestMonth), [clientRows, latestMonth]);
   const currentFeeRows = useMemo(
-    () => currentRows.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    () => applyMappingsToRows(currentRows).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
     [currentRows, feeConfigs]
   );
 
