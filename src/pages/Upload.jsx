@@ -21,6 +21,7 @@ import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
 import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
 import { syncRogerSourceRows, purgeEmbeddedMonthsFromDB } from '@/lib/roger-source-sync';
+import { applySeededFeesToMonth } from '@/lib/fee-sync';
 import { rogerSourceRows } from '@/data/rogerSourceRows';
 
 const PROVIDERS = [
@@ -314,6 +315,121 @@ function MonthlyWorkbookUpload({ onImported }) {
   );
 }
 
+const APPLY_PROVIDERS = [
+  { id: 'Prime', label: 'Prime' },
+  { id: 'Julius Baer', label: 'Julius Baer' },
+  { id: 'Credo', label: 'Credo' },
+  { id: 'Gryphon', label: 'Gryphon' },
+  { id: 'Northstar', label: 'Northstar' },
+  { id: 'Prescient', label: 'Prescient' },
+  { id: 'Peresec', label: 'Peresec' },
+];
+
+function ApplySeededFees() {
+  const queryClient = useQueryClient();
+  const [month, setMonth] = useState('');
+  const [selectedProviders, setSelectedProviders] = useState(['Prime', 'Julius Baer']);
+  const [status, setStatus] = useState(null);
+  const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState({ done: 0, total: 0 });
+
+  const toggleProvider = id =>
+    setSelectedProviders(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+
+  const handleApply = async () => {
+    if (!month || selectedProviders.length === 0) return;
+    setStatus('running');
+    setMessage('Applying seeded fees…');
+    setProgress({ done: 0, total: 0 });
+    try {
+      const result = await applySeededFeesToMonth(month, {
+        platforms: selectedProviders,
+        onProgress: (done, total) => {
+          setProgress({ done, total });
+          setMessage(`Updated ${done} / ${total} rows…`);
+        },
+      });
+      setStatus('success');
+      setMessage(
+        `Applied seeded fees to ${result.updated} rows for ${selectedProviders.join(', ')} in ${formatMonth(month)}.`
+      );
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Failed to apply fees');
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-slate-950">Apply Seeded Fees to Month</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Recalculates and writes rebate &amp; advisory fees from the fee mapping directly to portfolio valuation records for the selected month and providers.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-3 items-end">
+        <div className="space-y-1">
+          <Label className="text-xs">Month</Label>
+          <Input type="month" value={month} onChange={e => setMonth(e.target.value)} className="h-9 w-40 bg-white" />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Providers</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {APPLY_PROVIDERS.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => toggleProvider(p.id)}
+                className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                  selectedProviders.includes(p.id)
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-border bg-white text-muted-foreground hover:border-primary/40'
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Button
+          type="button"
+          disabled={!month || selectedProviders.length === 0 || status === 'running'}
+          onClick={handleApply}
+          className="h-9 gap-2"
+        >
+          <RefreshCw className={cn('h-4 w-4', status === 'running' && 'animate-spin')} />
+          {status === 'running' ? 'Applying…' : 'Apply Fees'}
+        </Button>
+      </div>
+      {status === 'running' && progress.total > 0 && (
+        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div
+            className="h-full bg-primary transition-all"
+            style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }}
+          />
+        </div>
+      )}
+      {status === 'success' && (
+        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
+          <CheckCircle2 className="w-4 h-4 shrink-0" /> {message}
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded p-3">
+          <AlertCircle className="w-4 h-4 shrink-0" /> {message}
+        </div>
+      )}
+      {status === 'running' && (
+        <p className="text-xs text-muted-foreground">{message}</p>
+      )}
+    </div>
+  );
+}
+
 export default function Upload() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('julius-baer');
@@ -408,6 +524,8 @@ export default function Upload() {
       </div>
 
       <ProviderUploadHistory />
+
+      <ApplySeededFees />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {PROVIDERS.map(p => (
