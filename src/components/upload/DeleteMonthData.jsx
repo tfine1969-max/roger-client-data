@@ -17,6 +17,52 @@ const PROVIDER_LABELS = {
   'prescient': 'Prescient',
 };
 
+// Maps provider tab ID → platform value(s) stored in PortfolioValuation
+const PROVIDER_PLATFORMS = {
+  'prime': ['Prime'],
+  'julius-baer': ['Julius Baer'],
+  'credo': ['Credo'],
+  'gryphon': ['Gryphon'],
+  'northstar': ['Northstar'],
+  'peresec': ['Peresec', 'Peresec Securities'],
+  'prescient': ['Prescient'],
+  'monthly': null, // null = delete all platforms for that month
+};
+
+const BATCH = 25;
+
+async function deleteMonthDataClientSide(provider, month) {
+  const platforms = PROVIDER_PLATFORMS[provider];
+  let pvRows = [];
+
+  if (platforms) {
+    const results = await Promise.all(
+      platforms.map(p => base44.entities.PortfolioValuation.filter({ upload_month: month, platform: p }, '-created_date', 20000))
+    );
+    pvRows = results.flat();
+  } else {
+    pvRows = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 20000);
+  }
+
+  for (let i = 0; i < pvRows.length; i += BATCH) {
+    await Promise.all(pvRows.slice(i, i + BATCH).map(r => base44.entities.PortfolioValuation.delete(r.id)));
+  }
+
+  const allUploads = await base44.entities.MonthlyUpload.list('-upload_date', 500);
+  const uploadsToDelete = allUploads.filter(u => {
+    if (u.upload_month !== month) return false;
+    if (!platforms) return true;
+    const notes = (u.notes || '').toLowerCase();
+    const file = (u.file_name || '').toLowerCase();
+    return platforms.some(p => notes.includes(p.toLowerCase()) || file.includes(p.toLowerCase()));
+  });
+  for (let i = 0; i < uploadsToDelete.length; i += BATCH) {
+    await Promise.all(uploadsToDelete.slice(i, i + BATCH).map(r => base44.entities.MonthlyUpload.delete(r.id)));
+  }
+
+  return { portfolio_valuations_deleted: pvRows.length, upload_records_deleted: uploadsToDelete.length };
+}
+
 export default function DeleteMonthData({ provider }) {
   const queryClient = useQueryClient();
   const [month, setMonth] = useState('');
@@ -33,15 +79,11 @@ export default function DeleteMonthData({ provider }) {
     setMessage('Deleting...');
     setDetail(null);
     try {
-      const res = await base44.functions.invoke('deleteMonthData', {
-        provider,
-        upload_month: month,
-      });
-      const result = res.data;
-      if (!result.success) throw new Error(result.error || 'Delete failed');
+      const result = await deleteMonthDataClientSide(provider, month);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
       queryClient.invalidateQueries({ queryKey: ['primeHoldings'] });
+      queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       setStatus('success');
       setMessage(`All ${providerLabel} data for ${month} has been deleted.`);
       setDetail(result);
@@ -106,7 +148,7 @@ export default function DeleteMonthData({ provider }) {
               {detail && (
                 <p className="text-xs text-green-600 mt-1">
                   {detail.portfolio_valuations_deleted} valuation records deleted
-                  {detail.prime_holdings_deleted > 0 && `, ${detail.prime_holdings_deleted} Prime holdings deleted`}
+                  {detail.upload_records_deleted > 0 && `, ${detail.upload_records_deleted} upload log entries removed`}
                 </p>
               )}
             </div>
