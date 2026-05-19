@@ -1,4 +1,3 @@
-// Generated from fees_seeded_values.xlsx. Percent fields are annual percentage values, e.g. 0.4 = 0.40% p.a.
 export const feeSeedRows = [
   {
     "client": "Abrahams, Denise",
@@ -13,7 +12,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Apex Holdings (Pty) Ltd",
@@ -29,7 +28,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -81,7 +80,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Apex Images CC",
@@ -97,7 +96,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Apex Images CC",
@@ -113,7 +112,7 @@ export const feeSeedRows = [
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Apex Images CC",
@@ -129,7 +128,7 @@ export const feeSeedRows = [
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Apex Shark Expeditions (Pty) Ltd",
@@ -147,7 +146,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Bambino International (Pty) Ltd",
@@ -164,7 +163,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Blackbeard, G Mrs",
@@ -178,7 +177,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -208,7 +207,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -238,7 +237,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -255,7 +254,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Briggs, Carol-Anne",
@@ -270,8 +269,8 @@ export const feeSeedRows = [
     "investmentKey": "gryphondividendincomefundc",
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Chin, Ashley",
@@ -285,7 +284,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -316,7 +315,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Commercial Buildings (Pty) Ltd",
@@ -332,7 +331,7 @@ export const feeSeedRows = [
     "investmentKey": "lauriumstableprescientfunda2",
     "provider": "Prescient",
     "sourceProvider": "Prescient",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.79
   },
   {
@@ -381,7 +380,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -426,7 +425,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -443,7 +442,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "De Mey, Armelle",
@@ -474,7 +473,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -490,7 +489,7 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -570,7 +569,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -587,7 +586,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "De Mey, Katinga",
@@ -618,7 +617,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -634,7 +633,7 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -682,7 +681,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -697,7 +696,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -712,7 +711,7 @@ export const feeSeedRows = [
     "investmentKey": "harmonycapitallimitedspecialsituationsclass",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -742,7 +741,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -790,7 +789,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Eskinazi, Richard David",
@@ -869,7 +868,7 @@ export const feeSeedRows = [
     "provider": "Northstar",
     "sourceProvider": "Northstar",
     "rebateAnnualPercent": 0.75,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Fallows, C Mr & M Mrs",
@@ -884,7 +883,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -900,7 +899,7 @@ export const feeSeedRows = [
     "investmentKey": "volkswagenag",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -916,7 +915,7 @@ export const feeSeedRows = [
     "investmentKey": "fundsmithequityfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -932,7 +931,7 @@ export const feeSeedRows = [
     "investmentKey": "scottishmortgageinvestmenttrust",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -948,7 +947,7 @@ export const feeSeedRows = [
     "investmentKey": "hgcapitaltrust",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -964,7 +963,7 @@ export const feeSeedRows = [
     "investmentKey": "invescosolaretf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -980,7 +979,7 @@ export const feeSeedRows = [
     "investmentKey": "isharesglobaltechetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -996,7 +995,7 @@ export const feeSeedRows = [
     "investmentKey": "jinkosolarholdingcoltd",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1012,7 +1011,7 @@ export const feeSeedRows = [
     "investmentKey": "kranesharescsichinainternetetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1044,7 +1043,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientchinabalancedfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1060,7 +1059,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Fallows, ML Mrs",
@@ -1074,7 +1073,7 @@ export const feeSeedRows = [
     "investmentKey": "36oneflexible",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1089,7 +1088,7 @@ export const feeSeedRows = [
     "investmentKey": "fairtreeequityprescientfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1104,7 +1103,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1134,7 +1133,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1164,7 +1163,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1180,7 +1179,7 @@ export const feeSeedRows = [
     "provider": "Northstar",
     "sourceProvider": "Northstar",
     "rebateAnnualPercent": 0.75,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Freed, Justin",
@@ -1195,7 +1194,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Freed, Wayne",
@@ -1210,7 +1209,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Gennari, Enrico",
@@ -1224,7 +1223,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1255,7 +1254,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1303,7 +1302,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1321,7 +1320,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Grufin Properties (Pty) Ltd",
@@ -1338,7 +1337,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Gruzd, Marie",
@@ -1353,7 +1352,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Gruzd, Wilfred",
@@ -1368,7 +1367,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hedley, James",
@@ -1398,8 +1397,8 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1414,8 +1413,8 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1431,7 +1430,7 @@ export const feeSeedRows = [
     "provider": "Credo",
     "sourceProvider": "Credo",
     "rebateAnnualPercent": 0.5,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hoar, Bianca Leigh",
@@ -1447,7 +1446,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hoar, M Mr",
@@ -1461,7 +1460,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1476,7 +1475,7 @@ export const feeSeedRows = [
     "investmentKey": "dodgecoxworldwidefunds",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1491,7 +1490,7 @@ export const feeSeedRows = [
     "investmentKey": "globalxcopperminersetf",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1506,7 +1505,7 @@ export const feeSeedRows = [
     "investmentKey": "invescoglobalcleanenergyetf",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1551,7 +1550,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1566,7 +1565,7 @@ export const feeSeedRows = [
     "investmentKey": "gold",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1581,7 +1580,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientchinabalancedfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1597,7 +1596,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hoar, M Mr",
@@ -1641,7 +1640,7 @@ export const feeSeedRows = [
     "investmentKey": "fairtreeequityprescienta1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1656,7 +1655,7 @@ export const feeSeedRows = [
     "investmentKey": "clucasgrayprescientequityfundb1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1671,7 +1670,7 @@ export const feeSeedRows = [
     "investmentKey": "lauriumflexibleprescientfundfundb4",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1701,7 +1700,7 @@ export const feeSeedRows = [
     "investmentKey": "36onebciflexibleopportunityfunda",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1716,7 +1715,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1731,7 +1730,7 @@ export const feeSeedRows = [
     "investmentKey": "obsidiansciequityfundb3",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1746,7 +1745,7 @@ export const feeSeedRows = [
     "investmentKey": "coronationglobalemergingmarketsflexiblep",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -1778,7 +1777,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Hughes, Carol Violet",
@@ -1793,7 +1792,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1824,7 +1823,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1839,7 +1838,7 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1854,7 +1853,7 @@ export const feeSeedRows = [
     "investmentKey": "globalxcopperminersetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1869,7 +1868,7 @@ export const feeSeedRows = [
     "investmentKey": "nomuraglobalhighconvictionfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1914,7 +1913,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1929,7 +1928,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientchinabalancedfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -1974,7 +1973,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2019,7 +2018,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2050,8 +2049,8 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Keren, Avi & Glynis",
@@ -2066,8 +2065,8 @@ export const feeSeedRows = [
     "investmentKey": "equities",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Keren, Avi & Glynis",
@@ -2098,8 +2097,8 @@ export const feeSeedRows = [
     "investmentKey": "gold",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Keren, S Ms",
@@ -2114,7 +2113,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Keren, S Ms",
@@ -2128,8 +2127,8 @@ export const feeSeedRows = [
     "investmentKey": "peresectradingaccount",
     "provider": "Peresec",
     "sourceProvider": "Peresec Securities",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Keurboom Trust",
@@ -2144,7 +2143,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Kovacs Investments 492 (Pty) Ltd",
@@ -2161,7 +2160,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeprovidera2",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2179,7 +2178,7 @@ export const feeSeedRows = [
     "investmentKey": "lauriumstableprescientfunda2",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2213,7 +2212,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Louw, Delia",
@@ -2228,7 +2227,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Louw, Delia",
@@ -2259,7 +2258,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2293,7 +2292,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2308,7 +2307,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2339,8 +2338,8 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Mandy, Shelley Anne",
@@ -2371,7 +2370,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2386,7 +2385,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2401,7 +2400,7 @@ export const feeSeedRows = [
     "investmentKey": "anglogoldashantiplc",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2416,7 +2415,7 @@ export const feeSeedRows = [
     "investmentKey": "appleinc",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2431,7 +2430,7 @@ export const feeSeedRows = [
     "investmentKey": "defiancequantumetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2446,7 +2445,7 @@ export const feeSeedRows = [
     "investmentKey": "invesconasdaq100etf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2461,7 +2460,7 @@ export const feeSeedRows = [
     "investmentKey": "invescosp500momentumetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2476,7 +2475,7 @@ export const feeSeedRows = [
     "investmentKey": "harmonygoldminingcoltd",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2491,7 +2490,7 @@ export const feeSeedRows = [
     "investmentKey": "rsagovernmentbond",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2508,7 +2507,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2525,7 +2524,7 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2559,7 +2558,7 @@ export const feeSeedRows = [
     "investmentKey": "meituan",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2576,7 +2575,7 @@ export const feeSeedRows = [
     "investmentKey": "tencentholdingslimited",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2593,7 +2592,7 @@ export const feeSeedRows = [
     "investmentKey": "alibabagroupholding",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2644,7 +2643,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfundd",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -2659,8 +2658,8 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Maxwell, Dave",
@@ -2674,8 +2673,8 @@ export const feeSeedRows = [
     "investmentKey": "isharesglobal100etf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Maxwell, Dave",
@@ -2689,8 +2688,8 @@ export const feeSeedRows = [
     "investmentKey": "isharesphysicalgoldetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Maxwell, Dave",
@@ -2704,8 +2703,8 @@ export const feeSeedRows = [
     "investmentKey": "bbvaglobalmarkets",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Maxwell, Dave",
@@ -2719,8 +2718,8 @@ export const feeSeedRows = [
     "investmentKey": "royalmintphysicalgold",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.0
+    "rebateAnnualPercent": 0,
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "McGuirk, Pamela",
@@ -2735,7 +2734,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "McGuirk, Pamela",
@@ -2749,7 +2748,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2795,7 +2794,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Robinson, Cheryl",
@@ -2824,7 +2823,7 @@ export const feeSeedRows = [
     "investmentKey": "matrixscistableincomefundb1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -2839,7 +2838,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -2869,7 +2868,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -2885,7 +2884,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Snitcher, LR Ms",
@@ -2899,7 +2898,7 @@ export const feeSeedRows = [
     "investmentKey": "prescientincomeproviderfund",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.55
   },
   {
@@ -2929,7 +2928,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.55
   },
   {
@@ -2944,7 +2943,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2959,7 +2958,7 @@ export const feeSeedRows = [
     "investmentKey": "digihosttechnologyinc",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2974,7 +2973,7 @@ export const feeSeedRows = [
     "investmentKey": "hgcapitaltrust",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -2989,7 +2988,7 @@ export const feeSeedRows = [
     "investmentKey": "blackrockicsusdollarliquidityfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3004,7 +3003,7 @@ export const feeSeedRows = [
     "investmentKey": "amplifytransformationaldatasharingetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3019,7 +3018,7 @@ export const feeSeedRows = [
     "investmentKey": "globalxcopperminersetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3034,7 +3033,7 @@ export const feeSeedRows = [
     "investmentKey": "dodgecoxworldwidefunds",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3049,7 +3048,7 @@ export const feeSeedRows = [
     "investmentKey": "nomuraglobalhighconvictionfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3109,7 +3108,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3124,7 +3123,7 @@ export const feeSeedRows = [
     "investmentKey": "isharesbitcointrustetf",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3143,7 +3142,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Sweet Grass Trading (Pty) Ltd",
@@ -3160,7 +3159,7 @@ export const feeSeedRows = [
     "investmentKey": "36onebciglobalequityfeederfunda36fnda",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3178,7 +3177,7 @@ export const feeSeedRows = [
     "investmentKey": "catalystsciglobalrealestatescifeederbcgre",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3196,7 +3195,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3214,7 +3213,7 @@ export const feeSeedRows = [
     "investmentKey": "clucasgrayprescientequityfundb1cgpb1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3232,7 +3231,7 @@ export const feeSeedRows = [
     "investmentKey": "coronationglobalemergingmarketsflexiblezarfundpcgemb4",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3270,7 +3269,7 @@ export const feeSeedRows = [
     "investmentKey": "lauriumstableprescientfunda2",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3290,7 +3289,7 @@ export const feeSeedRows = [
     "investmentKey": "obsidianscibalancedfundb1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3330,7 +3329,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3350,7 +3349,7 @@ export const feeSeedRows = [
     "investmentKey": "36onebciflexibleopportunityfunda",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3370,7 +3369,7 @@ export const feeSeedRows = [
     "investmentKey": "fairtreeequityprescienta1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.65
   },
   {
@@ -3386,7 +3385,7 @@ export const feeSeedRows = [
     "investmentKey": "juliusbaertradingaccount",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -3402,7 +3401,7 @@ export const feeSeedRows = [
     "investmentKey": "scottishmortgageinvestmenttrust",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -3450,7 +3449,7 @@ export const feeSeedRows = [
     "investmentKey": "xhaosspecialopportunitiesfund",
     "provider": "Julius Baer",
     "sourceProvider": "Julius Baer",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.7
   },
   {
@@ -3466,7 +3465,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Thomas, Mayne",
@@ -3480,7 +3479,7 @@ export const feeSeedRows = [
     "investmentKey": "coronationglobalemergingmarketsflexiblep",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3495,7 +3494,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3510,7 +3509,7 @@ export const feeSeedRows = [
     "investmentKey": "lauriumflexibleprescientfundfundb4",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3540,7 +3539,7 @@ export const feeSeedRows = [
     "investmentKey": "36onebciflexibleopportunityfunda",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3555,7 +3554,7 @@ export const feeSeedRows = [
     "investmentKey": "fairtreeequityprescienta1",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3603,7 +3602,7 @@ export const feeSeedRows = [
     "provider": "Gryphon",
     "sourceProvider": "Gryphon Asset Management",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Van Niekerk, Ann",
@@ -3650,7 +3649,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3682,7 +3681,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3714,7 +3713,7 @@ export const feeSeedRows = [
     "investmentKey": "cash",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3731,7 +3730,7 @@ export const feeSeedRows = [
     "investmentKey": "credotradingaccount",
     "provider": "Credo",
     "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.75
   },
   {
@@ -3763,7 +3762,7 @@ export const feeSeedRows = [
     "investmentKey": "coronationglobalemergingmarketsflexiblep",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -3793,7 +3792,7 @@ export const feeSeedRows = [
     "investmentKey": "centaurbciflexiblefundc",
     "provider": "Prime",
     "sourceProvider": "Prime",
-    "rebateAnnualPercent": 0.0,
+    "rebateAnnualPercent": 0,
     "advisoryAnnualPercent": 0.5
   },
   {
@@ -3810,7 +3809,7 @@ export const feeSeedRows = [
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   },
   {
     "client": "Worrall, Isla Elizabeth",
@@ -3826,6 +3825,6 @@ export const feeSeedRows = [
     "provider": "Prime",
     "sourceProvider": "Prime",
     "rebateAnnualPercent": 0.4,
-    "advisoryAnnualPercent": 0.0
+    "advisoryAnnualPercent": 0
   }
 ];
