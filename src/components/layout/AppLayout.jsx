@@ -149,7 +149,7 @@ export default function AppLayout() {
                 Cape Town Client Management
               </p>
             </Link>
-            <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
+            <nav className="flex flex-1 items-center gap-1 rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
@@ -186,7 +186,7 @@ export default function AppLayout() {
 
         {inPlatformsSection && (
           <div className="border-t border-slate-200/80 bg-white">
-            <div className="px-3 sm:px-4 lg:px-6">
+            <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
               <div className="flex h-11 items-center gap-2 overflow-x-auto">
                 {platformsSubNav.map(({ path, label }) => {
                   const active = path === '/platforms'

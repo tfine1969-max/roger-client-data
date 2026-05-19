@@ -111,14 +111,18 @@ export default function Platforms() {
       if (r.investment_name) map[id].funds.add(r.investment_name);
     });
 
-    Object.entries(currentControl?.providerSourceTotals || {}).forEach(([rawId, total]) => {
-      const id = platformGroupId(rawId);
-      const p = platformLabel(id, total.providerName);
-      if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set(), sourceLabels: new Set() };
-      addSourceLabel(map[id], rawId);
-      map[id].totalZar += total.zarTotal;
-      addControlClientCounts(map[id], currentControl.clients?.filter(client => platformGroupId(client.providerId) === id));
-    });
+    // Only use monthlyClientData overlay if there are no uploaded rows for this month
+    // (i.e. the month is not covered by rogerSourceRows or DB data)
+    if (current.length === 0) {
+      Object.entries(currentControl?.providerSourceTotals || {}).forEach(([rawId, total]) => {
+        const id = platformGroupId(rawId);
+        const p = platformLabel(id, total.providerName);
+        if (!map[id]) map[id] = { platformId: id, platform: p, totalZar: 0, clients: new Set(), funds: new Set(), sourceLabels: new Set() };
+        addSourceLabel(map[id], rawId);
+        map[id].totalZar += total.zarTotal;
+        addControlClientCounts(map[id], currentControl.clients?.filter(client => platformGroupId(client.providerId) === id));
+      });
+    }
 
     return Object.values(map)
       .map(p => ({ ...p, clients: p.clients.size, funds: p.funds.size, sourceLabels: [...p.sourceLabels].sort() }))
@@ -183,14 +187,17 @@ export default function Platforms() {
     });
 
     const currentControl = controlForMonth(latestMonth);
-    Object.entries(currentControl?.providerSourceTotals || {})
-      .filter(([rawId]) => platformGroupId(rawId) === selectedPlatform)
-      .forEach(([rawId, total]) => {
-        const label = platformLabel(rawId, total.providerName);
-        if (!map[label]) map[label] = { label, totalZar: 0, clients: new Set(), funds: new Set() };
-        map[label].totalZar += total.zarTotal;
-        addControlClientCounts(map[label], currentControl.clients?.filter(client => client.providerId === rawId));
-      });
+    // Only use monthlyClientData overlay if there are no uploaded rows for this month
+    if (current.length === 0) {
+      Object.entries(currentControl?.providerSourceTotals || {})
+        .filter(([rawId]) => platformGroupId(rawId) === selectedPlatform)
+        .forEach(([rawId, total]) => {
+          const label = platformLabel(rawId, total.providerName);
+          if (!map[label]) map[label] = { label, totalZar: 0, clients: new Set(), funds: new Set() };
+          map[label].totalZar += total.zarTotal;
+          addControlClientCounts(map[label], currentControl.clients?.filter(client => client.providerId === rawId));
+        });
+    }
 
     return Object.values(map)
       .map(row => ({ ...row, clients: row.clients.size, funds: row.funds.size }))

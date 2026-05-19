@@ -81,6 +81,7 @@ export default function PrimeUpload({ onImported }) {
       setMessage(`Imported ${res.data.rows_imported} rows for ${formatMonth(uploadMonth)}.`);
       queryClient.invalidateQueries({ queryKey: ['primeHoldings'] });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['monthlyUploads'] });
       queryClient.invalidateQueries({ queryKey: ['providerUploadSummary'] });
       if (onImported) await onImported(uploadMonth);
       setFile(null);

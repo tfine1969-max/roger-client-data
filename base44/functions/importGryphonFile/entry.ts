@@ -117,6 +117,18 @@ Deno.serve(async (req) => {
 
     const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month);
 
+    await base44.asServiceRole.entities.MonthlyUpload.create({
+      upload_month,
+      file_name: file_url.split('/').pop(),
+      upload_date: new Date().toISOString(),
+      uploaded_by: user.email,
+      total_rows: created,
+      rows_imported: created,
+      rows_skipped: 0,
+      import_status: 'Imported',
+      notes: 'Gryphon import.',
+    });
+
     return Response.json({
       success: true,
       rows_imported: created,
