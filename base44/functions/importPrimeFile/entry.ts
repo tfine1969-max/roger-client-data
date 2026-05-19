@@ -175,6 +175,18 @@ Deno.serve(async (req) => {
 
     await bulkCreate(base44.asServiceRole.entities.PortfolioValuation, pvRecords, 500);
 
+    await base44.asServiceRole.entities.MonthlyUpload.create({
+      upload_month,
+      file_name: file_url.split('/').pop(),
+      upload_date: new Date().toISOString(),
+      uploaded_by: user.email,
+      total_rows: records.length,
+      rows_imported: records.length,
+      rows_skipped: 0,
+      import_status: 'Imported',
+      notes: 'Prime Investments import.',
+    });
+
     return Response.json({
       success: true,
       rows_imported: records.length,
