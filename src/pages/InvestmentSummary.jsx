@@ -1,8 +1,9 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
+import { getFundMappings, applyMappingsToRows } from '@/lib/fund-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -87,8 +88,10 @@ function canonicalFundName(name) {
 function canonicalInvestmentKey(row, mergeFunds, manualFundMerges) {
   const rawKey = investmentKey(row);
   const name = manualFundMerges[rawKey] || (mergeFunds ? canonicalFundName(row.investment_name) : row.investment_name);
-  const currency = manualFundMerges[rawKey] ? 'Merged' : row.currency || 'ZAR';
-  return [row.platform || 'Unknown', name || 'Unknown', currency].join('||');
+  // Use the row's actual currency so that a mapped row ("MAY TEST…" → "Wealthworks…")
+  // shares the same grouping key as rows that already carry the canonical name.
+  // Mixed-currency display is handled separately in summariseInvestments line 115.
+  return [row.platform || 'Unknown', name || 'Unknown', row.currency || 'ZAR'].join('||');
 }
 
 function summariseInvestments(rows, months, mergeFunds, manualFundMerges) {
@@ -286,7 +289,10 @@ export default function InvestmentSummary() {
   const [activeReportTab, setActiveReportTab] = useState(defaultReportTab(REPORT_GROUPS[0]));
   const [fundSort, setFundSort] = useState(SORT_BY_SIZE);
   const [mergeFunds, setMergeFunds] = useState(false);
-  const [manualFundMerges, setManualFundMerges] = useState({});
+  // In-page manual merges made via the merge dialog (rawKey → canonical name).
+  // Layered on top of the computed manualFundMerges so the UI updates immediately
+  // before DB save / query invalidation completes.
+  const [pendingMerges, setPendingMerges] = useState({});
   const [selectedFundKeys, setSelectedFundKeys] = useState(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [mergeFundName, setMergeFundName] = useState('');
@@ -302,38 +308,51 @@ export default function InvestmentSummary() {
     queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
   });
 
-  // Pre-populate manualFundMerges from saved FundMergeRule records
-  // rawKey format: platform||investment_name||currency
-  useEffect(() => {
-    if (!fundMergeRules.length || !valuations.length) return;
+  // Apply Funds-page localStorage mappings to raw valuations so canonical names
+  // are baked into the row data before any grouping happens. This reads from
+  // localStorage on every render (useMemo), so Funds-page changes take effect
+  // immediately without a React Query cache bust.
+  const mappedValuations = useMemo(() => applyMappingsToRows(valuations), [valuations]);
+
+  // Build fund-name merge map from DB FundMergeRule records only.
+  // (localStorage mappings are already applied by applyMappingsToRows above.)
+  const manualFundMerges = useMemo(() => {
+    if (!mappedValuations.length) return {};
+    if (!fundMergeRules.length) return {};
     const ruleMap = {};
     fundMergeRules.forEach(rule => {
-      ruleMap[`${rule.source_name}||${rule.platform || ''}`] = rule.canonical_name;
+      const nm = String(rule.source_name || '').trim().replace(/\s+/g, ' ');
+      const pl = String(rule.platform || '').trim().replace(/\s+/g, ' ');
+      ruleMap[`${nm}||${pl}`] = rule.canonical_name;
+      ruleMap[`${nm}||`] = ruleMap[`${nm}||`] || rule.canonical_name;
     });
-    // Build manualFundMerges keyed by rawKey using the loaded valuations
-    const newMerges = {};
+    const merges = {};
     const seen = new Set();
-    valuations.forEach(row => {
+    mappedValuations.forEach(row => {
       const rawKey = investmentKey(row);
       if (seen.has(rawKey)) return;
       seen.add(rawKey);
-      const platformKey = `${row.investment_name || ''}||${row.platform || ''}`;
-      const anyPlatformKey = `${row.investment_name || ''}||`;
-      const canonical = ruleMap[platformKey] || ruleMap[anyPlatformKey];
+      const nm = String(row.investment_name || '').trim().replace(/\s+/g, ' ');
+      const pl = String(row.platform || '').trim().replace(/\s+/g, ' ');
+      const canonical = ruleMap[`${nm}||${pl}`] || ruleMap[`${nm}||`];
       if (canonical && canonical !== row.investment_name) {
-        newMerges[rawKey] = canonical;
+        merges[rawKey] = canonical;
       }
     });
-    if (Object.keys(newMerges).length > 0) {
-      setManualFundMerges(newMerges);
-    }
-  }, [fundMergeRules, valuations]);
+    return merges;
+  }, [fundMergeRules, mappedValuations]);
 
-  const months = useMemo(() => getSortedMonths(valuations), [valuations]);
+  // Layer in-page pending merges on top of the computed base
+  const effectiveMerges = useMemo(
+    () => ({ ...manualFundMerges, ...pendingMerges }),
+    [manualFundMerges, pendingMerges]
+  );
+
+  const months = useMemo(() => getSortedMonths(mappedValuations), [mappedValuations]);
   const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
   const summary = useMemo(
-    () => groupSummary(selectedGroup, valuations, months, mergeFunds, manualFundMerges),
-    [selectedGroup, valuations, months, mergeFunds, manualFundMerges]
+    () => groupSummary(selectedGroup, mappedValuations, months, mergeFunds, effectiveMerges),
+    [selectedGroup, mappedValuations, months, mergeFunds, effectiveMerges]
   );
   const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
   const latestMonth = months[0] || '';
@@ -439,8 +458,8 @@ export default function InvestmentSummary() {
     const name = mergeFundName.trim();
     if (!name || selectedFundKeys.size < 2) return;
 
-    // Update local state immediately
-    setManualFundMerges(prev => {
+    // Update pending merges immediately so UI reflects change before DB save
+    setPendingMerges(prev => {
       const next = { ...prev };
       selectedFundKeys.forEach(key => { next[key] = name; });
       return next;
@@ -472,7 +491,7 @@ export default function InvestmentSummary() {
   const handleSaveAllRules = async () => {
     const rulesToSave = [];
     const seen = new Set();
-    Object.entries(manualFundMerges).forEach(([rawKey, canonical]) => {
+    Object.entries(effectiveMerges).forEach(([rawKey, canonical]) => {
       const [platform, investment_name] = rawKey.split('||');
       if (!investment_name || investment_name === canonical) return;
       const dedupeKey = `${investment_name}||${platform}`;
@@ -577,7 +596,7 @@ export default function InvestmentSummary() {
                       variant="outline"
                       className="h-8 gap-1.5 px-3 text-xs"
                       onClick={handleSaveAllRules}
-                      disabled={isSavingRules || Object.keys(manualFundMerges).length === 0}
+                      disabled={isSavingRules || Object.keys(effectiveMerges).length === 0}
                       title="Save all current merges as persistent rules for future uploads"
                     >
                       <Save className="h-3.5 w-3.5" />

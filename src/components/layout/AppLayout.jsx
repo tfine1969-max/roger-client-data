@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, BarChart3, Briefcase,
   Percent, SlidersHorizontal, ClipboardCheck,
-  Upload, AlertTriangle, LineChart, ChevronDown
+  Upload, AlertTriangle, LineChart, ChevronDown, Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +33,7 @@ const feesGroup = {
   icon: Percent,
   color: COLORS.blue,
   items: [
+    { path: '/fee-seeding', label: 'Fee Seeding', icon: Layers },
     { path: '/fees', label: 'Fees', icon: Percent },
     { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
   ],

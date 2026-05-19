@@ -13,6 +13,9 @@ function uniqueById(rows) {
   });
 }
 
+// Returns raw rows only — fund-name mappings are applied at render time by each
+// consumer (via applyMappingsToRows / resolveInvestmentName from fund-utils.js)
+// so that localStorage changes take effect immediately without a cache bust.
 export async function fetchAllPortfolioValuations() {
   // Jan-Mar 2026 data is always served from the embedded file — never the DB.
   // This prevents the data from disappearing when Base44 resets the database on deployment.
@@ -23,13 +26,16 @@ export async function fetchAllPortfolioValuations() {
     ...new Set(uploads.map(upload => upload.upload_month).filter(m => m && !embeddedMonths.has(m))),
   ];
 
-  if (dbMonths.length === 0) {
-    return rogerSourceRows;
-  }
+  if (dbMonths.length === 0) return rogerSourceRows;
 
-  const monthRows = await Promise.all(
-    dbMonths.map(month => base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT))
-  );
-
-  return [...rogerSourceRows, ...uniqueById(monthRows.flat())];
+  return [
+    ...rogerSourceRows,
+    ...uniqueById(
+      (await Promise.all(
+        dbMonths.map(month =>
+          base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE_LIMIT)
+        )
+      )).flat()
+    ),
+  ];
 }

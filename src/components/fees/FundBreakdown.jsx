@@ -2,20 +2,21 @@ import { useState, useMemo } from 'react';
 import { fmtNum } from '@/lib/valuation-utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { resolveInvestmentName } from '@/lib/fund-utils';
 
 export default function FundBreakdown({ monthRows }) {
   const [view, setView] = useState('funds'); // 'clients' or 'funds'
   const [sortBy, setSortBy] = useState('name'); // 'name' or 'size'
   const [expandedItem, setExpandedItem] = useState(null);
 
-  // Group by fund
+  // Group by fund using canonical master fund names
   const fundData = useMemo(() => {
     const map = {};
     monthRows.forEach(row => {
-      const fundKey = row.investment_name;
+      const fundKey = resolveInvestmentName(row.platform, row.investment_name);
       if (!map[fundKey]) {
         map[fundKey] = {
-          name: row.investment_name,
+          name: fundKey,
           totalZar: 0,
           clients: new Set(),
           holdings: 0,

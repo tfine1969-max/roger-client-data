@@ -5,14 +5,16 @@ import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { feeOptionValues, summariseFees, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Search, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Search, ChevronRight, ArrowLeft } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import FeeKpiRow from '@/components/fees/FeeKpiRow';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
 import FundBreakdown from '@/components/fees/FundBreakdown';
+import FeeGapPanel from '@/components/fees/FeeGapPanel';
 
 function groupFeeRows(rows, keyFn, seedFn) {
   const map = {};
@@ -49,7 +51,7 @@ export default function Fees() {
   });
 
   const feeRows = useMemo(
-    () => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    () => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
     [valuations, feeConfigs]
   );
 
@@ -58,7 +60,6 @@ export default function Fees() {
   const monthRows = useMemo(() => feeRows.filter(v => v.upload_month === latestMonth), [feeRows, latestMonth]);
   const totals = useMemo(() => summariseFees(monthRows), [monthRows]);
   const feeRequiredCount = useMemo(() => monthRows.filter(r => r.fee_required).length, [monthRows]);
-  const unmappedRows = useMemo(() => monthRows.filter(r => r.fee_required), [monthRows]);
   const feeOptions = useMemo(() => feeOptionValues(feeMappingRows), []);
 
   const providerRows = useMemo(() => groupFeeRows(
@@ -137,6 +138,13 @@ export default function Fees() {
         feeRequiredCount={feeRequiredCount}
       />
 
+      <FeeGapPanel
+        monthRows={monthRows}
+        allMonthRows={feeRows}
+        currentMonth={latestMonth}
+        months={months}
+      />
+
       {!activeProvider && (
         <div className="bg-white border rounded-lg overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
@@ -144,17 +152,6 @@ export default function Fees() {
               <h2 className="text-sm font-semibold">Provider Fees This Month</h2>
               <p className="text-xs text-muted-foreground mt-1">Click a provider to review monthly totals, history, and client fee detail.</p>
             </div>
-            {feeRequiredCount > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 rounded-md px-2 py-1">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <button
-                  className="underline-offset-2 hover:underline"
-                  onClick={() => { setSelectedProvider(''); setProviderView('unmapped'); setSearch(''); }}
-                >
-                  {feeRequiredCount} unmapped holdings
-                </button>
-              </div>
-            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -190,30 +187,6 @@ export default function Fees() {
         </div>
       )}
 
-      {!activeProvider && providerView === 'unmapped' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3 bg-white border rounded-lg p-4">
-            <div className="relative flex-1 min-w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search unmapped holdings..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
-            </div>
-            <button className="text-sm px-3 py-1.5 rounded-md border bg-muted/40 hover:bg-muted" onClick={() => { setProviderView('clients'); setSearch(''); }}>
-              Hide unmapped
-            </button>
-          </div>
-          <div>
-            <h2 className="text-base font-semibold mb-3">Unmapped Holdings Requiring Fee Allocation</h2>
-            <FeeInvestmentTable
-              rows={unmappedRows.filter(row => {
-                const q = search.toLowerCase();
-                return !q || row.portfolio_name?.toLowerCase().includes(q) || row.platform?.toLowerCase().includes(q) || row.investment_name?.toLowerCase().includes(q) || row.account_code?.includes(q);
-              })}
-              feeOptions={feeOptions}
-              onFeeUpdated={refresh}
-            />
-          </div>
-        </div>
-      )}
 
       {activeProvider && (
         <div className="space-y-4">
