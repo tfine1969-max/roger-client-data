@@ -3,8 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, LayoutList, Merge, Pencil, Search, Square, Table2, Trash2, X } from 'lucide-react';
 import MonthlyComparisonView from '@/components/clients/MonthlyComparisonView';
-import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
+import { renameClient, deleteZeroBalances } from '@/lib/client-merge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -184,18 +184,12 @@ export default function Clients() {
 
     setActionStatus('Saving client name...');
     try {
-      const res = await base44.functions.invoke('bulkClientMaintenance', {
-        action: 'rename',
-        client_keys: [key],
-        primary_key: key,
-        merged_name: trimmedName,
-      });
-      if (!res.data.success) throw new Error(res.data.error || 'Rename failed');
+      await renameClient(key, trimmedName);
       refreshClientData();
       setEditingKey(null);
       setActionStatus(null);
     } catch (err) {
-      setActionStatus(err.message || 'Rename failed');
+      setActionStatus(err?.message || 'Rename failed');
       setTimeout(() => setActionStatus(null), 2200);
     }
   };
@@ -205,12 +199,7 @@ export default function Clients() {
     setIsDeletingZeroBalances(true);
     setActionStatus('Deleting zero-balance clients...');
     try {
-      const res = await base44.functions.invoke('bulkClientMaintenance', {
-        action: 'delete_zero_balance',
-        upload_month: latestMonth,
-        client_keys: deleteTargetClients.map(client => client.client_key),
-      });
-      if (!res.data.success) throw new Error(res.data.error || 'Delete failed');
+      await deleteZeroBalances(latestMonth, deleteTargetClients.map(client => client.client_key));
       setSelectedKeys(prev => {
         const next = new Set(prev);
         deleteTargetClients.forEach(client => next.delete(client.client_key));
@@ -219,7 +208,7 @@ export default function Clients() {
       refreshClientData();
       setDeleteDialogOpen(false);
     } catch (err) {
-      setActionStatus(err.message || 'Delete failed');
+      setActionStatus(err?.message || 'Delete failed');
     } finally {
       setIsDeletingZeroBalances(false);
       setTimeout(() => setActionStatus(null), 1800);
@@ -329,7 +318,7 @@ export default function Clients() {
         </div>
       </div>
 
-      <ClientConsolidation />
+      <ClientConsolidation clients={clients} />
 
       {viewMode === 'monthly' && (
         <div className="rounded-lg border bg-amber-50 px-4 py-2.5 text-sm text-amber-800">

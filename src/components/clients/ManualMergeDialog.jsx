@@ -1,19 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Merge } from 'lucide-react';
 import { fmtNum } from '@/lib/valuation-utils';
-
-function getInvokeErrorMessage(err) {
-  return err?.response?.data?.error
-    || err?.response?.data?.message
-    || err?.data?.error
-    || err?.message
-    || 'Merge failed';
-}
+import { mergeClients } from '@/lib/client-merge';
 
 export default function ManualMergeDialog({ open, onOpenChange, selectedClients, onMerged }) {
   const queryClient = useQueryClient();
@@ -44,17 +36,13 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
     setMessage('');
 
     try {
-      const res = await base44.functions.invoke('bulkClientMaintenance', {
-        action: 'merge',
-        client_keys: selectedClients.map(client => client.client_key),
-        primary_key: primaryClient.client_key,
-        merged_name: mergedName.trim(),
-      });
-
-      if (!res.data.success) throw new Error(res.data.error || 'Merge failed');
+      const res = await mergeClients(
+        selectedClients.map(client => client.client_key),
+        mergedName.trim()
+      );
 
       setStatus('success');
-      setMessage(res.data.message || `Merged ${selectedClients.length} clients.`);
+      setMessage(res.message || `Merged ${selectedClients.length} clients.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
 
@@ -64,7 +52,7 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
       }, 800);
     } catch (err) {
       setStatus('error');
-      setMessage(getInvokeErrorMessage(err));
+      setMessage(err?.message || 'Merge failed');
     } finally {
       setLoading(false);
     }
