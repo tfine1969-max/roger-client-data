@@ -23,16 +23,7 @@ const embeddedKeys = new Set(
 
 function dbRowSuperseded(row) {
   const key = `${row.upload_month}||${String(row.platform || '').toLowerCase().trim()}||${String(row.account_code || '').toLowerCase().trim()}`;
-  if (embeddedKeys.has(key)) return true;
-  // Catch the incorrectly aggregated April 2026 Prime row for Marc Hoar (~R59M total).
-  // The correct per-fund data is in the embedded rogerSourceRows.
-  const val = row.zar_value || row.month_end_market_value || 0;
-  if (
-    row.upload_month === '2026-04' &&
-    String(row.platform || '').toLowerCase() === 'prime' &&
-    val > 50_000_000
-  ) return true;
-  return false;
+  return embeddedKeys.has(key);
 }
 
 // Returns raw rows only — fund-name mappings are applied at render time by each

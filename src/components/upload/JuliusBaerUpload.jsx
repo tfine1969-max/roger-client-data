@@ -4,11 +4,12 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpen } from 'lucide-react';
+import { Upload as UploadIcon, CheckCircle2, AlertCircle, X, FileText, FolderOpen, Wrench } from 'lucide-react';
 import DeleteMonthData from './DeleteMonthData';
 import { DEFAULT_USD_ZAR_RATE, getUsdZarRateForMonth, saveUsdZarRateForMonth } from '@/lib/exchange-rates';
 import ProviderUploadSummary from './ProviderUploadSummary';
 import UploadProgressSummary from './UploadProgressSummary';
+import { applyJbAprilFix } from '@/lib/jb-april-fix';
 
 export default function JuliusBaerUpload({ onImported }) {
   const queryClient = useQueryClient();
@@ -21,6 +22,9 @@ export default function JuliusBaerUpload({ onImported }) {
   const [progressMessage, setProgressMessage] = useState('');
   const folderRef = useRef(null);
   const fileRef = useRef(null);
+  const [fixMonth, setFixMonth] = useState('2026-04');
+  const [fixStatus, setFixStatus] = useState(null); // null | 'running' | 'done' | 'error'
+  const [fixResult, setFixResult] = useState(null);
 
   const handleMonthChange = (value) => {
     setMonth(value);
@@ -262,6 +266,72 @@ export default function JuliusBaerUpload({ onImported }) {
           </div>
         )}
       </form>
+      {/* Correct instruments from control sheet */}
+      <div className="mt-8 border-t pt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Wrench className="w-4 h-4 text-amber-600" />
+          <h3 className="text-sm font-semibold text-amber-700">Correct Instrument Data from Control Sheet</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Fixes incorrectly imported Julius Baer instruments: updates investment names, NAV values, and fee rates to match the authoritative control sheet. Matches existing DB rows by NAV value.
+        </p>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Upload Month</Label>
+            <Input
+              type="month"
+              value={fixMonth}
+              onChange={e => { setFixMonth(e.target.value); setFixStatus(null); setFixResult(null); }}
+              className="max-w-xs h-9"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-100"
+            disabled={!fixMonth || fixStatus === 'running'}
+            onClick={async () => {
+              setFixStatus('running');
+              setFixResult(null);
+              try {
+                const result = await applyJbAprilFix(fixMonth);
+                queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+                queryClient.invalidateQueries({ queryKey: ['feeConfigs'] });
+                setFixStatus('done');
+                setFixResult(result);
+              } catch (err) {
+                setFixStatus('error');
+                setFixResult({ error: err?.message || 'Fix failed' });
+              }
+            }}
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            {fixStatus === 'running' ? 'Correcting…' : 'Apply Control Sheet Corrections'}
+          </Button>
+
+          {fixStatus === 'done' && fixResult && (
+            <div className="flex items-start gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">
+                  {fixResult.updated} of {fixResult.totalJbRows} Julius Baer rows corrected for {fixMonth}.
+                </p>
+                {fixResult.unmatched > 0 && (
+                  <p className="text-xs text-amber-700 mt-1">
+                    {fixResult.unmatched} control sheet rows had no matching DB row (may need to be re-imported).
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          {fixStatus === 'error' && fixResult && (
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded p-3">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {fixResult.error}
+            </div>
+          )}
+        </div>
+      </div>
+
       <DeleteMonthData provider="julius-baer" />
     </div>
   );
