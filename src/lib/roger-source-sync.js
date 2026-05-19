@@ -25,6 +25,3 @@ export async function purgeEmbeddedMonthsFromDB({ months = Object.keys(rogerSour
 
   return { months: targetMonths, portfolioRowsDeleted, uploadRecordsDeleted: uploadsToDelete.length };
 }
-
-// Alias kept for any remaining callers — now only purges, never writes to DB.
-export const syncRogerSourceRows = purgeEmbeddedMonthsFromDB;

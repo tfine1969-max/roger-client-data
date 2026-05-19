@@ -20,9 +20,8 @@ import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
 import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
-import { syncRogerSourceRows, purgeEmbeddedMonthsFromDB } from '@/lib/roger-source-sync';
+import { purgeEmbeddedMonthsFromDB } from '@/lib/roger-source-sync';
 import { applySeededFeesToMonth } from '@/lib/fee-sync';
-import { rogerSourceRows } from '@/data/rogerSourceRows';
 
 const PROVIDERS = [
   { id: 'credo', label: 'Credo' },
@@ -214,52 +213,19 @@ function MonthlyWorkbookUpload({ onImported }) {
     }
   };
 
-  const handleRepairSourceData = async () => {
-    setStatus('uploading');
-    setMessage('Replacing Jan-Mar with embedded Roger source rows...');
-    setDetail(null);
-    setProgress({ clients: 0, holdings: 0, aum: 0 });
-    try {
-      const result = await syncRogerSourceRows();
-      setProgress({
-        clients: result.clients_imported,
-        holdings: result.rows_imported,
-        aum: result.aum_imported,
-      });
-      setStatus('success');
-      setMessage(`Repaired ${result.rows_imported} source rows across ${result.months.map(formatMonth).join(', ')}.`);
-      setDetail({
-        sheets_imported: result.months.map(formatMonth),
-        rows_skipped: 0,
-        sheet_summaries: result.months.map(month => ({
-          sheet: formatMonth(month),
-          rows_imported: rogerSourceRows.filter(row => row.upload_month === month).length,
-          aum: result.totals[month] || 0,
-        })),
-      });
-      await refreshAfterSourceImport(result.months);
-    } catch (err) {
-      setStatus('error');
-      setMessage(err.message || 'Source repair failed');
-    }
-  };
-
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         Upload the Roger source workbook. Each month sheet is imported using the ZAR NAV values exactly as supplied, with rebate and advisory fee rates seeded from the workbook.
       </p>
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-        <p className="text-sm font-semibold text-amber-950">Source Repair</p>
+        <p className="text-sm font-semibold text-amber-950">Jan–Mar 2026 Source Data</p>
         <p className="mt-1 text-xs text-amber-800">
-          Jan-Mar 2026 data is served from the embedded file. Use <strong>Remove DB Duplicates</strong> to delete any database copies that cause double-counting. Use <strong>Repair</strong> only if the embedded data itself looks wrong.
+          Jan–Mar 2026 data is served from the embedded source file and never written to the database. If duplicate records exist from a previous import, use the button below to remove them.
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3">
           <Button type="button" variant="outline" className="bg-white" onClick={handlePurgeEmbeddedMonths} disabled={status === 'uploading'}>
-            Remove DB Duplicates (Jan-Mar)
-          </Button>
-          <Button type="button" variant="outline" className="bg-white" onClick={handleRepairSourceData} disabled={status === 'uploading'}>
-            Repair Jan-Mar Source Data
+            Remove DB Duplicates (Jan–Mar)
           </Button>
         </div>
       </div>

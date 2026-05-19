@@ -17,32 +17,35 @@ const PROVIDER_LABELS = {
   'prescient': 'Prescient',
 };
 
-// Maps provider tab ID → platform value(s) stored in PortfolioValuation
-const PROVIDER_PLATFORMS = {
-  'prime': ['Prime', 'Prime Investments'],
-  'julius-baer': ['Julius Baer'],
-  'credo': ['Credo'],
-  'gryphon': ['Gryphon', 'Gryphon Asset Management'],
-  'northstar': ['Northstar', 'Northstar FNB', 'Northstar Sanlam'],
-  'peresec': ['Peresec', 'Peresec Securities'],
-  'prescient': ['Prescient'],
-  'monthly': null, // null = delete all platforms for that month
+// Lowercase substring used to match platform values stored in the DB.
+// Base44 filter is case-sensitive, so we fetch all rows for the month
+// and filter client-side using includes() to handle any capitalisation variant.
+const PROVIDER_PLATFORM_KEY = {
+  'prime': 'prime',
+  'julius-baer': 'julius baer',
+  'credo': 'credo',
+  'gryphon': 'gryphon',
+  'northstar': 'northstar',
+  'peresec': 'peresec',
+  'prescient': 'prescient',
+  'monthly': null, // null = delete every platform for that month
 };
 
 const BATCH = 25;
 
 async function deleteMonthDataClientSide(provider, month) {
-  const platforms = PROVIDER_PLATFORMS[provider];
-  let pvRows = [];
+  const platformKey = PROVIDER_PLATFORM_KEY[provider];
 
-  if (platforms) {
-    const results = await Promise.all(
-      platforms.map(p => base44.entities.PortfolioValuation.filter({ upload_month: month, platform: p }, '-created_date', 20000))
-    );
-    pvRows = results.flat();
-  } else {
-    pvRows = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 20000);
-  }
+  // Fetch all rows for the month then filter locally — avoids case-sensitivity
+  // issues with the Base44 server-side filter.
+  const allPvRows = await base44.entities.PortfolioValuation.filter(
+    { upload_month: month },
+    '-created_date',
+    20000
+  );
+  const pvRows = platformKey
+    ? allPvRows.filter(r => String(r.platform || '').toLowerCase().includes(platformKey))
+    : allPvRows;
 
   for (let i = 0; i < pvRows.length; i += BATCH) {
     await Promise.all(pvRows.slice(i, i + BATCH).map(r => base44.entities.PortfolioValuation.delete(r.id)));
@@ -51,16 +54,18 @@ async function deleteMonthDataClientSide(provider, month) {
   const allUploads = await base44.entities.MonthlyUpload.list('-upload_date', 500);
   const uploadsToDelete = allUploads.filter(u => {
     if (u.upload_month !== month) return false;
-    if (!platforms) return true;
-    const notes = (u.notes || '').toLowerCase();
-    const file = (u.file_name || '').toLowerCase();
-    return platforms.some(p => notes.includes(p.toLowerCase()) || file.includes(p.toLowerCase()));
+    if (!platformKey) return true;
+    const haystack = `${u.notes || ''} ${u.file_name || ''}`.toLowerCase();
+    return haystack.includes(platformKey);
   });
   for (let i = 0; i < uploadsToDelete.length; i += BATCH) {
     await Promise.all(uploadsToDelete.slice(i, i + BATCH).map(r => base44.entities.MonthlyUpload.delete(r.id)));
   }
 
-  return { portfolio_valuations_deleted: pvRows.length, upload_records_deleted: uploadsToDelete.length };
+  return {
+    portfolio_valuations_deleted: pvRows.length,
+    upload_records_deleted: uploadsToDelete.length,
+  };
 }
 
 export default function DeleteMonthData({ provider }) {

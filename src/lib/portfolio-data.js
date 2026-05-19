@@ -24,8 +24,10 @@ const embeddedKeys = new Set(
 function dbRowSuperseded(row) {
   const key = `${row.upload_month}||${String(row.platform || '').toLowerCase().trim()}||${String(row.account_code || '').toLowerCase().trim()}`;
   if (embeddedKeys.has(key)) return true;
-  // Catch the incorrectly aggregated April 2026 Prime row for Marc Hoar (~R59M total).
-  // The correct per-fund data is in the embedded rogerSourceRows.
+  // Exclude the single incorrectly-aggregated April 2026 Prime row (~R59M, total of all
+  // Marc Hoar holdings lumped into one record). The correct per-fund rows were re-imported
+  // separately. Delete this bad row via Upload → Prime → Delete Data → April 2026, then
+  // remove these lines.
   const val = row.zar_value || row.month_end_market_value || 0;
   if (
     row.upload_month === '2026-04' &&
