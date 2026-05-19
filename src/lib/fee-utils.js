@@ -244,33 +244,65 @@ export function findEffectiveFeeConfig(row, feeConfigs = []) {
 
 export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const config = findEffectiveFeeConfig(row, feeConfigs);
+
+  // Check for an exact fund+provider+client match in the seed rows first.
+  // feeMappingRows = [...feeSeedRows, ...historicalFeeMappingRows]. feeSeedRows have no
+  // navByMonth so they are always valid regardless of month. An exact match should win
+  // over statistical / nav-based matching which can produce wrong results for new months.
+  const providerKey = compactFeeText(row.platform);
+  const investmentKey = compactFeeText(row.investment_name);
+  const clientKey = compactFeeText(row.portfolio_name || '');
+  // First try exact client+fund+provider match, then fall back to fund+provider only
+  const exactSeedMatch = (() => {
+    const providerAndFund = feeMappings.filter(m => {
+      const mProvider = compactFeeText(m.provider);
+      const mInvestment = m.investmentKey || compactFeeText(m.investment);
+      return mProvider === providerKey && mInvestment === investmentKey;
+    });
+    if (providerAndFund.length === 0) return null;
+    // Prefer client-specific match
+    const clientSpecific = providerAndFund.find(m => {
+      const score = clientMatchScore(m.client, row.portfolio_name || '');
+      return score >= 75;
+    });
+    return clientSpecific || (providerAndFund.length === 1 ? providerAndFund[0] : null);
+  })();
+
   const seeded = findSeededFeeRatesForRow(row, feeMappings);
   const mapping = findFeeMappingForRow(row, feeMappings);
   const hasStoredRate = row.rebate_fee_annual_percent != null || row.advisory_fee_annual_percent != null;
   const seedMatched = seeded.rebateMatched || seeded.advisoryMatched;
   const source = (seedMatched ? seeded : null) || config || mapping || (hasStoredRate ? row : null);
-  const rebate = seeded.rebateMatched
-      ? seeded.rebate
-      : config
-        ? (config.rebate_fee_annual_percent ?? 0)
-        // Prefer stored DB value over mapping clientFallback — the clientFallback picks
-        // the best-scoring client row regardless of fund, so it can apply a rebate rate
-        // for a different fund (e.g. De Mey's Rubrics rate applied to her Trading Account).
-        : row.rebate_fee_annual_percent ?? mapping?.rebateAnnualPercent ?? 0;
-  const advisory = seeded.advisoryMatched
-      ? seeded.advisory
-      : config
-        ? (config.advisory_fee_annual_percent ?? 0)
-        : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
+
+  // Priority for rebate: exact seed match > seeded statistical > config > stored/mapping
+  const rebate = exactSeedMatch
+      ? (exactSeedMatch.rebateAnnualPercent ?? 0)
+      : seeded.rebateMatched
+        ? seeded.rebate
+        : config
+          ? (config.rebate_fee_annual_percent ?? 0)
+          // Prefer stored DB value over mapping clientFallback — the clientFallback picks
+          // the best-scoring client row regardless of fund, so it can apply a rebate rate
+          // for a different fund (e.g. De Mey's Rubrics rate applied to her Trading Account).
+          : row.rebate_fee_annual_percent ?? mapping?.rebateAnnualPercent ?? 0;
+
+  // Priority for advisory: exact seed match > seeded statistical > config > stored/mapping
+  const advisory = exactSeedMatch
+      ? (exactSeedMatch.advisoryAnnualPercent ?? 0)
+      : seeded.advisoryMatched
+        ? seeded.advisory
+        : config
+          ? (config.advisory_fee_annual_percent ?? 0)
+          : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
   const feeBaseZar = zarVal(row);
 
   // fee_required = true when there's no source at all, OR when a config exists
   // but advisory_fee_annual_percent has never been explicitly set (null = not yet touched).
   // Explicitly setting 0 is valid and clears the flag.
   const advisoryNeverSet = config
-    ? !seeded.advisoryMatched && config.advisory_fee_annual_percent == null
-    : !seeded.advisoryMatched && !mapping && !hasStoredRate;
-  const feeRequired = !source || advisoryNeverSet;
+    ? !exactSeedMatch && !seeded.advisoryMatched && config.advisory_fee_annual_percent == null
+    : !exactSeedMatch && !seeded.advisoryMatched && !mapping && !hasStoredRate;
+  const feeRequired = (!source && !exactSeedMatch) || advisoryNeverSet;
 
   return {
     ...row,
@@ -278,7 +310,7 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
     fee_base_zar: feeBaseZar,
     fee_base_source: 'valuation',
     fee_required: feeRequired,
-    fee_source: seedMatched ? 'seeded' : config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
+    fee_source: exactSeedMatch ? 'seeded' : seedMatched ? 'seeded' : config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
     fee_mapping_client: seeded.advisoryMapping?.client || mapping?.client,
     fee_mapping_match_score: mapping?.matchScore ?? null,
   };
