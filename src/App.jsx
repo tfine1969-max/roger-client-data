@@ -21,6 +21,7 @@ import Control from '@/pages/Control';
 import InvestmentSummary from '@/pages/InvestmentSummary';
 import PullRequests from '@/pages/PullRequests';
 import MarcHoarReport from '@/pages/MarcHoarReport';
+import WorrallFamilyReport from '@/pages/WorrallFamilyReport';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/investment-summary" element={<InvestmentSummary />} />
         <Route path="/pull-requests" element={<PullRequests />} />
         <Route path="/reports/marc-hoar" element={<MarcHoarReport />} />
+        <Route path="/reports/worrall-family" element={<WorrallFamilyReport />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
