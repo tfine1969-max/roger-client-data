@@ -78,3 +78,28 @@ export function applyMappingsToRows(rows) {
 export function hasFundMappings() {
   return Object.keys(getFundMappings()).length > 0;
 }
+
+/**
+ * Apply FundMergeRule DB records to rows — same as applyMappingsToRows but
+ * takes the rules array as an argument so callers can include it as a proper
+ * React useMemo dependency (avoiding stale-closure issues with localStorage).
+ */
+export function applyRulesToRows(rows, rules = []) {
+  if (!rules.length) return applyMappingsToRows(rows); // fall back to localStorage
+  const map = {};
+  rules.forEach(rule => {
+    if (!rule.source_name || !rule.canonical_name || rule.platform === '__extra_master__') return;
+    const key = `${clean(rule.platform || 'Unknown')}||${clean(rule.source_name)}`;
+    map[key] = rule.canonical_name;
+  });
+  // Also merge in any localStorage mappings not yet in DB
+  const local = getFundMappings();
+  Object.entries(local).forEach(([k, v]) => { if (!map[k]) map[k] = v; });
+  if (!Object.keys(map).length) return rows;
+  return rows.map(row => {
+    const key = `${clean(row.platform)}||${clean(row.investment_name)}`;
+    const canonical = map[key];
+    if (!canonical || canonical === row.investment_name) return row;
+    return { ...row, investment_name: canonical };
+  });
+}

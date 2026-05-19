@@ -7,7 +7,7 @@ import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-ut
 import { withCalculatedFees } from '@/lib/fee-utils';
 import { clientKey } from '@/lib/client-utils';
 import { feeMappingRows } from '@/data/feeMapping';
-import { applyMappingsToRows } from '@/lib/fund-utils';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,9 +32,15 @@ export default function Dashboard() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const feeRows = useMemo(
-    () => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
-    [valuations, feeConfigs]
+    () => applyRulesToRows(valuations, fundMergeRules).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    [valuations, feeConfigs, fundMergeRules]
   );
 
   const months = useMemo(() => getSortedMonths(feeRows), [feeRows]);

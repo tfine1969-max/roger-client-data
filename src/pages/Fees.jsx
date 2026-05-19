@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { feeOptionValues, summariseFees, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
-import { applyMappingsToRows } from '@/lib/fund-utils';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronRight, ArrowLeft } from 'lucide-react';
@@ -50,9 +50,15 @@ export default function Fees() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const feeRows = useMemo(
-    () => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
-    [valuations, feeConfigs]
+    () => applyRulesToRows(valuations, fundMergeRules).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    [valuations, feeConfigs, fundMergeRules]
   );
 
   const months = useMemo(() => getSortedMonths(feeRows), [feeRows]);

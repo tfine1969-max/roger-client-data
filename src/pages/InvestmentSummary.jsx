@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
-import { getFundMappings, applyMappingsToRows } from '@/lib/fund-utils';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -308,39 +308,17 @@ export default function InvestmentSummary() {
     queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
   });
 
-  // Apply Funds-page localStorage mappings to raw valuations so canonical names
-  // are baked into the row data before any grouping happens. This reads from
-  // localStorage on every render (useMemo), so Funds-page changes take effect
-  // immediately without a React Query cache bust.
-  const mappedValuations = useMemo(() => applyMappingsToRows(valuations), [valuations]);
+  // Apply fund name mappings to raw valuations before grouping.
+  // Uses fundMergeRules (DB, proper React dependency) so the memo recomputes
+  // whenever the DB data changes — avoids stale-closure issues with localStorage.
+  const mappedValuations = useMemo(
+    () => applyRulesToRows(valuations, fundMergeRules),
+    [valuations, fundMergeRules]
+  );
 
-  // Build fund-name merge map from DB FundMergeRule records only.
-  // (localStorage mappings are already applied by applyMappingsToRows above.)
-  const manualFundMerges = useMemo(() => {
-    if (!mappedValuations.length) return {};
-    if (!fundMergeRules.length) return {};
-    const ruleMap = {};
-    fundMergeRules.forEach(rule => {
-      const nm = String(rule.source_name || '').trim().replace(/\s+/g, ' ');
-      const pl = String(rule.platform || '').trim().replace(/\s+/g, ' ');
-      ruleMap[`${nm}||${pl}`] = rule.canonical_name;
-      ruleMap[`${nm}||`] = ruleMap[`${nm}||`] || rule.canonical_name;
-    });
-    const merges = {};
-    const seen = new Set();
-    mappedValuations.forEach(row => {
-      const rawKey = investmentKey(row);
-      if (seen.has(rawKey)) return;
-      seen.add(rawKey);
-      const nm = String(row.investment_name || '').trim().replace(/\s+/g, ' ');
-      const pl = String(row.platform || '').trim().replace(/\s+/g, ' ');
-      const canonical = ruleMap[`${nm}||${pl}`] || ruleMap[`${nm}||`];
-      if (canonical && canonical !== row.investment_name) {
-        merges[rawKey] = canonical;
-      }
-    });
-    return merges;
-  }, [fundMergeRules, mappedValuations]);
+  // manualFundMerges handles in-page merge dialog selections only.
+  // DB + localStorage mappings are already applied in mappedValuations above.
+  const manualFundMerges = useMemo(() => ({}), []);
 
   // Layer in-page pending merges on top of the computed base
   const effectiveMerges = useMemo(
