@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X } from 'lucide-react';
+import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X, Pencil } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import { masterFundList } from '@/data/masterFundList';
@@ -93,6 +93,8 @@ export default function Funds() {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [variantSearch, setVariantSearch] = useState('');
+  const [globalVariantSearch, setGlobalVariantSearch] = useState('');
+  const [showLinkedNames, setShowLinkedNames] = useState(false);
   const [selectedMaster, setSelectedMaster] = useState(masterFundList[0]);
   const [selectedVariants, setSelectedVariants] = useState({});
   const [selectedReviewVariants, setSelectedReviewVariants] = useState({});
@@ -233,6 +235,14 @@ export default function Funds() {
   const selectedMasterPendingVariants = selectedMasterVariants.filter(variant => mappings[variant.key] !== selectedMaster);
   const reviewVariants = variants.filter(variant => !variant.mappedMaster);
   const linkedCount = variants.filter(variant => variant.mappedMaster).length;
+  // Variants already mapped to the currently selected master
+  const linkedToMaster = variants.filter(v => mappings[v.key] === selectedMaster);
+  // Global search across ALL variants (linked + unlinked) for reassignment
+  const globalSearchResults = useMemo(() => {
+    const q = canonicalKey(globalVariantSearch);
+    if (!q) return [];
+    return variants.filter(v => canonicalKey(`${v.platform} ${v.name}`).includes(q));
+  }, [variants, globalVariantSearch]);
 
   const toggleVariant = (key) => {
     setSelectedVariants(current => ({ ...current, [key]: !current[key] }));
@@ -504,6 +514,88 @@ export default function Funds() {
               </table>
             </div>
           </div>}
+
+          {/* Currently linked names for selected master — lets user see & change existing links */}
+          {linkedToMaster.length > 0 && (
+            <div className="rounded-lg border bg-white">
+              <button
+                onClick={() => setShowLinkedNames(o => !o)}
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted/20 text-left"
+              >
+                <div>
+                  <h2 className="text-sm font-semibold">{linkedToMaster.length} name{linkedToMaster.length !== 1 ? 's' : ''} currently linked to <span className="text-primary">{selectedMaster}</span></h2>
+                  <p className="text-xs text-muted-foreground">Expand to unlink or reassign to a different master fund</p>
+                </div>
+                <span className="text-xs text-muted-foreground">{showLinkedNames ? '▲ Hide' : '▼ Show'}</span>
+              </button>
+              {showLinkedNames && (
+                <div className="border-t divide-y">
+                  {linkedToMaster.map(variant => (
+                    <div key={variant.key} className="flex items-center gap-3 px-3 py-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate" title={variant.name}>{variant.name}</p>
+                        <p className="text-[11px] text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)}</p>
+                      </div>
+                      <select
+                        className="h-7 rounded border border-input bg-white text-[11px] px-1.5 max-w-[220px] truncate"
+                        value={mappings[variant.key] || ''}
+                        onChange={e => { if (e.target.value) linkOne(variant.key, e.target.value); }}
+                      >
+                        {masterFunds.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                      <Button variant="outline" size="sm" onClick={() => unlinkOne(variant.key)} className="h-7 px-2 text-[11px] shrink-0">Unlink</Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Global variant search — find ANY provider name (linked or not) and reassign it */}
+          <div className="rounded-lg border bg-white">
+            <div className="border-b px-3 py-2.5">
+              <h2 className="text-sm font-semibold flex items-center gap-1.5"><Pencil className="h-3.5 w-3.5" /> Find &amp; Reassign</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Search any provider instrument name to change an existing link or link an unlinked name.</p>
+              <div className="relative mt-2">
+                <Search className="absolute left-3 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input value={globalVariantSearch} onChange={e => setGlobalVariantSearch(e.target.value)} placeholder="Type a fund name to search all variants…" className="h-8 pl-8 text-xs" />
+              </div>
+            </div>
+            {globalSearchResults.length > 0 && (
+              <div className="divide-y">
+                {globalSearchResults.slice(0, 20).map(variant => (
+                  <div key={variant.key} className="flex items-center gap-3 px-3 py-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate" title={variant.name}>{variant.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{variant.platform} · ZAR {fmtNum(variant.totalZar)}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {mappings[variant.key] && (
+                        <span className="text-[10px] text-green-700 font-medium max-w-[120px] truncate" title={mappings[variant.key]}>→ {mappings[variant.key]}</span>
+                      )}
+                      <select
+                        className="h-7 rounded border border-input bg-white text-[11px] px-1.5 max-w-[200px]"
+                        value={mappings[variant.key] || ''}
+                        onChange={e => { if (e.target.value) linkOne(variant.key, e.target.value); }}
+                      >
+                        <option value="">— choose master —</option>
+                        {masterFunds.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                      {mappings[variant.key] && (
+                        <Button variant="ghost" size="sm" onClick={() => unlinkOne(variant.key)} className="h-7 px-2 text-[11px]">Unlink</Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {globalSearchResults.length > 20 && (
+                  <p className="px-3 py-2 text-xs text-muted-foreground">{globalSearchResults.length - 20} more results — refine your search.</p>
+                )}
+              </div>
+            )}
+            {globalVariantSearch && globalSearchResults.length === 0 && (
+              <p className="px-3 py-3 text-xs text-muted-foreground">No provider instruments match &quot;{globalVariantSearch}&quot;.</p>
+            )}
+          </div>
 
           <div className="rounded-lg border bg-white">
             <div className="border-b px-3 py-2.5">
