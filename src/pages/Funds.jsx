@@ -1,15 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { getSortedMonths, fmtNum, formatMonth, zarVal } from '@/lib/valuation-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle2, Link2, Plus, Search, X } from 'lucide-react';
+import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import { masterFundList } from '@/data/masterFundList';
+import { base44 } from '@/api/base44Client';
 
 const MAPPING_KEY = 'fund_master_mappings_v1';
 const EXTRA_MASTER_KEY = 'fund_master_extra_v1';
@@ -102,6 +103,68 @@ export default function Funds() {
   const [message, setMessage] = useState(null);
   const [mappings, setMappings] = useState(() => loadJson(MAPPING_KEY, {}));
   const [extraMasterFunds, setExtraMasterFunds] = useState(() => loadJson(EXTRA_MASTER_KEY, []));
+  const [dbSyncStatus, setDbSyncStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+
+  const queryClient = useQueryClient();
+
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // On startup, hydrate localStorage from DB if local data is missing.
+  // This restores mappings after a container restart without any manual steps.
+  useEffect(() => {
+    if (!fundMergeRules.length) return;
+    const existingMappings = loadJson(MAPPING_KEY, {});
+    const existingExtra = loadJson(EXTRA_MASTER_KEY, []);
+    const hydratedMappings = { ...existingMappings };
+    const hydratedExtra = new Set(existingExtra);
+    let changed = false;
+    fundMergeRules.forEach(rule => {
+      if (!rule.source_name || !rule.canonical_name) return;
+      if (rule.platform === '__extra_master__') {
+        if (!hydratedExtra.has(rule.canonical_name)) { hydratedExtra.add(rule.canonical_name); changed = true; }
+        return;
+      }
+      const key = `${clean(rule.platform || 'Unknown')}||${clean(rule.source_name)}`;
+      if (!hydratedMappings[key]) { hydratedMappings[key] = rule.canonical_name; changed = true; }
+    });
+    if (changed) {
+      saveJson(MAPPING_KEY, hydratedMappings);
+      setMappings(hydratedMappings);
+      const extraArr = [...hydratedExtra].sort((a, b) => a.localeCompare(b));
+      saveJson(EXTRA_MASTER_KEY, extraArr);
+      setExtraMasterFunds(extraArr);
+    }
+  }, [fundMergeRules]);
+
+  // Persist all current mappings + extra master funds to the DB so they survive
+  // container restarts and session changes. Called automatically on every link op.
+  const persistToDb = useCallback(async (currentMappings, currentExtraFunds) => {
+    setDbSyncStatus('saving');
+    try {
+      const rules = [
+        ...Object.entries(currentMappings)
+          .filter(([, canonical]) => canonical)
+          .map(([key, canonical]) => {
+            const sepIdx = key.indexOf('||');
+            return { source_name: key.slice(sepIdx + 2), canonical_name: canonical, platform: key.slice(0, sepIdx) };
+          }),
+        ...(currentExtraFunds || []).map(name => ({
+          source_name: name, canonical_name: name, platform: '__extra_master__',
+        })),
+      ];
+      if (!rules.length) { setDbSyncStatus('idle'); return; }
+      await base44.functions.invoke('seedFundMergeRules', { rules });
+      queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
+      setDbSyncStatus('saved');
+      setTimeout(() => setDbSyncStatus('idle'), 4000);
+    } catch {
+      setDbSyncStatus('error');
+    }
+  }, [queryClient]);
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -184,6 +247,7 @@ export default function Funds() {
     saveJson(MAPPING_KEY, next);
     setSelectedVariants({});
     setMessage({ type: 'success', text: `Linked ${keys.length} provider instrument${keys.length === 1 ? '' : 's'} to ${selectedMaster}.` });
+    persistToDb(next, extraMasterFunds);
   };
 
   const selectedReviewKeys = Object.entries(selectedReviewVariants).filter(([, checked]) => checked).map(([key]) => key);
@@ -201,6 +265,7 @@ export default function Funds() {
     setSelectedReviewVariants({});
     setBulkReviewTarget(NO_MASTER);
     setMessage({ type: 'success', text: `Linked ${selectedReviewKeys.length} provider instrument${selectedReviewKeys.length === 1 ? '' : 's'} to ${bulkReviewTarget}.` });
+    persistToDb(next, extraMasterFunds);
   };
 
   const linkOne = (key, fund) => {
@@ -209,6 +274,7 @@ export default function Funds() {
     setMappings(next);
     saveJson(MAPPING_KEY, next);
     setMessage({ type: 'success', text: `Linked instrument to ${fund}.` });
+    persistToDb(next, extraMasterFunds);
   };
 
   const unlinkOne = (key) => {
@@ -217,6 +283,7 @@ export default function Funds() {
     setMappings(next);
     saveJson(MAPPING_KEY, next);
     setMessage({ type: 'success', text: 'Removed the manual fund link.' });
+    persistToDb(next, extraMasterFunds);
   };
 
   const addMasterFund = (name = newFundName, variantKeyToSelect = null) => {
@@ -237,6 +304,7 @@ export default function Funds() {
     if (variantKeyToSelect) setReviewTargets(current => ({ ...current, [variantKeyToSelect]: fund }));
     setNewFundName('');
     setMessage({ type: 'success', text: `Added ${fund} to the master list. Confirm the link to apply it to the provider instrument.` });
+    persistToDb(mappings, next);
   };
 
   const openNewMasterModal = (variant) => {
@@ -263,14 +331,41 @@ export default function Funds() {
             Link provider instrument names to the approved Wealthworks fund naming convention.
           </p>
         </div>
-        <Select value={latestMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-44 bg-white">
-            <SelectValue placeholder="Latest month" />
-          </SelectTrigger>
-          <SelectContent>
-            {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2 shrink-0">
+          {dbSyncStatus === 'saving' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving to database…
+            </span>
+          )}
+          {dbSyncStatus === 'saved' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-green-700">
+              <Cloud className="h-3.5 w-3.5" /> Saved to database
+            </span>
+          )}
+          {dbSyncStatus === 'error' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-red-600">
+              <CloudOff className="h-3.5 w-3.5" /> Save failed — retry below
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            disabled={dbSyncStatus === 'saving'}
+            onClick={() => persistToDb(mappings, extraMasterFunds)}
+          >
+            <Cloud className="h-3.5 w-3.5" />
+            {Object.keys(mappings).length > 0 ? `Save ${Object.keys(mappings).length} links to DB` : 'Save to database'}
+          </Button>
+          <Select value={latestMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-44 bg-white">
+              <SelectValue placeholder="Latest month" />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map(m => <SelectItem key={m} value={m}>{formatMonth(m)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
