@@ -25,8 +25,17 @@ const singleItems = [
   { path: '/clients', label: 'Clients', icon: Users, color: COLORS.grey },
   { path: '/platforms', label: 'Platforms', icon: BarChart3, color: COLORS.blueTint55 },
   { path: '/funds', label: 'Funds', icon: Briefcase, color: COLORS.greyTint55 },
-  { path: '/investment-summary', label: 'Reports', icon: LineChart, color: COLORS.blueTint35 },
+  { path: '/investment-summary', label: 'Summary', icon: LineChart, color: COLORS.blueTint35 },
 ];
+
+const reportsGroup = {
+  label: 'Client Reports',
+  icon: LineChart,
+  color: COLORS.blueTint35,
+  items: [
+    { path: '/reports/marc-hoar', label: 'Marc Hoar', icon: Users },
+  ],
+};
 
 const feesGroup = {
   label: 'Fees',
@@ -167,6 +176,7 @@ export default function AppLayout() {
                 );
               })}
 
+              <NavDropdown group={reportsGroup} location={location} />
               <NavDropdown group={feesGroup} location={location} />
               <NavDropdown group={dataGroup} location={location} />
             </nav>

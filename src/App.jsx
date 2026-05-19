@@ -20,6 +20,7 @@ import PrimeProvider from '@/pages/PrimeProvider';
 import Control from '@/pages/Control';
 import InvestmentSummary from '@/pages/InvestmentSummary';
 import PullRequests from '@/pages/PullRequests';
+import MarcHoarReport from '@/pages/MarcHoarReport';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
         <Route path="/providers/prime" element={<PrimeProvider />} />
         <Route path="/investment-summary" element={<InvestmentSummary />} />
         <Route path="/pull-requests" element={<PullRequests />} />
+        <Route path="/reports/marc-hoar" element={<MarcHoarReport />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
