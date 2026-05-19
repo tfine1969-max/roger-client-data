@@ -137,8 +137,9 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
-        <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
-          <div className="flex h-14 items-center gap-4">
+        <div className="relative h-14">
+          {/* Logo pinned to the left edge of the viewport (outside max-width column) */}
+          <div className="absolute inset-y-0 left-0 flex items-center px-3 sm:px-4 lg:px-6">
             <Link to="/" className="group flex shrink-0 items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png"
@@ -149,6 +150,9 @@ export default function AppLayout() {
                 Cape Town Client Management
               </p>
             </Link>
+          </div>
+          {/* Nav aligned to the same max-width column as main content */}
+          <div className="max-w-screen-xl mx-auto px-5 sm:px-6 h-full flex items-center">
             <nav className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-slate-50/80 p-1 flex-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
