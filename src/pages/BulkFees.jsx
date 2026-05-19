@@ -5,6 +5,7 @@ import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { withCalculatedFees, buildFeeMap, feeKey, calcFees } from '@/lib/fee-utils';
 import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -13,7 +14,7 @@ import { Search, Save, AlertCircle, ChevronDown, ChevronRight, Users, LayoutList
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function buildClientRows(valuations, feeConfigs, month) {
-  const monthRows = valuations.filter(v => v.upload_month === month);
+  const monthRows = applyMappingsToRows(valuations.filter(v => v.upload_month === month));
   const enriched = monthRows.map(r => withCalculatedFees(r, feeMappingRows, feeConfigs));
   const seen = new Set();
   const rows = [];

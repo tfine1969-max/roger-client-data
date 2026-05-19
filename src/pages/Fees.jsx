@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { getSortedMonths, fmtNum, formatMonth } from '@/lib/valuation-utils';
 import { feeOptionValues, summariseFees, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyMappingsToRows } from '@/lib/fund-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronRight, ArrowLeft } from 'lucide-react';
@@ -50,7 +51,7 @@ export default function Fees() {
   });
 
   const feeRows = useMemo(
-    () => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    () => applyMappingsToRows(valuations).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
     [valuations, feeConfigs]
   );
 
