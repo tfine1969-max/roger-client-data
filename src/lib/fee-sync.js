@@ -30,7 +30,19 @@ export async function applySeededFeesToMonth(month, { platforms = null, onProgre
   let rows = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', PAGE);
 
   if (platforms && platforms.length > 0) {
-    const platformSet = new Set(platforms.map(p => p.toLowerCase()));
+    // Expand shorthand names to all known platform variants stored in the DB
+    const PLATFORM_ALIASES = {
+      'prime': ['prime', 'prime investments'],
+      'julius baer': ['julius baer'],
+      'credo': ['credo'],
+      'gryphon': ['gryphon', 'gryphon asset management'],
+      'northstar': ['northstar', 'northstar fnb', 'northstar sanlam'],
+      'peresec': ['peresec', 'peresec securities'],
+      'prescient': ['prescient'],
+    };
+    const platformSet = new Set(
+      platforms.flatMap(p => PLATFORM_ALIASES[p.toLowerCase()] ?? [p.toLowerCase()])
+    );
     rows = rows.filter(r => platformSet.has(String(r.platform || '').toLowerCase()));
   }
 

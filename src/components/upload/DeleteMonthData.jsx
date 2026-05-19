@@ -19,11 +19,11 @@ const PROVIDER_LABELS = {
 
 // Maps provider tab ID → platform value(s) stored in PortfolioValuation
 const PROVIDER_PLATFORMS = {
-  'prime': ['Prime'],
+  'prime': ['Prime', 'Prime Investments'],
   'julius-baer': ['Julius Baer'],
   'credo': ['Credo'],
-  'gryphon': ['Gryphon'],
-  'northstar': ['Northstar'],
+  'gryphon': ['Gryphon', 'Gryphon Asset Management'],
+  'northstar': ['Northstar', 'Northstar FNB', 'Northstar Sanlam'],
   'peresec': ['Peresec', 'Peresec Securities'],
   'prescient': ['Prescient'],
   'monthly': null, // null = delete all platforms for that month
