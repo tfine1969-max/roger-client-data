@@ -115,19 +115,19 @@ Deno.serve(async (req) => {
       }, mergeRules));
     }
 
-    const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month);
-
-    await base44.asServiceRole.entities.MonthlyUpload.create({
+    const upload = await base44.asServiceRole.entities.MonthlyUpload.create({
       upload_month,
       file_name: file_url.split('/').pop(),
       upload_date: new Date().toISOString(),
       uploaded_by: user.email,
-      total_rows: created,
-      rows_imported: created,
+      total_rows: valuations.length,
+      rows_imported: valuations.length,
       rows_skipped: 0,
       import_status: 'Imported',
       notes: 'Gryphon import.',
     });
+
+    const created = await bulkCreateValuations(base44, valuations.map(r => ({ ...r, monthly_upload_id: upload.id })), replace_existing, upload_month);
 
     return Response.json({
       success: true,
