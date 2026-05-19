@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
-import { getFundMappings } from '@/lib/fund-utils';
+import { getFundMappings, applyMappingsToRows } from '@/lib/fund-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -308,42 +308,39 @@ export default function InvestmentSummary() {
     queryFn: () => base44.entities.FundMergeRule.list('source_name', 1000),
   });
 
-  // Build fund-name merge map from DB rules + Funds-page localStorage mappings.
-  // Computed as a memo (not state+effect) so it always reflects the current
-  // localStorage without needing a cache bust or explicit state update.
+  // Apply Funds-page localStorage mappings to raw valuations so canonical names
+  // are baked into the row data before any grouping happens. This reads from
+  // localStorage on every render (useMemo), so Funds-page changes take effect
+  // immediately without a React Query cache bust.
+  const mappedValuations = useMemo(() => applyMappingsToRows(valuations), [valuations]);
+
+  // Build fund-name merge map from DB FundMergeRule records only.
+  // (localStorage mappings are already applied by applyMappingsToRows above.)
   const manualFundMerges = useMemo(() => {
-    if (!valuations.length) return {};
+    if (!mappedValuations.length) return {};
+    if (!fundMergeRules.length) return {};
     const ruleMap = {};
-    // DB-saved FundMergeRule records
     fundMergeRules.forEach(rule => {
-      ruleMap[`${rule.source_name}||${rule.platform || ''}`] = rule.canonical_name;
+      const nm = String(rule.source_name || '').trim().replace(/\s+/g, ' ');
+      const pl = String(rule.platform || '').trim().replace(/\s+/g, ' ');
+      ruleMap[`${nm}||${pl}`] = rule.canonical_name;
+      ruleMap[`${nm}||`] = ruleMap[`${nm}||`] || rule.canonical_name;
     });
-    // Funds page localStorage mappings: { "Platform||Investment Name": "Canonical Name" }
-    const localMappings = getFundMappings();
-    Object.entries(localMappings).forEach(([key, canonical]) => {
-      const sepIdx = key.indexOf('||');
-      if (sepIdx < 0) return;
-      const platform = key.slice(0, sepIdx);
-      const investmentName = key.slice(sepIdx + 2);
-      ruleMap[`${investmentName}||${platform}`] = canonical;
-      ruleMap[`${investmentName}||`] = ruleMap[`${investmentName}||`] || canonical;
-    });
-    if (!Object.keys(ruleMap).length) return {};
     const merges = {};
     const seen = new Set();
-    valuations.forEach(row => {
+    mappedValuations.forEach(row => {
       const rawKey = investmentKey(row);
       if (seen.has(rawKey)) return;
       seen.add(rawKey);
-      const platformKey = `${row.investment_name || ''}||${row.platform || ''}`;
-      const anyPlatformKey = `${row.investment_name || ''}||`;
-      const canonical = ruleMap[platformKey] || ruleMap[anyPlatformKey];
+      const nm = String(row.investment_name || '').trim().replace(/\s+/g, ' ');
+      const pl = String(row.platform || '').trim().replace(/\s+/g, ' ');
+      const canonical = ruleMap[`${nm}||${pl}`] || ruleMap[`${nm}||`];
       if (canonical && canonical !== row.investment_name) {
         merges[rawKey] = canonical;
       }
     });
     return merges;
-  }, [fundMergeRules, valuations]);
+  }, [fundMergeRules, mappedValuations]);
 
   // Layer in-page pending merges on top of the computed base
   const effectiveMerges = useMemo(
@@ -351,11 +348,11 @@ export default function InvestmentSummary() {
     [manualFundMerges, pendingMerges]
   );
 
-  const months = useMemo(() => getSortedMonths(valuations), [valuations]);
+  const months = useMemo(() => getSortedMonths(mappedValuations), [mappedValuations]);
   const selectedGroup = REPORT_GROUPS.find(group => group.id === selectedGroupId) || REPORT_GROUPS[0];
   const summary = useMemo(
-    () => groupSummary(selectedGroup, valuations, months, mergeFunds, effectiveMerges),
-    [selectedGroup, valuations, months, mergeFunds, effectiveMerges]
+    () => groupSummary(selectedGroup, mappedValuations, months, mergeFunds, effectiveMerges),
+    [selectedGroup, mappedValuations, months, mergeFunds, effectiveMerges]
   );
   const displayMonths = selectedMonth === ALL_MONTHS ? [...months].reverse() : months.filter(month => month === selectedMonth);
   const latestMonth = months[0] || '';

@@ -1,6 +1,10 @@
 const MAPPING_KEY = 'fund_master_mappings_v1';
 const EXTRA_MASTER_KEY = 'fund_master_extra_v1';
 
+function clean(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
 export function getFundMappings() {
   try {
     return JSON.parse(localStorage.getItem(MAPPING_KEY) || '{}');
@@ -23,7 +27,7 @@ export function getExtraMasterFunds() {
  */
 export function resolveInvestmentName(platform, investmentName) {
   const mappings = getFundMappings();
-  const key = `${platform}||${investmentName}`;
+  const key = `${clean(platform)}||${clean(investmentName)}`;
   return mappings[key] || investmentName;
 }
 
@@ -37,7 +41,7 @@ export function mergeHoldingsByMapping(holdings, platform) {
   const merged = {};
 
   for (const h of holdings) {
-    const rawKey = `${platform}||${h.investment}`;
+    const rawKey = `${clean(platform)}||${clean(h.investment)}`;
     const canonicalName = mappings[rawKey] || h.investment;
     const mergeKey = `${canonicalName}||${h.currency}`;
 
@@ -59,8 +63,9 @@ export function mergeHoldingsByMapping(holdings, platform) {
  */
 export function applyMappingsToRows(rows) {
   const mappings = getFundMappings();
+  if (!Object.keys(mappings).length) return rows;
   return rows.map(row => {
-    const key = `${row.platform}||${row.investment_name}`;
+    const key = `${clean(row.platform)}||${clean(row.investment_name)}`;
     const canonical = mappings[key];
     if (!canonical || canonical === row.investment_name) return row;
     return { ...row, investment_name: canonical };
