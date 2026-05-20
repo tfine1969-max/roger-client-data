@@ -188,6 +188,7 @@ export default function Clients() {
         client_keys: [key],
         primary_key: key,
         merged_name: trimmedName,
+        source_names: [currentClient.portfolio_name].filter(Boolean),
       });
       if (!res.data.success) throw new Error(res.data.error || 'Rename failed');
       refreshClientData();

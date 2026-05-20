@@ -49,6 +49,9 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
         client_keys: selectedClients.map(client => client.client_key),
         primary_key: primaryClient.client_key,
         merged_name: mergedName.trim(),
+        // Pass the exact stored portfolio_name values so the backend can filter
+        // rows directly — avoids clientKey mismatch and batch-limit issues.
+        source_names: selectedClients.map(client => client.portfolio_name).filter(Boolean),
       });
 
       if (!res.data.success) throw new Error(res.data.error || 'Merge failed');
