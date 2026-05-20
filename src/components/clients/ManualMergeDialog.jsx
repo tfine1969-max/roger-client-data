@@ -49,6 +49,7 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
       setMessage(res.message || `Merged ${selectedClients.length} clients.`);
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['clientMergeRules'] });
 
       setTimeout(() => {
         onOpenChange(false);
