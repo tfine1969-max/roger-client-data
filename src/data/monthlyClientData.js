@@ -9864,5 +9864,4712 @@ export const monthlyClientData = [
         }
       }
     ]
+  },
+  {
+    "id": "mar-2026",
+    "label": "Mar 2026",
+    "sourceFile": "Roger_Data_Jan_to_March.xlsx",
+    "exchangeRates": {
+      "ZAR": 1
+    },
+    "sourceNativeTotals": {
+      "ZAR": 1130064580.7646658
+    },
+    "sourceZarTotals": {
+      "ZAR": 1130064580.7646658
+    },
+    "sourceZarTotal": 1130064580.7646658,
+    "providerSourceTotals": {
+      "gryphon": {
+        "providerName": "Gryphon",
+        "nativeUsd": 0.0,
+        "zarTotal": 329140849.594666
+      },
+      "prime": {
+        "providerName": "Prime Investments",
+        "nativeUsd": 0.0,
+        "zarTotal": 233923201.57999998
+      },
+      "credo": {
+        "providerName": "Credo",
+        "nativeUsd": 0.0,
+        "zarTotal": 188907773.66
+      },
+      "prescient": {
+        "providerName": "Prescient",
+        "nativeUsd": 0.0,
+        "zarTotal": 41395256.19
+      },
+      "julius-baer": {
+        "providerName": "Julius Baer",
+        "nativeUsd": 0.0,
+        "zarTotal": 322334998.13
+      },
+      "northstar-fnb": {
+        "providerName": "Northstar FNB",
+        "nativeUsd": 0.0,
+        "zarTotal": 8161088.99
+      },
+      "northstar-sanlam": {
+        "providerName": "Northstar Sanlam",
+        "nativeUsd": 0.0,
+        "zarTotal": 2898498.0
+      },
+      "peresec": {
+        "providerName": "Peresec",
+        "nativeUsd": 0.0,
+        "zarTotal": 3302914.62
+      }
+    },
+    "clients": [
+      {
+        "id": "credo|10012899|Blackbeard, Ginette",
+        "client": "Blackbeard, Ginette",
+        "accountCode": "10012899",
+        "identityNo": "8002160132088",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 2828711.13
+        },
+        "zarAum": 2828711.13,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 2810789.56,
+            "zarValue": 2810789.56
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 17921.57,
+            "zarValue": 17921.57
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 707.1777824999999
+            },
+            "zarFee": 707.1777824999999
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 1414.3555649999998
+            },
+            "zarFee": 1414.3555649999998
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 2121.5333474999998
+            },
+            "zarFee": 2121.5333474999998
+          }
+        }
+      },
+      {
+        "id": "credo|10016497|Chin, Ashley",
+        "client": "Chin, Ashley",
+        "accountCode": "10016497",
+        "identityNo": "7403295134083",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 1865706.3499999999
+        },
+        "zarAum": 1865706.3499999999,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 1854221.64,
+            "zarValue": 1854221.64
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 11484.71,
+            "zarValue": 11484.71
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 466.4265874999999
+            },
+            "zarFee": 466.4265874999999
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 932.8531749999999
+            },
+            "zarFee": 932.8531749999999
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1399.2797624999998
+            },
+            "zarFee": 1399.2797624999998
+          }
+        }
+      },
+      {
+        "id": "credo|10023274|Conder, Andrew",
+        "client": "Conder, Andrew",
+        "accountCode": "10023274",
+        "identityNo": "7112126465182",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 6146183.029999999
+        },
+        "zarAum": 6146183.029999999,
+        "holdingCount": 4,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 3054797.29,
+            "zarValue": 3054797.29
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 2033352.62,
+            "zarValue": 2033352.62
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 60896.06,
+            "zarValue": 60896.06
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 997137.06,
+            "zarValue": 997137.06
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 1536.5457574999998
+            },
+            "zarFee": 1536.5457574999998
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 3073.0915149999996
+            },
+            "zarFee": 3073.0915149999996
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 4609.637272499999
+            },
+            "zarFee": 4609.637272499999
+          }
+        }
+      },
+      {
+        "id": "credo|10015189|Diva Trust",
+        "client": "Diva Trust",
+        "accountCode": "10015189",
+        "identityNo": "10015189",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 4852459.2700000005
+        },
+        "zarAum": 4852459.2700000005,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 4782958.15,
+            "zarValue": 4782958.15
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 24189.03,
+            "zarValue": 24189.03
+          },
+          {
+            "investment": "Harmony Capital Limited Special Situations Class",
+            "currency": "ZAR",
+            "nativeValue": 45312.09,
+            "zarValue": 45312.09
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 1213.1148175
+            },
+            "zarFee": 1213.1148175
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 2426.229635
+            },
+            "zarFee": 2426.229635
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3639.3444525000004
+            },
+            "zarFee": 3639.3444525000004
+          }
+        }
+      },
+      {
+        "id": "credo|10015188|Divaris, Belle Norma",
+        "client": "Divaris, Belle Norma",
+        "accountCode": "10015188",
+        "identityNo": "5407090212087",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 762513.5900000001
+        },
+        "zarAum": 762513.5900000001,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 754603.03,
+            "zarValue": 754603.03
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 7910.56,
+            "zarValue": 7910.56
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 190.62839750000003
+            },
+            "zarFee": 190.62839750000003
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 381.25679500000007
+            },
+            "zarFee": 381.25679500000007
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 571.8851925000001
+            },
+            "zarFee": 571.8851925000001
+          }
+        }
+      },
+      {
+        "id": "credo|10006632|Fallows, Christopher & Monique",
+        "client": "Fallows, Christopher & Monique",
+        "accountCode": "10006632",
+        "identityNo": "7209215223082",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 24978091.970000003
+        },
+        "zarAum": 24978091.970000003,
+        "holdingCount": 11,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 15450796.8,
+            "zarValue": 15450796.8
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 201676.92,
+            "zarValue": 201676.92
+          },
+          {
+            "investment": "Volkswagen AG",
+            "currency": "ZAR",
+            "nativeValue": 161056.96,
+            "zarValue": 161056.96
+          },
+          {
+            "investment": "Fundsmith Equity Fund",
+            "currency": "ZAR",
+            "nativeValue": 1857558.65,
+            "zarValue": 1857558.65
+          },
+          {
+            "investment": "Scottish Mortgage Investment Trust",
+            "currency": "ZAR",
+            "nativeValue": 727466.59,
+            "zarValue": 727466.59
+          },
+          {
+            "investment": "HG Capital Trust",
+            "currency": "ZAR",
+            "nativeValue": 287846.13,
+            "zarValue": 287846.13
+          },
+          {
+            "investment": "Invesco Solar ETF",
+            "currency": "ZAR",
+            "nativeValue": 648835.29,
+            "zarValue": 648835.29
+          },
+          {
+            "investment": "iShares Global Tech ETF",
+            "currency": "ZAR",
+            "nativeValue": 2392885.02,
+            "zarValue": 2392885.02
+          },
+          {
+            "investment": "Jinkosolar Holding Co Ltd",
+            "currency": "ZAR",
+            "nativeValue": 741187.26,
+            "zarValue": 741187.26
+          },
+          {
+            "investment": "Kraneshares CSI China Internet ETF",
+            "currency": "ZAR",
+            "nativeValue": 393935.71,
+            "zarValue": 393935.71
+          },
+          {
+            "investment": "Prescient China Balanced Fund",
+            "currency": "ZAR",
+            "nativeValue": 2114846.64,
+            "zarValue": 2114846.64
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 6244.522992500001
+            },
+            "zarFee": 6244.522992500001
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 12489.045985000002
+            },
+            "zarFee": 12489.045985000002
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 18733.568977500003
+            },
+            "zarFee": 18733.568977500003
+          }
+        }
+      },
+      {
+        "id": "credo|10018459|Gennari, Enrico",
+        "client": "Gennari, Enrico",
+        "accountCode": "10018459",
+        "identityNo": "YA3997806",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 1166883.78
+        },
+        "zarAum": 1166883.78,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 1136969.33,
+            "zarValue": 1136969.33
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 29914.45,
+            "zarValue": 29914.45
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 291.72094500000003
+            },
+            "zarFee": 291.72094500000003
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 583.4418900000001
+            },
+            "zarFee": 583.4418900000001
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 875.1628350000001
+            },
+            "zarFee": 875.1628350000001
+          }
+        }
+      },
+      {
+        "id": "credo|10022560|Hoar, Bianca",
+        "client": "Hoar, Bianca",
+        "accountCode": "10022560",
+        "identityNo": "9902050064086",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 2196933.51
+        },
+        "zarAum": 2196933.51,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 1272871.73,
+            "zarValue": 1272871.73
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 41958.15,
+            "zarValue": 41958.15
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 882103.63,
+            "zarValue": 882103.63
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 549.2333775
+            },
+            "zarFee": 549.2333775
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 1098.466755
+            },
+            "zarFee": 1098.466755
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1647.7001324999999
+            },
+            "zarFee": 1647.7001324999999
+          }
+        }
+      },
+      {
+        "id": "credo|10016626|Ikigai Trust",
+        "client": "Ikigai Trust",
+        "accountCode": "10016626",
+        "identityNo": "C17145460",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 63117187.05
+        },
+        "zarAum": 63117187.05,
+        "holdingCount": 10,
+        "holdings": [
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 4017886.76,
+            "zarValue": 4017886.76
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 46856785.97,
+            "zarValue": 46856785.97
+          },
+          {
+            "investment": "iShares Bitcoin Trust ETF",
+            "currency": "ZAR",
+            "nativeValue": 478529.58,
+            "zarValue": 478529.58
+          },
+          {
+            "investment": "Rubrics Enhanced Yield UCITS Fund",
+            "currency": "ZAR",
+            "nativeValue": 2690911.55,
+            "zarValue": 2690911.55
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 155636.45,
+            "zarValue": 155636.45
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 5599253.38,
+            "zarValue": 5599253.38
+          },
+          {
+            "investment": "Global X Copper Miners ETF",
+            "currency": "ZAR",
+            "nativeValue": 335665.21,
+            "zarValue": 335665.21
+          },
+          {
+            "investment": "Nomura Global High Conviction Fund",
+            "currency": "ZAR",
+            "nativeValue": 327466.68,
+            "zarValue": 327466.68
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 2149758.12,
+            "zarValue": 2149758.12
+          },
+          {
+            "investment": "Prescient China Balanced Fund",
+            "currency": "ZAR",
+            "nativeValue": 505293.35,
+            "zarValue": 505293.35
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 15779.2967625
+            },
+            "zarFee": 15779.2967625
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 31558.593525
+            },
+            "zarFee": 31558.593525
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 47337.8902875
+            },
+            "zarFee": 47337.8902875
+          }
+        }
+      },
+      {
+        "id": "credo|10019107|Irving Trust",
+        "client": "Irving Trust",
+        "accountCode": "10019107",
+        "identityNo": "158906",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 9507899.889999999
+        },
+        "zarAum": 9507899.889999999,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 6925567.97,
+            "zarValue": 6925567.97
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 2480697.32,
+            "zarValue": 2480697.32
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 101634.6,
+            "zarValue": 101634.6
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 2376.9749724999997
+            },
+            "zarFee": 2376.9749724999997
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 4753.949944999999
+            },
+            "zarFee": 4753.949944999999
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 7130.924917499999
+            },
+            "zarFee": 7130.924917499999
+          }
+        }
+      },
+      {
+        "id": "credo||Jackson, Matt",
+        "client": "Jackson, Matt",
+        "accountCode": "",
+        "identityNo": "9708125146083",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 9553.66
+        },
+        "zarAum": 9553.66,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 3099.86,
+            "zarValue": 3099.86
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 6453.8,
+            "zarValue": 6453.8
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 2.3884149999999997
+            },
+            "zarFee": 2.3884149999999997
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 4.7768299999999995
+            },
+            "zarFee": 4.7768299999999995
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 7.165244999999999
+            },
+            "zarFee": 7.165244999999999
+          }
+        }
+      },
+      {
+        "id": "credo|10018479|Malby, Francoise",
+        "client": "Malby, Francoise",
+        "accountCode": "10018479",
+        "identityNo": "5407180767180",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 5013380.73
+        },
+        "zarAum": 5013380.73,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 4988378.62,
+            "zarValue": 4988378.62
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 25002.11,
+            "zarValue": 25002.11
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 1253.3451825000002
+            },
+            "zarFee": 1253.3451825000002
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 2506.6903650000004
+            },
+            "zarFee": 2506.6903650000004
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3760.0355475000006
+            },
+            "zarFee": 3760.0355475000006
+          }
+        }
+      },
+      {
+        "id": "credo|10017234|Mandy, Sean Gary",
+        "client": "Mandy, Sean Gary",
+        "accountCode": "10017234",
+        "identityNo": "6504225046080",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 24121.28
+        },
+        "zarAum": 24121.28,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 24121.28,
+            "zarValue": 24121.28
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 6.03032
+            },
+            "zarFee": 6.03032
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 12.06064
+            },
+            "zarFee": 12.06064
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 18.09096
+            },
+            "zarFee": 18.09096
+          }
+        }
+      },
+      {
+        "id": "credo|10019456|Manolas, Viron",
+        "client": "Manolas, Viron",
+        "accountCode": "10019456",
+        "identityNo": "7803285054086",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 795781.97
+        },
+        "zarAum": 795781.97,
+        "holdingCount": 5,
+        "holdings": [
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 164343.15,
+            "zarValue": 164343.15
+          },
+          {
+            "investment": "Apple Inc",
+            "currency": "ZAR",
+            "nativeValue": 64470.21,
+            "zarValue": 64470.21
+          },
+          {
+            "investment": "Defiance Quantum ETF",
+            "currency": "ZAR",
+            "nativeValue": 45464.54,
+            "zarValue": 45464.54
+          },
+          {
+            "investment": "Harmony Gold Mining Co LTD",
+            "currency": "ZAR",
+            "nativeValue": 51156.08,
+            "zarValue": 51156.08
+          },
+          {
+            "investment": "RSA Government Bond",
+            "currency": "ZAR",
+            "nativeValue": 470347.99,
+            "zarValue": 470347.99
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 198.9454925
+            },
+            "zarFee": 198.9454925
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 397.890985
+            },
+            "zarFee": 397.890985
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 596.8364775
+            },
+            "zarFee": 596.8364775
+          }
+        }
+      },
+      {
+        "id": "credo|10006739|Maxwell, Dave",
+        "client": "Maxwell, Dave",
+        "accountCode": "10006739",
+        "identityNo": "6610245172085\t",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 4625441.46
+        },
+        "zarAum": 4625441.46,
+        "holdingCount": 4,
+        "holdings": [
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 28576.26,
+            "zarValue": 28576.26
+          },
+          {
+            "investment": "iShares Global 100 ETF",
+            "currency": "ZAR",
+            "nativeValue": 2243990.33,
+            "zarValue": 2243990.33
+          },
+          {
+            "investment": "iShares Physical Gold ETF",
+            "currency": "ZAR",
+            "nativeValue": 1039247.66,
+            "zarValue": 1039247.66
+          },
+          {
+            "investment": "BBVA Global Markets",
+            "currency": "ZAR",
+            "nativeValue": 1313627.21,
+            "zarValue": 1313627.21
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 1156.360365
+            },
+            "zarFee": 1156.360365
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 2312.72073
+            },
+            "zarFee": 2312.72073
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3469.081095
+            },
+            "zarFee": 3469.081095
+          }
+        }
+      },
+      {
+        "id": "credo|10015068|McGuirk, Pamela",
+        "client": "McGuirk, Pamela",
+        "accountCode": "10015068",
+        "identityNo": "09021951/1",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 11168727.83
+        },
+        "zarAum": 11168727.83,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 10992527.31,
+            "zarValue": 10992527.31
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 176200.52,
+            "zarValue": 176200.52
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 2792.1819575000004
+            },
+            "zarFee": 2792.1819575000004
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 5584.363915000001
+            },
+            "zarFee": 5584.363915000001
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 8376.5458725
+            },
+            "zarFee": 8376.5458725
+          }
+        }
+      },
+      {
+        "id": "credo|10015250|Sommer, Anna-Maria",
+        "client": "Sommer, Anna-Maria",
+        "accountCode": "10015250",
+        "identityNo": "C354KY7M7",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 45025753.96000001
+        },
+        "zarAum": 45025753.96000001,
+        "holdingCount": 13,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 25977515.8,
+            "zarValue": 25977515.8
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 2974167.18,
+            "zarValue": 2974167.18
+          },
+          {
+            "investment": "Rubrics Enhanced Yield UCITS Fund",
+            "currency": "ZAR",
+            "nativeValue": 4121706.51,
+            "zarValue": 4121706.51
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 509731.4,
+            "zarValue": 509731.4
+          },
+          {
+            "investment": "Digihost Technology Inc",
+            "currency": "ZAR",
+            "nativeValue": 25425.59,
+            "zarValue": 25425.59
+          },
+          {
+            "investment": "HG Capital Trust",
+            "currency": "ZAR",
+            "nativeValue": 757838.39,
+            "zarValue": 757838.39
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 4055203.6,
+            "zarValue": 4055203.6
+          },
+          {
+            "investment": "Amplify Transformational Data Sharing ETF",
+            "currency": "ZAR",
+            "nativeValue": 432167.26,
+            "zarValue": 432167.26
+          },
+          {
+            "investment": "Global X Copper Miners ETF",
+            "currency": "ZAR",
+            "nativeValue": 1301346.36,
+            "zarValue": 1301346.36
+          },
+          {
+            "investment": "Dodge & Cox Worldwide Funds",
+            "currency": "ZAR",
+            "nativeValue": 1278817.35,
+            "zarValue": 1278817.35
+          },
+          {
+            "investment": "Nomura Global High Conviction Fund",
+            "currency": "ZAR",
+            "nativeValue": 1038163.56,
+            "zarValue": 1038163.56
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 2260692.29,
+            "zarValue": 2260692.29
+          },
+          {
+            "investment": "iShares Bitcoin Trust ETF",
+            "currency": "ZAR",
+            "nativeValue": 292978.67,
+            "zarValue": 292978.67
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 11256.438490000002
+            },
+            "zarFee": 11256.438490000002
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 22512.876980000005
+            },
+            "zarFee": 22512.876980000005
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 33769.31547000001
+            },
+            "zarFee": 33769.31547000001
+          }
+        }
+      },
+      {
+        "id": "credo|10014441|Von Arnim, Hildegard ",
+        "client": "Von Arnim, Hildegard ",
+        "accountCode": "10014441",
+        "identityNo": "5004210080187",
+        "providerId": "credo",
+        "providerName": "Credo",
+        "nativeValues": {
+          "ZAR": 4822443.2
+        },
+        "zarAum": 4822443.2,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 4796052.08,
+            "zarValue": 4796052.08
+          },
+          {
+            "investment": "Credo Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 26391.12,
+            "zarValue": 26391.12
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003,
+            "nativeFees": {
+              "ZAR": 1205.6108000000002
+            },
+            "zarFee": 1205.6108000000002
+          },
+          "advisory": {
+            "annualRate": 0.006,
+            "nativeFees": {
+              "ZAR": 2411.2216000000003
+            },
+            "zarFee": 2411.2216000000003
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3616.8324000000002
+            },
+            "zarFee": 3616.8324000000002
+          }
+        }
+      },
+      {
+        "id": "gryphon|7034|Abrahams, Denise",
+        "client": "Abrahams, Denise",
+        "accountCode": "7034",
+        "identityNo": "7207200339087",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 13361772.421619
+        },
+        "zarAum": 13361772.421619,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 13361772.421619,
+            "zarValue": 13361772.421619
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 2783.7025878372915
+            },
+            "zarFee": 2783.7025878372915
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 5567.405175674583
+            },
+            "zarFee": 5567.405175674583
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 8351.107763511875
+            },
+            "zarFee": 8351.107763511875
+          }
+        }
+      },
+      {
+        "id": "gryphon|4972|Apex Holdings (Pty) Ltd",
+        "client": "Apex Holdings (Pty) Ltd",
+        "accountCode": "4972",
+        "identityNo": "2015/068524/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 102675.517708
+        },
+        "zarAum": 102675.517708,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 102675.517708,
+            "zarValue": 102675.517708
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 21.390732855833335
+            },
+            "zarFee": 21.390732855833335
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 42.78146571166667
+            },
+            "zarFee": 42.78146571166667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 64.1721985675
+            },
+            "zarFee": 64.1721985675
+          }
+        }
+      },
+      {
+        "id": "gryphon|5724|Apex Images CC",
+        "client": "Apex Images CC",
+        "accountCode": "5724",
+        "identityNo": "2009/040089/23",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 1072160.985265
+        },
+        "zarAum": 1072160.985265,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 1072160.985265,
+            "zarValue": 1072160.985265
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 223.36687193020836
+            },
+            "zarFee": 223.36687193020836
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 446.7337438604167
+            },
+            "zarFee": 446.7337438604167
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 670.100615790625
+            },
+            "zarFee": 670.100615790625
+          }
+        }
+      },
+      {
+        "id": "gryphon|5215|Apex Shark Expeditions (Pty) Ltd",
+        "client": "Apex Shark Expeditions (Pty) Ltd",
+        "accountCode": "5215",
+        "identityNo": "2015/194079/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 779716.250844
+        },
+        "zarAum": 779716.250844,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 779716.250844,
+            "zarValue": 779716.250844
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 162.4408855925
+            },
+            "zarFee": 162.4408855925
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 324.881771185
+            },
+            "zarFee": 324.881771185
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 487.3226567775
+            },
+            "zarFee": 487.3226567775
+          }
+        }
+      },
+      {
+        "id": "gryphon|5202|Bambino International (Pty) Ltd",
+        "client": "Bambino International (Pty) Ltd",
+        "accountCode": "5202",
+        "identityNo": "1986/002665/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 34679693.564539
+        },
+        "zarAum": 34679693.564539,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 34679693.564539,
+            "zarValue": 34679693.564539
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 7224.936159278958
+            },
+            "zarFee": 7224.936159278958
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 14449.872318557917
+            },
+            "zarFee": 14449.872318557917
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 21674.808477836876
+            },
+            "zarFee": 21674.808477836876
+          }
+        }
+      },
+      {
+        "id": "gryphon|5531|Briggs, Carol-Anne",
+        "client": "Briggs, Carol-Anne",
+        "accountCode": "5531",
+        "identityNo": "5707030094085",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 1645565.5767100002
+        },
+        "zarAum": 1645565.5767100002,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 806054.427965,
+            "zarValue": 806054.427965
+          },
+          {
+            "investment": "Gryphon Dividend Income Fund C",
+            "currency": "ZAR",
+            "nativeValue": 839511.148745,
+            "zarValue": 839511.148745
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 342.8261618145834
+            },
+            "zarFee": 342.8261618145834
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 685.6523236291667
+            },
+            "zarFee": 685.6523236291667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1028.47848544375
+            },
+            "zarFee": 1028.47848544375
+          }
+        }
+      },
+      {
+        "id": "gryphon|5195|Chin, Ashley",
+        "client": "Chin, Ashley",
+        "accountCode": "5195",
+        "identityNo": "7403295134083",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 2680666.748135
+        },
+        "zarAum": 2680666.748135,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 2680666.748135,
+            "zarValue": 2680666.748135
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 558.4722391947917
+            },
+            "zarFee": 558.4722391947917
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1116.9444783895833
+            },
+            "zarFee": 1116.9444783895833
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1675.416717584375
+            },
+            "zarFee": 1675.416717584375
+          }
+        }
+      },
+      {
+        "id": "gryphon|5025|De Mey, Armelle",
+        "client": "De Mey, Armelle",
+        "accountCode": "5025",
+        "identityNo": "6007020264189",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 445274.85128
+        },
+        "zarAum": 445274.85128,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 445274.85128,
+            "zarValue": 445274.85128
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 92.76559401666667
+            },
+            "zarFee": 92.76559401666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 185.53118803333334
+            },
+            "zarFee": 185.53118803333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 278.29678205
+            },
+            "zarFee": 278.29678205
+          }
+        }
+      },
+      {
+        "id": "gryphon|5218|De Mey, Katinga",
+        "client": "De Mey, Katinga",
+        "accountCode": "5218",
+        "identityNo": "9606210194085",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 205270.829906
+        },
+        "zarAum": 205270.829906,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 205270.829906,
+            "zarValue": 205270.829906
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 42.76475623041667
+            },
+            "zarFee": 42.76475623041667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 85.52951246083335
+            },
+            "zarFee": 85.52951246083335
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 128.29426869125
+            },
+            "zarFee": 128.29426869125
+          }
+        }
+      },
+      {
+        "id": "gryphon|5447|Eskinazi, Richard David",
+        "client": "Eskinazi, Richard David",
+        "accountCode": "5447",
+        "identityNo": "6510245060084",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 3527058.851423
+        },
+        "zarAum": 3527058.851423,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 3527058.851423,
+            "zarValue": 3527058.851423
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 734.8039273797917
+            },
+            "zarFee": 734.8039273797917
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1469.6078547595835
+            },
+            "zarFee": 1469.6078547595835
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 2204.411782139375
+            },
+            "zarFee": 2204.411782139375
+          }
+        }
+      },
+      {
+        "id": "gryphon|4858|Fallows, Monique Louise",
+        "client": "Fallows, Monique Louise",
+        "accountCode": "4858",
+        "identityNo": "7901040119085",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 1639966.838758
+        },
+        "zarAum": 1639966.838758,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 1639966.838758,
+            "zarValue": 1639966.838758
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 341.65975807458335
+            },
+            "zarFee": 341.65975807458335
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 683.3195161491667
+            },
+            "zarFee": 683.3195161491667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1024.97927422375
+            },
+            "zarFee": 1024.97927422375
+          }
+        }
+      },
+      {
+        "id": "gryphon|7002|Freed, Justin",
+        "client": "Freed, Justin",
+        "accountCode": "7002",
+        "identityNo": "7306135199085",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 23112712.239326
+        },
+        "zarAum": 23112712.239326,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 23112712.239326,
+            "zarValue": 23112712.239326
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 4815.148383192917
+            },
+            "zarFee": 4815.148383192917
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 9630.296766385834
+            },
+            "zarFee": 9630.296766385834
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 14445.44514957875
+            },
+            "zarFee": 14445.44514957875
+          }
+        }
+      },
+      {
+        "id": "gryphon|7001|Freed, Wayne",
+        "client": "Freed, Wayne",
+        "accountCode": "7001",
+        "identityNo": "7711225229082",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 22827504.208596
+        },
+        "zarAum": 22827504.208596,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 22827504.208596,
+            "zarValue": 22827504.208596
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 4755.7300434575
+            },
+            "zarFee": 4755.7300434575
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 9511.460086915
+            },
+            "zarFee": 9511.460086915
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 14267.190130372499
+            },
+            "zarFee": 14267.190130372499
+          }
+        }
+      },
+      {
+        "id": "gryphon|5521|Globrand Investments (Pty) Ltd",
+        "client": "Globrand Investments (Pty) Ltd",
+        "accountCode": "5521",
+        "identityNo": "1981/004074/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 6358694.345258
+        },
+        "zarAum": 6358694.345258,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 6358694.345258,
+            "zarValue": 6358694.345258
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1324.7279885954167
+            },
+            "zarFee": 1324.7279885954167
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 2649.4559771908334
+            },
+            "zarFee": 2649.4559771908334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3974.18396578625
+            },
+            "zarFee": 3974.18396578625
+          }
+        }
+      },
+      {
+        "id": "gryphon|5276|Grufin Properties (Pty) Ltd",
+        "client": "Grufin Properties (Pty) Ltd",
+        "accountCode": "5276",
+        "identityNo": "1995/005536/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 47936416.166146
+        },
+        "zarAum": 47936416.166146,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 47936416.166146,
+            "zarValue": 47936416.166146
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 9986.753367947085
+            },
+            "zarFee": 9986.753367947085
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 19973.50673589417
+            },
+            "zarFee": 19973.50673589417
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 29960.260103841254
+            },
+            "zarFee": 29960.260103841254
+          }
+        }
+      },
+      {
+        "id": "gryphon|5293|Gruzd, Marie",
+        "client": "Gruzd, Marie",
+        "accountCode": "5293",
+        "identityNo": "4610110111186",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 27630340.024382
+        },
+        "zarAum": 27630340.024382,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 27630340.024382,
+            "zarValue": 27630340.024382
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 5756.320838412917
+            },
+            "zarFee": 5756.320838412917
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 11512.641676825833
+            },
+            "zarFee": 11512.641676825833
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 17268.96251523875
+            },
+            "zarFee": 17268.96251523875
+          }
+        }
+      },
+      {
+        "id": "gryphon|5264|Gruzd, Wilfred",
+        "client": "Gruzd, Wilfred",
+        "accountCode": "5264",
+        "identityNo": "4201045091089",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 59447042.747641
+        },
+        "zarAum": 59447042.747641,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 59447042.747641,
+            "zarValue": 59447042.747641
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 12384.800572425207
+            },
+            "zarFee": 12384.800572425207
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 24769.601144850414
+            },
+            "zarFee": 24769.601144850414
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 37154.40171727562
+            },
+            "zarFee": 37154.40171727562
+          }
+        }
+      },
+      {
+        "id": "gryphon|5369|Hoar, Bianca Leigh",
+        "client": "Hoar, Bianca Leigh",
+        "accountCode": "5369",
+        "identityNo": "9902050064086",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 51122.708176
+        },
+        "zarAum": 51122.708176,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 51122.708176,
+            "zarValue": 51122.708176
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 10.650564203333333
+            },
+            "zarFee": 10.650564203333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 21.301128406666667
+            },
+            "zarFee": 21.301128406666667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 31.951692610000002
+            },
+            "zarFee": 31.951692610000002
+          }
+        }
+      },
+      {
+        "id": "gryphon|5006|Hoar, Marc",
+        "client": "Hoar, Marc",
+        "accountCode": "5006",
+        "identityNo": "6801105008085",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 13306715.800318
+        },
+        "zarAum": 13306715.800318,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 13306715.800318,
+            "zarValue": 13306715.800318
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 2772.2324583995833
+            },
+            "zarFee": 2772.2324583995833
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 5544.4649167991665
+            },
+            "zarFee": 5544.4649167991665
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 8316.69737519875
+            },
+            "zarFee": 8316.69737519875
+          }
+        }
+      },
+      {
+        "id": "gryphon|5365|Hoar, Tayla",
+        "client": "Hoar, Tayla",
+        "accountCode": "5365",
+        "identityNo": "9701160063081",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 493.213844
+        },
+        "zarAum": 493.213844,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 493.213844,
+            "zarValue": 493.213844
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 0.10275288416666667
+            },
+            "zarFee": 0.10275288416666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 0.20550576833333334
+            },
+            "zarFee": 0.20550576833333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 0.3082586525
+            },
+            "zarFee": 0.3082586525
+          }
+        }
+      },
+      {
+        "id": "gryphon|4816|Keren, Sara",
+        "client": "Keren, Sara",
+        "accountCode": "4816",
+        "identityNo": "7101120072086",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 21703640.198218
+        },
+        "zarAum": 21703640.198218,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 21703640.198218,
+            "zarValue": 21703640.198218
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 4521.591707962083
+            },
+            "zarFee": 4521.591707962083
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 9043.183415924166
+            },
+            "zarFee": 9043.183415924166
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 13564.77512388625
+            },
+            "zarFee": 13564.77512388625
+          }
+        }
+      },
+      {
+        "id": "gryphon|5682|Keurboom Trust",
+        "client": "Keurboom Trust",
+        "accountCode": "5682",
+        "identityNo": "IT3055/2005",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 4044804.524905
+        },
+        "zarAum": 4044804.524905,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 4044804.524905,
+            "zarValue": 4044804.524905
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 842.6676093552084
+            },
+            "zarFee": 842.6676093552084
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1685.3352187104167
+            },
+            "zarFee": 1685.3352187104167
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 2528.002828065625
+            },
+            "zarFee": 2528.002828065625
+          }
+        }
+      },
+      {
+        "id": "gryphon|7123|Lancaster, Dean",
+        "client": "Lancaster, Dean",
+        "accountCode": "7123",
+        "identityNo": "6710305180083",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 203040.630059
+        },
+        "zarAum": 203040.630059,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 203040.630059,
+            "zarValue": 203040.630059
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 42.300131262291664
+            },
+            "zarFee": 42.300131262291664
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 84.60026252458333
+            },
+            "zarFee": 84.60026252458333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 126.90039378687499
+            },
+            "zarFee": 126.90039378687499
+          }
+        }
+      },
+      {
+        "id": "gryphon|5020|McGuirk, Pamela",
+        "client": "McGuirk, Pamela",
+        "accountCode": "5020",
+        "identityNo": "5102090073080",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 1211229.568436
+        },
+        "zarAum": 1211229.568436,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 1211229.568436,
+            "zarValue": 1211229.568436
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 252.33949342416668
+            },
+            "zarFee": 252.33949342416668
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 504.67898684833335
+            },
+            "zarFee": 504.67898684833335
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 757.0184802725
+            },
+            "zarFee": 757.0184802725
+          }
+        }
+      },
+      {
+        "id": "gryphon|5503|Robinson, Cheryl",
+        "client": "Robinson, Cheryl",
+        "accountCode": "5503",
+        "identityNo": "7808230246083",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 56611.82201
+        },
+        "zarAum": 56611.82201,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 56611.82201,
+            "zarValue": 56611.82201
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 11.794129585416668
+            },
+            "zarFee": 11.794129585416668
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 23.588259170833336
+            },
+            "zarFee": 23.588259170833336
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 35.38238875625
+            },
+            "zarFee": 35.38238875625
+          }
+        }
+      },
+      {
+        "id": "gryphon|5166|Snitcher, Lauren Renee",
+        "client": "Snitcher, Lauren Renee",
+        "accountCode": "5166",
+        "identityNo": "6012290039089",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 4114.389045
+        },
+        "zarAum": 4114.389045,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 4114.389045,
+            "zarValue": 4114.389045
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 0.857164384375
+            },
+            "zarFee": 0.857164384375
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1.71432876875
+            },
+            "zarFee": 1.71432876875
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 2.571493153125
+            },
+            "zarFee": 2.571493153125
+          }
+        }
+      },
+      {
+        "id": "gryphon|5266|Stingray Accessory Manufacturers (Pty) Ltd",
+        "client": "Stingray Accessory Manufacturers (Pty) Ltd",
+        "accountCode": "5266",
+        "identityNo": "2005/004874/07",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 38981472.346241
+        },
+        "zarAum": 38981472.346241,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 38981472.346241,
+            "zarValue": 38981472.346241
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 8121.140072133541
+            },
+            "zarFee": 8121.140072133541
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 16242.280144267083
+            },
+            "zarFee": 16242.280144267083
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 24363.420216400624
+            },
+            "zarFee": 24363.420216400624
+          }
+        }
+      },
+      {
+        "id": "gryphon||Thomas, Mayne",
+        "client": "Thomas, Mayne",
+        "accountCode": "",
+        "identityNo": "8908115051084",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 2072291.84188
+        },
+        "zarAum": 2072291.84188,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 2072291.84188,
+            "zarValue": 2072291.84188
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 431.72746705833333
+            },
+            "zarFee": 431.72746705833333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 863.4549341166667
+            },
+            "zarFee": 863.4549341166667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1295.182401175
+            },
+            "zarFee": 1295.182401175
+          }
+        }
+      },
+      {
+        "id": "gryphon|5557|Van Niekerk, Ann",
+        "client": "Van Niekerk, Ann",
+        "accountCode": "5557",
+        "identityNo": "4401080053081",
+        "providerId": "gryphon",
+        "providerName": "Gryphon",
+        "nativeValues": {
+          "ZAR": 52780.383998
+        },
+        "zarAum": 52780.383998,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Gryphon Dividend Income Fund",
+            "currency": "ZAR",
+            "nativeValue": 52780.383998,
+            "zarValue": 52780.383998
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 10.995913332916667
+            },
+            "zarFee": 10.995913332916667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 21.991826665833333
+            },
+            "zarFee": 21.991826665833333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 32.98773999875
+            },
+            "zarFee": 32.98773999875
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0316.6598|De Mey, Armelle",
+        "client": "De Mey, Armelle",
+        "accountCode": "0316.6598",
+        "identityNo": "6007020264189",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 115481371.93
+        },
+        "zarAum": 115481371.93,
+        "holdingCount": 6,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 78943.15,
+            "zarValue": 78943.15
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 7251033.3,
+            "zarValue": 7251033.3
+          },
+          {
+            "investment": "Rubrics Enhanced Yield UCITS Fund",
+            "currency": "ZAR",
+            "nativeValue": 7858822.78,
+            "zarValue": 7858822.78
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 93143822.09,
+            "zarValue": 93143822.09
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 4967249.29,
+            "zarValue": 4967249.29
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 2181501.32,
+            "zarValue": 2181501.32
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 30997.807266979977
+            },
+            "zarFee": 30997.807266979977
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 54540.51357441853
+            },
+            "zarFee": 54540.51357441853
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 85538.32084139851
+            },
+            "zarFee": 85538.32084139851
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0321.7188|De Mey, Katinga",
+        "client": "De Mey, Katinga",
+        "accountCode": "0321.7188",
+        "identityNo": "9606210194085",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 29206431.450000003
+        },
+        "zarAum": 29206431.450000003,
+        "holdingCount": 5,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 1404681.47,
+            "zarValue": 1404681.47
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 9694683.79,
+            "zarValue": 9694683.79
+          },
+          {
+            "investment": "Rubrics Enhanced Yield UCITS Fund",
+            "currency": "ZAR",
+            "nativeValue": 9482024.06,
+            "zarValue": 9482024.06
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 6404352.21,
+            "zarValue": 6404352.21
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 2220689.92,
+            "zarValue": 2220689.92
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 7839.665548761745
+            },
+            "zarFee": 7839.665548761745
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 13793.859081658811
+            },
+            "zarFee": 13793.859081658811
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 21633.524630420558
+            },
+            "zarFee": 21633.524630420558
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0315.2553|Hoar, Marc",
+        "client": "Hoar, Marc",
+        "accountCode": "0315.2553",
+        "identityNo": "6801105008085",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 31080868.569999997
+        },
+        "zarAum": 31080868.569999997,
+        "holdingCount": 9,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 292392.07,
+            "zarValue": 292392.07
+          },
+          {
+            "investment": "Dodge & Cox Worldwide Funds",
+            "currency": "ZAR",
+            "nativeValue": 265637.44,
+            "zarValue": 265637.44
+          },
+          {
+            "investment": "Global X Copper Miners ETF",
+            "currency": "ZAR",
+            "nativeValue": 1092838.74,
+            "zarValue": 1092838.74
+          },
+          {
+            "investment": "Invesco Global Clean Energy ETF",
+            "currency": "ZAR",
+            "nativeValue": 235381.5,
+            "zarValue": 235381.5
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 21413192.47,
+            "zarValue": 21413192.47
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 3826699.38,
+            "zarValue": 3826699.38
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 2187005.51,
+            "zarValue": 2187005.51
+          },
+          {
+            "investment": "Gold",
+            "currency": "ZAR",
+            "nativeValue": 648696.56,
+            "zarValue": 648696.56
+          },
+          {
+            "investment": "Prescient China Balanced Fund",
+            "currency": "ZAR",
+            "nativeValue": 1119024.9,
+            "zarValue": 1119024.9
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 8342.806787983018
+            },
+            "zarFee": 8342.806787983018
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 14679.134009373758
+            },
+            "zarFee": 14679.134009373758
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 23021.940797356776
+            },
+            "zarFee": 23021.940797356776
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0316.9089|Hughes, Carol",
+        "client": "Hughes, Carol",
+        "accountCode": "0316.9089",
+        "identityNo": "548451598",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 5809334.81
+        },
+        "zarAum": 5809334.81,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 48755.47,
+            "zarValue": 48755.47
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 5760579.34,
+            "zarValue": 5760579.34
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 1559.3566112021315
+            },
+            "zarFee": 1559.3566112021315
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 2743.681502634077
+            },
+            "zarFee": 2743.681502634077
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 4303.038113836208
+            },
+            "zarFee": 4303.038113836208
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0315.4230|Keren, Avi & Glynis",
+        "client": "Keren, Avi & Glynis",
+        "accountCode": "0315.4230",
+        "identityNo": "6909305074086",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 15340747.86
+        },
+        "zarAum": 15340747.86,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 613178.31,
+            "zarValue": 613178.31
+          },
+          {
+            "investment": "Equities",
+            "currency": "ZAR",
+            "nativeValue": 14217358.78,
+            "zarValue": 14217358.78
+          },
+          {
+            "investment": "Gold",
+            "currency": "ZAR",
+            "nativeValue": 510210.77,
+            "zarValue": 510210.77
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 4117.803049515741
+            },
+            "zarFee": 4117.803049515741
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 7245.257420454184
+            },
+            "zarFee": 7245.257420454184
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 11363.060469969925
+            },
+            "zarFee": 11363.060469969925
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0321.5916|Marula Trading & Investments Limited",
+        "client": "Marula Trading & Investments Limited",
+        "accountCode": "0321.5916",
+        "identityNo": "70414",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 68585169.35000001
+        },
+        "zarAum": 68585169.35000001,
+        "holdingCount": 8,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 625179.66,
+            "zarValue": 625179.66
+          },
+          {
+            "investment": "Blackrock ICS US Dollar Liquidity Fund",
+            "currency": "ZAR",
+            "nativeValue": 225922.37,
+            "zarValue": 225922.37
+          },
+          {
+            "investment": "Meituan",
+            "currency": "ZAR",
+            "nativeValue": 93909.02,
+            "zarValue": 93909.02
+          },
+          {
+            "investment": "Tencent Holdings Limited",
+            "currency": "ZAR",
+            "nativeValue": 5479439.23,
+            "zarValue": 5479439.23
+          },
+          {
+            "investment": "Alibaba Group Holding",
+            "currency": "ZAR",
+            "nativeValue": 1965791.02,
+            "zarValue": 1965791.02
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 25847692.84,
+            "zarValue": 25847692.84
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 11764034.2,
+            "zarValue": 11764034.2
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund D",
+            "currency": "ZAR",
+            "nativeValue": 22583201.01,
+            "zarValue": 22583201.01
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 18409.807792837524
+            },
+            "zarFee": 18409.807792837524
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 32391.980606230656
+            },
+            "zarFee": 32391.980606230656
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 50801.78839906818
+            },
+            "zarFee": 50801.78839906818
+          }
+        }
+      },
+      {
+        "id": "julius-baer|0319.4475|Terra-Mater Limited",
+        "client": "Terra-Mater Limited",
+        "accountCode": "0319.4475",
+        "identityNo": "56121 C2/GBL",
+        "providerId": "julius-baer",
+        "providerName": "Julius Baer",
+        "nativeValues": {
+          "ZAR": 56831074.16
+        },
+        "zarAum": 56831074.16,
+        "holdingCount": 5,
+        "holdings": [
+          {
+            "investment": "Julius Baer Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 538363.22,
+            "zarValue": 538363.22
+          },
+          {
+            "investment": "Scottish Mortgage Investment Trust",
+            "currency": "ZAR",
+            "nativeValue": 2822021.54,
+            "zarValue": 2822021.54
+          },
+          {
+            "investment": "Wealthworks Global Flexible Fund",
+            "currency": "ZAR",
+            "nativeValue": 19070085.87,
+            "zarValue": 19070085.87
+          },
+          {
+            "investment": "Diversified Trading Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 12612149.19,
+            "zarValue": 12612149.19
+          },
+          {
+            "investment": "Xhaos Special Opportunities Fund",
+            "currency": "ZAR",
+            "nativeValue": 21788454.34,
+            "zarValue": 21788454.34
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.003221070905091383,
+            "nativeFees": {
+              "ZAR": 15254.743290155558
+            },
+            "zarFee": 15254.743290155558
+          },
+          "advisory": {
+            "annualRate": 0.0056674609242583695,
+            "nativeFees": {
+              "ZAR": 26840.657673785794
+            },
+            "zarFee": 26840.657673785794
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 42095.400963941356
+            },
+            "zarFee": 42095.400963941356
+          }
+        }
+      },
+      {
+        "id": "northstar-fnb|1003725|Fallows, Christopher",
+        "client": "Fallows, Christopher",
+        "accountCode": "1003725",
+        "identityNo": "7209215223082",
+        "providerId": "northstar-fnb",
+        "providerName": "Northstar FNB",
+        "nativeValues": {
+          "ZAR": 8161088.99
+        },
+        "zarAum": 8161088.99,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "FNB Securities (Northstar)",
+            "currency": "ZAR",
+            "nativeValue": 8161088.99,
+            "zarValue": 8161088.99
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0,
+            "nativeFees": {
+              "ZAR": 0.0
+            },
+            "zarFee": 0.0
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 3400.453745833334
+            },
+            "zarFee": 3400.453745833334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3400.453745833334
+            },
+            "zarFee": 3400.453745833334
+          }
+        }
+      },
+      {
+        "id": "northstar-sanlam||Fowler, Merle",
+        "client": "Fowler, Merle",
+        "accountCode": "",
+        "identityNo": "5202120048084",
+        "providerId": "northstar-sanlam",
+        "providerName": "Northstar Sanlam",
+        "nativeValues": {
+          "ZAR": 2898498.0
+        },
+        "zarAum": 2898498.0,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Sanlam (Northstar)",
+            "currency": "ZAR",
+            "nativeValue": 2898498.0,
+            "zarValue": 2898498.0
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0,
+            "nativeFees": {
+              "ZAR": 0.0
+            },
+            "zarFee": 0.0
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1207.7075
+            },
+            "zarFee": 1207.7075
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1207.7075
+            },
+            "zarFee": 1207.7075
+          }
+        }
+      },
+      {
+        "id": "peresec|197970|Keren, Sara",
+        "client": "Keren, Sara",
+        "accountCode": "197970",
+        "identityNo": "7101120072086",
+        "providerId": "peresec",
+        "providerName": "Peresec",
+        "nativeValues": {
+          "ZAR": 3302914.62
+        },
+        "zarAum": 3302914.62,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Peresec Trading Account",
+            "currency": "ZAR",
+            "nativeValue": 3302914.62,
+            "zarValue": 3302914.62
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0,
+            "nativeFees": {
+              "ZAR": 0.0
+            },
+            "zarFee": 0.0
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1376.2144250000001
+            },
+            "zarFee": 1376.2144250000001
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1376.2144250000001
+            },
+            "zarFee": 1376.2144250000001
+          }
+        }
+      },
+      {
+        "id": "prescient||Commercial Buildings (Pty) Ltd",
+        "client": "Commercial Buildings (Pty) Ltd",
+        "accountCode": "",
+        "identityNo": "1927/000221/07",
+        "providerId": "prescient",
+        "providerName": "Prescient",
+        "nativeValues": {
+          "ZAR": 41395256.19
+        },
+        "zarAum": 41395256.19,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Laurium Stable Prescient Fund A2",
+            "currency": "ZAR",
+            "nativeValue": 41395256.19,
+            "zarValue": 41395256.19
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0,
+            "nativeFees": {
+              "ZAR": 0.0
+            },
+            "zarFee": 0.0
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 17248.0234125
+            },
+            "zarFee": 17248.0234125
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 17248.0234125
+            },
+            "zarFee": 17248.0234125
+          }
+        }
+      },
+      {
+        "id": "prime|PRI50594441|Apex Holdings (Pty) Ltd",
+        "client": "Apex Holdings (Pty) Ltd",
+        "accountCode": "PRI50594441",
+        "identityNo": "2015/068524/07",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 7625485.779999999
+        },
+        "zarAum": 7625485.779999999,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 590000.71,
+            "zarValue": 590000.71
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 6740523.8,
+            "zarValue": 6740523.8
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund ( C )",
+            "currency": "ZAR",
+            "nativeValue": 294961.27,
+            "zarValue": 294961.27
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1588.6428708333333
+            },
+            "zarFee": 1588.6428708333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 3177.2857416666666
+            },
+            "zarFee": 3177.2857416666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 4765.9286125
+            },
+            "zarFee": 4765.9286125
+          }
+        }
+      },
+      {
+        "id": "prime|PRIME_APEX_IMAGES_CC|Apex Images CC",
+        "client": "Apex Images CC",
+        "accountCode": "PRIME_APEX_IMAGES_CC",
+        "identityNo": "",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 976429.49
+        },
+        "zarAum": 976429.49,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 490932.79,
+            "zarValue": 490932.79
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 485496.7,
+            "zarValue": 485496.7
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 203.4228104166667
+            },
+            "zarFee": 203.4228104166667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 406.8456208333334
+            },
+            "zarFee": 406.8456208333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 610.26843125
+            },
+            "zarFee": 610.26843125
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202110280001|Blackbeard, Ginette",
+        "client": "Blackbeard, Ginette",
+        "accountCode": "PRI202110280001",
+        "identityNo": "8002160132088",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 817168.62
+        },
+        "zarAum": 817168.62,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 763283.49,
+            "zarValue": 763283.49
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 375.65,
+            "zarValue": 375.65
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 53509.48,
+            "zarValue": 53509.48
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 170.2434625
+            },
+            "zarFee": 170.2434625
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 340.486925
+            },
+            "zarFee": 340.486925
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 510.7303875
+            },
+            "zarFee": 510.7303875
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202212210002|Commercial Buildings (Pty) Ltd",
+        "client": "Commercial Buildings (Pty) Ltd",
+        "accountCode": "PRI202212210002",
+        "identityNo": "1927/000221/07",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 36654643.12
+        },
+        "zarAum": 36654643.12,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 36654643.12,
+            "zarValue": 36654643.12
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 7636.383983333333
+            },
+            "zarFee": 7636.383983333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 15272.767966666666
+            },
+            "zarFee": 15272.767966666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 22909.15195
+            },
+            "zarFee": 22909.15195
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201806040001|De Mey, Armelle",
+        "client": "De Mey, Armelle",
+        "accountCode": "PRI201806040001",
+        "identityNo": "6007020264189",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1087592.0
+        },
+        "zarAum": 1087592.0,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1087592.0,
+            "zarValue": 1087592.0
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 226.58166666666668
+            },
+            "zarFee": 226.58166666666668
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 453.16333333333336
+            },
+            "zarFee": 453.16333333333336
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 679.745
+            },
+            "zarFee": 679.745
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201908270001|De Mey, Katinga",
+        "client": "De Mey, Katinga",
+        "accountCode": "PRI201908270001",
+        "identityNo": "9606210194085",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 339966.35
+        },
+        "zarAum": 339966.35,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 339966.35,
+            "zarValue": 339966.35
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 70.82632291666665
+            },
+            "zarFee": 70.82632291666665
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 141.6526458333333
+            },
+            "zarFee": 141.6526458333333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 212.47896874999998
+            },
+            "zarFee": 212.47896874999998
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202212050001|Eskinazi, Ray",
+        "client": "Eskinazi, Ray",
+        "accountCode": "PRI202212050001",
+        "identityNo": "5708225780082",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 2465637.24
+        },
+        "zarAum": 2465637.24,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 2465637.24,
+            "zarValue": 2465637.24
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 513.674425
+            },
+            "zarFee": 513.674425
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1027.34885
+            },
+            "zarFee": 1027.34885
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1541.023275
+            },
+            "zarFee": 1541.023275
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202012090001|Eskinazi, Richard David",
+        "client": "Eskinazi, Richard David",
+        "accountCode": "PRI202012090001",
+        "identityNo": "6510245060084",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 8490971.75
+        },
+        "zarAum": 8490971.75,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 7317127.05,
+            "zarValue": 7317127.05
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 833384.5,
+            "zarValue": 833384.5
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 340460.2,
+            "zarValue": 340460.2
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1768.9524479166666
+            },
+            "zarFee": 1768.9524479166666
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 3537.9048958333333
+            },
+            "zarFee": 3537.9048958333333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 5306.85734375
+            },
+            "zarFee": 5306.85734375
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202008120001|Fallows, Monique Louise",
+        "client": "Fallows, Monique Louise",
+        "accountCode": "PRI202008120001",
+        "identityNo": "7901040119085",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 6990168.899999999
+        },
+        "zarAum": 6990168.899999999,
+        "holdingCount": 4,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 6065120.06,
+            "zarValue": 6065120.06
+          },
+          {
+            "investment": "36ONE Flexible",
+            "currency": "ZAR",
+            "nativeValue": 291949.14,
+            "zarValue": 291949.14
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund ( C )",
+            "currency": "ZAR",
+            "nativeValue": 288995.86,
+            "zarValue": 288995.86
+          },
+          {
+            "investment": "Fairtree Equity Prescient Fund",
+            "currency": "ZAR",
+            "nativeValue": 344103.84,
+            "zarValue": 344103.84
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1456.2851875
+            },
+            "zarFee": 1456.2851875
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 2912.570375
+            },
+            "zarFee": 2912.570375
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 4368.8555625
+            },
+            "zarFee": 4368.8555625
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202110110005|Fowler, Merle",
+        "client": "Fowler, Merle",
+        "accountCode": "PRI202110110005",
+        "identityNo": "5202120048084",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1132951.49
+        },
+        "zarAum": 1132951.49,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 856394.62,
+            "zarValue": 856394.62
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 150.35,
+            "zarValue": 150.35
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 276406.52,
+            "zarValue": 276406.52
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 236.03156041666668
+            },
+            "zarFee": 236.03156041666668
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 472.06312083333336
+            },
+            "zarFee": 472.06312083333336
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 708.09468125
+            },
+            "zarFee": 708.09468125
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202308310001|Gennari Family Trust",
+        "client": "Gennari Family Trust",
+        "accountCode": "PRI202308310001",
+        "identityNo": "IT000218/2022(C)",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 2781869.0199999996
+        },
+        "zarAum": 2781869.0199999996,
+        "holdingCount": 4,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1629847.94,
+            "zarValue": 1629847.94
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 61066.93,
+            "zarValue": 61066.93
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 18274.95,
+            "zarValue": 18274.95
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 1072679.2,
+            "zarValue": 1072679.2
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 579.5560458333333
+            },
+            "zarFee": 579.5560458333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1159.1120916666666
+            },
+            "zarFee": 1159.1120916666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1738.6681374999998
+            },
+            "zarFee": 1738.6681374999998
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202450599542|Hedley, James",
+        "client": "Hedley, James",
+        "accountCode": "PRI202450599542",
+        "identityNo": "8405255864186",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1572899.63
+        },
+        "zarAum": 1572899.63,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1572899.63,
+            "zarValue": 1572899.63
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 327.68742291666666
+            },
+            "zarFee": 327.68742291666666
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 655.3748458333333
+            },
+            "zarFee": 655.3748458333333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 983.0622687499999
+            },
+            "zarFee": 983.0622687499999
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202108240002|Hoar, Marc",
+        "client": "Hoar, Marc",
+        "accountCode": "PRI202108240002",
+        "identityNo": "6801105008085",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 57538648.68999999
+        },
+        "zarAum": 57538648.68999999,
+        "holdingCount": 11,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 10940336.02,
+            "zarValue": 10940336.02
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 2618282.05,
+            "zarValue": 2618282.05
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 6909335.59,
+            "zarValue": 6909335.59
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 27329502.61,
+            "zarValue": 27329502.61
+          },
+          {
+            "investment": "36One Bci Flexible Opportunity Fund (A)",
+            "currency": "ZAR",
+            "nativeValue": 1347568.71,
+            "zarValue": 1347568.71
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund (C)",
+            "currency": "ZAR",
+            "nativeValue": 1633297.35,
+            "zarValue": 1633297.35
+          },
+          {
+            "investment": "ClucasGray Prescient Equity Fund (B1)",
+            "currency": "ZAR",
+            "nativeValue": 1458604.08,
+            "zarValue": 1458604.08
+          },
+          {
+            "investment": "Coronation Global Emerging Markets Flexible (P)",
+            "currency": "ZAR",
+            "nativeValue": 1111347.04,
+            "zarValue": 1111347.04
+          },
+          {
+            "investment": "Fairtree Equity Prescient (A1)",
+            "currency": "ZAR",
+            "nativeValue": 1435829.76,
+            "zarValue": 1435829.76
+          },
+          {
+            "investment": "Laurium Flexible Prescient Fund Fund (B4)",
+            "currency": "ZAR",
+            "nativeValue": 1309746.01,
+            "zarValue": 1309746.01
+          },
+          {
+            "investment": "Obsidian SCI Equity Fund (B3)",
+            "currency": "ZAR",
+            "nativeValue": 1444799.47,
+            "zarValue": 1444799.47
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 11987.218477083332
+            },
+            "zarFee": 11987.218477083332
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 23974.436954166664
+            },
+            "zarFee": 23974.436954166664
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 35961.655431249994
+            },
+            "zarFee": 35961.655431249994
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202450595140|Kovacs Investments 492 (PTY) LTD",
+        "client": "Kovacs Investments 492 (PTY) LTD",
+        "accountCode": "PRI202450595140",
+        "identityNo": "2002/006975/07",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 10376893.16
+        },
+        "zarAum": 10376893.16,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious FOF (B)",
+            "currency": "ZAR",
+            "nativeValue": 5631325.64,
+            "zarValue": 5631325.64
+          },
+          {
+            "investment": "Laurium Stable Prescient Fund (A2)",
+            "currency": "ZAR",
+            "nativeValue": 4241057.13,
+            "zarValue": 4241057.13
+          },
+          {
+            "investment": "Prescient Income Provider (A2)",
+            "currency": "ZAR",
+            "nativeValue": 504510.39,
+            "zarValue": 504510.39
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 2161.852741666667
+            },
+            "zarFee": 2161.852741666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 4323.705483333334
+            },
+            "zarFee": 4323.705483333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 6485.558225000001
+            },
+            "zarFee": 6485.558225000001
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202202070007|Mackay Davidson, Charles Stuart",
+        "client": "Mackay Davidson, Charles Stuart",
+        "accountCode": "PRI202202070007",
+        "identityNo": "6701275028089",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 594172.79
+        },
+        "zarAum": 594172.79,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 587556.13,
+            "zarValue": 587556.13
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 126.06,
+            "zarValue": 126.06
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 6490.6,
+            "zarValue": 6490.6
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 123.78599791666669
+            },
+            "zarFee": 123.78599791666669
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 247.57199583333338
+            },
+            "zarFee": 247.57199583333338
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 371.35799375000005
+            },
+            "zarFee": 371.35799375000005
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201911110003|Mandy, Shelley Anne",
+        "client": "Mandy, Shelley Anne",
+        "accountCode": "PRI201911110003",
+        "identityNo": "6211080127084",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 7810344.279999999
+        },
+        "zarAum": 7810344.279999999,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 7809910.1,
+            "zarValue": 7809910.1
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 434.18,
+            "zarValue": 434.18
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1627.155058333333
+            },
+            "zarFee": 1627.155058333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 3254.310116666666
+            },
+            "zarFee": 3254.310116666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 4881.465174999999
+            },
+            "zarFee": 4881.465174999999
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202550601174|Moyo, Thithibele",
+        "client": "Moyo, Thithibele",
+        "accountCode": "PRI202550601174",
+        "identityNo": "FN497554",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 16308.17
+        },
+        "zarAum": 16308.17,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 16308.17,
+            "zarValue": 16308.17
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 3.397535416666667
+            },
+            "zarFee": 3.397535416666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 6.795070833333334
+            },
+            "zarFee": 6.795070833333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 10.19260625
+            },
+            "zarFee": 10.19260625
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202103150001|Robinson, Cheryl",
+        "client": "Robinson, Cheryl",
+        "accountCode": "PRI202103150001",
+        "identityNo": "7808230246083",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 114133.9
+        },
+        "zarAum": 114133.9,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 114133.9,
+            "zarValue": 114133.9
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 23.777895833333332
+            },
+            "zarFee": 23.777895833333332
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 47.555791666666664
+            },
+            "zarFee": 47.555791666666664
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 71.3336875
+            },
+            "zarFee": 71.3336875
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202209280001|Smuts, Hanny",
+        "client": "Smuts, Hanny",
+        "accountCode": "PRI202209280001",
+        "identityNo": "5306120097080",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1420701.0099999998
+        },
+        "zarAum": 1420701.0099999998,
+        "holdingCount": 4,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1006581.21,
+            "zarValue": 1006581.21
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 565.84,
+            "zarValue": 565.84
+          },
+          {
+            "investment": "Matrix SCI Stable Income Fund B1",
+            "currency": "ZAR",
+            "nativeValue": 205606.83,
+            "zarValue": 205606.83
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 207947.13,
+            "zarValue": 207947.13
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 295.9793770833333
+            },
+            "zarFee": 295.9793770833333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 591.9587541666666
+            },
+            "zarFee": 591.9587541666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 887.93813125
+            },
+            "zarFee": 887.93813125
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201903150001|Snitcher, Lauren Renee",
+        "client": "Snitcher, Lauren Renee",
+        "accountCode": "PRI201903150001",
+        "identityNo": "6012290039089",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 8461203.91
+        },
+        "zarAum": 8461203.91,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 8460380.32,
+            "zarValue": 8460380.32
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 812.23,
+            "zarValue": 812.23
+          },
+          {
+            "investment": "Prescient Income Provider Fund",
+            "currency": "ZAR",
+            "nativeValue": 11.36,
+            "zarValue": 11.36
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1762.7508145833335
+            },
+            "zarFee": 1762.7508145833335
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 3525.501629166667
+            },
+            "zarFee": 3525.501629166667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 5288.252443750001
+            },
+            "zarFee": 5288.252443750001
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202204040004|Sweet Grass Trading 12 (Pty) Ltd",
+        "client": "Sweet Grass Trading 12 (Pty) Ltd",
+        "accountCode": "PRI202204040004",
+        "identityNo": "2008/025068/07",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 42726785.96
+        },
+        "zarAum": 42726785.96,
+        "holdingCount": 6,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 27235055.82,
+            "zarValue": 27235055.82
+          },
+          {
+            "investment": "36One BCI Global Equity Feeder Fund (A) (36FNDA)",
+            "currency": "ZAR",
+            "nativeValue": 3948069.74,
+            "zarValue": 3948069.74
+          },
+          {
+            "investment": "Catalyst SCI Global Real Estate SCI Feeder (B) (CGRE)",
+            "currency": "ZAR",
+            "nativeValue": 2730806.42,
+            "zarValue": 2730806.42
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund ( C )",
+            "currency": "ZAR",
+            "nativeValue": 616578.55,
+            "zarValue": 616578.55
+          },
+          {
+            "investment": "ClucasGray Prescient Equity Fund (B1) (CGPB1)",
+            "currency": "ZAR",
+            "nativeValue": 705179.25,
+            "zarValue": 705179.25
+          },
+          {
+            "investment": "Coronation Global Emerging Markets Flexible [ZAR] Fund (P) (CGEMB4)",
+            "currency": "ZAR",
+            "nativeValue": 7491096.18,
+            "zarValue": 7491096.18
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 8901.413741666667
+            },
+            "zarFee": 8901.413741666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 17802.827483333334
+            },
+            "zarFee": 17802.827483333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 26704.241225
+            },
+            "zarFee": 26704.241225
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202450595273|Sweet Grass Trading 12 Acc 2",
+        "client": "Sweet Grass Trading 12 Acc 2",
+        "accountCode": "PRI202450595273",
+        "identityNo": "2008/025068/07",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 4825944.8
+        },
+        "zarAum": 4825944.8,
+        "holdingCount": 6,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed FOF (A)",
+            "currency": "ZAR",
+            "nativeValue": 2642574.91,
+            "zarValue": 2642574.91
+          },
+          {
+            "investment": "36One Bci Flexible Opportunity Fund (A)",
+            "currency": "ZAR",
+            "nativeValue": 304108.13,
+            "zarValue": 304108.13
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund (C)",
+            "currency": "ZAR",
+            "nativeValue": 440531.31,
+            "zarValue": 440531.31
+          },
+          {
+            "investment": "Fairtree Equity Prescient (A1)",
+            "currency": "ZAR",
+            "nativeValue": 481439.8,
+            "zarValue": 481439.8
+          },
+          {
+            "investment": "Laurium Stable Prescient Fund (A2)",
+            "currency": "ZAR",
+            "nativeValue": 469175.68,
+            "zarValue": 469175.68
+          },
+          {
+            "investment": "Obsidian SCI Balanced Fund (B1)",
+            "currency": "ZAR",
+            "nativeValue": 488114.97,
+            "zarValue": 488114.97
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 1005.4051666666666
+            },
+            "zarFee": 1005.4051666666666
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 2010.8103333333331
+            },
+            "zarFee": 2010.8103333333331
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 3016.2155
+            },
+            "zarFee": 3016.2155
+          }
+        }
+      },
+      {
+        "id": "prime|PRIME_THOMAS_MAYNE|Thomas, Mayne",
+        "client": "Thomas, Mayne",
+        "accountCode": "PRIME_THOMAS_MAYNE",
+        "identityNo": "",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 19405924.619999997
+        },
+        "zarAum": 19405924.619999997,
+        "holdingCount": 7,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious FOF (A)",
+            "currency": "ZAR",
+            "nativeValue": 4367140.33,
+            "zarValue": 4367140.33
+          },
+          {
+            "investment": "Wealthworks Prime Managed FOF (A)",
+            "currency": "ZAR",
+            "nativeValue": 11603480.69,
+            "zarValue": 11603480.69
+          },
+          {
+            "investment": "36One Bci Flexible Opportunity Fund (A)",
+            "currency": "ZAR",
+            "nativeValue": 548185.13,
+            "zarValue": 548185.13
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund (C)",
+            "currency": "ZAR",
+            "nativeValue": 546794.82,
+            "zarValue": 546794.82
+          },
+          {
+            "investment": "Coronation Global Emerging Markets Flexible (P)",
+            "currency": "ZAR",
+            "nativeValue": 890386.81,
+            "zarValue": 890386.81
+          },
+          {
+            "investment": "Fairtree Equity Prescient (A1)",
+            "currency": "ZAR",
+            "nativeValue": 719298.47,
+            "zarValue": 719298.47
+          },
+          {
+            "investment": "Laurium Flexible Prescient Fund Fund (B4)",
+            "currency": "ZAR",
+            "nativeValue": 730638.37,
+            "zarValue": 730638.37
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 4042.9009624999994
+            },
+            "zarFee": 4042.9009624999994
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 8085.801924999999
+            },
+            "zarFee": 8085.801924999999
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 12128.702887499998
+            },
+            "zarFee": 12128.702887499998
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202110190002|Three Sisters Trust",
+        "client": "Three Sisters Trust",
+        "accountCode": "PRI202110190002",
+        "identityNo": "IT4597/98",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1555723.56
+        },
+        "zarAum": 1555723.56,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1555723.56,
+            "zarValue": 1555723.56
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 324.109075
+            },
+            "zarFee": 324.109075
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 648.21815
+            },
+            "zarFee": 648.21815
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 972.327225
+            },
+            "zarFee": 972.327225
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202111020001|Van Niekerk, Ann",
+        "client": "Van Niekerk, Ann",
+        "accountCode": "PRI202111020001",
+        "identityNo": "4401080053081",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 706071.74
+        },
+        "zarAum": 706071.74,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Cautious Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 385694.89,
+            "zarValue": 385694.89
+          },
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 319944.5,
+            "zarValue": 319944.5
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 432.35,
+            "zarValue": 432.35
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 147.09827916666669
+            },
+            "zarFee": 147.09827916666669
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 294.19655833333337
+            },
+            "zarFee": 294.19655833333337
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 441.2948375000001
+            },
+            "zarFee": 441.2948375000001
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201811080002|Von Arnim, Achim Alard Giselher",
+        "client": "Von Arnim, Achim Alard Giselher",
+        "accountCode": "PRI201811080002",
+        "identityNo": "4507195061080",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 2104366.46
+        },
+        "zarAum": 2104366.46,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 2104314.67,
+            "zarValue": 2104314.67
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 51.79,
+            "zarValue": 51.79
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 438.40967916666665
+            },
+            "zarFee": 438.40967916666665
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 876.8193583333333
+            },
+            "zarFee": 876.8193583333333
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1315.2290375
+            },
+            "zarFee": 1315.2290375
+          }
+        }
+      },
+      {
+        "id": "prime|PRI201811080003|Von Arnim, Helga Hildegard Katharina",
+        "client": "Von Arnim, Helga Hildegard Katharina",
+        "accountCode": "PRI201811080003",
+        "identityNo": "5004210080187",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1577005.94
+        },
+        "zarAum": 1577005.94,
+        "holdingCount": 2,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1576883.67,
+            "zarValue": 1576883.67
+          },
+          {
+            "investment": "Cash",
+            "currency": "ZAR",
+            "nativeValue": 122.27,
+            "zarValue": 122.27
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 328.5429041666667
+            },
+            "zarFee": 328.5429041666667
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 657.0858083333334
+            },
+            "zarFee": 657.0858083333334
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 985.6287125000001
+            },
+            "zarFee": 985.6287125000001
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202450595137|Wilmans, Joshua",
+        "client": "Wilmans, Joshua",
+        "accountCode": "PRI202450595137",
+        "identityNo": "0406055186083",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 43349.58
+        },
+        "zarAum": 43349.58,
+        "holdingCount": 3,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed FOF (A)",
+            "currency": "ZAR",
+            "nativeValue": 23087.25,
+            "zarValue": 23087.25
+          },
+          {
+            "investment": "Centaur Bci Flexible Fund (C)",
+            "currency": "ZAR",
+            "nativeValue": 10477.0,
+            "zarValue": 10477.0
+          },
+          {
+            "investment": "Coronation Global Emerging Markets Flexible (P)",
+            "currency": "ZAR",
+            "nativeValue": 9785.33,
+            "zarValue": 9785.33
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 9.0311625
+            },
+            "zarFee": 9.0311625
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 18.062325
+            },
+            "zarFee": 18.062325
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 27.093487500000002
+            },
+            "zarFee": 27.093487500000002
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202204040005|Worrall, Charlie Christopher",
+        "client": "Worrall, Charlie Christopher",
+        "accountCode": "PRI202204040005",
+        "identityNo": "1904295838082",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 1081101.7
+        },
+        "zarAum": 1081101.7,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 1081101.7,
+            "zarValue": 1081101.7
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 225.22952083333334
+            },
+            "zarFee": 225.22952083333334
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 450.4590416666667
+            },
+            "zarFee": 450.4590416666667
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 675.6885625
+            },
+            "zarFee": 675.6885625
+          }
+        }
+      },
+      {
+        "id": "prime|PRI202204040006|Worrall, Isla Elizabeth",
+        "client": "Worrall, Isla Elizabeth",
+        "accountCode": "PRI202204040006",
+        "identityNo": "1709010893084",
+        "providerId": "prime",
+        "providerName": "Prime Investments",
+        "nativeValues": {
+          "ZAR": 2628737.92
+        },
+        "zarAum": 2628737.92,
+        "holdingCount": 1,
+        "holdings": [
+          {
+            "investment": "Wealthworks Prime Managed Fund of Funds",
+            "currency": "ZAR",
+            "nativeValue": 2628737.92,
+            "zarValue": 2628737.92
+          }
+        ],
+        "fees": {
+          "rebate": {
+            "annualRate": 0.0025,
+            "nativeFees": {
+              "ZAR": 547.6537333333333
+            },
+            "zarFee": 547.6537333333333
+          },
+          "advisory": {
+            "annualRate": 0.005,
+            "nativeFees": {
+              "ZAR": 1095.3074666666666
+            },
+            "zarFee": 1095.3074666666666
+          },
+          "total": {
+            "nativeFees": {
+              "ZAR": 1642.9612
+            },
+            "zarFee": 1642.9612
+          }
+        }
+      }
+    ]
   }
 ];

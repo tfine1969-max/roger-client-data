@@ -5,6 +5,7 @@ import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { withCalculatedFees, buildFeeMap, feeKey, calcFees } from '@/lib/fee-utils';
 import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/valuation-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,8 +13,8 @@ import { Search, Save, AlertCircle, ChevronDown, ChevronRight, Users, LayoutList
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function buildClientRows(valuations, feeConfigs, month) {
-  const monthRows = valuations.filter(v => v.upload_month === month);
+function buildClientRows(valuations, feeConfigs, month, fundMergeRules) {
+  const monthRows = applyRulesToRows(valuations.filter(v => v.upload_month === month), fundMergeRules);
   const enriched = monthRows.map(r => withCalculatedFees(r, feeMappingRows, feeConfigs));
   const seen = new Set();
   const rows = [];
@@ -60,12 +61,18 @@ export default function BulkFees() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const activeMonth = selectedMonth ?? months[0] ?? '';
 
   const rows = useMemo(
-    () => buildClientRows(valuations, feeConfigs, activeMonth),
-    [valuations, feeConfigs, activeMonth]
+    () => buildClientRows(valuations, feeConfigs, activeMonth, fundMergeRules),
+    [valuations, feeConfigs, activeMonth, fundMergeRules]
   );
 
   const filtered = useMemo(() => {

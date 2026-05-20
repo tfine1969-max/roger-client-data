@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, BarChart3, Briefcase,
   Percent, SlidersHorizontal, ClipboardCheck,
-  Upload, AlertTriangle, LineChart, ChevronDown
+  Upload, AlertTriangle, LineChart, ChevronDown, Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,14 +25,25 @@ const singleItems = [
   { path: '/clients', label: 'Clients', icon: Users, color: COLORS.grey },
   { path: '/platforms', label: 'Platforms', icon: BarChart3, color: COLORS.blueTint55 },
   { path: '/funds', label: 'Funds', icon: Briefcase, color: COLORS.greyTint55 },
-  { path: '/investment-summary', label: 'Reports', icon: LineChart, color: COLORS.blueTint35 },
+  { path: '/investment-summary', label: 'Summary', icon: LineChart, color: COLORS.blueTint35 },
 ];
+
+const reportsGroup = {
+  label: 'Client Reports',
+  icon: LineChart,
+  color: COLORS.blueTint35,
+  items: [
+    { path: '/reports/marc-hoar',      label: 'Marc Hoar',              icon: Users },
+    { path: '/reports/worrall-family', label: 'Worrall Family',         icon: Users },
+  ],
+};
 
 const feesGroup = {
   label: 'Fees',
   icon: Percent,
   color: COLORS.blue,
   items: [
+    { path: '/fee-seeding', label: 'Fee Seeding', icon: Layers },
     { path: '/fees', label: 'Fees', icon: Percent },
     { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
   ],
@@ -71,7 +82,7 @@ function NavDropdown({ group, location }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          "group relative flex h-9 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition-all whitespace-nowrap",
+          "group relative flex h-8 items-center gap-1.5 rounded-xl px-3 text-sm font-medium transition-all whitespace-nowrap",
           isGroupActive
             ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
             : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm",
@@ -126,19 +137,19 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
-        <div className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-5">
-          <div className="flex min-h-16 flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-            <Link to="/" className="group flex w-fit items-center gap-4">
+        <div className="px-3 sm:px-4 lg:px-6">
+          <div className="flex h-14 items-center gap-4">
+            <Link to="/" className="group flex shrink-0 items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png"
                 alt="Wealth Works"
-                className="h-12 w-auto transition-transform group-hover:scale-[1.01] sm:h-14"
+                className="h-10 w-auto transition-transform group-hover:scale-[1.01]"
               />
-              <p className="hidden text-[11px] font-medium uppercase leading-none tracking-[0.24em] text-slate-500 sm:block">
+              <p className="hidden text-[10px] font-medium uppercase leading-none tracking-[0.22em] text-slate-500 md:block">
                 Cape Town Client Management
               </p>
             </Link>
-            <nav className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5">
+            <nav className="flex flex-1 items-center gap-1 rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
                   path === '/'
@@ -166,6 +177,7 @@ export default function AppLayout() {
                 );
               })}
 
+              <NavDropdown group={reportsGroup} location={location} />
               <NavDropdown group={feesGroup} location={location} />
               <NavDropdown group={dataGroup} location={location} />
             </nav>
@@ -174,7 +186,7 @@ export default function AppLayout() {
 
         {inPlatformsSection && (
           <div className="border-t border-slate-200/80 bg-white">
-            <div className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-5">
+            <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
               <div className="flex h-11 items-center gap-2 overflow-x-auto">
                 {platformsSubNav.map(({ path, label }) => {
                   const active = path === '/platforms'

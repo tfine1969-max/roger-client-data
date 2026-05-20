@@ -268,19 +268,19 @@ Return JSON exactly in this shape:
     }, mergeRules);
   });
 
-  const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month, 'Northstar');
-
-  await base44.asServiceRole.entities.MonthlyUpload.create({
+  const upload = await base44.asServiceRole.entities.MonthlyUpload.create({
     upload_month,
     file_name: fileNameFromUrl(file_url),
     upload_date: new Date().toISOString(),
     uploaded_by: user.email,
-    total_rows: created,
-    rows_imported: created,
+    total_rows: valuations.length,
+    rows_imported: valuations.length,
     rows_skipped: 0,
     import_status: 'Imported',
     notes: `Northstar PDF import. Client: ${clientName}. Account: ${accountCode}. USD/ZAR rate: ${usdToZar}.`,
   });
+
+  const created = await bulkCreateValuations(base44, valuations.map(r => ({ ...r, monthly_upload_id: upload.id })), replace_existing, upload_month, 'Northstar');
 
   const usdTotal = valuations
     .filter(row => String(row.currency || '').toUpperCase() === 'USD')
@@ -372,6 +372,18 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
 
     const mergeRules = await loadClientMergeRules(base44);
 
+    const credoUpload = await base44.asServiceRole.entities.MonthlyUpload.create({
+      upload_month,
+      file_name: fileNameFromUrl(file_url),
+      upload_date: new Date().toISOString(),
+      uploaded_by: user.email,
+      total_rows: holdings.length,
+      rows_imported: holdings.length,
+      rows_skipped: 0,
+      import_status: 'Imported',
+      notes: `Credo PDF import. Client: ${client_name}. Account: ${account_number}.`,
+    });
+
     const valuations = holdings.map(h => applyClientMergeRules({
       upload_month,
       account_code: account_number || 'UNKNOWN',
@@ -387,6 +399,7 @@ Include ALL holdings from all currency sections. If a field is missing or 0, inc
       conversion_status: 'Converted',
       number_of_units: h.quantity,
       month_end_unit_price: h.unit_cost,
+      monthly_upload_id: credoUpload.id,
     }, mergeRules));
 
     const created = await bulkCreateValuations(base44, valuations, replace_existing, upload_month, 'Credo');

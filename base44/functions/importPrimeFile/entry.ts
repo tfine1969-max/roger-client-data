@@ -173,7 +173,20 @@ Deno.serve(async (req) => {
       is_flagged: !row.account_number || !row.id_number,
     }, mergeRules));
 
-    await bulkCreate(base44.asServiceRole.entities.PortfolioValuation, pvRecords, 500);
+    const upload = await base44.asServiceRole.entities.MonthlyUpload.create({
+      upload_month,
+      file_name: file_url.split('/').pop(),
+      upload_date: new Date().toISOString(),
+      uploaded_by: user.email,
+      total_rows: records.length,
+      rows_imported: records.length,
+      rows_skipped: 0,
+      import_status: 'Imported',
+      notes: 'Prime Investments import.',
+    });
+
+    await bulkCreate(base44.asServiceRole.entities.PortfolioValuation,
+      pvRecords.map(r => ({ ...r, monthly_upload_id: upload.id })), 500);
 
     return Response.json({
       success: true,

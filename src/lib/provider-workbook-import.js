@@ -1,5 +1,9 @@
 import { unzipSync, strFromU8 } from 'fflate';
 import { base44 } from '@/api/base44Client';
+import { rogerSourceTotals } from '@/data/rogerSourceRows';
+
+// Months embedded in rogerSourceRows.js — must never be written to the DB.
+const EMBEDDED_MONTHS = new Set(Object.keys(rogerSourceTotals));
 
 const BATCH_SIZE = 25;
 
@@ -279,8 +283,14 @@ export async function importRogerDataWorkbook({ file, replaceExisting = false, d
   }
 
   const months = [...new Set(rows.map(row => row.upload_month))];
+
+  // Strip any embedded months — they live in rogerSourceRows.js, never the DB.
+  const dbRows = rows.filter(row => !EMBEDDED_MONTHS.has(row.upload_month));
+  const dbMonths = months.filter(m => !EMBEDDED_MONTHS.has(m));
+  const dbSummaries = sheetSummaries.filter(s => !EMBEDDED_MONTHS.has(s.upload_month));
+
   if (replaceExisting) {
-    for (const month of months) {
+    for (const month of dbMonths) {
       const existing = await base44.entities.PortfolioValuation.filter({ upload_month: month }, '-created_date', 20000);
       for (const row of existing) {
         await base44.entities.PortfolioValuation.delete(row.id);
@@ -288,12 +298,12 @@ export async function importRogerDataWorkbook({ file, replaceExisting = false, d
     }
   }
 
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    const batch = rows.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < dbRows.length; i += BATCH_SIZE) {
+    const batch = dbRows.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(row => base44.entities.PortfolioValuation.create(row)));
   }
 
-  for (const summary of sheetSummaries) {
+  for (const summary of dbSummaries) {
     await base44.entities.MonthlyUpload.create({
       upload_month: summary.upload_month,
       file_name: file.name,
@@ -308,13 +318,13 @@ export async function importRogerDataWorkbook({ file, replaceExisting = false, d
 
   return {
     success: true,
-    rows_imported: rows.length,
-    clients_imported: new Set(rows.map(row => row.account_code || row.portfolio_name).filter(Boolean)).size,
-    aum_imported: rows.reduce((sum, row) => sum + row.zar_value, 0),
-    sheets_imported: sheetSummaries.map(summary => summary.sheet),
-    months_imported: months,
-    sheet_summaries: sheetSummaries,
-    rows_skipped: sheetSummaries.reduce((sum, summary) => sum + summary.rows_skipped, 0),
+    rows_imported: dbRows.length,
+    clients_imported: new Set(dbRows.map(row => row.account_code || row.portfolio_name).filter(Boolean)).size,
+    aum_imported: dbRows.reduce((sum, row) => sum + row.zar_value, 0),
+    sheets_imported: dbSummaries.map(summary => summary.sheet),
+    months_imported: dbMonths,
+    sheet_summaries: dbSummaries,
+    rows_skipped: dbSummaries.reduce((sum, summary) => sum + summary.rows_skipped, 0),
   };
 }
 

@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { rogerSourceTotals } from '@/data/rogerSourceRows';
 import { fmtNum, formatMonth, getSortedMonths, zarVal } from '@/lib/valuation-utils';
+
+const embeddedMonths = new Set(Object.keys(rogerSourceTotals));
 
 function matchesProvider(row, provider) {
   const platform = String(row.platform || '').toLowerCase();
@@ -14,7 +17,10 @@ function matchesProvider(row, provider) {
 export default function ProviderUploadSummary({ provider, uploadMonth }) {
   const { data: rows = [] } = useQuery({
     queryKey: ['providerUploadSummary', provider, uploadMonth],
-    queryFn: () => base44.entities.PortfolioValuation.list('-upload_month', 20000),
+    queryFn: async () => {
+      const all = await base44.entities.PortfolioValuation.list('-upload_month', 20000);
+      return all.filter(r => !embeddedMonths.has(r.upload_month));
+    },
     enabled: Boolean(provider),
   });
 

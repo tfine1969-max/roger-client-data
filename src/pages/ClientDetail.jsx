@@ -14,6 +14,7 @@ import { getSortedMonths, fmtNum, formatMonth, zarVal, origVal } from '@/lib/val
 import { clientDisplayName, clientKey, hasUnknownValue, rowHasUnknown } from '@/lib/client-utils';
 import { feeOptionValues, withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { exportClientFundCSV } from '@/lib/export-utils';
 import InvestmentTable from '@/components/client/InvestmentTable';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
@@ -39,6 +40,12 @@ export default function ClientDetail() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const decodedKey = decodeURIComponent(accountCode || '');
   const clientRows = useMemo(() => valuations.filter(v => v.account_code === decodedKey || clientKey(v) === decodedKey), [valuations, decodedKey]);
   const allMonths = useMemo(() => getSortedMonths(valuations), [valuations]);
@@ -47,8 +54,8 @@ export default function ClientDetail() {
   const latestClientMonth = clientMonths[0] || '';
   const currentRows = useMemo(() => clientRows.filter(v => v.upload_month === latestMonth), [clientRows, latestMonth]);
   const currentFeeRows = useMemo(
-    () => currentRows.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
-    [currentRows, feeConfigs]
+    () => applyRulesToRows(currentRows, fundMergeRules).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    [currentRows, feeConfigs, fundMergeRules]
   );
 
   const clientName = clientDisplayName(clientRows);

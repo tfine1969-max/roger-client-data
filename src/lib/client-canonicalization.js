@@ -310,7 +310,7 @@ async function updateRows(rows) {
 }
 
 export async function applyClientBlueprint(uploadMonth, options = {}) {
-  if (!uploadMonth || uploadMonth <= CLIENT_BLUEPRINT_MONTH) {
+  if (!uploadMonth || uploadMonth < CLIENT_BLUEPRINT_MONTH) {
     return { updated: 0, matched: 0, skipped: true };
   }
 

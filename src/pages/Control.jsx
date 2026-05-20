@@ -12,6 +12,7 @@ import MonthBadge from '@/components/shared/MonthBadge';
 import { effectiveExchangeRate, fmtNum, getSortedMonths, zarVal } from '@/lib/valuation-utils';
 import { withCalculatedFees } from '@/lib/fee-utils';
 import { feeMappingRows } from '@/data/feeMapping';
+import { applyRulesToRows } from '@/lib/fund-utils';
 import { clientKey } from '@/lib/client-utils';
 
 const PROVIDERS = [
@@ -183,7 +184,13 @@ export default function Control() {
     queryFn: () => base44.entities.FeeConfig.list(),
   });
 
-  const feeRows = useMemo(() => valuations.map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)), [valuations, feeConfigs]);
+  const { data: fundMergeRules = [] } = useQuery({
+    queryKey: ['fundMergeRules'],
+    queryFn: () => base44.entities.FundMergeRule.list('source_name', 5000),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const feeRows = useMemo(() => applyRulesToRows(valuations, fundMergeRules).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)), [valuations, feeConfigs, fundMergeRules]);
   const months = useMemo(() => [...new Set([...getSortedMonths(valuations), ...getSortedMonths(controlValues), '2026-04'])].filter(Boolean).sort((a, b) => b.localeCompare(a)), [valuations, controlValues]);
   const monthControl = useMemo(() => controlValues.filter(row => row.upload_month === selectedMonth), [controlValues, selectedMonth]);
   const monthDbRows = useMemo(() => feeRows.filter(row => row.upload_month === selectedMonth), [feeRows, selectedMonth]);
