@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Merge } from 'lucide-react';
 import { fmtNum } from '@/lib/valuation-utils';
-import { mergeClients } from '@/lib/client-merge';
+import { base44 } from '@/api/base44Client';
 
 export default function ManualMergeDialog({ open, onOpenChange, selectedClients, onMerged }) {
   const queryClient = useQueryClient();
@@ -36,10 +36,13 @@ export default function ManualMergeDialog({ open, onOpenChange, selectedClients,
     setMessage('');
 
     try {
-      const res = await mergeClients(
-        selectedClients.map(client => client.client_key),
-        mergedName.trim()
-      );
+      const response = await base44.functions.invoke('bulkClientMaintenance', {
+        action: 'merge',
+        client_keys: selectedClients.map(client => client.client_key),
+        merged_name: mergedName.trim(),
+        primary_key: primaryKey,
+      });
+      const res = response.data;
 
       setStatus('success');
       setMessage(res.message || `Merged ${selectedClients.length} clients.`);

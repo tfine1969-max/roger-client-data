@@ -3,52 +3,33 @@ import { clientKey, normalizeClientText } from '@/lib/client-utils';
 
 const BATCH = 20;
 
-async function fetchAllDbRows() {
-  return base44.entities.PortfolioValuation.list('-upload_month', 10000);
-}
-
-export async function mergeClients(clientKeys, mergedName) {
-  const keySet = new Set(clientKeys);
-  const allRows = await fetchAllDbRows();
-  const toUpdate = allRows.filter(row => keySet.has(clientKey(row)));
-
-  for (let i = 0; i < toUpdate.length; i += BATCH) {
-    await Promise.all(
-      toUpdate.slice(i, i + BATCH).map(row =>
-        base44.entities.PortfolioValuation.update(row.id, { portfolio_name: mergedName })
-      )
-    );
-  }
-
-  return {
-    success: true,
-    updated: toUpdate.length,
-    message: `Updated ${toUpdate.length} records to "${mergedName}".`,
-  };
+export async function mergeClients(clientKeys, mergedName, primaryKey) {
+  const res = await base44.functions.invoke('bulkClientMaintenance', {
+    action: 'merge',
+    client_keys: clientKeys,
+    merged_name: mergedName,
+    primary_key: primaryKey || clientKeys[0],
+  });
+  return res.data;
 }
 
 export async function renameClient(key, mergedName) {
-  return mergeClients([key], mergedName);
+  const res = await base44.functions.invoke('bulkClientMaintenance', {
+    action: 'rename',
+    client_keys: [key],
+    merged_name: mergedName,
+    primary_key: key,
+  });
+  return res.data;
 }
 
 export async function deleteZeroBalances(uploadMonth, clientKeys) {
-  const keySet = new Set(clientKeys);
-  const monthRows = await base44.entities.PortfolioValuation.filter(
-    { upload_month: uploadMonth },
-    '-created_date',
-    20000
-  );
-  const toDelete = monthRows.filter(row => keySet.has(clientKey(row)));
-
-  for (let i = 0; i < toDelete.length; i += BATCH) {
-    await Promise.all(
-      toDelete.slice(i, i + BATCH).map(row =>
-        base44.entities.PortfolioValuation.delete(row.id)
-      )
-    );
-  }
-
-  return { success: true, deleted: toDelete.length };
+  const res = await base44.functions.invoke('bulkClientMaintenance', {
+    action: 'delete_zero_balance',
+    upload_month: uploadMonth,
+    client_keys: clientKeys,
+  });
+  return res.data;
 }
 
 function compact(value) {
