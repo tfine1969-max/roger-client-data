@@ -5,6 +5,7 @@ import { AlertTriangle, Check, CheckSquare, ChevronRight, Download, LayoutList, 
 import MonthlyComparisonView from '@/components/clients/MonthlyComparisonView';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
 import { renameClient, deleteZeroBalances } from '@/lib/client-merge';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,6 +53,35 @@ export default function Clients() {
     queryFn: fetchAllPortfolioValuations,
   });
 
+  // Fetch ClientMergeRules so we can override names from rogerSourceRows at render time
+  const { data: mergeRules = [] } = useQuery({
+    queryKey: ['clientMergeRules'],
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('getClientMergeRules', {});
+        return res.data?.rules ?? [];
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 30_000,
+  });
+
+  // Build a map: source_name → merged_name for instant lookup
+  const nameOverrideMap = useMemo(() => {
+    const map = new Map();
+    for (const rule of mergeRules) {
+      const sources = (rule.source_names || '').split('|').map(s => s.trim()).filter(Boolean);
+      for (const src of sources) {
+        if (src && rule.merged_name) map.set(src, rule.merged_name);
+      }
+    }
+    return map;
+  }, [mergeRules]);
+
+  // Apply name override — used below in every useMemo that calls clientKey
+  const resolveName = (portfolioName) => nameOverrideMap.get(portfolioName) ?? portfolioName;
+
   const months = useMemo(() => getSortedMonths(valuations), [valuations]);
   const latestMonth = filterMonth === LATEST_VALUE ? months[0] || '' : filterMonth;
   const platforms = useMemo(() => [...new Set(valuations.map(v => v.platform).filter(Boolean))].sort(), [valuations]);
@@ -62,13 +92,18 @@ export default function Clients() {
     const map = {};
 
     current.forEach(row => {
-      const key = clientKey(row);
+      // Apply name override so embedded rogerSourceRows duplicates are collapsed
+      const resolvedName = resolveName(row.portfolio_name);
+      const effectiveRow = resolvedName !== row.portfolio_name
+        ? { ...row, portfolio_name: resolvedName }
+        : row;
+      const key = clientKey(effectiveRow);
       if (!map[key]) {
         map[key] = {
           client_key: key,
           account_codes: new Set(),
-          identity_no: row.identity_no,
-          portfolio_name: row.portfolio_name,
+          identity_no: effectiveRow.identity_no,
+          portfolio_name: resolvedName,
           platforms: new Set(),
           currencies: new Set(),
           investments: 0,
@@ -78,14 +113,13 @@ export default function Clients() {
       }
 
       const client = map[key];
-      if (row.account_code) client.account_codes.add(row.account_code);
-      if (!client.identity_no && row.identity_no) client.identity_no = row.identity_no;
-      if (!client.portfolio_name && row.portfolio_name) client.portfolio_name = row.portfolio_name;
-      if (row.platform) client.platforms.add(row.platform);
-      if (row.currency) client.currencies.add(row.currency);
+      if (effectiveRow.account_code) client.account_codes.add(effectiveRow.account_code);
+      if (!client.identity_no && effectiveRow.identity_no) client.identity_no = effectiveRow.identity_no;
+      if (effectiveRow.platform) client.platforms.add(effectiveRow.platform);
+      if (effectiveRow.currency) client.currencies.add(effectiveRow.currency);
       client.investments += 1;
-      client.totalValue += zarVal(row);
-      client.hasUnknown = client.hasUnknown || rowHasUnknown(row);
+      client.totalValue += zarVal(effectiveRow);
+      client.hasUnknown = client.hasUnknown || rowHasUnknown(effectiveRow);
     });
 
     return Object.values(map)
@@ -96,7 +130,7 @@ export default function Clients() {
         currencies: [...client.currencies].sort(),
       }))
       .sort((a, b) => (formatClientName(a.portfolio_name) || '').localeCompare(formatClientName(b.portfolio_name) || ''));
-  }, [valuations, latestMonth]);
+  }, [valuations, latestMonth, nameOverrideMap]);
 
   const correctionCount = useMemo(() => clients.filter(c => c.hasUnknown).length, [clients]);
   const zeroBalanceClients = useMemo(() => clients.filter(c => Math.abs(c.totalValue) < 0.01), [clients]);
@@ -120,16 +154,20 @@ export default function Clients() {
   const allMonthsClients = useMemo(() => {
     const map = {};
     valuations.forEach(row => {
-      const key = clientKey(row);
+      const resolvedName = resolveName(row.portfolio_name);
+      const effectiveRow = resolvedName !== row.portfolio_name
+        ? { ...row, portfolio_name: resolvedName }
+        : row;
+      const key = clientKey(effectiveRow);
       if (!map[key]) {
-        map[key] = { client_key: key, portfolio_name: row.portfolio_name || '', account_codes: new Set(), identity_no: row.identity_no, totalValue: 0 };
+        map[key] = { client_key: key, portfolio_name: resolvedName || '', account_codes: new Set(), identity_no: effectiveRow.identity_no, totalValue: 0 };
       }
       const c = map[key];
-      if (!c.portfolio_name || hasUnknownValue(c.portfolio_name)) c.portfolio_name = row.portfolio_name || c.portfolio_name;
-      if (row.account_code) c.account_codes.add(row.account_code);
+      if (!c.portfolio_name || hasUnknownValue(c.portfolio_name)) c.portfolio_name = resolvedName || c.portfolio_name;
+      if (effectiveRow.account_code) c.account_codes.add(effectiveRow.account_code);
     });
     return Object.values(map).map(c => ({ ...c, account_codes: [...c.account_codes].sort() }));
-  }, [valuations]);
+  }, [valuations, nameOverrideMap]);
 
   const selectedClients = useMemo(() => {
     if (selectedKeys.size === 0) return [];
@@ -164,6 +202,7 @@ export default function Clients() {
   const refreshClientData = () => {
     queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
     queryClient.invalidateQueries({ queryKey: ['clients'] });
+    queryClient.invalidateQueries({ queryKey: ['clientMergeRules'] });
   };
 
   const startEditingName = (client) => {
