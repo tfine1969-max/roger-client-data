@@ -6,18 +6,52 @@ const TITLES_RE = /^(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?
 const TRAILING_TITLES_RE = /\s+(mr|mrs|ms|miss|master|dr|prof|rev|adv|hon|sir|lady|lord)\.?$/gi;
 const ENTITY_MARKERS_RE = /\b(pty|ltd|limited|cc|trust|inc|plc|holdings|investments|properties|trading|manufacturers|company|corporation|corp|fund|fof|management|consulting|services|solutions|enterprises|group|associates|capital|advisory|logistics|transport|construction|technologies|technology|media|imaging|images|systems|engineering|healthcare|clinic|pharmacy|retail|distributors|distribution)\b/i;
 
+const ENTITY_PREFIX_RE = /^(ltd|limited|cc|inc|plc),?\s+/i;
+
+function titleCaseWord(word: string): string {
+  if (!word) return word;
+  if (/^[A-Z]{2,}$/.test(word) && word.length <= 4) return word;
+  return word.toLowerCase().split(/([-'()])/).map((part: string) =>
+    /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part
+  ).join('');
+}
+
+function titleCaseName(value: string): string {
+  return String(value || '').trim().replace(/\s+/g, ' ').split(' ').map(titleCaseWord).join(' ');
+}
+
 function formatClientName(name: string): string {
   if (!name) return name;
   let cleaned = name.trim();
-  if (ENTITY_MARKERS_RE.test(cleaned)) return cleaned;
-  // Strip titles
+
+  if (ENTITY_MARKERS_RE.test(cleaned) || ENTITY_PREFIX_RE.test(cleaned)) {
+    return titleCaseName(cleaned);
+  }
+
   let prev: string;
   do {
     prev = cleaned;
     cleaned = cleaned.replace(TITLES_RE, '').trim();
   } while (cleaned !== prev);
   cleaned = cleaned.replace(TRAILING_TITLES_RE, '').trim();
-  return cleaned || name;
+
+  if (!cleaned) return name;
+
+  // Comma-formatted name — keep as-is
+  if (cleaned.includes(',')) {
+    const [surname, ...rest] = cleaned.split(',');
+    return [titleCaseName(surname), titleCaseName(rest.join(' ').trim())].filter(Boolean).join(', ');
+  }
+
+  // Legal entity — preserve word order
+  if (ENTITY_MARKERS_RE.test(cleaned)) return titleCaseName(cleaned);
+
+  // Plain multi-word name — reorder to "Surname, Firstnames" (matching frontend)
+  const words = cleaned.split(/\s+/);
+  if (words.length < 2) return titleCaseName(cleaned);
+  const surname = words[words.length - 1];
+  const firstNames = words.slice(0, -1).join(' ');
+  return `${titleCaseName(surname)}, ${titleCaseName(firstNames)}`;
 }
 
 function normalizeClientText(value: unknown) {
