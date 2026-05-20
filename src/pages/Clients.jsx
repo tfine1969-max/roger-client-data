@@ -184,7 +184,7 @@ export default function Clients() {
 
     setActionStatus('Saving client name...');
     try {
-      await renameClient(key, trimmedName);
+      await renameClient(key, trimmedName, currentClient.portfolio_name);
       refreshClientData();
       setEditingKey(null);
       setActionStatus(null);
