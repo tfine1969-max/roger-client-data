@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { fmtDateTime } from '@/lib/constants';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
@@ -106,7 +107,7 @@ export default function PrimeUpload({ onImported }) {
           <div className="text-xs text-muted-foreground space-y-0.5">
             <p className="font-semibold text-foreground">Last uploaded file</p>
             <p><span className="font-medium">{lastUpload.file_name}</span> · {formatMonth(lastUpload.upload_month)} · {lastUpload.rows_imported} rows</p>
-            <p>{new Date(lastUpload.uploaded_at).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+            <p>{fmtDateTime(lastUpload.uploaded_at)}</p>
           </div>
         </div>
       )}

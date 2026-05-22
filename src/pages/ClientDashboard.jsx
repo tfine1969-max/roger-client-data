@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fmtDate } from '@/lib/constants';
 
 const Field = ({ label, value }) => (
   <div>
@@ -259,7 +260,7 @@ export default function ClientDashboard() {
                 <div className="grid grid-cols-3 gap-3">
                   <Field label="First Name" value={client.first_name} />
                   <Field label="Last Name" value={client.last_name} />
-                  <Field label="Date of Birth" value={client.date_of_birth} />
+                  <Field label="Date of Birth" value={fmtDate(client.date_of_birth)} />
                   <Field label="ID / Passport Number" value={client.sa_id_number || client.passport_number} />
                   <Field label="ID Type" value={client.identity_type} />
                   <Field label="Marital Status" value={client.marital_status} />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { fmtDateTime } from '@/lib/constants';
 import { Label } from '@/components/ui/label';
 import { Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { formatMonth } from '@/lib/valuation-utils';
@@ -109,7 +110,7 @@ export default function PrescientUpload({ onImported }) {
             <p>
               <span className="font-medium">{lastUpload.file_name}</span> - {formatMonth(lastUpload.upload_month)} - {lastUpload.rows_imported} rows
             </p>
-            <p>{new Date(lastUpload.uploaded_at).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+            <p>{fmtDateTime(lastUpload.uploaded_at)}</p>
           </div>
         </div>
       )}

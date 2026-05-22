@@ -9,19 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { isComplianceAuthorised, resolvedFicaLabel, writeAuditLog } from '@/lib/complianceHelpers';
-
-const formatDate = (val) => {
-  if (!val) return '—';
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
-};
-
-const formatDateTime = (val) => {
-  if (!val) return '—';
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return '—';
-  return d.toLocaleString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Johannesburg' });
-};
+import { fmtDate as formatDate, fmtDateTime as formatDateTime } from '@/lib/constants';
 
 const Field = ({ label, value }) => (
   <div>

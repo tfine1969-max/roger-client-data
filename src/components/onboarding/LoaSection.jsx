@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { fmtDateTime } from '@/lib/constants';
 import { Check, Download, Upload, FileSignature, Loader2, PenLine, Type, Image as ImageIcon } from 'lucide-react';
 
 const LOA_AUTHORITY_WORDING = 'I authorise Wealth Works (Pty) Ltd to obtain information relating to my existing policies, investments, retirement products and financial products from the relevant product providers, insurers, investment platforms, financial institutions and Astute Financial Services Exchange, for purposes of financial planning, advice, administration, compliance and ongoing servicing.';
@@ -56,7 +57,7 @@ export default function LoaSection({
               )}
               {formData.loa_signature_timestamp && (
                 <p className="text-[10px] text-muted-foreground">
-                  Signed: {new Date(formData.loa_signature_timestamp).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}
+                  Signed: {fmtDateTime(formData.loa_signature_timestamp)}
                 </p>
               )}
             </div>
@@ -194,7 +195,7 @@ export default function LoaSection({
                     onTouchStart={startSignatureDrawing}
                     onTouchMove={drawSignature}
                     onTouchEnd={endSignatureDrawing}
-                    className="block w-full h-28 bg-white border border-border rounded cursor-crosshair touch-none"
+                    className="block w-full h-24 bg-white border border-border rounded cursor-crosshair touch-none"
                   />
                   <div className="flex items-center gap-2">
                     <Button type="button" variant="outline" onClick={clearDrawnSignature} className="h-8 px-3 text-xs">Clear</Button>

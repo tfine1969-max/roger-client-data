@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
-import { ADVISORS, PROVINCES, INDUSTRIES, calcRiskScore, scoreToProfile, normalizeRangeValue } from '@/lib/constants';
+import { ADVISORS, PROVINCES, INDUSTRIES, calcRiskScore, scoreToProfile, normalizeRangeValue, fmtDateTime } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 import LoaSection from '@/components/onboarding/LoaSection';
 import RiskProfileStep from '@/components/onboarding/RiskProfileStep';
@@ -378,7 +378,7 @@ export default function ClientOnboarding() {
     const margin = 18;
     let y = 18;
     const signedAt = formData.loa_signature_timestamp || new Date().toISOString();
-    const signedAtLabel = new Date(signedAt).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
+    const signedAtLabel = fmtDateTime(signedAt);
 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(14, 65, 102);
@@ -1123,7 +1123,7 @@ export default function ClientOnboarding() {
       await base44.functions.invoke('sendTransactionalEmail', {
         to: ADVISOR_NOTIFICATION_EMAIL,
         subject: `New Client Documents Submitted - ${clientFullName}`,
-        text: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${new Date().toLocaleString('en-ZA')}\n\nDocuments submitted:\n${submittedDocs}`,
+        text: `${clientFullName} has completed their onboarding and submitted their FICA documents.\n\nPlease log in to the WealthWorks Advisor Portal to review the documents and proceed with the proposal.\n\nClient: ${clientFullName}\nID Number: ${clientIdNumber}\nEmail: ${formData.email}\nSubmitted: ${fmtDateTime(new Date().toISOString())}\n\nDocuments submitted:\n${submittedDocs}`,
       });
 
       const allProposals = await base44.entities.Proposal.list();
@@ -1272,7 +1272,7 @@ export default function ClientOnboarding() {
                 key={step.number}
                 type="button"
                 onClick={() => navigateToStep(step.number)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
                   isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal hover:border-ocean hover:text-ocean' : 'border-transparent text-muted-foreground hover:text-navy'
                 }`}
               >
@@ -1287,31 +1287,23 @@ export default function ClientOnboarding() {
           })}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 max-w-6xl mx-auto w-full">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 max-w-6xl mx-auto w-full">
           {/* Step Header */}
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-            <p className="text-[10px] font-semibold tracking-[.22em] text-ocean uppercase mb-1">STEP {currentStep} OF 8</p>
-            <h1 className="text-[28px] font-semibold leading-tight tracking-[.02em] text-navy mb-1">
-              {currentStep === 1 && 'Personal information'}
-              {currentStep === 2 && 'Document upload'}
-              {currentStep === 3 && 'KYC declaration'}
-              {currentStep === 4 && 'FICA verification'}
-              {currentStep === 5 && 'Income & assets'}
-              {currentStep === 6 && 'Existing products'}
-              {currentStep === 7 && 'Objectives & risk profile'}
-              {currentStep === 8 && 'Review & submit'}
-            </h1>
-            <p className="text-xs text-muted-foreground mb-1">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
-            <p className="text-xs leading-relaxed text-muted-foreground max-w-2xl">
-              {currentStep === 1 && 'Your personal particulars as required under Section 4 of the FAIS Act.'}
-              {currentStep === 2 && 'Upload certified copies of required documents. Documents are required before FICA verification can proceed.'}
-              {currentStep === 3 && 'Employment, source of funds, and tax/PEP declaration as required under FICA.'}
-              {currentStep === 4 && 'Automated identity verification via VerifyNow - Home Affairs, AML/PEP, and document authentication.'}
-              {currentStep === 5 && 'Your income, assets and liabilities - required for the financial needs analysis under FAIS GCC Section 8.'}
-              {currentStep === 6 && 'Your existing financial products and letter of authority.'}
-              {currentStep === 7 && 'Your risk profile is a mandatory requirement under FAIS and forms a core part of your Record of Advice.'}
-              {currentStep === 8 && 'Your onboarding is complete. Your WealthWorks advisor has been notified.'}
-            </p>
+          <div className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[9px] font-bold tracking-[.22em] text-ocean uppercase leading-none mb-0.5">STEP {currentStep} OF 8</p>
+              <h1 className="text-lg font-bold leading-tight text-navy">
+                {currentStep === 1 && 'Personal information'}
+                {currentStep === 2 && 'Document upload'}
+                {currentStep === 3 && 'KYC declaration'}
+                {currentStep === 4 && 'FICA verification'}
+                {currentStep === 5 && 'Income & assets'}
+                {currentStep === 6 && 'Existing products'}
+                {currentStep === 7 && 'Objectives & risk profile'}
+                {currentStep === 8 && 'Review & submit'}
+              </h1>
+            </div>
+            <p className="text-xs text-muted-foreground shrink-0">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
           </div>
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 1: Personal Information Ã¢â€â‚¬Ã¢â€â‚¬ */}
@@ -1321,7 +1313,7 @@ export default function ClientOnboarding() {
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">TITLE</Label>
                   <Select value={formData.title} onValueChange={v => handleChange('title', v)}>
-                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['Mr', 'Mrs', 'Ms', 'Dr', 'Prof'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -1380,14 +1372,14 @@ export default function ClientOnboarding() {
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">MARITAL STATUS</Label>
                   <Select value={formData.marital_status || undefined} onValueChange={v => handleChange('marital_status', v)}>
-                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['Single', 'Married in community', 'Married out of community', 'Divorced', 'Widowed'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">DEPENDANTS</Label>
                   <Select value={formData.dependants} onValueChange={v => handleChange('dependants', v)}>
-                    <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>{['0', '1', '2', '3', '4', '5+'].map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
@@ -1423,7 +1415,7 @@ export default function ClientOnboarding() {
                     <div>
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                       <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
-                        <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
@@ -1526,7 +1518,7 @@ export default function ClientOnboarding() {
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: KYC Declaration Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 3 && (
-            <div className="space-y-4">
+            <div className="space-y-2">
               <SectionBlock
                 eyebrow="KYC declaration"
                 title="Employment & occupation"
@@ -1537,7 +1529,7 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">EMPLOYMENT STATUS *</Label>
                     <Select value={formData.employment_status} onValueChange={v => handleChange('employment_status', v)}>
-                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 32 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['Employed', 'Self-employed', 'Retired', 'Unemployed', 'Student'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
@@ -1552,7 +1544,7 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">INDUSTRY</Label>
                     <Select value={formData.industry} onValueChange={v => handleChange('industry', v)}>
-                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 32 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{INDUSTRIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
@@ -1593,21 +1585,21 @@ export default function ClientOnboarding() {
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">TAX RESIDENCY</Label>
                     <Select value={formData.tax_residency} onValueChange={v => handleChange('tax_residency', v)}>
-                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 32 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>{['South Africa only', 'South Africa + Other', 'Other country only'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">US PERSON (FATCA)?</Label>
                     <Select value={formData.us_person_fatca} onValueChange={v => handleChange('us_person_fatca', v)}>
-                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 32 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="No">No</SelectItem><SelectItem value="Yes">Yes</SelectItem></SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label className="text-[9px] font-semibold tracking-wider text-navy uppercase">PEP STATUS</Label>
                     <Select value={formData.pep_status} onValueChange={v => handleChange('pep_status', v)}>
-                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 44 }}><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="mt-0.5 text-xs" style={{ minHeight: 32 }}><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="No">No</SelectItem>
                         <SelectItem value="Yes">Yes</SelectItem>
@@ -1741,7 +1733,7 @@ export default function ClientOnboarding() {
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 8: Review & Submit Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {currentStep === 8 && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
                 <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
                 <div>
@@ -1769,7 +1761,7 @@ export default function ClientOnboarding() {
           )}
 
           {/* Ã¢â€â‚¬Ã¢â€â‚¬ Navigation Ã¢â€â‚¬Ã¢â€â‚¬ */}
-          <div className="pt-5 border-t border-border mt-5">
+          <div className="pt-3 border-t border-border mt-3">
             <div className="flex gap-3">
               {currentStep > 1 && (
                 <Button type="button" onClick={handleBack} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm text-white" style={{ backgroundColor: '#26547C' }}>

@@ -26,6 +26,24 @@ export const normalizeRangeValue = (value) =>
     ? value.replace(/[–—]/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
     : value;
 
+export const fmtDate = (iso) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+  } catch { return '—'; }
+};
+
+export const fmtDateTime = (iso) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  } catch { return '—'; }
+};
+
 export const ADVISORS = {
   trevor:  { name: 'Trevor Fine',      title: 'Group MD',              email: 'trevor@wealthworks.co.za',  cc: 'gemma@wealthworks.co.za' },
   roger:   { name: 'Roger Eskinazi',   title: 'Partner, Cape Town',    email: 'roger@wealthworks.co.za',   cc: 'gemma@wealthworks.co.za' },

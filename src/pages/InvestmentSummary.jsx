@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { fmtDate } from '@/lib/constants';
 import { Download, FileSpreadsheet, Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchAllPortfolioValuations } from '@/lib/portfolio-data';
@@ -196,7 +197,7 @@ function exportReport(group, summary, months) {
   const totalRows = [
     xmlRow([xmlCell('wealthworks', 'String', 'Title')], 28),
     xmlRow([xmlCell(group.name, 'String', 'Title')]),
-    xmlRow([xmlCell(`Generated ${new Date().toLocaleDateString('en-ZA')} from imported monthly valuation data.`, 'String', 'Subtle')]),
+    xmlRow([xmlCell(`Generated ${fmtDate(new Date().toISOString())} from imported monthly valuation data.`, 'String', 'Subtle')]),
     xmlRow([]),
     xmlRow([xmlCell('Entity', 'String', 'Header'), ...exportMonths.map(month => xmlCell(formatMonth(month), 'String', 'Header'))]),
     ...summary.entities.map(entity => xmlRow([

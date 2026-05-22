@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const formatDateTime = (iso) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-};
+import { fmtDateTime as formatDateTime } from '@/lib/constants';
 
 const STATUS_CLASSES = {
   Pending:    { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' },

@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LogOut, ArrowLeft, Search, CheckCircle2, AlertTriangle, Clock, FileText, Lock, Trash2 } from 'lucide-react';
 import { isComplianceAuthorised, resolvedFicaLabel } from '@/lib/complianceHelpers';
+import { fmtDate as formatDate } from '@/lib/constants';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'All Submissions' },
@@ -35,12 +36,6 @@ const STATUS_STYLES = {
   new: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', label: 'New Submission', icon: FileText },
   awaiting_documents: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', label: 'Awaiting Documents', icon: Clock },
   unknown: { bg: 'bg-secondary', text: 'text-muted-foreground', border: 'border-border', label: 'Unknown', icon: Clock },
-};
-
-const formatDate = (val) => {
-  if (!val) return '—';
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 export default function ComplianceReview() {

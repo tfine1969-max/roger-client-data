@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { fmtDateTime as formatDateTime, fmtDate as formatDate } from '@/lib/constants';
 
 export default function SendForSignature({ proposal, onStatusUpdate }) {
   const [copying, setCopying] = useState(false);
@@ -148,10 +149,7 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
 
       {proposal.sent_at && (
         <p style={{ fontSize: 11, color: '#94a3b8', margin: 0, textAlign: 'center' }}>
-          Last sent: {new Date(proposal.sent_at).toLocaleDateString('en-ZA', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          })}
+          Last sent: {formatDateTime(proposal.sent_at)}
         </p>
       )}
 
@@ -169,9 +167,7 @@ export default function SendForSignature({ proposal, onStatusUpdate }) {
           padding: '10px 14px', borderRadius: 8, fontSize: 12,
           background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0'
         }}>
-          Signed by client on {new Date(proposal.signed_at).toLocaleDateString('en-ZA', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-          })}
+          Signed by client on {formatDate(proposal.signed_at)}
         </div>
       )}
     </div>

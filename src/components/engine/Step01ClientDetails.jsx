@@ -3,14 +3,7 @@ import { Edit2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ClientDocumentRepository from '@/components/ClientDocumentRepository';
 import { base44 } from '@/api/base44Client';
-
-const fmtDate = (iso) => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return [String(d.getDate()).padStart(2,'0'), String(d.getMonth()+1).padStart(2,'0'), d.getFullYear()].join('-');
-  } catch { return iso; }
-};
+import { fmtDate } from '@/lib/constants';
 
 function Field({ label, value }) {
   return (

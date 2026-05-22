@@ -31,7 +31,7 @@ import {
   updateComplianceRegister,
   upsertComplianceRegister,
 } from '@/lib/complianceEngine';
-import { ADVISORS } from '@/lib/constants';
+import { ADVISORS, fmtDate } from '@/lib/constants';
 
 const TABS = [
   { key: 'dashboard', label: 'Compliance Portal', icon: LayoutDashboard },
@@ -235,12 +235,7 @@ const riskClass = {
   High: 'bg-red-50 text-red-700 border-red-200',
 };
 
-const dateFmt = (value) => {
-  if (!value) return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
-};
+const dateFmt = (value) => fmtDate(value);
 
 const Badge = ({ children, className = '' }) => (
   <span className={`inline-flex items-center px-2 py-1 border text-[10px] font-bold uppercase tracking-[.08em] ${className}`}>

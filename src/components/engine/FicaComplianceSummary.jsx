@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { fmtDate as formatDate } from '@/lib/constants';
 
 const FicaComplianceSummary = ({ proposal, client, onFicaUpdate }) => {
   const [verifying, setVerifying] = useState(false);
@@ -109,12 +110,6 @@ const FicaComplianceSummary = ({ proposal, client, onFicaUpdate }) => {
     if (band === 'Medium') return '#b45309';
     if (band === 'High' || band === 'Prohibited') return '#991b1b';
     return '#6b7280';
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
   };
 
   const ficaStatus = client.fica_status || proposal.fica_status;

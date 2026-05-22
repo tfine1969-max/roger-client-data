@@ -540,7 +540,7 @@ export default function ClientOnboardingTrust() {
           const isCurrent = currentStep === step.number;
           return (
             <button key={step.number} type="button" onClick={() => navigateToStep(step.number)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
                 {isComplete ? 'OK' : step.number}
               </span>
@@ -550,11 +550,13 @@ export default function ClientOnboardingTrust() {
         })}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-5 max-w-4xl mx-auto w-full">
-        <div className="mb-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-          <p className="text-[10px] font-semibold tracking-[.22em] text-ocean uppercase mb-1">STEP {currentStep} OF 8 - TRUST ONBOARDING</p>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-[.02em] text-navy mb-1">{STEPS[currentStep - 1]?.label}</h1>
-          <p className="text-xs text-muted-foreground">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 max-w-4xl mx-auto w-full">
+        <div className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[9px] font-bold tracking-[.22em] text-ocean uppercase leading-none mb-0.5">STEP {currentStep} OF 8 — TRUST</p>
+            <h1 className="text-lg font-bold leading-tight text-navy">{STEPS[currentStep - 1]?.label}</h1>
+          </div>
+          <p className="text-xs text-muted-foreground shrink-0">Client: <span className="font-semibold text-navy">{clientDisplayName}</span></p>
         </div>
 
         {/* STEP 1 - Trust Details */}
@@ -635,7 +637,7 @@ export default function ClientOnboardingTrust() {
 
         {/* STEP 3 - Document Upload */}
         {currentStep === 3 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
               <p className="text-[10px] font-semibold tracking-wider text-ocean uppercase mb-2">TRUST DOCUMENTS</p>
               <div className="grid grid-cols-2 gap-3">
@@ -645,8 +647,8 @@ export default function ClientOnboardingTrust() {
                   { key: 'trust_proof_of_address_uploaded', title: 'PROOF OF REGISTERED ADDRESS', desc: 'Utility bill / bank statement' },
                   { key: 'trust_bank_statement_uploaded', title: 'TRUST BANK STATEMENT', desc: 'Most recent 3 months' },
                 ].map(doc => (
-                  <div key={doc.key} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">{doc.title}</h4>
+                  <div key={doc.key} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <h4 className="text-[10px] font-bold tracking-wider text-navy uppercase mb-1.5">{doc.title}</h4>
                     {formData[doc.key] ? (
                       <label className="block cursor-pointer">
                         <div className="flex items-center justify-between gap-2 p-2 bg-teal/10 border border-teal/20 rounded hover:border-ocean/50 transition-colors">
@@ -677,8 +679,8 @@ export default function ClientOnboardingTrust() {
                 {trustees.map((t, idx) => {
                   const name = [t.first_name, t.last_name].filter(Boolean).join(' ') || `Trustee ${idx + 1}`;
                   return (
-                    <div key={idx} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-2">Trustee {idx + 1} - {name}</p>
+                    <div key={idx} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                      <p className="text-[10px] font-bold tracking-wider text-navy uppercase mb-1.5">Trustee {idx + 1} - {name}</p>
                       <div className="grid grid-cols-2 gap-3">
                         {[
                           { key: `trustee_${idx}_id_uploaded`, title: 'SA ID / PASSPORT', desc: 'Certified copy of identity document' },
@@ -811,7 +813,7 @@ export default function ClientOnboardingTrust() {
 
         {/* STEP 5 - FICA Verification */}
         {currentStep === 5 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="border-2 border-ocean/20 rounded-lg p-4 bg-ocean/[0.02]">
               <h3 className="font-semibold text-navy text-sm mb-3">Document verification</h3>
               <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
@@ -955,7 +957,7 @@ export default function ClientOnboardingTrust() {
 
         {/* STEP 8 - Submit */}
         {currentStep === 8 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-start gap-3 p-4 bg-teal/10 border border-teal/20 rounded">
               <Check className="w-5 h-5 text-teal shrink-0 mt-0.5" />
               <div>
@@ -980,7 +982,7 @@ export default function ClientOnboardingTrust() {
         )}
 
         {/* Navigation */}
-        <div className="pt-5 border-t border-border mt-5 flex gap-3">
+        <div className="pt-3 border-t border-border mt-3 flex gap-3">
           {currentStep > 1 && currentStep < 8 && (
             <Button type="button" variant="outline" onClick={() => setCurrentStep(p => p - 1)} disabled={isSavingStep || isSubmitting} className="px-6 h-9 text-sm">Back</Button>
           )}

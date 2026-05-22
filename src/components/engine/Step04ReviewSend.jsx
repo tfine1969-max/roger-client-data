@@ -5,21 +5,7 @@ import SendForSignature from '@/components/SendForSignature';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-const formatDate = (iso) => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
-  } catch { return ''; }
-};
-
-const formatDateTime = (iso) => {
-  if (!iso) return '';
-  try {
-    const d = new Date(iso);
-    return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  } catch { return ''; }
-};
+import { fmtDate as formatDate, fmtDateTime as formatDateTime } from '@/lib/constants';
 
 function AttachmentCell({ type, attachment, onAttachmentUpload }) {
   return (

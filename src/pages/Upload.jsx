@@ -19,6 +19,7 @@ import DeleteMonthData from '@/components/upload/DeleteMonthData';
 import UploadProgressSummary from '@/components/upload/UploadProgressSummary';
 import { applyClientBlueprint } from '@/lib/client-canonicalization';
 import { formatMonth } from '@/lib/valuation-utils';
+import { fmtDateTime } from '@/lib/constants';
 import { importRogerDataWorkbook } from '@/lib/provider-workbook-import';
 import { syncRogerSourceRows } from '@/lib/roger-source-sync';
 import { rogerSourceRows } from '@/data/rogerSourceRows';
@@ -127,7 +128,7 @@ function ProviderUploadHistory() {
                 </td>
                 <td className="max-w-[300px] truncate px-3 py-2 text-muted-foreground" title={latest?.file_name || ''}>{latest?.file_name || 'No upload recorded'}</td>
                 <td className="px-3 py-2">{latest?.upload_month ? formatMonth(latest.upload_month) : '-'}</td>
-                <td className="px-3 py-2 text-muted-foreground">{latest?.upload_date ? new Date(latest.upload_date).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</td>
+                <td className="px-3 py-2 text-muted-foreground">{latest?.upload_date ? fmtDateTime(latest.upload_date) : '-'}</td>
                 <td className="px-3 py-2 text-right font-numbers">{latest?.rows_imported ?? '-'}</td>
               </tr>
             ))}
