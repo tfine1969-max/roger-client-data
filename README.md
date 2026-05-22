@@ -1,10 +1,8 @@
-**Welcome to your Base44 project** 
+# Apex Advisor
 
-**About**
+A financial advisor portal for managing clients, portfolios, fee structures, fund data, and monthly reporting. Built on [Base44](http://Base44.com).
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
-
-This project contains everything you need to run your app locally.
+This project contains everything you need to run the app locally.
 
 **Edit the code in your local development environment**
 
