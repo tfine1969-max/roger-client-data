@@ -11,7 +11,7 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
-import { ADVISORS } from '@/lib/constants';
+import { ADVISORS, PROVINCES, calcRiskScore, scoreToProfile, normalizeRangeValue } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
@@ -28,23 +28,6 @@ const STEPS = [
 ];
 
 const ADVISORY_NEEDS = ['Local and offshore investments', 'Retirement planning', 'Estate planning', 'Tax planning', 'Business assurance'];
-const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
-
-const calcRiskScore = (fd) => {
-  let s = 0;
-  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
-  s += ({ 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
-  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 })[fd.liquidity_requirement] || 0;
-  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
-  return Math.round(Math.min(10, s));
-};
-const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
-
-const normalizeRangeValue = (value) => (
-  typeof value === 'string'
-    ? value.replace(/Ã¢â‚¬â€œ|â€“|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
-    : value
-);
 
 const emptyTrustee = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -259,6 +242,95 @@ export default function ClientOnboardingTrust() {
     } finally { setIsSavingStep(false); }
   };
 
+  const buildStepData = (step) => {
+    switch (step) {
+      case 1: return {
+        client_type: 'Trust', identity_type: 'Trust',
+        entity_name: formData.entity_name, trust_number: formData.trust_number,
+        trust_type: formData.trust_type, trust_deed_date: formData.trust_deed_date,
+        contact_trustee_name: formData.contact_trustee_name,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
+        email: formData.email, mobile_number: formData.mobile_number,
+        residential_address: [formData.street_address, formData.suburb, formData.city, formData.province, formData.postal_code].filter(Boolean).join(', '),
+      };
+      case 2: return { trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees) };
+      case 3: {
+        const perTrusteeDocs = {};
+        trustees.forEach((_, idx) => {
+          perTrusteeDocs[`trustee_${idx}_id_uploaded`] = formData[`trustee_${idx}_id_uploaded`] || false;
+          perTrusteeDocs[`trustee_${idx}_addr_uploaded`] = formData[`trustee_${idx}_addr_uploaded`] || false;
+        });
+        return {
+          trust_deed_uploaded: formData.trust_deed_uploaded || false,
+          loa_uploaded: formData.loa_uploaded || false,
+          trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
+          trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
+          doc_identity: formData.doc_identity, doc_identity_name: formData.doc_identity_name,
+          doc_proof_of_address: formData.doc_proof_of_address, doc_proof_of_address_name: formData.doc_proof_of_address_name,
+          doc_source_of_funds: formData.doc_source_of_funds, doc_source_of_funds_name: formData.doc_source_of_funds_name,
+          doc_existing_policies: formData.doc_existing_policies, doc_existing_policies_name: formData.doc_existing_policies_name,
+          trust_deed_uploaded_name: formData.trust_deed_uploaded_name, loa_uploaded_name: formData.loa_uploaded_name,
+          trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
+          trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
+          trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees),
+          ...perTrusteeDocs,
+        };
+      }
+      case 4: return {
+        trust_purpose: formData.trust_purpose, trust_source_of_funds: formData.trust_source_of_funds,
+        entity_source_of_funds: formData.trust_source_of_funds, beneficiary_declaration: formData.beneficiary_declaration,
+        entity_tax_number: formData.entity_tax_number, entity_tax_residency: formData.entity_tax_residency,
+        entity_fatca: formData.entity_fatca, entity_pep: formData.entity_pep,
+      };
+      case 5: return {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '', fica_verified_at: ficaResult?.verified_at || '',
+        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
+        trustees_json: ficaResult ? JSON.stringify(trustees) : '',
+      };
+      case 6: return {
+        trust_asset_value_band: normalizeRangeValue(formData.trust_asset_value_band),
+        trust_income_band: normalizeRangeValue(formData.trust_income_band),
+        total_assets_band: formData.trust_asset_value_band, gross_annual_turnover: formData.trust_income_band,
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
+        existing_products_notes: formData.entity_existing_products,
+        entity_loa_uploaded: formData.entity_loa_uploaded, entity_loa_authorised: formData.entity_loa_authorised,
+      };
+      case 7: return {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: normalizeRangeValue(formData.time_horizon),
+        liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData), calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden, advisory_needs: formData.advisory_needs,
+      };
+      default: return {};
+    }
+  };
+
+  const validateStep = (step) => {
+    if (step === 1 && (!formData.entity_name || !formData.trust_number)) {
+      toast.error('Please fill in trust name and registration number'); return false;
+    }
+    if (step === 2 && trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) {
+      toast.error('Please complete all trustee names and ID numbers'); return false;
+    }
+    if (step === 7 && !formData.risk_profile) {
+      toast.error('Please select a risk profile'); return false;
+    }
+    return true;
+  };
+
+  const navigateToStep = (targetStep) => {
+    if (targetStep === currentStep) return;
+    if (clientId) base44.entities.Clients.update(clientId, buildStepData(currentStep)).catch(() => {});
+    setCurrentStep(targetStep);
+  };
+
   const runTrustFicaVerification = async () => {
     if (trustees.filter(t => t.first_name && t.id_number).length === 0) { toast.error('Please complete trustee details first'); return; }
     setFicaRunning(true); setFicaResult(null);
@@ -356,197 +428,18 @@ export default function ClientOnboardingTrust() {
   };
 
   const handleContinue = async () => {
-    let data = {};
-    if (currentStep === 1) {
-      if (!formData.entity_name || !formData.trust_number) { toast.error('Please fill in trust name and registration number'); return; }
-      data = {
-        client_type: 'Trust', identity_type: 'Trust',
-        entity_name: formData.entity_name, trust_number: formData.trust_number,
-        trust_type: formData.trust_type, trust_deed_date: formData.trust_deed_date,
-        contact_trustee_name: formData.contact_trustee_name,
-        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
-        province: formData.province, postal_code: formData.postal_code,
-        email: formData.email, mobile_number: formData.mobile_number,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
-      data = { trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees) };
-    } else if (currentStep === 3) {
-      const perTrusteeDocs = {};
-      trustees.forEach((_, idx) => {
-        perTrusteeDocs[`trustee_${idx}_id_uploaded`] = formData[`trustee_${idx}_id_uploaded`] || false;
-        perTrusteeDocs[`trustee_${idx}_addr_uploaded`] = formData[`trustee_${idx}_addr_uploaded`] || false;
-      });
-      data = {
-        trust_deed_uploaded: formData.trust_deed_uploaded || false,
-        loa_uploaded: formData.loa_uploaded || false,
-        trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
-        trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-        trust_deed_uploaded_name: formData.trust_deed_uploaded_name,
-        loa_uploaded_name: formData.loa_uploaded_name,
-        trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
-        trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
-        trustees_list: trustees,
-        trustee_documents_json: buildTrusteeDocumentsJson(trustees),
-        ...perTrusteeDocs,
-      };
-    } else if (currentStep === 4) {
-      data = {
-        trust_purpose: formData.trust_purpose,
-        trust_source_of_funds: formData.trust_source_of_funds,
-        entity_source_of_funds: formData.trust_source_of_funds,
-        beneficiary_declaration: formData.beneficiary_declaration,
-        entity_tax_number: formData.entity_tax_number,
-        entity_tax_residency: formData.entity_tax_residency,
-        entity_fatca: formData.entity_fatca,
-        entity_pep: formData.entity_pep,
-      };
-    } else if (currentStep === 5) {
-      if (!ficaResult) {
-        toast.info('Verification will continue in the background. You can keep completing onboarding.');
-        runTrustFicaVerification();
-      }
-      data = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
-        trustees_json: ficaResult ? JSON.stringify(trustees) : '',
-      };
-    } else if (currentStep === 6) {
-      data = {
-        trust_asset_value_band: normalizeRangeValue(formData.trust_asset_value_band),
-        trust_income_band: normalizeRangeValue(formData.trust_income_band),
-        total_assets_band: formData.trust_asset_value_band,
-        gross_annual_turnover: formData.trust_income_band,
-        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
-        existing_products_notes: formData.entity_existing_products,
-        entity_loa_uploaded: formData.entity_loa_uploaded,
-        entity_loa_authorised: formData.entity_loa_authorised,
-      };
-    } else if (currentStep === 7) {
-      if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
-      data = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
+    if (!validateStep(currentStep)) return;
+    if (currentStep === 5 && !ficaResult) {
+      toast.info('Verification will continue in the background. You can keep completing onboarding.');
+      runTrustFicaVerification();
     }
-    const saved = await saveStep(data);
+    const saved = await saveStep(buildStepData(currentStep));
     if (saved) setCurrentStep(prev => prev + 1);
   };
 
   const handleSaveAndSubmit = async () => {
-    if (currentStep === 8) {
-      await handleSubmit();
-      return;
-    }
-
-    let data = {};
-    if (currentStep === 1) {
-      if (!formData.entity_name || !formData.trust_number) { toast.error('Please fill in trust name and registration number'); return; }
-      data = {
-        client_type: 'Trust', identity_type: 'Trust',
-        entity_name: formData.entity_name, trust_number: formData.trust_number,
-        trust_type: formData.trust_type, trust_deed_date: formData.trust_deed_date,
-        contact_trustee_name: formData.contact_trustee_name,
-        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
-        province: formData.province, postal_code: formData.postal_code,
-        email: formData.email, mobile_number: formData.mobile_number,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (trustees.some(t => !t.first_name || !t.last_name || !t.id_number)) { toast.error('Please complete all trustee names and ID numbers'); return; }
-      data = { trustees_list: trustees, trustee_documents_json: buildTrusteeDocumentsJson(trustees) };
-    } else if (currentStep === 3) {
-      const perTrusteeDocs = {};
-      trustees.forEach((t, idx) => {
-        perTrusteeDocs[`trustee_${idx}_id_uploaded`] = formData[`trustee_${idx}_id_uploaded`] || t.id_uploaded || false;
-        perTrusteeDocs[`trustee_${idx}_addr_uploaded`] = formData[`trustee_${idx}_addr_uploaded`] || t.addr_uploaded || false;
-      });
-      data = {
-        trust_deed_uploaded: formData.trust_deed_uploaded || false,
-        loa_uploaded: formData.loa_uploaded || false,
-        trust_proof_of_address_uploaded: formData.trust_proof_of_address_uploaded || false,
-        trust_bank_statement_uploaded: formData.trust_bank_statement_uploaded || false,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-        trust_deed_uploaded_name: formData.trust_deed_uploaded_name,
-        loa_uploaded_name: formData.loa_uploaded_name,
-        trust_proof_of_address_uploaded_name: formData.trust_proof_of_address_uploaded_name,
-        trust_bank_statement_uploaded_name: formData.trust_bank_statement_uploaded_name,
-        trustees_list: trustees,
-        trustee_documents_json: buildTrusteeDocumentsJson(trustees),
-        ...perTrusteeDocs,
-      };
-    } else if (currentStep === 4) {
-      data = {
-        trust_purpose: formData.trust_purpose,
-        trust_source_of_funds: formData.trust_source_of_funds,
-        entity_source_of_funds: formData.trust_source_of_funds,
-        beneficiary_declaration: formData.beneficiary_declaration,
-        entity_tax_number: formData.entity_tax_number,
-        entity_tax_residency: formData.entity_tax_residency,
-        entity_fatca: formData.entity_fatca,
-        entity_pep: formData.entity_pep,
-      };
-    } else if (currentStep === 5) {
-      data = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
-        trustees_json: ficaResult ? JSON.stringify(trustees) : '',
-      };
-    } else if (currentStep === 6) {
-      data = {
-        trust_asset_value_band: normalizeRangeValue(formData.trust_asset_value_band),
-        trust_income_band: normalizeRangeValue(formData.trust_income_band),
-        total_assets_band: formData.trust_asset_value_band,
-        gross_annual_turnover: formData.trust_income_band,
-        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
-        existing_products_notes: formData.entity_existing_products,
-        entity_loa_uploaded: formData.entity_loa_uploaded,
-        entity_loa_authorised: formData.entity_loa_authorised,
-      };
-    } else if (currentStep === 7) {
-      data = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
-    }
-
-    const saved = await saveStep(data);
+    if (currentStep === 8) { await handleSubmit(); return; }
+    const saved = await saveStep(buildStepData(currentStep));
     if (saved) await handleSubmit();
   };
 
@@ -646,7 +539,7 @@ export default function ClientOnboardingTrust() {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
           return (
-            <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
+            <button key={step.number} type="button" onClick={() => navigateToStep(step.number)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
                 {isComplete ? 'OK' : step.number}

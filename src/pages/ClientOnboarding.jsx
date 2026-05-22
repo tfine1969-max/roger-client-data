@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Check, Plus, Trash2 } from 'lucide-react';
 import { uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore as calculateWeightedRmcpScore } from '@/lib/rmcpRiskScoring';
-import { ADVISORS } from '@/lib/constants';
+import { ADVISORS, PROVINCES, INDUSTRIES, calcRiskScore, scoreToProfile, normalizeRangeValue } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 import LoaSection from '@/components/onboarding/LoaSection';
 import RiskProfileStep from '@/components/onboarding/RiskProfileStep';
@@ -28,13 +28,6 @@ const extractDOBFromID = (idNumber) => {
   const fullYear = parseInt(yy) > 25 ? `19${yy}` : `20${yy}`;
   return `${fullYear}-${mm}-${dd}`;
 };
-
-const INDUSTRIES = [
-  'Accounting & Finance', 'Agriculture', 'Construction', 'Education', 'Engineering',
-  'Financial Services', 'Government', 'Healthcare', 'Hospitality', 'Information Technology',
-  'Legal', 'Manufacturing', 'Media & Marketing', 'Mining', 'Non-profit',
-  'Property & Real Estate', 'Retail', 'Transport & Logistics', 'Other'
-];
 
 const PRODUCT_TYPES = [
   'Life / risk insurance', 'Retirement annuity', 'Pension / provident fund',
@@ -64,32 +57,6 @@ const STEPS = [
   { number: 8, label: 'Review & submit' },
 ];
 
-const calcRiskScore = (formData) => {
-  let score = 0;
-  const dropMap = { 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 };
-  score += dropMap[formData.portfolio_drop_response] || 0;
-  const horizonMap = { 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 };
-  score += horizonMap[formData.time_horizon] || 0;
-  const liquidMap = { 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 };
-  score += liquidMap[formData.liquidity_requirement] || 0;
-  const objMap = { 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 };
-  score += objMap[formData.primary_investment_objective] || 0;
-  return Math.round(Math.min(10, score));
-};
-
-const scoreToProfile = (score) => {
-  if (score <= 2) return 'Conservative';
-  if (score <= 4) return 'Cautious';
-  if (score <= 6) return 'Moderate';
-  if (score <= 8) return 'Growth';
-  return 'Aggressive';
-};
-
-const normalizeRangeValue = (value) => (
-  typeof value === 'string'
-    ? value.replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“|Ã¢â‚¬â€œ|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
-    : value
-);
 
 const todayISO = () => new Date().toISOString().split('T')[0];
 
@@ -792,6 +759,116 @@ export default function ClientOnboarding() {
     }
   };
 
+  const buildStepData = (step) => {
+    switch (step) {
+      case 1: return {
+        client_type: formData.client_type, identity_type: formData.identity_type,
+        title: formData.title, first_name: formData.first_name, last_name: formData.last_name,
+        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        sa_id_number: formData.sa_id_number, passport_number: formData.passport_number,
+        date_of_birth: formData.date_of_birth, marital_status: formData.marital_status,
+        dependants: formData.dependants, email: formData.email, mobile_number: formData.mobile_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code, industry: formData.industry,
+        residential_address: [formData.street_address, formData.suburb, formData.city, formData.province, formData.postal_code].filter(Boolean).join(', '),
+      };
+      case 2: return {
+        identity_document_uploaded: formData.identity_document_uploaded,
+        proof_of_address_uploaded: formData.proof_of_address_uploaded,
+        income_proof_uploaded: formData.income_proof_uploaded,
+        existing_policies_uploaded: formData.existing_policies_uploaded,
+        identity_document_front_uploaded: formData.identity_document_front_uploaded,
+        identity_document_back_uploaded: formData.identity_document_back_uploaded,
+        doc_identity: formData.doc_identity, doc_identity_name: formData.doc_identity_name,
+        doc_identity_back: formData.doc_identity_back, doc_identity_back_name: formData.doc_identity_back_name,
+        doc_proof_of_address: formData.doc_proof_of_address, doc_proof_of_address_name: formData.doc_proof_of_address_name,
+        doc_source_of_funds: formData.doc_source_of_funds, doc_source_of_funds_name: formData.doc_source_of_funds_name,
+        doc_existing_policies: formData.doc_existing_policies, doc_existing_policies_name: formData.doc_existing_policies_name,
+      };
+      case 3: return {
+        employment_status: formData.employment_status, occupation: formData.occupation,
+        employer: formData.employer, industry: formData.industry,
+        source_of_funds: formData.source_of_funds, sa_tax_number: formData.sa_tax_number,
+        tax_residency: formData.tax_residency, us_person_fatca: formData.us_person_fatca,
+        pep_status: formData.pep_status, pep_explanation: formData.pep_explanation,
+      };
+      case 4: return {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '', fica_risk_band: ficaResult?.risk_band || '',
+        fica_verified_at: ficaResult?.verified_at || '', home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
+      };
+      case 5: return {
+        gross_annual_income_band: normalizeRangeValue(formData.gross_annual_income_band),
+        monthly_investable_surplus: normalizeRangeValue(formData.monthly_investable_surplus),
+        net_worth_band: normalizeRangeValue(formData.net_worth_band),
+        total_liabilities: normalizeRangeValue(formData.total_liabilities),
+        will_in_place: formData.will_in_place, dependants: formData.dependants,
+      };
+      case 6: return {
+        existing_financial_products: productsList, products_list: productsList,
+        loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
+        loa_completion_method: formData.loa_completion_method, loa_signature_method: formData.loa_signature_method,
+        loa_signature_data: formData.loa_signature_data, loa_typed_signature_name: formData.loa_typed_signature_name,
+        loa_signature_timestamp: formData.loa_signature_timestamp, loa_date_signed: formData.loa_date_signed,
+        loa_pdf_url: formData.loa_pdf_url, loa_pdf_name: formData.loa_pdf_name, loa_source: formData.loa_source,
+        loa_status: isLoaCompleteForContinue() ? LOA_STATUS.completed : LOA_STATUS.pending,
+        loa_downloaded: formData.loa_downloaded, loa_document_saved: formData.loa_document_saved,
+        loa_document_record_id: formData.loa_document_record_id, loa_authority_granted: formData.loa_authority_granted,
+        loa_astute_authority_included: formData.loa_astute_authority_included,
+        doc_existing_policies: formData.doc_existing_policies, doc_existing_policies_name: formData.doc_existing_policies_name,
+      };
+      case 7: return {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: normalizeRangeValue(formData.time_horizon),
+        liquidity_requirement: formData.liquidity_requirement, risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData), calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden, advisory_needs: formData.advisory_needs,
+      };
+      default: return {};
+    }
+  };
+
+  const validateStep = (step) => {
+    if (step === 1) {
+      if (!formData.first_name || !formData.last_name || !formData.email || !formData.mobile_number) {
+        toast.error('Please fill in all required fields'); return false;
+      }
+      if (formData.identity_type === 'SA ID' && !formData.sa_id_number) {
+        toast.error('Please enter SA ID number'); return false;
+      }
+    }
+    if (step === 2 && formData.identity_type === 'SA ID') {
+      if (!(formData.identity_document_front_uploaded || formData.doc_identity) ||
+          !(formData.identity_document_back_uploaded || formData.doc_identity_back)) {
+        toast.error('Please upload both the front and back of the SA ID'); return false;
+      }
+    }
+    if (step === 3 && (!formData.employment_status || !formData.occupation)) {
+      toast.error('Please fill in employment details'); return false;
+    }
+    if (step === 7) {
+      const investmentNeeds = ['Local and offshore investments', 'Retirement planning', 'Education planning'];
+      if ((formData.advisory_needs || []).some(n => investmentNeeds.includes(n))) {
+        if (!formData.portfolio_drop_response) { toast.error('Please answer: If your portfolio fell 20% in 3 months'); return false; }
+        if (!formData.primary_investment_objective) { toast.error('Please select a primary investment objective'); return false; }
+        if (!formData.time_horizon) { toast.error('Please select a time horizon'); return false; }
+        if (!formData.liquidity_requirement) { toast.error('Please select a liquidity requirement'); return false; }
+        if (!formData.risk_profile) { toast.error('Please select a risk profile'); return false; }
+      }
+    }
+    return true;
+  };
+
+  const navigateToStep = (targetStep) => {
+    if (targetStep === currentStep) return;
+    if (clientId) base44.entities.Clients.update(clientId, buildStepData(currentStep)).catch(() => {});
+    setCurrentStep(targetStep);
+  };
+
   const runFicaVerification = async () => {
     if (!formData.sa_id_number && !formData.passport_number) { toast.error('SA ID number or passport required'); return; }
     if (!formData.employment_status || !formData.occupation) { toast.error('Please complete employment details first'); return; }
@@ -966,276 +1043,31 @@ export default function ClientOnboarding() {
   };
 
   const handleContinue = async () => {
-    let stepData = {};
-    if (currentStep === 1) {
-      if (!formData.first_name || !formData.last_name || !formData.email || !formData.mobile_number) {
-        toast.error('Please fill in all required fields');
-        return;
-      }
-      if (formData.identity_type === 'SA ID' && !formData.sa_id_number) {
-        toast.error('Please enter SA ID number');
-        return;
-      }
-      stepData = {
-        client_type: formData.client_type,
-        identity_type: formData.identity_type,
-        title: formData.title,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        full_name: `${formData.first_name} ${formData.last_name}`,
-        sa_id_number: formData.sa_id_number,
-        passport_number: formData.passport_number,
-        date_of_birth: formData.date_of_birth,
-        marital_status: formData.marital_status,
-        dependants: formData.dependants,
-        email: formData.email,
-        mobile_number: formData.mobile_number,
-        street_address: formData.street_address,
-        suburb: formData.suburb,
-        city: formData.city,
-        province: formData.province,
-        postal_code: formData.postal_code,
-        industry: formData.industry,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (formData.identity_type === 'SA ID' && (!(formData.identity_document_front_uploaded || formData.doc_identity) || !(formData.identity_document_back_uploaded || formData.doc_identity_back))) {
-        toast.error('Please upload both the front and back of the SA ID');
-        return;
-      }
-      stepData = {
-        identity_document_uploaded: formData.identity_document_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        income_proof_uploaded: formData.income_proof_uploaded,
-        existing_policies_uploaded: formData.existing_policies_uploaded,
-        identity_document_front_uploaded: formData.identity_document_front_uploaded,
-        identity_document_back_uploaded: formData.identity_document_back_uploaded,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_identity_back: formData.doc_identity_back,
-        doc_identity_back_name: formData.doc_identity_back_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-      };
-    } else if (currentStep === 3) {
-      if (!formData.employment_status || !formData.occupation) {
-        toast.error('Please fill in employment details');
-        return;
-      }
-      stepData = {
-        employment_status: formData.employment_status,
-        occupation: formData.occupation,
-        employer: formData.employer,
-        industry: formData.industry,
-        source_of_funds: formData.source_of_funds,
-        sa_tax_number: formData.sa_tax_number,
-        tax_residency: formData.tax_residency,
-        us_person_fatca: formData.us_person_fatca,
-        pep_status: formData.pep_status,
-        pep_explanation: formData.pep_explanation,
-      };
-    } else if (currentStep === 4) {
-      if (!ficaResult) {
-        toast.info('Verification will continue in the background. You can keep completing onboarding.');
-        runFicaVerification();
-      }
-      stepData = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_risk_band: ficaResult?.risk_band || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        home_affairs_verified: ficaResult?.fica_status === 'Approved',
-        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
-      };
-    } else if (currentStep === 5) {
-      stepData = {
-        gross_annual_income_band: normalizeRangeValue(formData.gross_annual_income_band),
-        monthly_investable_surplus: normalizeRangeValue(formData.monthly_investable_surplus),
-        net_worth_band: normalizeRangeValue(formData.net_worth_band),
-        total_liabilities: normalizeRangeValue(formData.total_liabilities),
-        will_in_place: formData.will_in_place,
-        dependants: formData.dependants,
-      };
-    } else if (currentStep === 6) {
-      stepData = {
-        existing_financial_products: productsList,
-        products_list: productsList,
-        loa_uploaded: formData.loa_uploaded,
-        loa_authorised: formData.loa_authorised,
-        loa_completion_method: formData.loa_completion_method,
-        loa_signature_method: formData.loa_signature_method,
-        loa_signature_data: formData.loa_signature_data,
-        loa_typed_signature_name: formData.loa_typed_signature_name,
-        loa_signature_timestamp: formData.loa_signature_timestamp,
-        loa_date_signed: formData.loa_date_signed,
-        loa_pdf_url: formData.loa_pdf_url,
-        loa_pdf_name: formData.loa_pdf_name,
-        loa_source: formData.loa_source,
-        loa_status: LOA_STATUS.completed,
-        loa_downloaded: formData.loa_downloaded,
-        loa_document_saved: formData.loa_document_saved,
-        loa_document_record_id: formData.loa_document_record_id,
-        loa_authority_granted: formData.loa_authority_granted,
-        loa_astute_authority_included: formData.loa_astute_authority_included,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-      };
-    } else if (currentStep === 7) {
-      const investmentNeeds = ['Local and offshore investments', 'Retirement planning', 'Education planning'];
-      const hasInvestmentNeed = (formData.advisory_needs || []).some(n => investmentNeeds.includes(n));
-      if (hasInvestmentNeed) {
-        if (!formData.portfolio_drop_response) {
-          toast.error('Please answer: If your portfolio fell 20% in 3 months');
-          return;
-        }
-        if (!formData.primary_investment_objective) {
-          toast.error('Please select a primary investment objective');
-          return;
-        }
-        if (!formData.time_horizon) {
-          toast.error('Please select a time horizon');
-          return;
-        }
-        if (!formData.liquidity_requirement) {
-          toast.error('Please select a liquidity requirement');
-          return;
-        }
-        if (!formData.risk_profile) {
-          toast.error('Please select a risk profile');
-          return;
-        }
-      }
-      stepData = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon),
-        liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
+    if (!validateStep(currentStep)) return;
+    if (currentStep === 4 && !ficaResult) {
+      toast.info('Verification will continue in the background. You can keep completing onboarding.');
+      runFicaVerification();
     }
-    const saved = await saveStep(stepData);
+    const saved = await saveStep(buildStepData(currentStep));
     if (saved) setCurrentStep(prev => prev + 1);
   };
 
   const handleBack = () => {
-    if (currentStep === 1) {
-      navigate('/client-otp', { replace: true });
-    } else {
-      setCurrentStep(prev => prev - 1);
-    }
+    if (currentStep === 1) { navigate('/client-otp', { replace: true }); return; }
+    if (clientId) base44.entities.Clients.update(clientId, buildStepData(currentStep)).catch(() => {});
+    setCurrentStep(prev => prev - 1);
   };
 
 
 
   const saveAndSubmitCurrent = async () => {
-    let stepData = {};
-    if (currentStep === 1) {
-      stepData = {
-        client_type: formData.client_type, identity_type: formData.identity_type,
-        title: formData.title, first_name: formData.first_name, last_name: formData.last_name,
-        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
-        sa_id_number: formData.sa_id_number, passport_number: formData.passport_number,
-        date_of_birth: formData.date_of_birth, marital_status: formData.marital_status,
-        dependants: formData.dependants, email: formData.email, mobile_number: formData.mobile_number,
-        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
-        province: formData.province, postal_code: formData.postal_code, industry: formData.industry,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (formData.identity_type === 'SA ID' && (!(formData.identity_document_front_uploaded || formData.doc_identity) || !(formData.identity_document_back_uploaded || formData.doc_identity_back))) {
-        toast.error('Please upload both the front and back of the SA ID');
-        return false;
-      }
-      stepData = {
-        identity_document_uploaded: formData.identity_document_uploaded,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded,
-        income_proof_uploaded: formData.income_proof_uploaded,
-        existing_policies_uploaded: formData.existing_policies_uploaded,
-        identity_document_front_uploaded: formData.identity_document_front_uploaded,
-        identity_document_back_uploaded: formData.identity_document_back_uploaded,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_identity_back: formData.doc_identity_back,
-        doc_identity_back_name: formData.doc_identity_back_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-      };
-    } else if (currentStep === 3) {
-      stepData = {
-        employment_status: formData.employment_status, occupation: formData.occupation,
-        employer: formData.employer, industry: formData.industry,
-        source_of_funds: formData.source_of_funds, sa_tax_number: formData.sa_tax_number,
-        tax_residency: formData.tax_residency, us_person_fatca: formData.us_person_fatca,
-        pep_status: formData.pep_status, pep_explanation: formData.pep_explanation,
-      };
-    } else if (currentStep === 4) {
-      stepData = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_risk_band: ficaResult?.risk_band || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        home_affairs_verified: ficaResult?.fica_status === 'Approved',
-        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
-      };
-    } else if (currentStep === 5) {
-      stepData = {
-        gross_annual_income_band: normalizeRangeValue(formData.gross_annual_income_band),
-        monthly_investable_surplus: normalizeRangeValue(formData.monthly_investable_surplus),
-        net_worth_band: normalizeRangeValue(formData.net_worth_band), total_liabilities: normalizeRangeValue(formData.total_liabilities),
-        will_in_place: formData.will_in_place, dependants: formData.dependants,
-      };
-    } else if (currentStep === 6) {
-      stepData = {
-        existing_financial_products: productsList, products_list: productsList,
-        loa_uploaded: formData.loa_uploaded, loa_authorised: formData.loa_authorised,
-        loa_completion_method: formData.loa_completion_method,
-        loa_signature_method: formData.loa_signature_method,
-        loa_signature_data: formData.loa_signature_data,
-        loa_typed_signature_name: formData.loa_typed_signature_name,
-        loa_signature_timestamp: formData.loa_signature_timestamp,
-        loa_date_signed: formData.loa_date_signed,
-        loa_pdf_url: formData.loa_pdf_url,
-        loa_pdf_name: formData.loa_pdf_name,
-        loa_source: formData.loa_source,
-        loa_status: isLoaCompleteForContinue() ? LOA_STATUS.completed : LOA_STATUS.pending,
-        loa_downloaded: formData.loa_downloaded,
-        loa_document_saved: formData.loa_document_saved,
-        loa_document_record_id: formData.loa_document_record_id,
-        loa_authority_granted: formData.loa_authority_granted,
-        loa_astute_authority_included: formData.loa_astute_authority_included,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-      };
-    } else if (currentStep === 7) {
-      stepData = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon),
-        liquidity_requirement: formData.liquidity_requirement,
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
+    if (currentStep === 2 && formData.identity_type === 'SA ID' &&
+        (!(formData.identity_document_front_uploaded || formData.doc_identity) ||
+         !(formData.identity_document_back_uploaded || formData.doc_identity_back))) {
+      toast.error('Please upload both the front and back of the SA ID');
+      return false;
     }
-    return await saveStep(stepData);
+    return await saveStep(buildStepData(currentStep));
   };
 
   const handleSaveAndSubmit = async () => {
@@ -1394,7 +1226,7 @@ export default function ClientOnboarding() {
             <button
               key={step.number}
               type="button"
-              onClick={() => setCurrentStep(step.number)}
+              onClick={() => navigateToStep(step.number)}
               className={`flex items-center gap-2 py-1 px-2 rounded text-sm mb-0.5 w-full text-left ${isCurrent ? 'text-ocean font-medium' : isComplete ? 'text-muted-foreground hover:text-ocean' : 'text-muted-foreground/50'}`}
             >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] shrink-0 border ${isCurrent ? 'border-ocean bg-ocean text-white' : isComplete ? 'border-teal bg-teal text-white' : 'border-border'}`}>
@@ -1439,7 +1271,7 @@ export default function ClientOnboarding() {
               <button
                 key={step.number}
                 type="button"
-                onClick={() => setCurrentStep(step.number)}
+                onClick={() => navigateToStep(step.number)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
                   isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal hover:border-ocean hover:text-ocean' : 'border-transparent text-muted-foreground hover:text-navy'
                 }`}
@@ -1592,7 +1424,7 @@ export default function ClientOnboarding() {
                       <Label className="text-[10px] font-semibold tracking-wider text-navy uppercase">PROVINCE</Label>
                       <Select value={formData.province} onValueChange={v => handleChange('province', v)}>
                         <SelectTrigger className="mt-1 h-11 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{['Western Cape', 'Gauteng', 'KwaZulu-Natal', 'Eastern Cape', 'Limpopo', 'Mpumalanga', 'North West', 'Free State', 'Northern Cape'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                        <SelectContent>{PROVINCES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div>

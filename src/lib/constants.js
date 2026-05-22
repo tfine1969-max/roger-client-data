@@ -1,3 +1,31 @@
+export const PROVINCES = [
+  'Western Cape', 'Gauteng', 'KwaZulu-Natal', 'Eastern Cape', 'Limpopo',
+  'Mpumalanga', 'North West', 'Free State', 'Northern Cape',
+];
+
+export const INDUSTRIES = [
+  'Accounting & Finance', 'Agriculture', 'Construction', 'Education', 'Engineering',
+  'Financial Services', 'Government', 'Healthcare', 'Hospitality', 'Information Technology',
+  'Legal', 'Manufacturing', 'Media & Marketing', 'Mining', 'Non-profit',
+  'Property & Real Estate', 'Retail', 'Transport & Logistics', 'Other',
+];
+
+export const calcRiskScore = (fd) => {
+  let s = 0;
+  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
+  s += ({ 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
+  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 })[fd.liquidity_requirement] || 0;
+  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
+  return Math.round(Math.min(10, s));
+};
+
+export const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
+
+export const normalizeRangeValue = (value) =>
+  typeof value === 'string'
+    ? value.replace(/[–—]/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
+    : value;
+
 export const ADVISORS = {
   trevor:  { name: 'Trevor Fine',      title: 'Group MD',              email: 'trevor@wealthworks.co.za',  cc: 'gemma@wealthworks.co.za' },
   roger:   { name: 'Roger Eskinazi',   title: 'Partner, Cape Town',    email: 'roger@wealthworks.co.za',   cc: 'gemma@wealthworks.co.za' },

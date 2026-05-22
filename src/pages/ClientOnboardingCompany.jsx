@@ -10,7 +10,7 @@ import { ArrowLeft, Loader2, Check, Plus } from 'lucide-react';
 import PersonCard from '@/components/onboarding/PersonCard';
 import { uploadedDocumentName, uploadOnboardingDocument } from '@/lib/onboardingDocuments';
 import { buildRmcpUpdate, calculateRmcpScore } from '@/lib/rmcpRiskScoring';
-import { ADVISORS } from '@/lib/constants';
+import { ADVISORS, PROVINCES, calcRiskScore, scoreToProfile, normalizeRangeValue } from '@/lib/constants';
 import { createOnboardingComplianceEntries } from '@/lib/complianceEngine';
 
 const ADVISOR_NOTIFICATION_EMAIL = ADVISORS.trevor.email;
@@ -27,23 +27,6 @@ const STEPS = [
 ];
 
 const ADVISORY_NEEDS = ['Local and offshore investments', 'Life & risk cover', 'Tax planning', 'Business assurance'];
-const PROVINCES = ['Western Cape','Gauteng','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'];
-
-const calcRiskScore = (fd) => {
-  let s = 0;
-  s += ({ 'Sell immediately': 0, 'Hold': 1.5, 'Buy more': 3 })[fd.portfolio_drop_response] || 0;
-  s += ({ 'Less than 1 year': 0, '1-3 years': 0.75, '3-5 years': 1.5, '5-10 years': 2.25, '10+ years': 3 })[fd.time_horizon] || 0;
-  s += ({ 'Immediate access required': 0, 'Access within 1 year': 0.67, 'Access within 3 years': 1.33, 'Long-term - no immediate need': 2 })[fd.liquidity_requirement] || 0;
-  s += ({ 'Capital preservation': 0, 'Income generation': 0.5, 'Moderate growth': 1, 'Aggressive growth': 1.5, 'Speculation': 2 })[fd.primary_investment_objective] || 0;
-  return Math.round(Math.min(10, s));
-};
-const scoreToProfile = (s) => s <= 2 ? 'Conservative' : s <= 4 ? 'Cautious' : s <= 6 ? 'Moderate' : s <= 8 ? 'Growth' : 'Aggressive';
-
-const normalizeRangeValue = (value) => (
-  typeof value === 'string'
-    ? value.replace(/Ã¢â‚¬â€œ|â€“|-/g, '-').replace(/\s*-\s*/g, ' - ').replace(/\s+/g, ' ').trim()
-    : value
-);
 
 const emptyDirector = () => ({
   title: '', first_name: '', last_name: '', identity_type: 'SA ID',
@@ -261,6 +244,95 @@ export default function ClientOnboardingCompany() {
     } finally { setIsSavingStep(false); }
   };
 
+  const buildStepData = (step) => {
+    switch (step) {
+      case 1: return {
+        client_type: 'Company', identity_type: 'Registration',
+        entity_name: formData.entity_name, registration_number: formData.registration_number,
+        vat_number: formData.vat_number,
+        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
+        province: formData.province, postal_code: formData.postal_code,
+        email: formData.email, mobile_number: formData.mobile_number,
+        residential_address: [formData.street_address, formData.suburb, formData.city, formData.province, formData.postal_code].filter(Boolean).join(', '),
+      };
+      case 2: return { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
+      case 3: {
+        const directorsWithDocs = directors.map((d, idx) => ({
+          ...d,
+          id_uploaded: formData[`director_${idx}_id_uploaded`] || false,
+          addr_uploaded: formData[`director_${idx}_addr_uploaded`] || false,
+        }));
+        return {
+          cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
+          moi_uploaded: formData.moi_uploaded || false,
+          proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
+          financial_statements_uploaded: formData.financial_statements_uploaded || false,
+          doc_identity: formData.doc_identity, doc_identity_name: formData.doc_identity_name,
+          doc_proof_of_address: formData.doc_proof_of_address, doc_proof_of_address_name: formData.doc_proof_of_address_name,
+          doc_source_of_funds: formData.doc_source_of_funds, doc_source_of_funds_name: formData.doc_source_of_funds_name,
+          doc_existing_policies: formData.doc_existing_policies, doc_existing_policies_name: formData.doc_existing_policies_name,
+          cipc_registration_uploaded_name: formData.cipc_registration_uploaded_name,
+          moi_uploaded_name: formData.moi_uploaded_name,
+          proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
+          financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
+          directors_list: directorsWithDocs, director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
+        };
+      }
+      case 4: return {
+        business_activity: formData.business_activity, entity_source_of_funds: formData.entity_source_of_funds,
+        ubo_declaration: formData.ubo_declaration, entity_tax_number: formData.entity_tax_number,
+        entity_tax_residency: formData.entity_tax_residency, entity_fatca: formData.entity_fatca, entity_pep: formData.entity_pep,
+      };
+      case 5: return {
+        fica_status: ficaResult?.fica_status || 'Pending',
+        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
+        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
+        fica_reference: ficaResult?.fica_reference || '', fica_verified_at: ficaResult?.verified_at || '',
+        cipc_verified: cipcResult?.pass || false,
+        entity_aml_clear: ficaResult?.fica_status !== 'Referred',
+        home_affairs_verified: ficaResult?.fica_status === 'Approved',
+        aml_pep_clear: ficaResult?.fica_status !== 'Referred',
+        directors_json: JSON.stringify(directors),
+      };
+      case 6: return {
+        gross_annual_turnover: normalizeRangeValue(formData.gross_annual_turnover),
+        total_assets_band: normalizeRangeValue(formData.total_assets_band),
+        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
+        existing_products_notes: formData.existing_products_notes,
+        entity_loa_uploaded: formData.entity_loa_uploaded, entity_loa_authorised: formData.entity_loa_authorised,
+      };
+      case 7: return {
+        portfolio_drop_response: formData.portfolio_drop_response,
+        primary_investment_objective: formData.primary_investment_objective,
+        time_horizon: normalizeRangeValue(formData.time_horizon),
+        liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
+        risk_profile: formData.risk_profile,
+        calculated_risk_score: calcRiskScore(formData), calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
+        risk_profile_overridden: profileOverridden, advisory_needs: formData.advisory_needs,
+      };
+      default: return {};
+    }
+  };
+
+  const validateStep = (step) => {
+    if (step === 1 && (!formData.entity_name || !formData.registration_number)) {
+      toast.error('Please fill in company name and registration number'); return false;
+    }
+    if (step === 2 && directors.some(d => !d.first_name || !d.last_name || !d.id_number)) {
+      toast.error('Please complete all director names and ID numbers'); return false;
+    }
+    if (step === 7 && !formData.risk_profile) {
+      toast.error('Please select a risk profile'); return false;
+    }
+    return true;
+  };
+
+  const navigateToStep = (targetStep) => {
+    if (targetStep === currentStep) return;
+    if (clientId) base44.entities.Clients.update(clientId, buildStepData(currentStep)).catch(() => {});
+    setCurrentStep(targetStep);
+  };
+
   const runEntityFicaVerification = async () => {
     if (!formData.registration_number) { toast.error('Registration number required'); return; }
     if (directors.filter(d => d.first_name && d.id_number).length === 0) { toast.error('Please complete director details first'); return; }
@@ -383,191 +455,18 @@ export default function ClientOnboardingCompany() {
   };
 
   const handleContinue = async () => {
-    let data = {};
-    if (currentStep === 1) {
-      if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
-      data = {
-        client_type: 'Company', identity_type: 'Registration',
-        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
-        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
-        province: formData.province, postal_code: formData.postal_code,
-        email: formData.email, mobile_number: formData.mobile_number,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
-      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
-    } else if (currentStep === 3) {
-      const directorsWithDocs = directors.map((d, idx) => ({
-        ...d,
-        id_uploaded: formData[`director_${idx}_id_uploaded`] || false,
-        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || false,
-      }));
-      data = {
-        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
-        moi_uploaded: formData.moi_uploaded || false,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
-        financial_statements_uploaded: formData.financial_statements_uploaded || false,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-        cipc_registration_uploaded_name: formData.cipc_registration_uploaded_name,
-        moi_uploaded_name: formData.moi_uploaded_name,
-        proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
-        financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
-        directors_list: directorsWithDocs,
-        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
-      };
-    } else if (currentStep === 4) {
-      data = {
-        business_activity: formData.business_activity,
-        entity_source_of_funds: formData.entity_source_of_funds,
-        ubo_declaration: formData.ubo_declaration,
-        entity_tax_number: formData.entity_tax_number,
-        entity_tax_residency: formData.entity_tax_residency,
-        entity_fatca: formData.entity_fatca,
-        entity_pep: formData.entity_pep,
-      };
-    } else if (currentStep === 5) {
-      if (!ficaResult) {
-        toast.info('Verification will continue in the background. You can keep completing onboarding.');
-        runEntityFicaVerification();
-      }
-      data = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        cipc_verified: cipcResult?.pass || false,
-        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
-        home_affairs_verified: ficaResult?.fica_status === 'Approved',
-        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
-        directors_json: JSON.stringify(directors),
-      };
-    } else if (currentStep === 6) {
-      data = {
-        gross_annual_turnover: normalizeRangeValue(formData.gross_annual_turnover),
-        total_assets_band: normalizeRangeValue(formData.total_assets_band),
-        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
-        existing_products_notes: formData.existing_products_notes,
-        entity_loa_uploaded: formData.entity_loa_uploaded,
-        entity_loa_authorised: formData.entity_loa_authorised,
-      };
-    } else if (currentStep === 7) {
-      if (!formData.risk_profile) { toast.error('Please select a risk profile'); return; }
-      data = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
+    if (!validateStep(currentStep)) return;
+    if (currentStep === 5 && !ficaResult) {
+      toast.info('Verification will continue in the background. You can keep completing onboarding.');
+      runEntityFicaVerification();
     }
-    const saved = await saveStep(data);
+    const saved = await saveStep(buildStepData(currentStep));
     if (saved) setCurrentStep(prev => prev + 1);
   };
 
   const handleSaveAndSubmit = async () => {
-    if (currentStep === 8) {
-      await handleSubmit();
-      return;
-    }
-
-    let data = {};
-    if (currentStep === 1) {
-      if (!formData.entity_name || !formData.registration_number) { toast.error('Please fill in company name and registration number'); return; }
-      data = {
-        client_type: 'Company', identity_type: 'Registration',
-        entity_name: formData.entity_name, registration_number: formData.registration_number, vat_number: formData.vat_number,
-        street_address: formData.street_address, suburb: formData.suburb, city: formData.city,
-        province: formData.province, postal_code: formData.postal_code,
-        email: formData.email, mobile_number: formData.mobile_number,
-        residential_address: `${formData.street_address}, ${formData.suburb}, ${formData.city}, ${formData.province}, ${formData.postal_code}`,
-      };
-    } else if (currentStep === 2) {
-      if (directors.some(d => !d.first_name || !d.last_name || !d.id_number)) { toast.error('Please complete all director names and ID numbers'); return; }
-      data = { directors_list: directors, director_documents_json: buildDirectorDocumentsJson(directors) };
-    } else if (currentStep === 3) {
-      const directorsWithDocs = directors.map((d, idx) => ({
-        ...d,
-        id_uploaded: formData[`director_${idx}_id_uploaded`] || d.id_uploaded || false,
-        addr_uploaded: formData[`director_${idx}_addr_uploaded`] || d.addr_uploaded || false,
-      }));
-      data = {
-        cipc_registration_uploaded: formData.cipc_registration_uploaded || false,
-        moi_uploaded: formData.moi_uploaded || false,
-        proof_of_address_uploaded: formData.proof_of_address_uploaded || false,
-        financial_statements_uploaded: formData.financial_statements_uploaded || false,
-        doc_identity: formData.doc_identity,
-        doc_identity_name: formData.doc_identity_name,
-        doc_proof_of_address: formData.doc_proof_of_address,
-        doc_proof_of_address_name: formData.doc_proof_of_address_name,
-        doc_source_of_funds: formData.doc_source_of_funds,
-        doc_source_of_funds_name: formData.doc_source_of_funds_name,
-        doc_existing_policies: formData.doc_existing_policies,
-        doc_existing_policies_name: formData.doc_existing_policies_name,
-        cipc_registration_uploaded_name: formData.cipc_registration_uploaded_name,
-        moi_uploaded_name: formData.moi_uploaded_name,
-        proof_of_address_uploaded_name: formData.proof_of_address_uploaded_name,
-        financial_statements_uploaded_name: formData.financial_statements_uploaded_name,
-        directors_list: directorsWithDocs,
-        director_documents_json: buildDirectorDocumentsJson(directorsWithDocs),
-      };
-    } else if (currentStep === 4) {
-      data = {
-        business_activity: formData.business_activity,
-        entity_source_of_funds: formData.entity_source_of_funds,
-        ubo_declaration: formData.ubo_declaration,
-        entity_tax_number: formData.entity_tax_number,
-        entity_tax_residency: formData.entity_tax_residency,
-        entity_fatca: formData.entity_fatca,
-        entity_pep: formData.entity_pep,
-      };
-    } else if (currentStep === 5) {
-      data = {
-        fica_status: ficaResult?.fica_status || 'Pending',
-        verification_status: ficaResult ? (ficaResult.fica_status === 'Approved' ? 'Verified' : 'Manual Review') : 'Pending',
-        advisor_review_required: ficaResult ? ficaResult.fica_status !== 'Approved' : false,
-        fica_reference: ficaResult?.fica_reference || '',
-        fica_verified_at: ficaResult?.verified_at || '',
-        cipc_verified: cipcResult?.pass || false,
-        entity_aml_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
-        home_affairs_verified: ficaResult?.fica_status === 'Approved',
-        aml_pep_clear: ficaResult ? ficaResult.fica_status !== 'Referred' : false,
-        directors_json: JSON.stringify(directors),
-      };
-    } else if (currentStep === 6) {
-      data = {
-        gross_annual_turnover: normalizeRangeValue(formData.gross_annual_turnover),
-        total_assets_band: normalizeRangeValue(formData.total_assets_band),
-        entity_total_liabilities: normalizeRangeValue(formData.entity_total_liabilities),
-        existing_products_notes: formData.existing_products_notes,
-        entity_loa_uploaded: formData.entity_loa_uploaded,
-        entity_loa_authorised: formData.entity_loa_authorised,
-      };
-    } else if (currentStep === 7) {
-      data = {
-        portfolio_drop_response: formData.portfolio_drop_response,
-        primary_investment_objective: formData.primary_investment_objective,
-        time_horizon: normalizeRangeValue(formData.time_horizon), liquidity_requirement: normalizeRangeValue(formData.liquidity_requirement),
-        risk_profile: formData.risk_profile,
-        calculated_risk_score: calcRiskScore(formData),
-        calculated_risk_profile: scoreToProfile(calcRiskScore(formData)),
-        risk_profile_overridden: profileOverridden,
-        advisory_needs: formData.advisory_needs,
-      };
-    }
-
-    const saved = await saveStep(data);
+    if (currentStep === 8) { await handleSubmit(); return; }
+    const saved = await saveStep(buildStepData(currentStep));
     if (saved) await handleSubmit();
   };
 
@@ -668,7 +567,7 @@ export default function ClientOnboardingCompany() {
           const isComplete = currentStep > step.number;
           const isCurrent = currentStep === step.number;
           return (
-            <button key={step.number} type="button" onClick={() => setCurrentStep(step.number)}
+            <button key={step.number} type="button" onClick={() => navigateToStep(step.number)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${isCurrent ? 'border-ocean text-ocean' : isComplete ? 'border-teal text-teal' : 'border-transparent text-muted-foreground'}`}>
               <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${isCurrent ? 'bg-ocean text-white' : isComplete ? 'bg-teal text-white' : 'bg-border text-muted-foreground'}`}>
                 {isComplete ? 'OK' : step.number}
