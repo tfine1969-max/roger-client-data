@@ -42,9 +42,11 @@ export const AuthProvider = ({ children }) => {
         if (appParams.token) {
           await checkUserAuth();
         } else {
+          // App is internal-only — redirect unauthenticated visitors straight to login
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
           setAuthChecked(true);
+          base44.auth.redirectToLogin(window.location.href);
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {

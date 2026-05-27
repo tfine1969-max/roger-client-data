@@ -22,6 +22,7 @@ import InvestmentSummary from '@/pages/InvestmentSummary';
 import PullRequests from '@/pages/PullRequests';
 import MarcHoarReport from '@/pages/MarcHoarReport';
 import WorrallFamilyReport from '@/pages/WorrallFamilyReport';
+import UserManagement from '@/pages/UserManagement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
         <Route path="/pull-requests" element={<PullRequests />} />
         <Route path="/reports/marc-hoar" element={<MarcHoarReport />} />
         <Route path="/reports/worrall-family" element={<WorrallFamilyReport />} />
+        <Route path="/users" element={<UserManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
