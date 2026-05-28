@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     }
 
     // Load valuations (scoped to month if provided)
-    const allValuations = await base44.asServiceRole.entities.PortfolioValuation.list('-upload_month', 10000);
+    const allValuations = await base44.asServiceRole.entities.PortfolioValuation.list('-upload_month', 5000);
     const valuations = upload_month
       ? allValuations.filter(v => v.upload_month === upload_month)
       : allValuations;
@@ -43,8 +43,6 @@ Deno.serve(async (req) => {
     let updated = 0;
     const changes = [];
 
-    // Collect all rows that need updating first
-    const toUpdate = [];
     for (const row of valuations) {
       const rawName = String(row.investment_name || '').trim();
       if (!rawName) continue;
@@ -53,6 +51,7 @@ Deno.serve(async (req) => {
       const matchingRules = ruleMap[key];
       if (!matchingRules) continue;
 
+      // Find the most specific matching rule (platform-specific > any platform)
       const rowPlatform = String(row.platform || '').toLowerCase();
       const rule =
         matchingRules.find(r => r.platform && r.platform === rowPlatform) ||
@@ -61,23 +60,13 @@ Deno.serve(async (req) => {
       if (!rule) continue;
       if (rule.canonical_name === rawName) continue; // already correct
 
-      toUpdate.push({ id: row.id, canonical_name: rule.canonical_name, from: rawName });
-    }
+      await base44.asServiceRole.entities.PortfolioValuation.update(row.id, {
+        investment_name: rule.canonical_name,
+      });
+      updated++;
+      changes.push({ id: row.id, from: rawName, to: rule.canonical_name });
 
-    // Apply updates in batches of 5 with a pause between batches to avoid rate limiting
-    const BATCH_SIZE = 5;
-    for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
-      const batch = toUpdate.slice(i, i + BATCH_SIZE);
-      await Promise.all(batch.map(item =>
-        base44.asServiceRole.entities.PortfolioValuation.update(item.id, {
-          investment_name: item.canonical_name,
-        })
-      ));
-      updated += batch.length;
-      changes.push(...batch.map(item => ({ id: item.id, from: item.from, to: item.canonical_name })));
-      if (i + BATCH_SIZE < toUpdate.length) {
-        await new Promise(res => setTimeout(res, 300));
-      }
+      if (updated % 20 === 0) await new Promise(res => setTimeout(res, 200));
     }
 
     return Response.json({
