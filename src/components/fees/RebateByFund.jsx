@@ -43,19 +43,24 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
     setError('');
     try {
       // For each source name that differs from canonical, save a FundMergeRule
-      const sources = selected.filter(name => name !== canonicalName.trim());
+      const canonical = canonicalName.trim();
+      const sources = selected.filter(name => name !== canonical);
+      // Load all existing rules once, then match in-memory
+      const allRules = await base44.entities.FundMergeRule.list('source_name', 2000);
+      const ruleBySource = {};
+      allRules.forEach(r => { ruleBySource[r.source_name] = r; });
+
       for (const source_name of sources) {
-        // Check if rule already exists; if so update, otherwise create
-        const existing = await base44.entities.FundMergeRule.filter({ source_name });
-        if (existing.length > 0) {
-          await base44.entities.FundMergeRule.update(existing[0].id, {
-            canonical_name: canonicalName.trim(),
+        const existing = ruleBySource[source_name];
+        if (existing) {
+          await base44.entities.FundMergeRule.update(existing.id, {
+            canonical_name: canonical,
             platform: '',
           });
         } else {
           await base44.entities.FundMergeRule.create({
             source_name,
-            canonical_name: canonicalName.trim(),
+            canonical_name: canonical,
             platform: '',
             notes: 'Created via Rebate by Fund merge UI',
           });
