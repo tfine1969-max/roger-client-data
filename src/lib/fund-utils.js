@@ -86,19 +86,31 @@ export function hasFundMappings() {
  */
 export function applyRulesToRows(rows, rules = []) {
   if (!rules.length) return applyMappingsToRows(rows); // fall back to localStorage
-  const map = {};
+
+  // platform-specific map: "Platform||SourceName" -> canonical
+  const platformMap = {};
+  // platform-agnostic map (empty/blank platform): "SourceName" -> canonical
+  const globalMap = {};
+
   rules.forEach(rule => {
     if (!rule.source_name || !rule.canonical_name || rule.platform === '__extra_master__') return;
-    const key = `${clean(rule.platform || 'Unknown')}||${clean(rule.source_name)}`;
-    map[key] = rule.canonical_name;
+    const platform = clean(rule.platform || '');
+    if (platform) {
+      platformMap[`${platform}||${clean(rule.source_name)}`] = rule.canonical_name;
+    } else {
+      globalMap[clean(rule.source_name)] = rule.canonical_name;
+    }
   });
+
   // Also merge in any localStorage mappings not yet in DB
   const local = getFundMappings();
-  Object.entries(local).forEach(([k, v]) => { if (!map[k]) map[k] = v; });
-  if (!Object.keys(map).length) return rows;
+  Object.entries(local).forEach(([k, v]) => { if (!platformMap[k]) platformMap[k] = v; });
+
+  if (!Object.keys(platformMap).length && !Object.keys(globalMap).length) return rows;
+
   return rows.map(row => {
-    const key = `${clean(row.platform)}||${clean(row.investment_name)}`;
-    const canonical = map[key];
+    const platformKey = `${clean(row.platform)}||${clean(row.investment_name)}`;
+    const canonical = platformMap[platformKey] || globalMap[clean(row.investment_name)];
     if (!canonical || canonical === row.investment_name) return row;
     return { ...row, investment_name: canonical };
   });
