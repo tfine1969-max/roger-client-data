@@ -15,6 +15,7 @@ import FeeKpiRow from '@/components/fees/FeeKpiRow';
 import FeeInvestmentTable from '@/components/fees/FeeInvestmentTable';
 import FundBreakdown from '@/components/fees/FundBreakdown';
 import FeeGapPanel from '@/components/fees/FeeGapPanel';
+import RebateByFund from '@/components/fees/RebateByFund';
 
 function groupFeeRows(rows, keyFn, seedFn) {
   const map = {};
@@ -39,6 +40,7 @@ export default function Fees() {
   const [selectedProvider, setSelectedProvider] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [providerView, setProviderView] = useState('clients');
+  const [topView, setTopView] = useState('providers');
 
   const { data: valuations = [] } = useQuery({
     queryKey: ['portfolioValuations'],
@@ -127,7 +129,7 @@ export default function Fees() {
             <span>fees calculated from mapped annual rates divided by 12</span>
           </div>
         </div>
-        <Select value={latestMonth} onValueChange={(month) => { setSelectedMonth(month); setSelectedProvider(''); setSelectedClient(''); setSearch(''); }}>
+        <Select value={latestMonth} onValueChange={(month) => { setSelectedMonth(month); setSelectedProvider(''); setSelectedClient(''); setSearch(''); setTopView('providers'); }}>
           <SelectTrigger className="w-44">
             <SelectValue />
           </SelectTrigger>
@@ -152,7 +154,22 @@ export default function Fees() {
       />
 
       {!activeProvider && (
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <>
+        <div className="flex gap-2 bg-white border rounded-lg p-3">
+          {[['providers', 'By Provider'], ['funds', 'By Fund (Rebate Breakdown)']].map(([view, label]) => (
+            <button
+              key={view}
+              onClick={() => setTopView(view)}
+              className={`text-sm px-3 py-1.5 rounded-md border transition-colors ${topView === view ? 'bg-primary text-primary-foreground border-primary' : 'bg-white text-muted-foreground hover:bg-muted/40'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {topView === 'funds' && <RebateByFund monthRows={monthRows} />}
+
+        {topView === 'providers' && <div className="bg-white border rounded-lg overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">Provider Fees This Month</h2>
@@ -190,7 +207,8 @@ export default function Fees() {
               </tbody>
             </table>
           </div>
-        </div>
+        </div>}
+        </>
       )}
 
 
