@@ -237,7 +237,7 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
     return sortDir === 'asc' ? <ChevronUp className="w-3 h-3 inline ml-1" /> : <ChevronDown className="w-3 h-3 inline ml-1" />;
   }
 
-  const thClass = "px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors";
+  const thClass = "px-2 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap cursor-pointer select-none hover:text-foreground transition-colors";
   const selectedList = [...selected];
 
   return (
@@ -284,25 +284,25 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/40">
-              <th className="px-4 py-3 w-10"></th>
+              <th className="px-2 py-2.5 w-8"></th>
               <th className={`${thClass} text-left`} onClick={() => handleSort('fund')}>
                 Fund <SortIcon col="fund" />
               </th>
               <th className={`${thClass} text-right`} onClick={() => handleSort('aum')}>
-                AUM (ZAR) <SortIcon col="aum" />
+                AUM <SortIcon col="aum" />
               </th>
               <th className={`${thClass} text-right`} onClick={() => handleSort('clients')}>
                 Clients <SortIcon col="clients" />
               </th>
-              <th className={`${thClass} text-left hidden md:table-cell`}>Platforms</th>
+              <th className={`${thClass} text-left`}>Platforms</th>
               <th className={`${thClass} text-right`} onClick={() => handleSort('rebate')}>
-                Monthly Rebate <SortIcon col="rebate" />
+                Rebate <SortIcon col="rebate" />
               </th>
               <th className={`${thClass} text-right`} onClick={() => handleSort('advisory')}>
-                Monthly Advisory <SortIcon col="advisory" />
+                Advisory <SortIcon col="advisory" />
               </th>
               <th className={`${thClass} text-right`} onClick={() => handleSort('total')}>
-                Total Monthly <SortIcon col="total" />
+                Total <SortIcon col="total" />
               </th>
             </tr>
           </thead>
@@ -320,33 +320,33 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
                   className={`hover:bg-muted/20 transition-colors cursor-pointer ${isSelected ? 'bg-primary/5' : ''}`}
                   onClick={() => toggleSelect(row.fund)}
                 >
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-2 py-2 text-center">
                     {isSelected
-                      ? <CheckSquare className="w-4 h-4 text-primary" />
-                      : <Square className="w-4 h-4 text-muted-foreground/40" />
+                      ? <CheckSquare className="w-3.5 h-3.5 text-primary" />
+                      : <Square className="w-3.5 h-3.5 text-muted-foreground/40" />
                     }
                   </td>
-                  <td className="px-4 py-3 font-medium max-w-xs">
-                    <span className="block truncate" title={row.fund}>{row.fund}</span>
+                  <td className="px-2 py-2 font-medium w-[28%]">
+                    <span className="block truncate text-sm" title={row.fund}>{row.fund}</span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-right whitespace-nowrap text-muted-foreground">
+                  <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs">
                     R {fmtNum(row.aum)}
                   </td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">{row.clients}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <div className="flex flex-wrap gap-1">
+                  <td className="px-2 py-2 text-right text-muted-foreground text-xs">{row.clients}</td>
+                  <td className="px-2 py-2">
+                    <div className="flex flex-wrap gap-0.5">
                       {row.platforms.map(p => (
-                        <span key={p} className="text-xs rounded bg-muted px-1.5 py-0.5 text-muted-foreground whitespace-nowrap">{p}</span>
+                        <span key={p} className="text-[11px] rounded bg-muted px-1 py-0.5 text-muted-foreground whitespace-nowrap">{p}</span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-right text-chart-2 font-semibold whitespace-nowrap">
+                  <td className="px-2 py-2 font-mono text-right text-chart-2 font-semibold whitespace-nowrap text-xs">
                     R {fmtNum(row.rebate)}
                   </td>
-                  <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">
+                  <td className="px-2 py-2 font-mono text-right text-chart-1 whitespace-nowrap text-xs">
                     R {fmtNum(row.advisory)}
                   </td>
-                  <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">
+                  <td className="px-2 py-2 font-mono text-right font-bold whitespace-nowrap text-xs">
                     R {fmtNum(row.total)}
                   </td>
                 </tr>
@@ -356,21 +356,21 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
           <tfoot>
             <tr className="border-t-2 bg-muted/40 font-semibold">
               <td />
-              <td className="px-4 py-3 text-xs uppercase tracking-wider">
+              <td className="px-2 py-2 text-xs uppercase tracking-wider">
                 Total ({sorted.length} fund{sorted.length !== 1 ? 's' : ''})
               </td>
-              <td className="px-4 py-3 font-mono text-right whitespace-nowrap text-muted-foreground">
+              <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs">
                 R {fmtNum(totals.aum)}
               </td>
               <td />
-              <td className="hidden md:table-cell" />
-              <td className="px-4 py-3 font-mono text-right text-chart-2 whitespace-nowrap">
+              <td />
+              <td className="px-2 py-2 font-mono text-right text-chart-2 whitespace-nowrap text-xs">
                 R {fmtNum(totals.rebate)}
               </td>
-              <td className="px-4 py-3 font-mono text-right text-chart-1 whitespace-nowrap">
+              <td className="px-2 py-2 font-mono text-right text-chart-1 whitespace-nowrap text-xs">
                 R {fmtNum(totals.advisory)}
               </td>
-              <td className="px-4 py-3 font-mono text-right font-bold whitespace-nowrap">
+              <td className="px-2 py-2 font-mono text-right font-bold whitespace-nowrap text-xs">
                 R {fmtNum(totals.total)}
               </td>
             </tr>
