@@ -61,6 +61,9 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
           });
         }
       }
+      // Now apply the rules to the actual DB records
+      await base44.functions.invoke('applyFundMergeRules', {});
+
       queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       onMerged();
