@@ -23,11 +23,11 @@ const COLORS = {
 };
 
 const singleItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard, color: COLORS.blue },
-  { path: '/clients', label: 'Clients', icon: Users, color: COLORS.grey },
-  { path: '/platforms', label: 'Platforms', icon: BarChart3, color: COLORS.blueTint55 },
-  { path: '/funds', label: 'Funds', icon: Briefcase, color: COLORS.greyTint55 },
-  { path: '/investment-summary', label: 'Summary', icon: LineChart, color: COLORS.blueTint35 },
+  { path: '/app', label: 'Dashboard', icon: LayoutDashboard, color: COLORS.blue },
+  { path: '/app/clients', label: 'Clients', icon: Users, color: COLORS.grey },
+  { path: '/app/platforms', label: 'Platforms', icon: BarChart3, color: COLORS.blueTint55 },
+  { path: '/app/funds', label: 'Funds', icon: Briefcase, color: COLORS.greyTint55 },
+  { path: '/app/investment-summary', label: 'Summary', icon: LineChart, color: COLORS.blueTint35 },
 ];
 
 const reportsGroup = {
@@ -35,8 +35,8 @@ const reportsGroup = {
   icon: LineChart,
   color: COLORS.blueTint35,
   items: [
-    { path: '/reports/marc-hoar',      label: 'Marc Hoar',              icon: Users },
-    { path: '/reports/worrall-family', label: 'Worrall Family',         icon: Users },
+    { path: '/app/reports/marc-hoar',      label: 'Marc Hoar',              icon: Users },
+    { path: '/app/reports/worrall-family', label: 'Worrall Family',         icon: Users },
   ],
 };
 
@@ -45,9 +45,9 @@ const feesGroup = {
   icon: Percent,
   color: COLORS.blue,
   items: [
-    { path: '/fee-seeding', label: 'Fee Seeding', icon: Layers },
-    { path: '/fees', label: 'Fees', icon: Percent },
-    { path: '/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
+    { path: '/app/fee-seeding', label: 'Fee Seeding', icon: Layers },
+    { path: '/app/fees', label: 'Fees', icon: Percent },
+    { path: '/app/bulk-fees', label: 'Bulk Fees', icon: SlidersHorizontal },
   ],
 };
 
@@ -56,9 +56,9 @@ const dataGroup = {
   icon: Upload,
   color: COLORS.grey,
   items: [
-    { path: '/control', label: 'Control', icon: ClipboardCheck },
-    { path: '/upload', label: 'Upload / Delete', icon: Upload },
-    { path: '/data-quality', label: 'Data Quality', icon: AlertTriangle },
+    { path: '/app/control', label: 'Control', icon: ClipboardCheck },
+    { path: '/app/upload', label: 'Upload / Delete', icon: Upload },
+    { path: '/app/data-quality', label: 'Data Quality', icon: AlertTriangle },
   ],
 };
 
@@ -67,7 +67,7 @@ function NavDropdown({ group, location }) {
   const [hovered, setHovered] = useState(false);
   const ref = useRef(null);
 
-  const isGroupActive = group.items.some(item => location.pathname.startsWith(item.path));
+  const isGroupActive = group.items.some(item => location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -127,7 +127,7 @@ function NavDropdown({ group, location }) {
 }
 
 const platformsSubNav = [
-  { path: '/platforms', label: 'All Platforms' },
+  { path: '/app/platforms', label: 'All Platforms' },
 ];
 
 function UserMenu() {
@@ -167,7 +167,7 @@ function UserMenu() {
           </div>
           {user.role === 'Administrator' && (
             <Link
-              to="/users"
+              to="/app/users"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg"
             >
@@ -190,14 +190,14 @@ export default function AppLayout() {
   const location = useLocation();
 
   const inPlatformsSection =
-    location.pathname === '/platforms' || location.pathname.startsWith('/providers/');
+    location.pathname === '/app/platforms' || location.pathname.startsWith('/app/providers/');
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
         <div className="px-3 sm:px-4 lg:px-6">
           <div className="flex h-14 items-center gap-4">
-            <Link to="/" className="group flex shrink-0 items-center gap-3">
+            <Link to="/app" className="group flex shrink-0 items-center gap-3">
               <img
                 src="https://media.base44.com/images/public/69fec6783aa61326b91c656b/2b79ae42c_logo.png"
                 alt="Wealth Works"
@@ -210,11 +210,11 @@ export default function AppLayout() {
             <nav className="flex flex-1 items-center gap-1 rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
               {singleItems.map(({ path, label, icon: Icon }) => {
                 const active =
-                  path === '/'
-                    ? location.pathname === '/'
-                    : path === '/platforms'
+                  path === '/app'
+                    ? location.pathname === '/app'
+                    : path === '/app/platforms'
                     ? inPlatformsSection
-                    : location.pathname.startsWith(path);
+                    : location.pathname === path || location.pathname.startsWith(path + '/');
                 return (
                   <Link
                     key={path}
@@ -248,8 +248,8 @@ export default function AppLayout() {
             <div className="max-w-screen-xl mx-auto px-5 sm:px-6">
               <div className="flex h-11 items-center gap-2 overflow-x-auto">
                 {platformsSubNav.map(({ path, label }) => {
-                  const active = path === '/platforms'
-                    ? location.pathname === '/platforms'
+                  const active = path === '/app/platforms'
+                    ? location.pathname === '/app/platforms'
                     : location.pathname.startsWith(path);
                   return (
                     <Link

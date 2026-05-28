@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
           setAuthChecked(true);
-          base44.auth.redirectToLogin(window.location.href);
+          base44.auth.redirectToLogin(window.location.origin + '/app');
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }) => {
 
   const navigateToLogin = () => {
     // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    base44.auth.redirectToLogin(window.location.origin + '/app');
   };
 
   return (

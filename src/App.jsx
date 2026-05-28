@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { base44 } from '@/api/base44Client';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -6,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AppLayout from '@/components/layout/AppLayout';
+import Landing from '@/pages/Landing';
 import Dashboard from '@/pages/Dashboard';
 import Clients from '@/pages/Clients';
 import ClientDetail from '@/pages/ClientDetail';
@@ -37,30 +39,34 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+    if (authError.type === 'auth_required') {
+      base44.auth.redirectToLogin(window.location.origin + '/app');
+      return null;
+    }
   }
 
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/clients/:accountCode" element={<ClientDetail />} />
-        <Route path="/upload" element={<Upload />} />
-        <Route path="/platforms" element={<Platforms />} />
-        <Route path="/funds" element={<Funds />} />
-        <Route path="/data-quality" element={<DataQuality />} />
-        <Route path="/fees" element={<Fees />} />
-        <Route path="/bulk-fees" element={<BulkFees />} />
-        <Route path="/fee-seeding" element={<FeeSeeding />} />
-        <Route path="/control" element={<Control />} />
-        <Route path="/providers/prime" element={<PrimeProvider />} />
-        <Route path="/investment-summary" element={<InvestmentSummary />} />
-        <Route path="/pull-requests" element={<PullRequests />} />
-        <Route path="/reports/marc-hoar" element={<MarcHoarReport />} />
-        <Route path="/reports/worrall-family" element={<WorrallFamilyReport />} />
-        <Route path="/users" element={<UserManagement />} />
+      <Route path="/app" element={<AppLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="clients" element={<Clients />} />
+        <Route path="clients/:accountCode" element={<ClientDetail />} />
+        <Route path="upload" element={<Upload />} />
+        <Route path="platforms" element={<Platforms />} />
+        <Route path="funds" element={<Funds />} />
+        <Route path="data-quality" element={<DataQuality />} />
+        <Route path="fees" element={<Fees />} />
+        <Route path="bulk-fees" element={<BulkFees />} />
+        <Route path="fee-seeding" element={<FeeSeeding />} />
+        <Route path="control" element={<Control />} />
+        <Route path="providers/prime" element={<PrimeProvider />} />
+        <Route path="investment-summary" element={<InvestmentSummary />} />
+        <Route path="pull-requests" element={<PullRequests />} />
+        <Route path="reports/marc-hoar" element={<MarcHoarReport />} />
+        <Route path="reports/worrall-family" element={<WorrallFamilyReport />} />
+        <Route path="users" element={<UserManagement />} />
       </Route>
+      <Route path="/" element={<Landing />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
