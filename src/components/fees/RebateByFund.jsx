@@ -61,9 +61,6 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
           });
         }
       }
-      // Now apply the rules to the actual DB records
-      await base44.functions.invoke('applyFundMergeRules', {});
-
       queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       onMerged();
@@ -89,30 +86,23 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
 
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Click the correct name to use as canonical</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Selected fund names</p>
             <div className="rounded-lg border divide-y max-h-48 overflow-y-auto">
-              {selected.map(name => {
-                const isCanonical = name === canonicalName.trim();
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => setCanonicalName(name)}
-                    className={`w-full px-3 py-2.5 text-sm text-left flex items-center gap-2 transition-colors ${isCanonical ? 'bg-primary/5 text-primary font-semibold' : 'hover:bg-muted/40 text-foreground'}`}
-                  >
-                    <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isCanonical ? 'border-primary bg-primary' : 'border-muted-foreground/30'}`}>
-                      {isCanonical && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
-                    </span>
+              {selected.map(name => (
+                <div key={name} className="px-3 py-2 text-sm flex items-center gap-2">
+                  <span className={name === canonicalName.trim() ? 'font-semibold text-primary' : 'text-muted-foreground'}>
                     {name}
-                    {isCanonical && <span className="ml-auto text-xs rounded bg-primary/10 text-primary px-1.5 py-0.5">keep this</span>}
-                  </button>
-                );
-              })}
+                  </span>
+                  {name === canonicalName.trim() && (
+                    <span className="ml-auto text-xs rounded bg-primary/10 text-primary px-1.5 py-0.5">canonical</span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Or type a custom canonical name</label>
+            <label className="text-sm font-medium">Canonical (target) fund name</label>
             <Input
               value={canonicalName}
               onChange={e => setCanonicalName(e.target.value)}
@@ -209,16 +199,35 @@ export default function RebateByFund({ monthRows }) {
             Total monthly rebate per fund across all providers · {fundRows.length} funds
           </p>
         </div>
-        <div className="relative min-w-56">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search fund name..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9"
-          />
+        <div className="flex items-center gap-2">
+          {selected.size >= 2 && (
+            <Button size="sm" className="gap-1.5 h-9" onClick={() => setMergeOpen(true)}>
+              <Merge className="w-3.5 h-3.5" />
+              Merge {selected.size} funds
+            </Button>
+          )}
+          {selected.size > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-9 text-xs">
+              Clear
+            </Button>
+          )}
+          <div className="relative min-w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search fund name..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
         </div>
       </div>
+
+      {selected.size > 0 && (
+        <div className="px-5 py-2 bg-primary/5 border-b text-xs text-primary font-medium">
+          {selected.size} fund{selected.size !== 1 ? 's' : ''} selected — select at least 2 to merge
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -316,32 +325,6 @@ export default function RebateByFund({ monthRows }) {
             </tr>
           </tfoot>
         </table>
-      </div>
-    </div>
-
-    {/* Sticky merge bar */}
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white/95 px-6 py-3 shadow-lg backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <div className="text-sm text-muted-foreground">
-          {selected.size === 0
-            ? 'Click rows to select duplicate funds to merge'
-            : <span><span className="font-semibold text-foreground">{selected.size}</span> fund{selected.size !== 1 ? 's' : ''} selected</span>
-          }
-        </div>
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Clear</Button>
-          )}
-          <Button
-            size="sm"
-            className="gap-1.5"
-            onClick={() => setMergeOpen(true)}
-            disabled={selected.size < 2}
-          >
-            <Merge className="w-3.5 h-3.5" />
-            Merge {selected.size > 0 ? selected.size : ''} funds
-          </Button>
-        </div>
       </div>
     </div>
 
