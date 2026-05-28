@@ -43,24 +43,28 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
     setError('');
     try {
       // For each source name that differs from canonical, save a FundMergeRule
-      const sources = selected.filter(name => name !== canonicalName.trim());
+      const canonical = canonicalName.trim();
+      const sources = selected.filter(name => name !== canonical);
       for (const source_name of sources) {
-        // Check if rule already exists; if so update, otherwise create
         const existing = await base44.entities.FundMergeRule.filter({ source_name });
         if (existing.length > 0) {
           await base44.entities.FundMergeRule.update(existing[0].id, {
-            canonical_name: canonicalName.trim(),
+            canonical_name: canonical,
             platform: '',
           });
         } else {
           await base44.entities.FundMergeRule.create({
             source_name,
-            canonical_name: canonicalName.trim(),
+            canonical_name: canonical,
             platform: '',
             notes: 'Created via Rebate by Fund merge UI',
           });
         }
       }
+
+      // Apply rules to DB so changes take effect immediately
+      await base44.functions.invoke('applyFundMergeRules', {});
+
       queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
       queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       onMerged();
