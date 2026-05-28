@@ -22,7 +22,35 @@ function summariseFund(rows) {
   return { rebate, advisory, total, aum, clients: clients.size, platforms: [...platforms] };
 }
 
-function MergeDialog({ open, onOpenChange, selected, onMerged }) {
+// Build a map of canonicalName -> Set of raw source names using current rules + rawRows
+function buildSourceMap(rawMonthRows, fundMergeRules) {
+  // platform-specific map
+  const platformMap = {};
+  const globalMap = {};
+  fundMergeRules.forEach(rule => {
+    if (!rule.source_name || !rule.canonical_name || rule.platform === '__extra_master__') return;
+    const platform = (rule.platform || '').trim();
+    if (platform) {
+      platformMap[`${platform}||${rule.source_name.trim()}`] = rule.canonical_name;
+    } else {
+      globalMap[rule.source_name.trim()] = rule.canonical_name;
+    }
+  });
+
+  // For each raw row, resolve its canonical name and map canonical -> [raw source names]
+  const result = {}; // canonicalName -> Set of { source_name, platform }
+  rawMonthRows.forEach(row => {
+    const rawName = (row.investment_name || '').trim();
+    const platform = (row.platform || '').trim();
+    const platformKey = `${platform}||${rawName}`;
+    const canonical = platformMap[platformKey] || globalMap[rawName] || rawName;
+    if (!result[canonical]) result[canonical] = new Set();
+    result[canonical].add(JSON.stringify({ source_name: rawName, platform }));
+  });
+  return result;
+}
+
+function MergeDialog({ open, onOpenChange, selected, onMerged, rawMonthRows, fundMergeRules }) {
   const queryClient = useQueryClient();
   const [canonicalName, setCanonicalName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,32 +70,50 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
     setLoading(true);
     setError('');
     try {
-      // For each source name that differs from canonical, save a FundMergeRule
       const canonical = canonicalName.trim();
       const sources = selected.filter(name => name !== canonical);
-      // Load all existing rules once, then match in-memory
-      const allRules = await base44.entities.FundMergeRule.list('source_name', 2000);
-      const ruleBySource = {};
-      allRules.forEach(r => { ruleBySource[r.source_name] = r; });
 
-      for (const source_name of sources) {
-        const existing = ruleBySource[source_name];
+      // Build a map from canonical display name -> raw source names in the DB
+      const sourceMap = buildSourceMap(rawMonthRows, fundMergeRules);
+
+      // Collect all raw source names that need to point to canonical
+      const rawSourcesToCreate = new Set();
+      for (const displayName of sources) {
+        // The raw sources that currently resolve to this display name
+        const rawEntries = sourceMap[displayName] || new Set([JSON.stringify({ source_name: displayName, platform: '' })]);
+        rawEntries.forEach(entry => {
+          const { source_name, platform } = JSON.parse(entry);
+          if (source_name !== canonical) {
+            rawSourcesToCreate.add(JSON.stringify({ source_name, platform }));
+          }
+        });
+      }
+
+      // Load all existing rules once
+      const allRules = await base44.entities.FundMergeRule.list('source_name', 2000);
+      const ruleByKey = {};
+      allRules.forEach(r => {
+        const key = `${(r.platform || '').trim()}||${(r.source_name || '').trim()}`;
+        ruleByKey[key] = r;
+      });
+
+      for (const entryStr of rawSourcesToCreate) {
+        const { source_name, platform } = JSON.parse(entryStr);
+        const key = `${platform}||${source_name}`;
+        const existing = ruleByKey[key];
         if (existing) {
-          await base44.entities.FundMergeRule.update(existing.id, {
-            canonical_name: canonical,
-            platform: '',
-          });
+          await base44.entities.FundMergeRule.update(existing.id, { canonical_name: canonical, platform });
         } else {
           await base44.entities.FundMergeRule.create({
             source_name,
             canonical_name: canonical,
-            platform: '',
+            platform,
             notes: 'Created via Rebate by Fund merge UI',
           });
         }
       }
+
       queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
-      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
       onMerged();
       onOpenChange(false);
     } catch (err) {
@@ -137,7 +183,7 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
   );
 }
 
-export default function RebateByFund({ monthRows }) {
+export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRules = [] }) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('rebate');
   const [sortDir, setSortDir] = useState('desc');
@@ -338,6 +384,8 @@ export default function RebateByFund({ monthRows }) {
       onOpenChange={setMergeOpen}
       selected={selectedList}
       onMerged={() => setSelected(new Set())}
+      rawMonthRows={rawMonthRows}
+      fundMergeRules={fundMergeRules}
     />
     </>
   );

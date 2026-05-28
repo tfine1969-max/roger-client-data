@@ -66,6 +66,11 @@ export default function Fees() {
   const months = useMemo(() => getSortedMonths(feeRows), [feeRows]);
   const latestMonth = selectedMonth || months[0] || '';
   const monthRows = useMemo(() => feeRows.filter(v => v.upload_month === latestMonth), [feeRows, latestMonth]);
+  // Raw (pre-rule) month rows — needed so RebateByFund can create rules against original source names
+  const rawMonthRows = useMemo(
+    () => valuations.filter(v => v.upload_month === latestMonth).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs)),
+    [valuations, latestMonth, feeConfigs]
+  );
   const totals = useMemo(() => summariseFees(monthRows), [monthRows]);
   const feeRequiredCount = useMemo(() => monthRows.filter(r => r.fee_required).length, [monthRows]);
   const feeOptions = useMemo(() => feeOptionValues(feeMappingRows), []);
@@ -167,7 +172,7 @@ export default function Fees() {
           ))}
         </div>
 
-        {topView === 'funds' && <RebateByFund monthRows={monthRows} />}
+        {topView === 'funds' && <RebateByFund monthRows={monthRows} rawMonthRows={rawMonthRows} fundMergeRules={fundMergeRules} />}
 
         {topView === 'providers' && <div className="bg-white border rounded-lg overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
