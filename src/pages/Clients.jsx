@@ -507,7 +507,7 @@ export default function Clients() {
                         ) : (
                           <>
                             <Link
-                              to={`/clients/${encodeURIComponent(client.client_key)}`}
+                              to={`/app/clients/${encodeURIComponent(client.client_key)}`}
                               className="font-medium text-foreground transition-colors hover:text-primary"
                             >
                               {formatClientName(client.portfolio_name) || '-'}
@@ -547,7 +547,7 @@ export default function Clients() {
                     <td className="px-4 py-3 text-center text-muted-foreground">{client.investments}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold">R {fmtNum(client.totalValue)}</td>
                     <td className="px-4 py-3">
-                      <Link to={`/clients/${encodeURIComponent(client.client_key)}`}>
+                      <Link to={`/app/clients/${encodeURIComponent(client.client_key)}`}>
                         <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-primary" />
                       </Link>
                     </td>

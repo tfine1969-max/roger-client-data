@@ -119,7 +119,7 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                       ) : (
                         <div className="flex items-center gap-1.5">
                           <Link
-                            to={`/clients/${encodeURIComponent(client.client_key)}`}
+                            to={`/app/clients/${encodeURIComponent(client.client_key)}`}
                             className="text-left text-sm font-medium text-foreground hover:text-primary hover:underline"
                           >
                             {formatClientName(client.name) || client.name || '-'}
@@ -153,7 +153,7 @@ export default function MonthlyComparisonView({ valuations, months, selectedKeys
                     )}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Link to={`/clients/${encodeURIComponent(client.client_key)}`} className="inline-flex rounded p-1 hover:bg-muted" title="Open client history">
+                    <Link to={`/app/clients/${encodeURIComponent(client.client_key)}`} className="inline-flex rounded p-1 hover:bg-muted" title="Open client history">
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   </td>

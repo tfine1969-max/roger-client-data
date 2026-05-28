@@ -109,7 +109,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold">No data yet</h2>
           <p className="text-sm text-muted-foreground mt-1">Upload your first monthly spreadsheet to get started.</p>
         </div>
-        <Link to="/upload"><Button>Upload Monthly Data</Button></Link>
+        <Link to="/app/upload"><Button>Upload Monthly Data</Button></Link>
       </div>
     );
   }
@@ -138,14 +138,14 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
+          <Link to="/app/upload"><Button size="sm" variant="outline" className="gap-2"><UploadIcon className="w-4 h-4" /> Upload Data</Button></Link>
         </div>
       </div>
 
       {/* Three nav section cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Clients */}
-        <Link to="/clients" className="group block">
+        <Link to="/app/clients" className="group block">
           <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center text-center">
             <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -164,7 +164,7 @@ export default function Dashboard() {
         </Link>
 
         {/* AUM */}
-        <Link to="/platforms" className="group block">
+        <Link to="/app/platforms" className="group block">
           <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col">
             <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-accent/15 flex items-center justify-center">
@@ -194,7 +194,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Fees */}
-        <Link to="/fees" className="group block">
+        <Link to="/app/fees" className="group block">
           <div className="bg-white border rounded-xl p-6 h-full hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center text-center">
             <div className="flex items-center justify-between w-full mb-5">
               <div className="w-11 h-11 rounded-lg bg-chart-5/10 flex items-center justify-center">
@@ -250,11 +250,11 @@ export default function Dashboard() {
           <div className="bg-white border rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b flex items-center justify-between">
               <h2 className="text-sm font-semibold">Top Clients by AUM</h2>
-              <Link to="/clients"><Button variant="ghost" size="sm" className="text-xs h-7">View all</Button></Link>
+              <Link to="/app/clients"><Button variant="ghost" size="sm" className="text-xs h-7">View all</Button></Link>
             </div>
             <div className="divide-y">
               {topClients.map((c, i) => (
-                <Link key={c.code} to={`/clients/${c.code}`} className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
+                <Link key={c.code} to={`/app/clients/${c.code}`} className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
                     <div>
@@ -273,7 +273,7 @@ export default function Dashboard() {
           <div className="bg-white border rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b flex items-center justify-between">
               <h2 className="text-sm font-semibold">Recent Uploads</h2>
-              <Link to="/upload"><Button variant="ghost" size="sm" className="text-xs h-7">Upload new</Button></Link>
+              <Link to="/app/upload"><Button variant="ghost" size="sm" className="text-xs h-7">Upload new</Button></Link>
             </div>
             <div className="divide-y">
               {uploads.slice(0, 5).map(u => (
