@@ -63,6 +63,8 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
       }
 
       // Apply rules to DB so changes take effect immediately
+      // Small delay to let rule saves settle before applying
+      await new Promise(res => setTimeout(res, 500));
       await base44.functions.invoke('applyFundMergeRules', {});
 
       queryClient.invalidateQueries({ queryKey: ['fundMergeRules'] });
