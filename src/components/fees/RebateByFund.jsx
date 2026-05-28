@@ -89,23 +89,30 @@ function MergeDialog({ open, onOpenChange, selected, onMerged }) {
 
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Selected fund names</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Click the correct name to use as canonical</p>
             <div className="rounded-lg border divide-y max-h-48 overflow-y-auto">
-              {selected.map(name => (
-                <div key={name} className="px-3 py-2 text-sm flex items-center gap-2">
-                  <span className={name === canonicalName.trim() ? 'font-semibold text-primary' : 'text-muted-foreground'}>
+              {selected.map(name => {
+                const isCanonical = name === canonicalName.trim();
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => setCanonicalName(name)}
+                    className={`w-full px-3 py-2.5 text-sm text-left flex items-center gap-2 transition-colors ${isCanonical ? 'bg-primary/5 text-primary font-semibold' : 'hover:bg-muted/40 text-foreground'}`}
+                  >
+                    <span className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${isCanonical ? 'border-primary bg-primary' : 'border-muted-foreground/30'}`}>
+                      {isCanonical && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
+                    </span>
                     {name}
-                  </span>
-                  {name === canonicalName.trim() && (
-                    <span className="ml-auto text-xs rounded bg-primary/10 text-primary px-1.5 py-0.5">canonical</span>
-                  )}
-                </div>
-              ))}
+                    {isCanonical && <span className="ml-auto text-xs rounded bg-primary/10 text-primary px-1.5 py-0.5">keep this</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Canonical (target) fund name</label>
+            <label className="text-sm font-medium">Or type a custom canonical name</label>
             <Input
               value={canonicalName}
               onChange={e => setCanonicalName(e.target.value)}
