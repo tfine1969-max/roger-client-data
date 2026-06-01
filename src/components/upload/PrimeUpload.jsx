@@ -61,12 +61,10 @@ export default function PrimeUpload({ onImported }) {
         replace_existing: replaceExisting,
       });
       if (!res.data.success) throw new Error(res.data.error || 'Import failed');
-      setMessage('Refreshing Prime AUM...');
-      const rows = await base44.entities.PortfolioValuation.filter({ upload_month: uploadMonth, platform: 'Prime' }, '-created_date', 20000);
       setProgress({
-        clients: new Set(rows.map(row => row.client_id || row.account_code || row.portfolio_name).filter(Boolean)).size,
-        holdings: res.data.rows_imported || rows.length,
-        aum: rows.reduce((sum, row) => sum + (Number(row.zar_value ?? row.month_end_market_value) || 0), 0),
+        clients: 0,
+        holdings: res.data.rows_imported || 0,
+        aum: 0,
       });
       
       const info = {
