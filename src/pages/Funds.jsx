@@ -13,8 +13,8 @@ import ProviderLogo from '@/components/shared/ProviderLogo';
 import { masterFundListUnique as masterFundList } from '@/data/masterFundList';
 import { base44 } from '@/api/base44Client';
 
-const MAPPING_KEY = 'fund_master_mappings_v3';
-const EXTRA_MASTER_KEY = 'fund_master_extra_v3';
+const MAPPING_KEY = 'fund_master_mappings_v4';
+const EXTRA_MASTER_KEY = 'fund_master_extra_v4';
 const NO_MASTER = '__none__';
 
 function clean(value) {
