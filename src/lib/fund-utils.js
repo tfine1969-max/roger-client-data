@@ -112,6 +112,6 @@ export function applyRulesToRows(rows, rules = []) {
     const platformKey = `${clean(row.platform)}||${clean(row.investment_name)}`;
     const canonical = platformMap[platformKey] || globalMap[clean(row.investment_name)];
     if (!canonical || canonical === row.investment_name) return row;
-    return { ...row, investment_name: canonical };
+    return { ...row, investment_name: canonical, raw_investment_name: row.investment_name };
   });
 }

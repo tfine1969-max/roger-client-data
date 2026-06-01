@@ -226,14 +226,25 @@ export function findFeeMappingForRow(row, feeMappings = []) {
 }
 
 export function findEffectiveFeeConfig(row, feeConfigs = []) {
-  const matches = feeConfigs.filter(config => (
-    config.account_code === row.account_code &&
-    config.platform === row.platform &&
-    config.investment_name === row.investment_name &&
-    config.effective_from_month &&
-    config.effective_from_month <= row.upload_month
-  ));
-  return matches.sort((a, b) => String(b.effective_from_month || '').localeCompare(String(a.effective_from_month || '')))[0] || null;
+  // Try canonical name first, then fall back to the original raw instrument name
+  // (needed when fund merge rules rename investment_name but FeeConfigs are stored against raw names)
+  const namesToTry = [row.investment_name];
+  if (row.raw_investment_name && row.raw_investment_name !== row.investment_name) {
+    namesToTry.push(row.raw_investment_name);
+  }
+
+  for (const name of namesToTry) {
+    const matches = feeConfigs.filter(config => (
+      config.account_code === row.account_code &&
+      config.platform === row.platform &&
+      config.investment_name === name &&
+      config.effective_from_month &&
+      config.effective_from_month <= row.upload_month
+    ));
+    const best = matches.sort((a, b) => String(b.effective_from_month || '').localeCompare(String(a.effective_from_month || '')))[0];
+    if (best) return best;
+  }
+  return null;
 }
 
 export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
