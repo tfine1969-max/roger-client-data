@@ -110,49 +110,32 @@ async function importCredoExcel({ base44, user, file_url, upload_month, exchange
     return Response.json({ error: `Cannot determine month label for upload_month: ${upload_month}` }, { status: 400 });
   }
 
-  // Use InvokeLLM with file attachment — reliable for xlsx reading
-  const extracted = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `Read this Excel spreadsheet carefully. It has columns including: Client, col_1, Investment Name, Class, Service Provider, NAV columns for each month (named like "NAV - APRIL", "NAV - MAY", etc.), Rebate, Advisory Fee.
-
-I need you to extract ALL data rows. For each row return:
-- client: the client name (from "Client" column)
-- account_code: value from "col_1" column (may be null/empty — it's a tag like "BAN" or "TW")  
-- investment_name: fund or security name (from "Investment Name" column)
-- nav_value: THE EXACT NUMERIC VALUE from the column "NAV - ${monthLabel}" — copy the full number including all decimal places (e.g. 196457.262854 not 196457). If that cell is blank or empty, use 0.
-- rebate_pct: exact decimal from "Rebate" column (e.g. 0.005 for 0.5%). If blank use 0.
-- advisory_pct: exact decimal from "Advisory Fee" column (e.g. 0.0075 for 0.75%). If blank use 0.
-
-CRITICAL: The nav_value MUST come from "NAV - ${monthLabel}" only. Do NOT use any other month column. Extract the full precision number.
-
-Skip rows with no Investment Name. Return all others even if nav_value is 0.
-
-Return ONLY this JSON (no other text):
-{"rows": [{"client": "...", "account_code": "...", "investment_name": "...", "nav_value": 12345.67, "rebate_pct": 0.005, "advisory_pct": 0.0075}]}`,
-    file_urls: [file_url],
-    response_json_schema: {
-      type: 'object',
-      properties: {
-        rows: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              client: { type: 'string' },
-              account_code: { type: ['string', 'null'] },
-              investment_name: { type: 'string' },
-              nav_value: { type: 'number' },
-              rebate_pct: { type: 'number' },
-              advisory_pct: { type: 'number' },
-            },
-          },
+  // Use ExtractDataFromUploadedFile — purpose-built for structured Excel parsing
+  const navCol = `NAV - ${monthLabel}`;
+  const result = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
+    file_url,
+    json_schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          client:          { type: 'string',           description: 'Client name from the "Client" column' },
+          investment_name: { type: 'string',           description: 'Fund / security name from the "Investment Name" column' },
+          nav_value:       { type: ['number', 'null'], description: `Exact numeric value from the "${navCol}" column. Full precision. Null if blank.` },
+          rebate_pct:      { type: ['number', 'null'], description: 'Decimal from "Rebate" column, e.g. 0.005 for 0.5%' },
+          advisory_pct:    { type: ['number', 'null'], description: 'Decimal from "Advisory Fee" column, e.g. 0.0075 for 0.75%' },
         },
       },
     },
   });
 
-  const rows = Array.isArray(extracted?.rows)
-    ? extracted.rows.filter(r => cleanText(r.investment_name))
-    : [];
+  if (result?.status !== 'success' || !Array.isArray(result?.output)) {
+    return Response.json({
+      error: `Failed to extract Excel data: ${result?.details || 'Unknown error'}`,
+    }, { status: 400 });
+  }
+
+  const rows = result.output.filter(r => cleanText(r.investment_name) && parseNumber(r.nav_value) > 0);
 
   if (rows.length === 0) {
     return Response.json({
@@ -171,10 +154,9 @@ Return ONLY this JSON (no other text):
     .replace(/_/g, ' ')               // underscores to spaces
     .trim();
 
+  // Always prefer filename-derived name — it's structured and reliable
   const llmClientName = cleanText(rows[0]?.client);
-  // Use LLM name only if it looks real (not "Client A", "Unknown", etc.)
-  const clientNameIsReal = llmClientName && !/^client\s+[a-z]$/i.test(llmClientName) && llmClientName.toLowerCase() !== 'unknown';
-  const clientName = clientNameIsReal ? llmClientName : (fileClientName || 'Credo Client');
+  const clientName = fileClientName || llmClientName || 'Credo Client';
 
   // col_1 is a tag (e.g. "BAN", "TW"), not a unique account ID — always derive account code from client name
   const accountCode = `CREDO_${clientName.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 50)}`;
