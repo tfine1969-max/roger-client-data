@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X, Pencil } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X, Pencil, ArrowUpDown } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
 import { masterFundList } from '@/data/masterFundList';
@@ -90,6 +91,9 @@ function variantKey(row) {
 }
 
 export default function Funds() {
+  const [activeTab, setActiveTab] = useState('master-list');
+  const [masterListSort, setMasterListSort] = useState('aum'); // 'aum' | 'name'
+  const [masterListSearch, setMasterListSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [variantSearch, setVariantSearch] = useState('');
@@ -229,6 +233,15 @@ export default function Funds() {
   }, [masterFunds, variants]);
 
   const filteredMasterFunds = masterFunds.filter(fund => canonicalKey(fund).includes(canonicalKey(searchTerm)));
+
+  // Tab 1: master list sorted by AUM (default) or name, with search
+  const masterListRows = useMemo(() => {
+    const q = canonicalKey(masterListSearch);
+    return masterFunds
+      .filter(fund => !q || canonicalKey(fund).includes(q))
+      .map(fund => ({ fund, ...(masterStats[fund] || { variants: 0, totalZar: 0 }) }))
+      .sort((a, b) => masterListSort === 'name' ? a.fund.localeCompare(b.fund) : b.totalZar - a.totalZar);
+  }, [masterFunds, masterStats, masterListSort, masterListSearch]);
   const selectedMasterVariants = variants
     .filter(variant => variant.mappedMaster === selectedMaster || variant.suggestions.some(match => match.fund === selectedMaster))
     .filter(variant => canonicalKey(`${variant.platform} ${variant.name}`).includes(canonicalKey(variantSearch)));
@@ -404,6 +417,55 @@ export default function Funds() {
         </div>
       )}
 
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="master-list">Master Fund List</TabsTrigger>
+          <TabsTrigger value="link-funds">Link Funds</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="master-list">
+          <div className="rounded-lg border bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input value={masterListSearch} onChange={e => setMasterListSearch(e.target.value)} placeholder="Search funds…" className="h-8 w-64 pl-8 text-xs" />
+              </div>
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setMasterListSort(s => s === 'aum' ? 'name' : 'aum')}>
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                Sort by: {masterListSort === 'aum' ? 'AUM (highest first)' : 'Name (A–Z)'}
+              </Button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/40">
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Fund Name</th>
+                    <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">AUM (ZAR)</th>
+                    <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Linked Names</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {masterListRows.map((row, i) => (
+                    <tr key={row.fund} className="hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{i + 1}</td>
+                      <td className="px-4 py-2.5 font-medium text-sm">{row.fund}</td>
+                      <td className="px-4 py-2.5 text-right font-numbers text-sm">
+                        {row.totalZar > 0 ? <>ZAR {fmtNum(row.totalZar)}</> : <span className="text-muted-foreground text-xs">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-sm">{row.variants}</td>
+                    </tr>
+                  ))}
+                  {masterListRows.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">No funds match your search.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="link-funds">
       <div className="grid gap-4 xl:grid-cols-[minmax(300px,360px)_1fr]">
         <section className="rounded-lg border bg-white">
           <div className="border-b p-3">
@@ -680,6 +742,8 @@ export default function Funds() {
           </div>
         </section>
       </div>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!newMasterDraft} onOpenChange={open => { if (!open) setNewMasterDraft(null); }}>
         <DialogContent className="max-w-md">
