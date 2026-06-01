@@ -234,14 +234,25 @@ export default function Funds() {
 
   const filteredMasterFunds = masterFunds.filter(fund => canonicalKey(fund).includes(canonicalKey(searchTerm)));
 
-  // Tab 1: master list sorted by AUM (default) or name, with search
+  // Tab 1: raw aggregation of investment_name directly from DB — no merging applied
   const masterListRows = useMemo(() => {
     const q = canonicalKey(masterListSearch);
-    return masterFunds
-      .filter(fund => !q || canonicalKey(fund).includes(q))
-      .map(fund => ({ fund, ...(masterStats[fund] || { variants: 0, totalZar: 0 }) }))
+    const grouped = {};
+    valuations.filter(row => row.upload_month === latestMonth).forEach(row => {
+      const name = clean(row.investment_name) || 'Unknown';
+      const platform = clean(row.platform) || 'Unknown';
+      const key = name;
+      if (!grouped[key]) grouped[key] = { fund: name, totalZar: 0, variants: 0, platforms: new Set(), clients: new Set() };
+      grouped[key].totalZar += zarVal(row);
+      grouped[key].variants += 1;
+      grouped[key].platforms.add(platform);
+      grouped[key].clients.add(row.account_code || row.portfolio_name || 'Unknown');
+    });
+    return Object.values(grouped)
+      .map(r => ({ ...r, platforms: [...r.platforms].join(', '), clients: r.clients.size }))
+      .filter(r => !q || canonicalKey(r.fund).includes(q))
       .sort((a, b) => masterListSort === 'name' ? a.fund.localeCompare(b.fund) : b.totalZar - a.totalZar);
-  }, [masterFunds, masterStats, masterListSort, masterListSearch]);
+  }, [valuations, latestMonth, masterListSort, masterListSearch]);
   const selectedMasterVariants = variants
     .filter(variant => variant.mappedMaster === selectedMaster || variant.suggestions.some(match => match.fund === selectedMaster))
     .filter(variant => canonicalKey(`${variant.platform} ${variant.name}`).includes(canonicalKey(variantSearch)));
@@ -441,8 +452,9 @@ export default function Funds() {
                   <tr className="border-b bg-muted/40">
                     <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">#</th>
                     <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Fund Name</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Provider</th>
+                    <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Clients</th>
                     <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">AUM (ZAR)</th>
-                    <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Linked Names</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -450,10 +462,11 @@ export default function Funds() {
                     <tr key={row.fund} className="hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-2.5 text-xs text-muted-foreground">{i + 1}</td>
                       <td className="px-4 py-2.5 font-medium text-sm">{row.fund}</td>
-                      <td className="px-4 py-2.5 text-right font-numbers text-sm">
-                        {row.totalZar > 0 ? <>ZAR {fmtNum(row.totalZar)}</> : <span className="text-muted-foreground text-xs">—</span>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-sm">{row.variants}</td>
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground">{row.platforms}</td>
+                        <td className="px-4 py-2.5 text-right text-sm">{row.clients}</td>
+                        <td className="px-4 py-2.5 text-right font-numbers text-sm">
+                          {row.totalZar > 0 ? <>ZAR {fmtNum(row.totalZar)}</> : <span className="text-muted-foreground text-xs">—</span>}
+                        </td>
                     </tr>
                   ))}
                   {masterListRows.length === 0 && (
