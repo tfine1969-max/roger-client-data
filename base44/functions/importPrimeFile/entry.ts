@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import * as XLSX from 'npm:xlsx@0.18.5';
-import { applyClientMergeRules, loadClientMergeRules } from '../_shared/clientMergeRules.ts';
 
 const BATCH = 50;
 
@@ -45,6 +44,31 @@ function rowHasHeader(row) {
     const key = headerKey(cell);
     return key === 'investor' || key === 'accountnumber';
   });
+}
+
+async function loadClientMergeRules(base44) {
+  try {
+    const rules = await base44.asServiceRole.entities.ClientMergeRule.list('merged_name', 1000);
+    return rules || [];
+  } catch {
+    return [];
+  }
+}
+
+function applyClientMergeRules(record, mergeRules) {
+  if (!mergeRules || mergeRules.length === 0) return record;
+  for (const rule of mergeRules) {
+    const accountCodes = (rule.account_codes || '').split('|').map(s => s.trim()).filter(Boolean);
+    const identityNos = (rule.identity_numbers || '').split('|').map(s => s.trim()).filter(Boolean);
+    const sourceNames = (rule.source_names || '').split('|').map(s => s.trim()).filter(Boolean);
+    const matchesAccount = record.account_code && accountCodes.includes(record.account_code);
+    const matchesIdentity = record.identity_no && identityNos.includes(record.identity_no);
+    const matchesName = record.portfolio_name && sourceNames.includes(record.portfolio_name);
+    if (matchesAccount || matchesIdentity || matchesName) {
+      return { ...record, portfolio_name: rule.merged_name };
+    }
+  }
+  return record;
 }
 
 async function bulkCreate(entity, records, delayMs = 300) {
