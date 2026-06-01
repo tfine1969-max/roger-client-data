@@ -278,7 +278,7 @@ export default function Platforms() {
                   <tr><td colSpan={4} className="py-12 text-center text-sm text-muted-foreground">No data.</td></tr>
                 )}
                 {clientRows.map((r) => (
-                  <tr key={r.key} className="cursor-pointer hover:bg-muted/20" onClick={() => navigate(`/clients/${encodeURIComponent(r.key)}`)}>
+                  <tr key={r.key} className="cursor-pointer hover:bg-muted/20" onClick={() => navigate(`/app/clients/${encodeURIComponent(r.key)}`)}>
                     <td className="px-4 py-3">
                       <p className="truncate font-medium">{r.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{r.accountCode} · {r.funds} fund{r.funds === 1 ? '' : 's'}</p>
@@ -452,7 +452,7 @@ export default function Platforms() {
                   key={r.platform}
                   className="group cursor-pointer transition-colors hover:bg-slate-50/80"
                   onClick={() => {
-                    if (r.platformId === 'prime') navigate('/providers/prime');
+                    if (r.platformId === 'prime') navigate('/app/providers/prime');
                     else {
                       setSelectedPlatform(r.platformId);
                       setProviderView('clients');
