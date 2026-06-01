@@ -3112,21 +3112,7 @@ export const feeSeedRows = [
     "rebateAnnualPercent": 0.0,
     "advisoryAnnualPercent": 0.75
   },
-  {
-    "client": "Sommer, AM Ms",
-    "clientKey": "sommeram",
-    "clientTokens": [
-      "sommer",
-      "am"
-    ],
-    "investment": "iShares Bitcoin Trust ETF",
-    "investmentClass": "",
-    "investmentKey": "isharesbitcointrustetf",
-    "provider": "Credo",
-    "sourceProvider": "Credo",
-    "rebateAnnualPercent": 0.0,
-    "advisoryAnnualPercent": 0.75
-  },
+
   {
     "client": "Stingray Accessory Manufacturers (Pty) Ltd",
     "clientKey": "stingrayaccessorymanufacturersptyltd",
