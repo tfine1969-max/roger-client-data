@@ -5,7 +5,8 @@ import { fmtNum } from '@/lib/valuation-utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Search, ChevronDown, ChevronUp, Merge, CheckSquare, Square, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Merge, CheckSquare, Square, Loader2, Pencil } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 function summariseFund(rows) {
   let rebate = 0, advisory = 0, total = 0, aum = 0;
@@ -183,12 +184,123 @@ function MergeDialog({ open, onOpenChange, selected, onMerged, rawMonthRows, fun
   );
 }
 
+function EditRebateDialog({ open, onOpenChange, fundRow, monthRows, onSaved }) {
+  const queryClient = useQueryClient();
+  const [rebate, setRebate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useMemo(() => {
+    if (open && fundRow) {
+      // Get current rebate rate from first row of this fund
+      const rows = monthRows.filter(r => r.investment_name === fundRow.fund);
+      const currentRate = rows[0]?.rebate_fee_annual_percent ?? 0;
+      setRebate(String(currentRate));
+      setError('');
+    }
+  }, [open, fundRow]);
+
+  async function handleSave() {
+    setSaving(true);
+    setError('');
+    try {
+      const rebatePct = parseFloat(rebate) || 0;
+      const fundName = fundRow.fund;
+      const rows = monthRows.filter(r => r.investment_name === fundName);
+      // Get unique account_code + platform combos for this fund
+      const combos = [...new Map(rows.map(r => [`${r.account_code}||${r.platform}`, r])).values()];
+
+      for (const row of combos) {
+        const existing = await base44.entities.FeeConfig.filter({
+          account_code: row.account_code,
+          platform: row.platform,
+          investment_name: row.investment_name,
+        });
+        const configData = {
+          account_code: row.account_code,
+          portfolio_name: row.portfolio_name,
+          platform: row.platform,
+          investment_name: row.investment_name,
+          rebate_fee_annual_percent: rebatePct,
+          effective_from_month: row.upload_month,
+        };
+        if (existing.length > 0) {
+          // preserve advisory if already set
+          await base44.entities.FeeConfig.update(existing[0].id, {
+            ...configData,
+            advisory_fee_annual_percent: existing[0].advisory_fee_annual_percent,
+          });
+        } else {
+          await base44.entities.FeeConfig.create(configData);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['portfolioValuations'] });
+      queryClient.invalidateQueries({ queryKey: ['feeConfigs'] });
+      onSaved();
+      onOpenChange(false);
+    } catch (err) {
+      setError(err?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!fundRow) return null;
+  const rebatePct = parseFloat(rebate) || 0;
+  const rows = monthRows.filter(r => r.investment_name === fundRow.fund);
+  const clients = [...new Set(rows.map(r => r.portfolio_name).filter(Boolean))];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Pencil className="w-4 h-4" /> Edit Rebate Rate
+          </DialogTitle>
+          <DialogDescription>
+            Sets the rebate rate for all clients holding this fund.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="rounded-lg border p-3 bg-muted/30 text-sm space-y-1">
+            <p className="font-medium">{fundRow.fund}</p>
+            <p className="text-xs text-muted-foreground">{clients.length} client{clients.length !== 1 ? 's' : ''}: {clients.slice(0, 3).join(', ')}{clients.length > 3 ? ` +${clients.length - 3} more` : ''}</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Rebate annual rate (%)</Label>
+            <Input
+              type="number"
+              step="0.05"
+              min="0"
+              value={rebate}
+              onChange={e => setRebate(e.target.value)}
+              className="text-lg font-semibold"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-muted-foreground">Monthly: {(rebatePct / 12).toFixed(4)}%</p>
+          </div>
+          {error && <div className="rounded border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">{error}</div>}
+          <div className="flex gap-2 pt-1">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+            <Button className="flex-1" onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save Rebate Rate
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRules = [] }) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('rebate');
   const [sortDir, setSortDir] = useState('desc');
   const [selected, setSelected] = useState(new Set());
   const [mergeOpen, setMergeOpen] = useState(false);
+  const [editRow, setEditRow] = useState(null);
 
   const fundRows = useMemo(() => {
     const map = {};
@@ -304,6 +416,7 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
               <th className={`${thClass} text-right`} onClick={() => handleSort('total')}>
                 Total <SortIcon col="total" />
               </th>
+              <th className="px-2 py-2.5 w-8"></th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -317,37 +430,45 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
               return (
                 <tr
                   key={row.fund}
-                  className={`hover:bg-muted/20 transition-colors cursor-pointer ${isSelected ? 'bg-primary/5' : ''}`}
-                  onClick={() => toggleSelect(row.fund)}
+                  className={`hover:bg-muted/20 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
                 >
-                  <td className="px-2 py-2 text-center">
+                  <td className="px-2 py-2 text-center cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     {isSelected
                       ? <CheckSquare className="w-3.5 h-3.5 text-primary" />
                       : <Square className="w-3.5 h-3.5 text-muted-foreground/40" />
                     }
                   </td>
-                  <td className="px-2 py-2 font-medium w-[28%]">
+                  <td className="px-2 py-2 font-medium w-[28%] cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     <span className="block truncate text-sm" title={row.fund}>{row.fund}</span>
                   </td>
-                  <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs">
+                  <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     R {fmtNum(row.aum)}
                   </td>
-                  <td className="px-2 py-2 text-right text-muted-foreground text-xs">{row.clients}</td>
-                  <td className="px-2 py-2">
+                  <td className="px-2 py-2 text-right text-muted-foreground text-xs cursor-pointer" onClick={() => toggleSelect(row.fund)}>{row.clients}</td>
+                  <td className="px-2 py-2 cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     <div className="flex flex-wrap gap-0.5">
                       {row.platforms.map(p => (
                         <span key={p} className="text-[11px] rounded bg-muted px-1 py-0.5 text-muted-foreground whitespace-nowrap">{p}</span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-2 py-2 font-mono text-right text-chart-2 font-semibold whitespace-nowrap text-xs">
+                  <td className="px-2 py-2 font-mono text-right text-chart-2 font-semibold whitespace-nowrap text-xs cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     R {fmtNum(row.rebate)}
                   </td>
-                  <td className="px-2 py-2 font-mono text-right text-chart-1 whitespace-nowrap text-xs">
+                  <td className="px-2 py-2 font-mono text-right text-chart-1 whitespace-nowrap text-xs cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     R {fmtNum(row.advisory)}
                   </td>
-                  <td className="px-2 py-2 font-mono text-right font-bold whitespace-nowrap text-xs">
+                  <td className="px-2 py-2 font-mono text-right font-bold whitespace-nowrap text-xs cursor-pointer" onClick={() => toggleSelect(row.fund)}>
                     R {fmtNum(row.total)}
+                  </td>
+                  <td className="px-2 py-2 text-center">
+                    <button
+                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={e => { e.stopPropagation(); setEditRow(row); }}
+                      title="Edit rebate rate"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
                   </td>
                 </tr>
               );
@@ -362,6 +483,7 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
               <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs">
                 R {fmtNum(totals.aum)}
               </td>
+              <td />
               <td />
               <td />
               <td className="px-2 py-2 font-mono text-right text-chart-2 whitespace-nowrap text-xs">
@@ -386,6 +508,14 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
       onMerged={() => setSelected(new Set())}
       rawMonthRows={rawMonthRows}
       fundMergeRules={fundMergeRules}
+    />
+
+    <EditRebateDialog
+      open={!!editRow}
+      onOpenChange={open => { if (!open) setEditRow(null); }}
+      fundRow={editRow}
+      monthRows={monthRows}
+      onSaved={() => setEditRow(null)}
     />
     </>
   );
