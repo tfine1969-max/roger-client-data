@@ -71,10 +71,14 @@ export default function CredoUpload({ onImported }) {
   }, []);
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files || []).filter(f => f.type === 'application/pdf');
-    // For folder selections, keep existing files and add new ones; for file selections, replace
+    const selectedFiles = Array.from(e.target.files || []).filter(f =>
+      f.type === 'application/pdf' ||
+      f.name.match(/\.xlsx?$/i) ||
+      f.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      f.type === 'application/vnd.ms-excel'
+    );
     const isFolder = e.target.id === 'credo-folder-input';
-    const newFiles = isFolder 
+    const newFiles = isFolder
       ? [...files, ...selectedFiles].filter((f, i, arr) => arr.findIndex(x => x.webkitRelativePath === f.webkitRelativePath) === i)
       : selectedFiles;
     setFiles(newFiles);
@@ -156,7 +160,7 @@ export default function CredoUpload({ onImported }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Upload a folder or select multiple Credo valuation PDFs to import monthly holdings. Only PDF files will be processed. Enter the USD → ZAR exchange rate for that month.
+        Upload a folder or select multiple Credo files (PDF or Excel .xlsx) to import monthly holdings. Excel files use the new per-client format with NAV columns per month. Enter the USD → ZAR exchange rate for that month.
       </p>
 
       {lastUpload && (
@@ -200,7 +204,7 @@ export default function CredoUpload({ onImported }) {
           <Input
             id="credo-file-input"
             type="file"
-            accept=".pdf"
+            accept=".pdf,.xlsx,.xls"
             multiple
             onChange={handleFileChange}
             className="hidden"
