@@ -68,7 +68,7 @@ export function applyMappingsToRows(rows) {
     const key = `${clean(row.platform)}||${clean(row.investment_name)}`;
     const canonical = mappings[key];
     if (!canonical || canonical === row.investment_name) return row;
-    return { ...row, investment_name: canonical };
+    return { ...row, investment_name: canonical, raw_investment_name: row.investment_name };
   });
 }
 
