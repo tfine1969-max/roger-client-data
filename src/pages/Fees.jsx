@@ -264,6 +264,7 @@ export default function Fees() {
               ['invoice', 'Advisory invoice'],
               ['investments', 'Investment detail'],
               ['funds', 'Investment funds'],
+              ['rebate-funds', 'Rebate by fund'],
             ].map(([view, label]) => (
               <button
                 key={view}
@@ -414,6 +415,14 @@ export default function Fees() {
 
           {providerView === 'funds' && (
           <FundBreakdown monthRows={providerMonthRows} />
+          )}
+
+          {providerView === 'rebate-funds' && (
+          <RebateByFund
+            monthRows={providerMonthRows}
+            rawMonthRows={valuations.filter(v => v.upload_month === latestMonth && v.platform === activeProvider).map(row => withCalculatedFees(row, feeMappingRows, feeConfigs))}
+            fundMergeRules={fundMergeRules}
+          />
           )}
         </div>
       )}
