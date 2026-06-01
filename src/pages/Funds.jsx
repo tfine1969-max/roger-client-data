@@ -10,11 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle2, Cloud, CloudOff, Link2, Loader2, Plus, Search, X, Pencil, ArrowUpDown } from 'lucide-react';
 import MonthBadge from '@/components/shared/MonthBadge';
 import ProviderLogo from '@/components/shared/ProviderLogo';
-import { masterFundList } from '@/data/masterFundList';
+import { masterFundListUnique as masterFundList } from '@/data/masterFundList';
 import { base44 } from '@/api/base44Client';
 
-const MAPPING_KEY = 'fund_master_mappings_v1';
-const EXTRA_MASTER_KEY = 'fund_master_extra_v1';
+const MAPPING_KEY = 'fund_master_mappings_v3';
+const EXTRA_MASTER_KEY = 'fund_master_extra_v3';
 const NO_MASTER = '__none__';
 
 function clean(value) {
