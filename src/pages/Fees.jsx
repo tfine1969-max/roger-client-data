@@ -333,9 +333,12 @@ export default function Fees() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/40">
-                    {['Month','Rebate','Advisory','Total','Clients','Holdings'].map(header => (
-                      <th key={header} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">{header}</th>
-                    ))}
+                    <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Month</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-32">Rebate</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-32">Advisory</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-32">Total</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-16">Clients</th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-20">Holdings</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
