@@ -483,9 +483,8 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
               <td className="px-2 py-2 font-mono text-right whitespace-nowrap text-muted-foreground text-xs">
                 R {fmtNum(totals.aum)}
               </td>
-              <td />
-              <td />
-              <td />
+              <td />{/* Clients */}
+              <td />{/* Platforms */}
               <td className="px-2 py-2 font-mono text-right text-chart-2 whitespace-nowrap text-xs">
                 R {fmtNum(totals.rebate)}
               </td>
@@ -495,6 +494,7 @@ export default function RebateByFund({ monthRows, rawMonthRows = [], fundMergeRu
               <td className="px-2 py-2 font-mono text-right font-bold whitespace-nowrap text-xs">
                 R {fmtNum(totals.total)}
               </td>
+              <td />{/* Edit button column */}
             </tr>
           </tfoot>
         </table>
