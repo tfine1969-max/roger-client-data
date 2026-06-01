@@ -242,24 +242,27 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
   const mapping = findFeeMappingForRow(row, feeMappings);
   const hasStoredRate = row.rebate_fee_annual_percent != null || row.advisory_fee_annual_percent != null;
   const seedMatched = seeded.rebateMatched || seeded.advisoryMatched;
-  const source = (seedMatched ? seeded : null) || config || mapping || (hasStoredRate ? row : null);
-  const rebate = seeded.rebateMatched
-      ? seeded.rebate
-      : config
-        ? (config.rebate_fee_annual_percent ?? 0)
-        : mapping?.rebateAnnualPercent ?? row.rebate_fee_annual_percent ?? 0;
-  const advisory = seeded.advisoryMatched
-      ? seeded.advisory
-      : config
-        ? (config.advisory_fee_annual_percent ?? 0)
-        : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
-  const feeBaseZar = zarVal(row);
 
-  // fee_required = true when there's no source at all, OR when a config exists
-  // but advisory_fee_annual_percent has never been explicitly set (null = not yet touched).
-  // Explicitly setting 0 is valid and clears the flag.
+  // FeeConfig (manual override) always takes priority over seeded/mapped rates.
+  // Seeded rates are only used as a fallback when no manual config exists.
+  const rebate = config
+    ? (config.rebate_fee_annual_percent ?? 0)
+    : seeded.rebateMatched
+      ? seeded.rebate
+      : mapping?.rebateAnnualPercent ?? row.rebate_fee_annual_percent ?? 0;
+  const advisory = config
+    ? (config.advisory_fee_annual_percent ?? 0)
+    : seeded.advisoryMatched
+      ? seeded.advisory
+      : mapping?.advisoryAnnualPercent ?? row.advisory_fee_annual_percent ?? 0;
+
+  const feeBaseZar = zarVal(row);
+  const source = config || (seedMatched ? seeded : null) || mapping || (hasStoredRate ? row : null);
+
+  // fee_required = true when there's no source at all, OR when no config and advisory
+  // has never been explicitly set (null = not yet touched).
   const advisoryNeverSet = config
-    ? !seeded.advisoryMatched && config.advisory_fee_annual_percent == null
+    ? config.advisory_fee_annual_percent == null
     : !seeded.advisoryMatched && !mapping && !hasStoredRate;
   const feeRequired = !source || advisoryNeverSet;
 
@@ -269,7 +272,7 @@ export function withCalculatedFees(row, feeMappings = [], feeConfigs = []) {
     fee_base_zar: feeBaseZar,
     fee_base_source: 'valuation',
     fee_required: feeRequired,
-    fee_source: seedMatched ? 'seeded' : config ? 'override' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
+    fee_source: config ? 'override' : seedMatched ? 'seeded' : mapping ? 'mapping' : hasStoredRate ? 'stored' : 'missing',
     fee_mapping_client: seeded.advisoryMapping?.client || mapping?.client,
     fee_mapping_match_score: mapping?.matchScore ?? null,
   };
