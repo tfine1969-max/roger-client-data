@@ -111,7 +111,10 @@ async function importCredoExcel({ base44, user, file_url, upload_month, exchange
   }
 
   // Use ExtractDataFromUploadedFile — purpose-built for structured Excel parsing
-  const navCol = `NAV - ${monthLabel}`;
+  // The NAV column may be named "NAV - MAY", "NAV - May", "NAV - May 2026", etc.
+  const monthLabelTitle = monthLabel.charAt(0) + monthLabel.slice(1).toLowerCase(); // "May"
+  const navColDesc = `NAV value for ${monthLabelTitle} ${upload_month.split('-')[0]}. Look for a column whose name contains "${monthLabelTitle}" or "${monthLabel}" near "NAV". Extract the full precision number. Null if blank or missing.`;
+
   const result = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
     file_url,
     json_schema: {
@@ -121,7 +124,7 @@ async function importCredoExcel({ base44, user, file_url, upload_month, exchange
         properties: {
           client:          { type: 'string',           description: 'Client name from the "Client" column' },
           investment_name: { type: 'string',           description: 'Fund / security name from the "Investment Name" column' },
-          nav_value:       { type: ['number', 'null'], description: `Exact numeric value from the "${navCol}" column. Full precision. Null if blank.` },
+          nav_value:       { type: ['number', 'null'], description: navColDesc },
           rebate_pct:      { type: ['number', 'null'], description: 'Decimal from "Rebate" column, e.g. 0.005 for 0.5%' },
           advisory_pct:    { type: ['number', 'null'], description: 'Decimal from "Advisory Fee" column, e.g. 0.0075 for 0.75%' },
         },
@@ -138,9 +141,18 @@ async function importCredoExcel({ base44, user, file_url, upload_month, exchange
   const rows = result.output.filter(r => cleanText(r.investment_name) && parseNumber(r.nav_value) > 0);
 
   if (rows.length === 0) {
+    // Return success with 0 rows rather than failing — some clients may have no holdings this month
     return Response.json({
-      error: `No rows extracted. Check that the file has a "NAV - ${monthLabel}" column matching the upload month.`,
-    }, { status: 400 });
+      success: true,
+      platform: 'Credo',
+      rows_imported: 0,
+      client_name: fileNameFromUrl(file_url).replace(/\.xlsx?$/i, '').replace(/^[0-9a-f]{7,}_/i, '').replace(/_/g, ' ').trim(),
+      upload_month,
+      exchange_rate_used: Number(exchange_rate),
+      usd_total: 0,
+      zar_total: 0,
+      warning: `No holdings found for NAV month ${monthLabelTitle} ${upload_month.split('-')[0]}. Check column names in the file.`,
+    });
   }
 
   const usdToZar = Number(exchange_rate);
