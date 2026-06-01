@@ -156,24 +156,38 @@ Deno.serve(async (req) => {
     }
 
     if (replace_existing) {
-      const existing = await base44.asServiceRole.entities.PrimeHolding.filter({ upload_month }, '', 5000);
-      for (const rec of existing) {
-        await base44.asServiceRole.entities.PrimeHolding.delete(rec.id);
+      // Delete PrimeHoldings in batches
+      let phPage = 0;
+      while (true) {
+        const existing = await base44.asServiceRole.entities.PrimeHolding.filter({ upload_month }, '', 200, phPage * 200);
+        if (!existing.length) break;
+        for (let i = 0; i < existing.length; i += BATCH) {
+          await Promise.all(existing.slice(i, i + BATCH).map(rec => base44.asServiceRole.entities.PrimeHolding.delete(rec.id)));
+          if (i + BATCH < existing.length) await new Promise(r => setTimeout(r, 400));
+        }
+        if (existing.length < 200) break;
+        phPage++;
+        await new Promise(r => setTimeout(r, 400));
       }
 
-      let page = 0;
+      // Delete PortfolioValuations in batches
+      let pvPage = 0;
       while (true) {
         const existingPV = await base44.asServiceRole.entities.PortfolioValuation.filter(
-          { upload_month, platform: 'Prime' }, '', 200, page * 200
+          { upload_month, platform: 'Prime' }, '', 200, pvPage * 200
         );
         if (!existingPV.length) break;
-        await Promise.all(existingPV.map(rec => base44.asServiceRole.entities.PortfolioValuation.delete(rec.id)));
+        for (let i = 0; i < existingPV.length; i += BATCH) {
+          await Promise.all(existingPV.slice(i, i + BATCH).map(rec => base44.asServiceRole.entities.PortfolioValuation.delete(rec.id)));
+          if (i + BATCH < existingPV.length) await new Promise(r => setTimeout(r, 400));
+        }
         if (existingPV.length < 200) break;
-        page++;
+        pvPage++;
+        await new Promise(r => setTimeout(r, 400));
       }
     }
 
-    await bulkCreate(base44.asServiceRole.entities.PrimeHolding, records, 300);
+    await bulkCreate(base44.asServiceRole.entities.PrimeHolding, records, 500);
 
     const pvRecords = records.map(row => applyClientMergeRules({
       upload_month,
